@@ -1,0 +1,20 @@
+language: cpp
+sudo: false
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+    apt:
+      packages:
+       - qtbase5-dev
+       - qt5-default
+       - qt5-qmake
+
+
+before_script:
+  - qmake
+
+script:
+  - make
