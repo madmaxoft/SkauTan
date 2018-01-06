@@ -1,0 +1,163 @@
+#include "SongModel.h"
+#include <QDebug>
+#include <QSize>
+#include "SongDatabase.h"
+
+
+
+
+
+/** Returns a string representation of the specified song's length.
+a_Length is the length in seconds. */
+static QString formatLength(const Song & a_Song)
+{
+	if (a_Song.length() <= 0)
+	{
+		return SongModel::tr("<unknown>", "Length");
+	}
+	auto len = static_cast<int>(floor(a_Song.length() + 0.5));
+	return QString("%1:%2").arg(len / 60).arg(len % 60);
+}
+
+
+
+
+
+static QString formatMPM(const Song & a_Song)
+{
+	if (a_Song.measuresPerMinute() <= 0)
+	{
+		return SongModel::tr("<unknown>", "MPM");
+	}
+	return QString::number(a_Song.measuresPerMinute(), 'f', 1);
+}
+
+
+
+
+
+static QString formatLastPlayed(const Song & a_Song)
+{
+	if (!a_Song.lastPlayed().isValid())
+	{
+		return SongModel::tr("<never>", "LastPlayed");
+	}
+	return a_Song.lastPlayed().toString("yyyy-MM-dd HH:mm:ss");
+}
+
+
+
+
+
+static QString formatRating(const Song & a_Song)
+{
+	if (a_Song.rating() < 0)
+	{
+		return SongModel::tr("<none>", "Rating");
+	}
+	return QString::number(a_Song.rating(), 'f', 1);
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SongModel:
+
+SongModel::SongModel(SongDatabase & a_DB):
+	m_DB(a_DB)
+{
+	connect(&m_DB, &SongDatabase::songFileAdded, this, &SongModel::addSongFile);
+}
+
+
+
+
+
+int SongModel::rowCount(const QModelIndex & a_Parent) const
+{
+	Q_UNUSED(a_Parent);
+
+	return static_cast<int>(m_DB.songs().size());
+}
+
+
+
+
+
+int SongModel::columnCount(const QModelIndex & a_Parent) const
+{
+	Q_UNUSED(a_Parent);
+
+	return 6;
+}
+
+
+
+
+
+QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
+{
+	if (!a_Index.isValid() || (a_Index.row() >= m_DB.songs().size()))
+	{
+		return QVariant();
+	}
+	const auto & song = m_DB.songs()[a_Index.row()];
+	switch (a_Role)
+	{
+		case Qt::DisplayRole:
+		{
+			switch (a_Index.column())
+			{
+				case colFileName:          return song->fileName();
+				case colGenre:             return song->genre();
+				case colLength:            return formatLength(*song);
+				case colMeasuresPerMinute: return formatMPM(*song);
+				case colLastPlayed:        return formatLastPlayed(*song);
+				case colRating:            return formatRating(*song);
+			}
+			break;
+		}
+	}
+	return QVariant();
+}
+
+
+
+
+
+QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const
+{
+	if (a_Orientation != Qt::Horizontal)
+	{
+		return QVariant();
+	}
+	if (a_Role != Qt::DisplayRole)
+	{
+		return QVariant();
+	}
+	switch (a_Section)
+	{
+		case colFileName:          return tr("File name");
+		case colGenre:             return tr("Genre");
+		case colLength:            return tr("Length");
+		case colMeasuresPerMinute: return tr("MPM");
+		case colLastPlayed:        return tr("Last played");
+		case colRating:            return tr("Rating");
+	}
+	return QVariant();
+}
+
+
+
+
+
+void SongModel::addSongFile(Song * a_NewSong)
+{
+	Q_UNUSED(a_NewSong);
+
+	auto lastIdx = static_cast<int>(m_DB.songs().size()) - 1;
+	beginInsertRows(QModelIndex(), lastIdx, lastIdx + 1);
+	endInsertRows();
+}
