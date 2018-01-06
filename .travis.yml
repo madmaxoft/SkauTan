@@ -1,0 +1,21 @@
+language: cpp
+sudo: false
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+    apt:
+      packages:
+       - qtbase5-dev
+       - qt5-default
+       - qt5-qmake
+       - qtmultimedia5-dev
+
+
+before_script:
+  - qmake --version
+
+script:
+  - qmake && make
