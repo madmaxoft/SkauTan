@@ -24,6 +24,29 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
+
+# Turn on warnings-as-errors and extra warnings
+msvc {
+	QMAKE_CXXFLAGS += /WX
+}
+gcc | clang {
+	CONFIG += warn_on
+	QMAKE_CXXFLAGS += -Werror
+	QMAKE_CXXFLAGS += -Wextra
+	QMAKE_CXXFLAGS += -Wunknown-pragmas -Wundef
+	QMAKE_CXXFLAGS += -Wold-style-cast
+	QMAKE_CXXFLAGS += -Wdisabled-optimization -Wstrict-overflow=4
+	QMAKE_CXXFLAGS += -Winit-self -Wpointer-arith
+	QMAKE_CXXFLAGS += -Wlogical-op
+
+	# Override the C and C++ targets to selectively replace -I with -isystem for include paths
+	QMAKE_RUN_CC      = $(CC) -o $obj -c $(CFLAGS) $(subst -I/usr/include,-isystem /usr/include,$(INCPATH)) $src
+	QMAKE_RUN_CC_IMP  = $(CC) -o $@ -c $(CFLAGS) $(subst -I/usr/include,-isystem /usr/include,$(INCPATH)) $<
+	QMAKE_RUN_CXX     = $(CXX) -o $obj -c $(CXXFLAGS) $(subst -I/usr/include,-isystem /usr/include,$(INCPATH)) $src
+	QMAKE_RUN_CXX_IMP = $(CXX) -o $@ -c $(CXXFLAGS) $(subst -I/usr/include,-isystem /usr/include,$(INCPATH)) $<
+}
+
+
 SOURCES += \
 	main.cpp \
 	PlayerWindow.cpp \
