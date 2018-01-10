@@ -11,11 +11,11 @@
 a_Length is the length in seconds. */
 static QString formatLength(const Song & a_Song)
 {
-	if (a_Song.length() <= 0)
+	if (!a_Song.length().isValid())
 	{
 		return SongModel::tr("<unknown>", "Length");
 	}
-	auto len = static_cast<int>(floor(a_Song.length() + 0.5));
+	auto len = static_cast<int>(floor(a_Song.length().toDouble() + 0.5));
 	return QString("%1:%2").arg(len / 60).arg(len % 60);
 }
 
@@ -25,11 +25,11 @@ static QString formatLength(const Song & a_Song)
 
 static QString formatMPM(const Song & a_Song)
 {
-	if (a_Song.measuresPerMinute() <= 0)
+	if (!a_Song.measuresPerMinute().isValid())
 	{
 		return SongModel::tr("<unknown>", "MPM");
 	}
-	return QString::number(a_Song.measuresPerMinute(), 'f', 1);
+	return QString::number(a_Song.measuresPerMinute().toDouble(), 'f', 1);
 }
 
 
@@ -42,7 +42,7 @@ static QString formatLastPlayed(const Song & a_Song)
 	{
 		return SongModel::tr("<never>", "LastPlayed");
 	}
-	return a_Song.lastPlayed().toString("yyyy-MM-dd HH:mm:ss");
+	return a_Song.lastPlayed().toDateTime().toString("yyyy-MM-dd HH:mm:ss");
 }
 
 
@@ -51,11 +51,11 @@ static QString formatLastPlayed(const Song & a_Song)
 
 static QString formatRating(const Song & a_Song)
 {
-	if (a_Song.rating() < 0)
+	if (!a_Song.rating().isValid())
 	{
 		return SongModel::tr("<none>", "Rating");
 	}
-	return QString::number(a_Song.rating(), 'f', 1);
+	return QString::number(a_Song.rating().toDouble(), 'f', 1);
 }
 
 
@@ -90,7 +90,7 @@ int SongModel::columnCount(const QModelIndex & a_Parent) const
 {
 	Q_UNUSED(a_Parent);
 
-	return 6;
+	return colMax;
 }
 
 
@@ -116,6 +116,8 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colMeasuresPerMinute: return formatMPM(*song);
 				case colLastPlayed:        return formatLastPlayed(*song);
 				case colRating:            return formatRating(*song);
+				case colAuthor:            return song->author();
+				case colTitle:             return song->title();
 			}
 			break;
 		}
@@ -145,6 +147,8 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colMeasuresPerMinute: return tr("MPM");
 		case colLastPlayed:        return tr("Last played");
 		case colRating:            return tr("Rating");
+		case colAuthor:            return tr("Author");
+		case colTitle:             return tr("Title");
 	}
 	return QVariant();
 }

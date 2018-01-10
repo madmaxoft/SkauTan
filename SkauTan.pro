@@ -32,7 +32,9 @@ SOURCES += \
 	Song.cpp \
 	SongDatabase.cpp \
 	DlgSongs.cpp \
-	SongModel.cpp
+	SongModel.cpp \
+	MetadataScanner.cpp \
+	HashCalculator.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -42,7 +44,9 @@ HEADERS += \
 	Song.h \
 	SongDatabase.h \
 	DlgSongs.h \
-	SongModel.h
+	SongModel.h \
+	MetadataScanner.h \
+	HashCalculator.h
 
 FORMS += \
 	PlayerWindow.ui \

@@ -13,9 +13,7 @@ Song::Song(
 ):
 	m_FileName(a_FileName),
 	m_FileSize(a_FileSize),
-	m_DbRowId(a_DbRowId),
-	m_Length(-1),
-	m_MeasuresPerMinute(-1)
+	m_DbRowId(a_DbRowId)
 {
 }
 
@@ -23,27 +21,69 @@ Song::Song(
 
 
 
-Song::Song(QString && a_FileName,
+Song::Song(
+	QString && a_FileName,
 	qulonglong a_FileSize,
 	qlonglong a_DbRowId,
-	QByteArray && a_Hash,
-	QVariant a_Length,
-	QString && a_Genre,
-	QVariant a_MeasuresPerMinute,
-	QDateTime a_LastPlayed,
-	QVariant a_Rating
+	QVariant && a_Hash,
+	QVariant && a_Length,
+	QVariant && a_Genre,
+	QVariant && a_MeasuresPerMinute,
+	QVariant && a_LastPlayed,
+	QVariant && a_Rating,
+	QVariant && a_LastMetadataUpdated
 ):
 	m_FileName(std::move(a_FileName)),
 	m_FileSize(a_FileSize),
 	m_DbRowId(a_DbRowId),
 	m_Hash(std::move(a_Hash)),
-	m_Length(a_Length.isValid() ? a_Length.toDouble() : -1),
+	m_Length(std::move(a_Length)),
 	m_Genre(std::move(a_Genre)),
-	m_MeasuresPerMinute(a_MeasuresPerMinute.isValid() ? a_MeasuresPerMinute.toDouble() : -1),
-	m_LastPlayed(a_LastPlayed),
-	m_Rating(a_Rating.isValid() ? a_Rating.toDouble() : -1)
+	m_MeasuresPerMinute(std::move(a_MeasuresPerMinute)),
+	m_LastPlayed(std::move(a_LastPlayed)),
+	m_Rating(std::move(a_Rating)),
+	m_LastMetadataUpdated(std::move(a_LastMetadataUpdated))
 {
 	// Nothing needed
+}
+
+
+
+
+
+void Song::setLength(double a_Length)
+{
+	m_Length = a_Length;
+}
+
+
+
+
+
+bool Song::needsMetadataRescan() const
+{
+	// Invalid hash always needs a rescan
+	if (!m_Hash.isValid())
+	{
+		return true;
+	}
+
+	// Invalid metadata trigger a rescan only if it has been enough time since the last metadata update:
+	if (!m_LastMetadataUpdated.isValid())
+	{
+		return true;
+	}
+	if (
+		(m_Length < 0) ||
+		(m_MeasuresPerMinute < 0) ||
+		(m_Rating < 0) ||
+		!m_Author.isValid() ||
+		!m_Title.isValid()
+	)
+	{
+		return (m_LastMetadataUpdated.toDateTime() < QDateTime::currentDateTimeUtc().addDays(-14));
+	}
+	return false;
 }
 
 

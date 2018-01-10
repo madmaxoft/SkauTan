@@ -11,6 +11,7 @@
 #include <QSqlDatabase>
 #include "Song.h"
 #include "Playlist.h"
+#include "MetadataScanner.h"
 
 
 
@@ -28,7 +29,8 @@ public:
 	SongDatabase();
 
 	/** Opens the specified SQLite file and reads its contents into this object.
-	Keeps the DB open for subsequent immediate updates. */
+	Keeps the DB open for subsequent immediate updates.
+	Only one DB can ever be open. */
 	void open(const QString & a_DBFileName);
 
 	/** Returns the names of all the historical playlists. */
@@ -59,6 +61,9 @@ protected:
 	/** All the known songs. */
 	std::vector<SongPtr> m_Songs;
 
+	/** The worker thread that scans the songs' metadata in the background. */
+	MetadataScanner m_MetadataScanner;
+
 
 	/** Updates all tables to the current format.
 	Adds any missing tables and rows. */
@@ -74,12 +79,22 @@ protected:
 	Use Song::isStillValid() for checking before adding the song to playlist / before starting playback. */
 	void loadSongs();
 
+	/** Saves the specified song into the DB. */
+	void saveSong(const Song & a_Song);
+
 
 signals:
 
 	/** Emitted after a new song file is added to the list of songs (addSongFile, addSongFiles).
 	NOT emitted when loading songs from the DB! */
 	void songFileAdded(Song * a_Song);
+
+
+protected slots:
+
+	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
+	Writes the whole updated song to the DB. */
+	void songScanned(Song * a_Song);
 };
 
 
