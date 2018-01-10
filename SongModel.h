@@ -37,6 +37,10 @@ public:
 		colMeasuresPerMinute = 3,
 		colLastPlayed = 4,
 		colRating = 5,
+		colAuthor = 6,
+		colTitle = 7,
+
+		colMax,
 	};
 
 

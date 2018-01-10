@@ -1,16 +1,37 @@
 #include "SongDatabase.h"
+#include <assert.h>
 #include <set>
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QSqlField>
 
 
 
 
+
+/** Returns the SQL field's value, taking its "isNull" into account.
+For some reason Qt + Sqlite return an empty string variant if the field is null,
+this function returns a null variant in such a case. */
+static QVariant fieldValue(const QSqlField & a_Field)
+{
+	if (a_Field.isNull())
+	{
+		return QVariant();
+	}
+	return a_Field.value();
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SongDatabase:
 
 SongDatabase::SongDatabase()
 {
+	connect(&m_MetadataScanner, &MetadataScanner::songScanned, this, &SongDatabase::songScanned);
 }
 
 
@@ -19,6 +40,8 @@ SongDatabase::SongDatabase()
 
 void SongDatabase::open(const QString & a_DBFileName)
 {
+	assert(!m_Database.isOpen());  // Opening another DB is not allowed
+
 	m_Database = QSqlDatabase::addDatabase("QSQLITE");
 	m_Database.setDatabaseName(a_DBFileName);
 	if (!m_Database.open())
@@ -28,6 +51,7 @@ void SongDatabase::open(const QString & a_DBFileName)
 	}
 	fixupTables();
 	loadSongs();
+	m_MetadataScanner.start();
 }
 
 
@@ -87,14 +111,15 @@ void SongDatabase::fixupTables()
 {
 	static const std::vector<std::pair<QString, QString>> cdSongs =
 	{
-		{"FileName",          "TEXT"},
-		{"FileSize",          "NUMBER"},
-		{"Hash",              "BLOB"},
-		{"Length",            "NUMBER"},
-		{"Genre",             "TEXT"},
-		{"MeasuresPerMinute", "NUMBER"},
-		{"LastPlayed",        "DATETIME"},
-		{"Rating",            "NUMBER"},
+		{"FileName",            "TEXT"},
+		{"FileSize",            "NUMBER"},
+		{"Hash",                "BLOB"},
+		{"Length",              "NUMBER"},
+		{"Genre",               "TEXT"},
+		{"MeasuresPerMinute",   "NUMBER"},
+		{"LastPlayed",          "DATETIME"},
+		{"Rating",              "NUMBER"},
+		{"LastMetadataUpdated", "DATETIME"},
 	};
 
 	fixupTable("Songs", cdSongs);
@@ -176,15 +201,16 @@ void SongDatabase::loadSongs()
 		qWarning() << __FUNCTION__ << ": Cannot query songs from the DB: " << query.lastError();
 		return;
 	}
-	auto fiFileName          = query.record().indexOf("FileName");
-	auto fiFileSize          = query.record().indexOf("FileSize");
-	auto fiRowId             = query.record().indexOf("RowID");
-	auto fiHash              = query.record().indexOf("Hash");
-	auto fiLength            = query.record().indexOf("Length");
-	auto fiGenre             = query.record().indexOf("Genre");
-	auto fiMeasuresPerMinute = query.record().indexOf("MeasuresPerMinute");
-	auto fiLastPlayed        = query.record().indexOf("LastPlayed");
-	auto fiRating            = query.record().indexOf("Rating");
+	auto fiFileName            = query.record().indexOf("FileName");
+	auto fiFileSize            = query.record().indexOf("FileSize");
+	auto fiRowId               = query.record().indexOf("RowID");
+	auto fiHash                = query.record().indexOf("Hash");
+	auto fiLength              = query.record().indexOf("Length");
+	auto fiGenre               = query.record().indexOf("Genre");
+	auto fiMeasuresPerMinute   = query.record().indexOf("MeasuresPerMinute");
+	auto fiLastPlayed          = query.record().indexOf("LastPlayed");
+	auto fiRating              = query.record().indexOf("Rating");
+	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
 
 	// Load each song:
 	if (!query.isActive())
@@ -199,18 +225,69 @@ void SongDatabase::loadSongs()
 	}
 	while (query.next())
 	{
-		m_Songs.push_back(std::make_shared<Song>(
+		const auto & rec = query.record();
+		auto song = std::make_shared<Song>(
 			std::move(query.value(fiFileName).toString()),
 			query.value(fiFileSize).toULongLong(),
 			query.value(fiRowId).toLongLong(),
-			std::move(query.value(fiHash).toByteArray()),
-			query.value(fiLength),
-			std::move(query.value(fiGenre).toString()),
-			query.value(fiMeasuresPerMinute),
-			query.value(fiLastPlayed).toDateTime(),
-			query.value(fiRating)
-		));
+			std::move(fieldValue(rec.field(fiHash))),
+			std::move(fieldValue(rec.field(fiLength))),
+			std::move(fieldValue(rec.field(fiGenre))),
+			std::move(fieldValue(rec.field(fiMeasuresPerMinute))),
+			std::move(fieldValue(rec.field(fiLastPlayed))),
+			std::move(fieldValue(rec.field(fiRating))),
+			std::move(fieldValue(rec.field(fiLastMetadataUpdated)))
+		);
+		m_Songs.push_back(song);
+		if (song->needsMetadataRescan())
+		{
+			m_MetadataScanner.scan(song);
+		}
 	}
+}
+
+
+
+
+
+void SongDatabase::saveSong(const Song & a_Song)
+{
+	QSqlQuery query(m_Database);
+	if (!query.prepare("UPDATE Songs SET "
+		"FileName = ?, FileSize = ?, Hash = ?, "
+		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
+		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
+		"WHERE RowID = ?")
+	)
+	{
+		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		return;
+	}
+	query.bindValue(0, a_Song.fileName());
+	query.bindValue(1, a_Song.fileSize());
+	query.bindValue(2, a_Song.hash());
+	query.bindValue(3, a_Song.length());
+	query.bindValue(4, a_Song.genre());
+	query.bindValue(5, a_Song.measuresPerMinute());
+	query.bindValue(6, a_Song.lastPlayed());
+	query.bindValue(7, a_Song.rating());
+	query.bindValue(8, a_Song.lastMetadataUpdated());
+	query.bindValue(9, a_Song.dbRowId());
+	if (!query.exec())
+	{
+		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		return;
+	}
+}
+
+
+
+
+
+void SongDatabase::songScanned(Song * a_Song)
+{
+	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
+	saveSong(*a_Song);
 }
 
 
