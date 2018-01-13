@@ -99,7 +99,11 @@ int SongModel::columnCount(const QModelIndex & a_Parent) const
 
 QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 {
-	if (!a_Index.isValid() || (a_Index.row() >= m_DB.songs().size()))
+	if (
+		!a_Index.isValid() ||
+		(a_Index.row() < 0) ||
+		(a_Index.row() >= static_cast<int>(m_DB.songs().size()))
+	)
 	{
 		return QVariant();
 	}
