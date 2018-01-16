@@ -5,13 +5,13 @@
 
 
 #include <QAbstractTableModel>
+#include "Song.h"
 
 
 
 
 
 // fwd:
-class Song;
 class SongDatabase;
 
 
@@ -46,6 +46,8 @@ public:
 
 	SongModel(SongDatabase & a_DB);
 
+	/** Returns the song represented by the specified model index. */
+	SongPtr songFromIndex(const QModelIndex & a_Idx) const;
 
 protected:
 

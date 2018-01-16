@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>850</width>
+    <width>1073</width>
     <height>458</height>
    </rect>
   </property>
@@ -17,10 +17,28 @@
    <string>Songs - SkauTan</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QTableView" name="tblSongs">
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideMiddle</enum>
      </property>
      <property name="horizontalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
@@ -43,12 +61,50 @@
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>
+     <attribute name="verticalHeaderDefaultSectionSize">
+      <number>21</number>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>10</number>
+     </attribute>
     </widget>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="leftMargin">
+      <number>9</number>
+     </property>
+     <property name="topMargin">
+      <number>9</number>
+     </property>
+     <property name="rightMargin">
+      <number>9</number>
+     </property>
+     <property name="bottomMargin">
+      <number>9</number>
+     </property>
      <item>
       <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnAddToPlaylist">
+       <property name="text">
+        <string>Add to playlist</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>

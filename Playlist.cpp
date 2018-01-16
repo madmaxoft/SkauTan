@@ -10,3 +10,13 @@ Playlist::Playlist():
 {
 
 }
+
+
+
+
+
+void Playlist::addItem(IPlaylistItemPtr a_Item)
+{
+	m_Items.push_back(a_Item);
+	emit itemAdded(a_Item.get());
+}

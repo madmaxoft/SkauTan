@@ -14,6 +14,7 @@
 
 
 // fwd:
+class Song;
 class SongDatabase;
 namespace Ui
 {
@@ -64,6 +65,16 @@ private slots:
 	/** Closes the dialog.
 	Signature needs to match QPushButton::clicked(bool). */
 	void closeByButton(bool a_IsChecked);
+
+	/** Adds the selected songs into the playlist.
+	Emits the addSong() signal for each selected song.
+	Signature needs to match QPushButton::clicked(bool). */
+	void addSelectedToPlaylist(bool a_IsChecked);
+
+signals:
+
+	/** Emitted when the user asks to add songs to the playlist. */
+	void addSongToPlaylist(std::shared_ptr<Song> a_Song);
 };
 
 
