@@ -30,6 +30,12 @@ public:
 	/** Returns the display name of the item. */
 	virtual QString displayName() const = 0;
 
+	/** Returns the author to display. */
+	virtual QString displayAuthor() const = 0;
+
+	/** Returns the title to display. */
+	virtual QString displayTitle() const = 0;
+
 	/** Returns the display length, in seconds.
 	The returned length is relevant for the current tempo adjustment. */
 	virtual double displayLength() const = 0;

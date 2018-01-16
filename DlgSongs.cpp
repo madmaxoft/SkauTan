@@ -22,8 +22,11 @@ DlgSongs::DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent):
 	m_UI->tblSongs->setModel(&m_SongModel);
 
 	// Connect the signals:
-	connect(m_UI->btnAddFolder, &QPushButton::clicked, this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnClose,     &QPushButton::clicked, this, &DlgSongs::closeByButton);
+	connect(m_UI->btnAddFolder,     &QPushButton::clicked, this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnClose,         &QPushButton::clicked, this, &DlgSongs::closeByButton);
+	connect(m_UI->btnAddToPlaylist, &QPushButton::clicked, this, &DlgSongs::addSelectedToPlaylist);
+
+	setWindowFlags(Qt::Window);
 }
 
 
@@ -94,6 +97,21 @@ void DlgSongs::closeByButton(bool a_IsChecked)
 	Q_UNUSED(a_IsChecked);
 
 	close();
+}
+
+
+
+
+
+void DlgSongs::addSelectedToPlaylist(bool a_IsChecked)
+{
+	Q_UNUSED(a_IsChecked);
+
+	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	{
+		auto song = m_SongModel.songFromIndex(idx);
+		emit addSongToPlaylist(song);
+	}
 }
 
 

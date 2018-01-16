@@ -7,12 +7,14 @@
 
 #include <QMainWindow>
 #include <memory>
+#include "PlaylistItemModel.h"
 
 
 
 
 
 // fwd:
+class Song;
 class SongDatabase;
 namespace Ui
 {
@@ -43,12 +45,25 @@ private:
 
 	std::unique_ptr<SongDatabase> m_DB;
 
+	/** The current playlist. */
+	std::shared_ptr<Playlist> m_Playlist;
+
+	/** The model used to display the playlist. */
+	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
+
 
 private slots:
 
 	/** Shows the Songs dialog.
 	Signature must match QPushButton::clicked(). */
 	void showSongs(bool a_IsChecked);
+
+	/** Adds the specified song to the playlist.
+	The song is assumed to be present in m_DB (but not checked). */
+	void addSong(std::shared_ptr<Song> a_Song);
+
+	/** Adds the specified item to the playlist. */
+	void addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item);
 };
 
 

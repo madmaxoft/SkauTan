@@ -75,6 +75,24 @@ SongModel::SongModel(SongDatabase & a_DB):
 
 
 
+SongPtr SongModel::songFromIndex(const QModelIndex & a_Idx) const
+{
+	if (!a_Idx.isValid())
+	{
+		return nullptr;
+	}
+	auto row = a_Idx.row();
+	if ((row < 0) || (static_cast<size_t>(row) >= m_DB.songs().size()))
+	{
+		return nullptr;
+	}
+	return m_DB.songs()[row];
+}
+
+
+
+
+
 int SongModel::rowCount(const QModelIndex & a_Parent) const
 {
 	Q_UNUSED(a_Parent);

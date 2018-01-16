@@ -57,7 +57,8 @@ SOURCES += \
 	DlgSongs.cpp \
 	SongModel.cpp \
 	MetadataScanner.cpp \
-	HashCalculator.cpp
+	HashCalculator.cpp \
+	PlaylistItemModel.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -69,7 +70,8 @@ HEADERS += \
 	DlgSongs.h \
 	SongModel.h \
 	MetadataScanner.h \
-	HashCalculator.h
+	HashCalculator.h \
+	PlaylistItemModel.h
 
 FORMS += \
 	PlayerWindow.ui \

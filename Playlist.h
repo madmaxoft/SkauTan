@@ -6,6 +6,7 @@
 
 
 #include <vector>
+#include <QObject>
 #include "IPlaylistItem.h"
 
 
@@ -14,12 +15,22 @@
 
 /** Container for a single playlist.
 Stores the items to be played, the currently played item, timings etc. */
-class Playlist
+class Playlist:
+	public QObject
 {
+	using Super = QObject;
+	Q_OBJECT
+
 public:
 	Playlist();
 
+	const std::vector<IPlaylistItemPtr> & items() const { return m_Items; }
+
+	/** Adds the specified item to the bottom of the playlist. */
+	void addItem(IPlaylistItemPtr a_Item);
+
 protected:
+
 	/** All the items on the playlist. */
 	std::vector<IPlaylistItemPtr> m_Items;
 
@@ -31,7 +42,16 @@ protected:
 
 	/** The current position in playing back m_CurrentItem. Only valid when m_IsPlaying is true. */
 	double m_CurrentPosition;
+
+
+signals:
+
+	/** Emitted after the specified item is added to the bottom of the playlist. */
+	void itemAdded(IPlaylistItem * a_Item);
+
 };
+
+using PlaylistPtr = std::shared_ptr<Playlist>;
 
 
 
