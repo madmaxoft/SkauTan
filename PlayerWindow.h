@@ -14,6 +14,7 @@
 
 
 // fwd:
+class QShortcut;
 class Song;
 class SongDatabase;
 namespace Ui
@@ -51,6 +52,9 @@ private:
 	/** The model used to display the playlist. */
 	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
 
+	/** The shortcut for deleting playlist items using the Del key. */
+	std::unique_ptr<QShortcut> m_scDel;
+
 
 private slots:
 
@@ -64,6 +68,9 @@ private slots:
 
 	/** Adds the specified item to the playlist. */
 	void addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item);
+
+	/** Deletes the selected items from the playlist. */
+	void deleteSelectedPlaylistItems();
 };
 
 

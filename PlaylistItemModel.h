@@ -53,6 +53,7 @@ protected:
 protected slots:
 
 	void playlistItemAdded(IPlaylistItem * a_Item);
+	void playlistItemDeleting(IPlaylistItem * a_Item, int a_Index);
 };
 
 

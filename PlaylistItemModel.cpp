@@ -45,7 +45,8 @@ static QString formatTempo(double a_Tempo)
 PlaylistItemModel::PlaylistItemModel(PlaylistPtr a_Playlist):
 	m_Playlist(a_Playlist)
 {
-	connect(m_Playlist.get(), &Playlist::itemAdded, this, &PlaylistItemModel::playlistItemAdded);
+	connect(m_Playlist.get(), &Playlist::itemAdded,    this, &PlaylistItemModel::playlistItemAdded);
+	connect(m_Playlist.get(), &Playlist::itemDeleting, this, &PlaylistItemModel::playlistItemDeleting);
 }
 
 
@@ -255,4 +256,15 @@ void PlaylistItemModel::playlistItemAdded(IPlaylistItem * a_Item)
 	auto idx = static_cast<int>(m_Playlist->items().size()) - 1;
 	beginInsertRows(QModelIndex(), idx, idx);
 	endInsertRows();
+}
+
+
+
+
+
+void PlaylistItemModel::playlistItemDeleting(IPlaylistItem * a_Item, int a_Index)
+{
+	Q_UNUSED(a_Item);
+	beginRemoveRows(QModelIndex(), a_Index, a_Index);
+	endRemoveRows();
 }
