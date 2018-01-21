@@ -29,6 +29,9 @@ public:
 	/** Adds the specified item to the bottom of the playlist. */
 	void addItem(IPlaylistItemPtr a_Item);
 
+	/** Moves the item at a_FromIdex to a_ToIdx, shifting the items in between accordingly. */
+	void moveItem(int a_FromIdx, int a_ToIdx);
+
 protected:
 
 	/** All the items on the playlist. */

@@ -22,6 +22,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_DB->open("SkauTan.sqlite");
 	m_UI->setupUi(this);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
+	m_UI->tblPlaylist->setDropIndicatorShown(true);
 
 	// Connect the signals:
 	connect(m_UI->btnSongs, &QPushButton::clicked, this, &PlayerWindow::showSongs);
