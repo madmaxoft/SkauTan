@@ -29,8 +29,13 @@ public:
 	/** Adds the specified item to the bottom of the playlist. */
 	void addItem(IPlaylistItemPtr a_Item);
 
-	/** Moves the item at a_FromIdex to a_ToIdx, shifting the items in between accordingly. */
+	/** Moves the item at a_FromIdex to a_ToIdx, shifting the items in between accordingly.
+	Doesn't emit any signal. */
 	void moveItem(int a_FromIdx, int a_ToIdx);
+
+	/** Deletes the item at the specified index.
+	Emits the appropriate signals. */
+	void deleteItem(int a_Index);
 
 protected:
 
@@ -51,6 +56,9 @@ signals:
 
 	/** Emitted after the specified item is added to the bottom of the playlist. */
 	void itemAdded(IPlaylistItem * a_Item);
+
+	/** Emitted before the specified item is deleted from the playlist. */
+	void itemDeleting(IPlaylistItem * a_Item, int a_Index);
 
 };
 

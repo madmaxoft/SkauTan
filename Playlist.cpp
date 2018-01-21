@@ -64,3 +64,13 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 	}
 	m_Items[a_ToIdx] = stash;
 }
+
+
+
+
+
+void Playlist::deleteItem(int a_Index)
+{
+	emit itemDeleting(m_Items[a_Index].get(), a_Index);
+	m_Items.erase(m_Items.begin() + a_Index);
+}

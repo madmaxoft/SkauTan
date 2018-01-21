@@ -1,6 +1,7 @@
 #include "PlayerWindow.h"
 #include "assert.h"
 #include <QDebug>
+#include <QShortcut>
 #include "ui_PlayerWindow.h"
 #include "SongDatabase.h"
 #include "DlgSongs.h"
@@ -23,9 +24,11 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI->setupUi(this);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
+	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 
 	// Connect the signals:
 	connect(m_UI->btnSongs, &QPushButton::clicked, this, &PlayerWindow::showSongs);
+	connect(m_scDel.get(),  &QShortcut::activated, this, &PlayerWindow::deleteSelectedPlaylistItems);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -76,4 +79,25 @@ void PlayerWindow::addSong(std::shared_ptr<Song> a_Song)
 void PlayerWindow::addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item)
 {
 	m_Playlist->addItem(a_Item);
+}
+
+
+
+
+
+void PlayerWindow::deleteSelectedPlaylistItems()
+{
+	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
+	std::vector<int> rows;
+	for (const auto & row: sel)
+	{
+		rows.push_back(row.row());
+	}
+	std::sort(rows.begin(), rows.end());
+	int numErased = 0;
+	for (auto row: rows)
+	{
+		m_Playlist->deleteItem(row - numErased);
+		numErased += 1;  // Each erased row shifts indices upwards by one
+	}
 }
