@@ -1,4 +1,12 @@
 #include "PlaylistItemModel.h"
+#include <QMimeData>
+#include <QDebug>
+
+
+
+
+
+#define MIME_TYPE "application/x-playlist-row"
 
 
 
@@ -38,6 +46,116 @@ PlaylistItemModel::PlaylistItemModel(PlaylistPtr a_Playlist):
 	m_Playlist(a_Playlist)
 {
 	connect(m_Playlist.get(), &Playlist::itemAdded, this, &PlaylistItemModel::playlistItemAdded);
+}
+
+
+
+
+
+Qt::ItemFlags PlaylistItemModel::flags(const QModelIndex & a_Index) const
+{
+	if (a_Index.isValid())
+	{
+		return Super::flags(a_Index) | Qt::ItemIsDragEnabled;
+	}
+	else
+	{
+		return Qt::ItemIsDropEnabled;
+	}
+}
+
+
+
+
+
+Qt::DropActions PlaylistItemModel::supportedDropActions() const
+{
+	return Qt::MoveAction;
+}
+
+
+
+
+
+bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_Action, int a_Row, int a_Column, const QModelIndex & a_Parent)
+{
+	Q_UNUSED(a_Parent);
+
+	if (!a_Data->hasFormat(MIME_TYPE))
+	{
+		return false;
+	}
+	if (a_Action != Qt::MoveAction)
+	{
+		return true;
+	}
+	if (a_Row < 0)
+	{
+		qDebug() << "dropMimeData: invalid destination: row " << a_Row << ", column " << a_Column << ", parent: " << a_Parent;
+		return true;
+	}
+
+	QByteArray encodedData = a_Data->data(MIME_TYPE);
+	std::vector<int> rows;
+	auto numRows = static_cast<size_t>(encodedData.size() / 4);
+	for (size_t i = 0; i < numRows; ++i)
+	{
+		int row = 0;
+		memcpy(&row, encodedData.data() + i * 4, 4);
+		rows.push_back(row);
+	}
+	auto minRow = a_Row;
+	auto maxRow = a_Row;
+	while (!rows.empty())
+	{
+		auto row = rows.back();
+		m_Playlist->moveItem(row, a_Row);
+		if (minRow > row)
+		{
+			minRow = row;
+		}
+		if (maxRow < row)
+		{
+			maxRow = row;
+		}
+		rows.pop_back();
+		if (row < a_Row)
+		{
+			a_Row -= 1;  // Moving an item down the list means the destination index moved as well.
+		}
+	}
+	emit dataChanged(createIndex(minRow, 0), createIndex(maxRow, colMax - 1));
+	return true;
+}
+
+
+
+
+
+QMimeData * PlaylistItemModel::mimeData(const QModelIndexList & a_Indexes) const
+{
+	QMimeData * mimeData = new QMimeData();
+	QByteArray encodedData;
+	foreach (QModelIndex index, a_Indexes)
+	{
+		if (index.isValid() && (index.column() == 0))
+		{
+			int row = index.row();
+			qDebug() << "Requesting mime data for row " << row;
+			encodedData.append(reinterpret_cast<const char *>(&row), 4);
+		}
+	}
+	mimeData->setData(MIME_TYPE, encodedData);
+	return mimeData;
+}
+
+
+
+
+
+QStringList PlaylistItemModel::mimeTypes() const
+{
+	return QStringList({MIME_TYPE});
 }
 
 
@@ -135,6 +253,6 @@ void PlaylistItemModel::playlistItemAdded(IPlaylistItem * a_Item)
 	Q_UNUSED(a_Item);
 
 	auto idx = static_cast<int>(m_Playlist->items().size()) - 1;
-	beginInsertRows(QModelIndex(), idx, idx + 1);
+	beginInsertRows(QModelIndex(), idx, idx);
 	endInsertRows();
 }

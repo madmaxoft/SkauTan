@@ -39,6 +39,11 @@ protected:
 
 
 	// QAbstractTableModel overrides:
+	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
+	virtual Qt::DropActions supportedDropActions() const override;
+	virtual bool dropMimeData(const QMimeData * a_Data, Qt::DropAction a_Action, int a_Row, int a_Column, const QModelIndex & a_Parent) override;
+	virtual QMimeData * mimeData(const QModelIndexList & a_Indexes) const override;
+	virtual QStringList mimeTypes() const override;
 	virtual int rowCount(const QModelIndex & a_Parent) const override;
 	virtual int columnCount(const QModelIndex & a_Parent) const override;
 	virtual QVariant data(const QModelIndex & a_Index, int a_Role) const override;
