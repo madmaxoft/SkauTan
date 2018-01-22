@@ -178,6 +178,10 @@ void Player::audioOutputStateChanged(QAudio::State a_NewState)
 			}
 			break;
 		}
+		default:
+		{
+			// No action for other states
+		}
 	}
 }
 
