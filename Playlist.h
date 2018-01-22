@@ -37,18 +37,22 @@ public:
 	Emits the appropriate signals. */
 	void deleteItem(int a_Index);
 
+	/** Returns the item that is currently selected for playback.
+	Note that this may return nullptr (no items in playlist). */
+	IPlaylistItemPtr current() const;
+
 protected:
 
 	/** All the items on the playlist. */
 	std::vector<IPlaylistItemPtr> m_Items;
 
-	/** The item currently being played, or to be played when the playback is started. */
-	IPlaylistItemPtr m_CurrentItem;
+	/** The index into m_Items for the item currently being played, or to be played when the playback is started. */
+	size_t m_CurrentItemIdx;
 
-	/** If true, m_CurrentItem is being played back. */
+	/** If true, current item is being played back. */
 	bool m_IsPlaying;
 
-	/** The current position in playing back m_CurrentItem. Only valid when m_IsPlaying is true. */
+	/** The current position (in fractional seconds) in playing back the current item. Only valid when m_IsPlaying is true. */
 	double m_CurrentPosition;
 
 
@@ -60,6 +64,14 @@ signals:
 	/** Emitted before the specified item is deleted from the playlist. */
 	void itemDeleting(IPlaylistItem * a_Item, int a_Index);
 
+
+public slots:
+
+	/** Advances the current item back by one. */
+	void prevItem();
+
+	/** Advances the current item forward by one. */
+	void nextItem();
 };
 
 using PlaylistPtr = std::shared_ptr<Playlist>;

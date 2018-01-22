@@ -26,9 +26,14 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 
+	m_Player.reset(new Player(m_Playlist));
+
 	// Connect the signals:
 	connect(m_UI->btnSongs, &QPushButton::clicked, this, &PlayerWindow::showSongs);
 	connect(m_scDel.get(),  &QShortcut::activated, this, &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->btnPrev,  &QPushButton::clicked, this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,  &QPushButton::clicked, this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,  &QPushButton::clicked, this, &PlayerWindow::nextTrack);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -100,4 +105,37 @@ void PlayerWindow::deleteSelectedPlaylistItems()
 		m_Playlist->deleteItem(row - numErased);
 		numErased += 1;  // Each erased row shifts indices upwards by one
 	}
+}
+
+
+
+
+
+void PlayerWindow::prevTrack(bool a_IsChecked)
+{
+	Q_UNUSED(a_IsChecked);
+
+	m_Player->prevItem();
+}
+
+
+
+
+
+void PlayerWindow::playPause(bool a_IsChecked)
+{
+	Q_UNUSED(a_IsChecked);
+
+	m_Player->startStop();
+}
+
+
+
+
+
+void PlayerWindow::nextTrack(bool a_IsChecked)
+{
+	Q_UNUSED(a_IsChecked);
+
+	m_Player->nextItem();
 }

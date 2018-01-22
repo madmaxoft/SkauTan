@@ -7,6 +7,7 @@
 
 
 Playlist::Playlist():
+	m_CurrentItemIdx(0),
 	m_IsPlaying(false),
 	m_CurrentPosition(0)
 {
@@ -73,4 +74,42 @@ void Playlist::deleteItem(int a_Index)
 {
 	emit itemDeleting(m_Items[a_Index].get(), a_Index);
 	m_Items.erase(m_Items.begin() + a_Index);
+}
+
+
+
+
+
+IPlaylistItemPtr Playlist::current() const
+{
+	if (m_Items.empty())
+	{
+		return nullptr;
+	}
+	assert(m_CurrentItemIdx < m_Items.size());
+	return m_Items[m_CurrentItemIdx];
+}
+
+
+
+
+
+void Playlist::prevItem()
+{
+	if (m_CurrentItemIdx > 0)
+	{
+		m_CurrentItemIdx -= 1;
+	}
+}
+
+
+
+
+
+void Playlist::nextItem()
+{
+	if (m_CurrentItemIdx + 1 < m_Items.size())
+	{
+		m_CurrentItemIdx += 1;
+	}
 }

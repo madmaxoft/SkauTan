@@ -1,5 +1,5 @@
 #include "PlaylistItemSong.h"
-#include <QAudioFormat>
+#include "SongDecoder.h"
 
 
 
@@ -81,19 +81,18 @@ double PlaylistItemSong::displayTempo() const
 
 
 
-void PlaylistItemSong::startPlaying(QIODevice * a_AudioOutput, const QAudioFormat & a_Format)
+std::shared_ptr<PlaybackBuffer> PlaylistItemSong::startDecoding(const QAudioFormat & a_Format)
 {
-	Q_UNUSED(a_AudioOutput);
-	Q_UNUSED(a_Format);
-
-	// TODO
+	auto decoder = new SongDecoder();  // TODO: leaks
+	return decoder->start(a_Format, *m_Song);
 }
 
 
 
 
 
-void PlaylistItemSong::stopPlaying()
+void PlaylistItemSong::stopDecoding(PlaybackBuffer * a_Playback)
 {
+	Q_UNUSED(a_Playback);
 	// TODO
 }

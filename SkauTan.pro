@@ -58,7 +58,10 @@ SOURCES += \
 	SongModel.cpp \
 	MetadataScanner.cpp \
 	HashCalculator.cpp \
-	PlaylistItemModel.cpp
+	PlaylistItemModel.cpp \
+	PlaybackBuffer.cpp \
+	SongDecoder.cpp \
+	Player.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -71,7 +74,10 @@ HEADERS += \
 	SongModel.h \
 	MetadataScanner.h \
 	HashCalculator.h \
-	PlaylistItemModel.h
+	PlaylistItemModel.h \
+	PlaybackBuffer.h \
+	SongDecoder.h \
+	Player.h
 
 FORMS += \
 	PlayerWindow.ui \
