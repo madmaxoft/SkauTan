@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <memory>
 #include "PlaylistItemModel.h"
+#include "Player.h"
 
 
 
@@ -55,6 +56,9 @@ private:
 	/** The shortcut for deleting playlist items using the Del key. */
 	std::unique_ptr<QShortcut> m_scDel;
 
+	/** The player that sends the audio data to the output. */
+	std::unique_ptr<Player> m_Player;
+
 
 private slots:
 
@@ -71,6 +75,18 @@ private slots:
 
 	/** Deletes the selected items from the playlist. */
 	void deleteSelectedPlaylistItems();
+
+	/** Advances the playlist backwards.
+	Signature must match QPushButton::clicked(). */
+	void prevTrack(bool a_IsChecked);
+
+	/** Starts or stops the playback.
+	Signature must match QPushButton::clicked(). */
+	void playPause(bool a_IsChecked);
+
+	/** Advances the playlist forward.
+	Signature must match QPushButton::clicked(). */
+	void nextTrack(bool a_IsChecked);
 };
 
 

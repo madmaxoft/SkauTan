@@ -12,8 +12,8 @@
 
 
 // fwd:
-class QIODevice;
 class QAudioFormat;
+class PlaybackBuffer;
 
 
 
@@ -48,12 +48,17 @@ public:
 
 	// Playback-related functions:
 
-	/** Starts decoding and playing the item into the specified audio output stream. */
-	virtual void startPlaying(QIODevice * a_AudioOutput, const QAudioFormat & a_Format) = 0;
+	/** Starts decoding the item's audio, using the specified format.
+	Returns a PlaybackBuffer instance that the caller uses to read the decoded data.
+	Is expected to fill in that buffer asynchronously.
+	Multiple concurrent decoding operations are to be supported.
+	If the a_Format cannot be output, returns a nullptr.
+	The a_Format will generally be a playback-optimized format, such as 16-bit 44.1kHz raw.
+	Note that implementations should try to support the format, such as extending mono-to-stereo, or up-sampling etc. */
+	virtual std::shared_ptr<PlaybackBuffer> startDecoding(const QAudioFormat & a_Format) = 0;
 
-	/** Stops the current playback.
-	After this function returns, the AudioOutput IODevice from startPlaying() is no longer available. */
-	virtual void stopPlaying() = 0;
+	/** Stops the decoding operation on the specified playback buffer. */
+	virtual void stopDecoding(PlaybackBuffer * a_Playback) = 0;
 
 	// TODO
 };
