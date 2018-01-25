@@ -63,6 +63,10 @@ protected:
 	/** The current position in m_Audio where next data is to be read from for the player. */
 	int m_CurrentReadPos;
 
+	/** The read position at which fadeout will end (if requested).
+	If no fadeout requested, stores the audio data byte size. */
+	int m_FadeoutEnd;
+
 	/** The decoder object, set by the client of this class.
 	Not used in this class' implementation, but stored for convenience. */
 	QObject * m_Decoder;

@@ -1,5 +1,6 @@
 #include "PlaybackBuffer.h"
 #include <assert.h>
+#include <QDebug>
 
 
 
@@ -8,6 +9,7 @@
 PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_Format, int a_ByteSize):
 	m_AudioFormat(a_Format),
 	m_CurrentReadPos(0),
+	m_FadeoutEnd(a_ByteSize),
 	m_Decoder(nullptr)
 {
 	m_Audio.reserve(a_ByteSize);
@@ -32,7 +34,8 @@ void PlaybackBuffer::write(const char * a_Data, int a_Size)
 
 void PlaybackBuffer::fadeOut()
 {
-	// TODO
+	m_FadeoutEnd = m_CurrentReadPos + m_AudioFormat.bytesForDuration(1000);
+	// TODO: The actual fade-out
 }
 
 
@@ -41,12 +44,14 @@ void PlaybackBuffer::fadeOut()
 
 qint64 PlaybackBuffer::readData(char * a_Data, qint64 a_MaxLen)
 {
-	int numBytesToRead = std::min(static_cast<int>(a_MaxLen), m_Audio.size() - m_CurrentReadPos);
+	int end = std::min(m_Audio.size(), m_FadeoutEnd);
+	int numBytesToRead = std::min(static_cast<int>(a_MaxLen), end - m_CurrentReadPos);
 	if (numBytesToRead > 0)
 	{
 		memcpy(a_Data, m_Audio.constData() + m_CurrentReadPos, numBytesToRead);
 		m_CurrentReadPos += numBytesToRead;
 	}
+	qDebug() << "PlaybackBuffer: requested " << a_MaxLen << " bytes, returning " << numBytesToRead << " bytes";
 	return numBytesToRead;
 }
 

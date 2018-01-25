@@ -28,7 +28,10 @@ std::shared_ptr<PlaybackBuffer> SongDecoder::start(const QAudioFormat & a_Format
 	el.connect(&m_Decoder, &QAudioDecoder::durationChanged,
 		[&](qint64 a_Duration)
 		{
-			int byteSize = a_Format.bytesForDuration(a_Duration);
+			qDebug() << "Format: " << a_Format;
+			qDebug() << "Duration: " << a_Duration << " usec";
+			qDebug() << "Total bytes: " << a_Format.bytesForDuration(a_Duration);
+			auto byteSize = a_Format.bytesForDuration(a_Duration);
 			m_Output = std::make_shared<PlaybackBuffer>(a_Format, byteSize);
 			m_Output->setDecoder(this);
 			el.quit();
@@ -37,13 +40,13 @@ std::shared_ptr<PlaybackBuffer> SongDecoder::start(const QAudioFormat & a_Format
 	m_Decoder.connect(&m_Decoder, &QAudioDecoder::bufferReady,
 		[&]()
 		{
-			qDebug() << "Decoded an audio buffer";
 			if (m_Output == nullptr)
 			{
 				qDebug() << "No output buffer, audio data lost.";
 				return;
 			}
 			const auto & buf = m_Decoder.read();
+			qDebug() << "Decoded an audio buffer, " << buf.byteCount() << " bytes (" << buf.byteCount() / 1024 << " KiB)";
 			m_Output->write(reinterpret_cast<const char *>(buf.constData()), buf.byteCount());
 		}
 	);

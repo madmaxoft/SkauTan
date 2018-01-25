@@ -49,6 +49,7 @@ void Player::startPlaying()
 	{
 		m_State = psStopped;
 	}
+	// TODO: This signal may have already been emitted
 	connect(m_CurrentBuffer.get(), &PlaybackBuffer::dataReady, this, &Player::bufferDataReady);
 }
 
