@@ -2,7 +2,7 @@
 These are the development notes regarding this project.
 
 ## High-level architecture overview
-SkauTan consists of two main parts: a song metadata DB and a high-IQ playlist editor.
+SkauTan consists of three main parts: a song metadata DB, a high-IQ playlist editor and an integrated player.
 
 The song metadata is stored in a SQLite DB either next to the player ("portable" version) or in the user's home folder
 ("installed" version). For each song, some basic metadata is tracked - length, MPM, last used volume and tempo
@@ -17,6 +17,9 @@ is. Any song in the playlist that is a part of a "round" can be quick-swapped fo
 
 Historical playlists are remembered and can be recalled at any time. Each playlist is assigned a datetime of when it
 was created. Empty playlists are not stored.
+
+The player uses FFMPEG's LibAV libraries to decode audio files and play them using Qt's platform-independent
+QAudioOutput. This has been chosen because Qt's audio decoding doesn't support seeking.
 
 ## Object types
  - SongDatabase is the root object, it contains all the other objects for the player and also provides DB linkage

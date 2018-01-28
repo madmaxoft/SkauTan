@@ -1,5 +1,6 @@
 #include "PlaylistItemSong.h"
 #include <QAudioFormat>
+#include "SongDecoder.h"
 
 
 
@@ -81,19 +82,9 @@ double PlaylistItemSong::displayTempo() const
 
 
 
-void PlaylistItemSong::startPlaying(QIODevice * a_AudioOutput, const QAudioFormat & a_Format)
+PlaybackBuffer * PlaylistItemSong::startDecoding(const QAudioFormat & a_Format)
 {
-	Q_UNUSED(a_AudioOutput);
 	Q_UNUSED(a_Format);
 
-	// TODO
-}
-
-
-
-
-
-void PlaylistItemSong::stopPlaying()
-{
-	// TODO
+	return new SongDecoder(a_Format, m_Song);
 }

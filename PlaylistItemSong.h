@@ -32,8 +32,7 @@ public:
 	virtual double displayTempo() const override;
 
 	// IPlaylistItem overrides, playback-related functions:
-	virtual void startPlaying(QIODevice * a_AudioOutput, const QAudioFormat & a_Format) override;
-	virtual void stopPlaying() override;
+	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) override;
 
 
 protected:
