@@ -12,7 +12,7 @@
 
 
 // fwd:
-class QIODevice;
+class PlaybackBuffer;
 class QAudioFormat;
 
 
@@ -48,14 +48,9 @@ public:
 
 	// Playback-related functions:
 
-	/** Starts decoding and playing the item into the specified audio output stream. */
-	virtual void startPlaying(QIODevice * a_AudioOutput, const QAudioFormat & a_Format) = 0;
-
-	/** Stops the current playback.
-	After this function returns, the AudioOutput IODevice from startPlaying() is no longer available. */
-	virtual void stopPlaying() = 0;
-
-	// TODO
+	/** Starts decoding the item into the specified audio format.
+	Returns a PlaybackBuffer-derived class that is expected to provide the audio output data. */
+	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) = 0;
 };
 
 using IPlaylistItemPtr = std::shared_ptr<IPlaylistItem>;

@@ -24,6 +24,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
+win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib
+unix:LIBS += -lavformat -lavutil -lavcodec -lswresample
+
+
 
 # Turn on warnings-as-errors and extra warnings
 msvc {
@@ -35,7 +39,7 @@ gcc | clang {
 	QMAKE_CXXFLAGS += -Wextra
 	QMAKE_CXXFLAGS += -Wunknown-pragmas -Wundef
 	QMAKE_CXXFLAGS += -Wold-style-cast
-	QMAKE_CXXFLAGS += -Wdisabled-optimization -Wstrict-overflow=4
+	QMAKE_CXXFLAGS += -Wdisabled-optimization
 	QMAKE_CXXFLAGS += -Winit-self -Wpointer-arith
 	QMAKE_CXXFLAGS += -Wlogical-op
 
@@ -58,7 +62,11 @@ SOURCES += \
 	SongModel.cpp \
 	MetadataScanner.cpp \
 	HashCalculator.cpp \
-	PlaylistItemModel.cpp
+	PlaylistItemModel.cpp \
+	Player.cpp \
+	PlaybackBuffer.cpp \
+	SongDecoder.cpp \
+	AVPP.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -71,7 +79,11 @@ HEADERS += \
 	SongModel.h \
 	MetadataScanner.h \
 	HashCalculator.h \
-	PlaylistItemModel.h
+	PlaylistItemModel.h \
+	Player.h \
+	PlaybackBuffer.h \
+	SongDecoder.h \
+	AVPP.h
 
 FORMS += \
 	PlayerWindow.ui \
