@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <QAudioOutput>
+#include <QThread>
 
 
 
@@ -30,6 +31,8 @@ class Player:
 public:
 
 	explicit Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent = nullptr);
+
+	~Player();
 
 	/** Returns the current playback position in the current track, in seconds. */
 	double currentPosition() const { return m_CurrentPosition; }
@@ -68,6 +71,8 @@ protected:
 	/** The format used by the audio output. */
 	QAudioFormat m_Format;
 
+	/** The thread in which the audio output is run. */
+	QThread m_Thread;
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
 	Must not be fading out already. */
