@@ -42,7 +42,20 @@ Player::Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent):
 			qDebug() << "Output audio format: " << m_Format;
 		}
 	}
+	m_Thread.setObjectName("AudioOutput");
 	m_Output.reset(new QAudioOutput(m_Format));
+	m_Output->moveToThread(&m_Thread);
+	m_Thread.start(QThread::HighPriority);
+}
+
+
+
+
+
+Player::~Player()
+{
+	m_Thread.quit();
+	m_Thread.wait();
 }
 
 
@@ -192,7 +205,11 @@ void Player::start()
 		m_OutputIO.reset();
 		return;
 	}
+	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+	qDebug() << "Setting audio output buffer size to " << bufSize;
+	m_Output->setBufferSize(bufSize);
 	m_Output->start(m_OutputIO.get());
+	m_State = psPlaying;
 }
 
 
