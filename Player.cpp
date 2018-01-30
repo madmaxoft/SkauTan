@@ -232,6 +232,42 @@ void Player::pause()
 
 
 
+void Player::jumpTo(int a_ItemIdx)
+{
+	if (!m_Playlist->setCurrentItem(a_ItemIdx))
+	{
+		// Invalid index
+		return;
+	}
+	switch (m_State)
+	{
+		case psPlaying:
+		{
+			fadeOut(psFadeOutToTrack);
+			break;
+		}
+		case psStopped:
+		{
+			start();
+			break;
+		}
+		case psFadeOutToStop:
+		{
+			m_State = psFadeOutToTrack;
+			break;
+		}
+		case psFadeOutToTrack:
+		{
+			// Nothing needed
+			break;
+		}
+	}
+}
+
+
+
+
+
 void Player::outputStateChanged(QAudio::State a_NewState)
 {
 	if (a_NewState == QAudio::IdleState)
