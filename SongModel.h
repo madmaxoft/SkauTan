@@ -31,14 +31,14 @@ public:
 	/** Symbolic names for the individual columns. */
 	enum EColumn
 	{
-		colFileName = 0,
-		colLength = 1,
-		colGenre = 2,
-		colMeasuresPerMinute = 3,
-		colLastPlayed = 4,
-		colRating = 5,
-		colAuthor = 6,
-		colTitle = 7,
+		colRating,
+		colAuthor,
+		colTitle,
+		colGenre,
+		colMeasuresPerMinute,
+		colLength,
+		colLastPlayed,
+		colFileName,
 
 		colMax,
 	};
@@ -60,11 +60,19 @@ protected:
 	virtual int columnCount(const QModelIndex & a_Parent) const override;
 	virtual QVariant data(const QModelIndex & a_Index, int a_Role) const override;
 	virtual QVariant headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const override;
+	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
+	virtual bool setData(const QModelIndex & a_Index, const QVariant & a_Value, int a_Role) override;
 
 protected slots:
 
 	/** Called by m_DB when a new song is added to it. */
 	void addSongFile(Song * a_NewSong);
+
+
+signals:
+
+	/** Emitted after the specified song has been edited by the user. */
+	void songEdited(Song * a_Song);
 };
 
 

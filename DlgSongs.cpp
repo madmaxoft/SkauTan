@@ -22,10 +22,22 @@ DlgSongs::DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent):
 	m_UI->tblSongs->setModel(&m_SongModel);
 
 	// Connect the signals:
-	connect(m_UI->btnAddFolder,     &QPushButton::clicked, this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnClose,         &QPushButton::clicked, this, &DlgSongs::closeByButton);
-	connect(m_UI->btnAddToPlaylist, &QPushButton::clicked, this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->btnAddFolder,     &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnClose,         &QPushButton::clicked,  this, &DlgSongs::closeByButton);
+	connect(m_UI->btnAddToPlaylist, &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
+	connect(&m_SongModel,           &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
 
+	// Set the column widths to reasonable defaults:
+	QFontMetrics fm(m_UI->tblSongs->horizontalHeader()->font());
+	m_UI->tblSongs->setColumnWidth(SongModel::colGenre,             fm.width("WGenreW"));
+	m_UI->tblSongs->setColumnWidth(SongModel::colLength,            fm.width("W000:00:00W"));
+	m_UI->tblSongs->setColumnWidth(SongModel::colMeasuresPerMinute, fm.width("WMPMW"));
+	auto defaultWid = m_UI->tblSongs->columnWidth(SongModel::colFileName);
+	m_UI->tblSongs->setColumnWidth(SongModel::colAuthor,   defaultWid * 2);
+	m_UI->tblSongs->setColumnWidth(SongModel::colTitle,    defaultWid * 2);
+	m_UI->tblSongs->setColumnWidth(SongModel::colFileName, defaultWid * 3);
+
+	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
 }
 
@@ -117,3 +129,8 @@ void DlgSongs::addSelectedToPlaylist(bool a_IsChecked)
 
 
 
+
+void DlgSongs::modelSongEdited(Song * a_Song)
+{
+	m_SongDB.saveSong(*a_Song);
+}

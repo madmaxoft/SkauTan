@@ -129,6 +129,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 	switch (a_Role)
 	{
 		case Qt::DisplayRole:
+		case Qt::EditRole:
 		{
 			switch (a_Index.column())
 			{
@@ -173,6 +174,72 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colTitle:             return tr("Title");
 	}
 	return QVariant();
+}
+
+
+
+
+
+Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
+{
+	if (a_Index.isValid())
+	{
+		switch (a_Index.column())
+		{
+			case colAuthor:
+			case colGenre:
+			case colMeasuresPerMinute:
+			case colTitle:
+			{
+				// Editable:
+				return Super::flags(a_Index) | Qt::ItemIsEditable;
+			}
+			default:
+			{
+				// Not editable
+				return Super::flags(a_Index);
+			}
+		}
+	}
+	else
+	{
+		return Super::flags(a_Index);
+	}
+}
+
+
+
+
+
+bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, int a_Role)
+{
+	if ((a_Role != Qt::DisplayRole) && (a_Role != Qt::EditRole))
+	{
+		return false;
+	}
+	if (
+		!a_Index.isValid() ||
+		(a_Index.row() < 0) ||
+		(a_Index.row() >= static_cast<int>(m_DB.songs().size()))
+	)
+	{
+		return false;
+	}
+	const auto & song = m_DB.songs()[a_Index.row()];
+	switch (a_Index.column())
+	{
+		case colAuthor: song->setAuthor(a_Value.toString()); break;
+		case colFileName: return false;
+		case colGenre: song->setGenre(a_Value.toString()); break;
+		case colLastPlayed: return false;
+		case colLength: return false;
+		case colMeasuresPerMinute: song->setMeasuresPerMinute(a_Value.toDouble()); break;
+		case colRating: return false;
+		case colTitle: song->setTitle(a_Value.toString()); break;
+	}
+	emit songEdited(song.get());
+	emit dataChanged(a_Index, a_Index, {a_Role});
+	return true;
 }
 
 

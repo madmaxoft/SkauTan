@@ -52,6 +52,11 @@ public:
 
 	QSqlDatabase & database() { return m_Database; }
 
+	/** Saves the specified song into the DB.
+	Assumes (doesn't check) that the song is contained within this DB. */
+	void saveSong(const Song & a_Song);
+
+
 protected:
 
 	/** The DB connection .*/
@@ -79,9 +84,6 @@ protected:
 	Note that songs are not checked whether they exists on the disk or if their hash still fits.
 	Use Song::isStillValid() for checking before adding the song to playlist / before starting playback. */
 	void loadSongs();
-
-	/** Saves the specified song into the DB. */
-	void saveSong(const Song & a_Song);
 
 
 signals:
