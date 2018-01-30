@@ -34,6 +34,8 @@ public:
 	// IPlaylistItem overrides, playback-related functions:
 	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) override;
 
+	SongPtr song() const { return m_Song; }
+
 
 protected:
 

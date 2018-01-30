@@ -68,6 +68,7 @@ public:
 	void setHash(QByteArray a_Hash) { m_Hash = a_Hash; }
 	void setGenre(const QString & a_Genre) { m_Genre = a_Genre; }
 	void setMeasuresPerMinute(double a_MeasuresPerMinute) { m_MeasuresPerMinute = a_MeasuresPerMinute; }
+	void setLastPlayed(const QDateTime & a_LastPlayed) { m_LastPlayed = a_LastPlayed; }
 	void setAuthor(QVariant a_Author) { m_Author = a_Author; }
 	void setTitle(QVariant a_Title) { m_Title = a_Title; }
 	void setLastMetadataUpdated(QDateTime a_LastMetadataUpdated) { m_LastMetadataUpdated = a_LastMetadataUpdated; }

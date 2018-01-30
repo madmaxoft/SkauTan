@@ -194,6 +194,7 @@ void Player::start()
 
 	// Start playback:
 	qDebug() << "Player: Starting playback of track " << track->displayName();
+	emit startingPlayback(track.get());
 	m_OutputIO.reset(track->startDecoding(m_Format));
 	if (m_OutputIO == nullptr)
 	{
