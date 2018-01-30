@@ -35,11 +35,12 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	}
 
 	// Connect the signals:
-	connect(m_UI->btnSongs, &QPushButton::clicked, this, &PlayerWindow::showSongs);
-	connect(m_scDel.get(),  &QShortcut::activated, this, &PlayerWindow::deleteSelectedPlaylistItems);
-	connect(m_UI->btnPrev,  &QPushButton::clicked, this, &PlayerWindow::prevTrack);
-	connect(m_UI->btnPlay,  &QPushButton::clicked, this, &PlayerWindow::playPause);
-	connect(m_UI->btnNext,  &QPushButton::clicked, this, &PlayerWindow::nextTrack);
+	connect(m_UI->btnSongs,    &QPushButton::clicked,      this, &PlayerWindow::showSongs);
+	connect(m_scDel.get(),     &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->btnPrev,     &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,     &QPushButton::clicked,      this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,     &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
+	connect(m_UI->tblPlaylist, &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -143,4 +144,16 @@ void PlayerWindow::nextTrack(bool a_IsChecked)
 	Q_UNUSED(a_IsChecked);
 
 	m_Player->nextTrack();
+}
+
+
+
+
+
+void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
+{
+	if (a_Track.isValid())
+	{
+		m_Player->jumpTo(a_Track.row());
+	}
 }

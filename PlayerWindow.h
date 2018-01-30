@@ -87,6 +87,9 @@ private slots:
 	/** Advances the playlist forward.
 	Signature must match QPushButton::clicked(). */
 	void nextTrack(bool a_IsChecked);
+
+	/** Emitted by tblPlaylist when the user dblclicks a track. */
+	void trackDoubleClicked(const QModelIndex & a_Track);
 };
 
 

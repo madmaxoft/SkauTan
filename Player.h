@@ -108,6 +108,10 @@ public slots:
 	Ignored is the player is not playing anything. */
 	void pause();
 
+	/** Starts playing back the playlist item at the specified index.
+	Fades the current track first, if playing.
+	Ignored if the index is invalid. */
+	void jumpTo(int a_ItemIdx);
 
 protected slots:
 
