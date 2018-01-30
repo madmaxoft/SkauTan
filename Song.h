@@ -41,6 +41,8 @@ public:
 		QVariant && a_Length,
 		QVariant && a_Genre,
 		QVariant && a_MeasuresPerMinute,
+		QVariant && a_Author,
+		QVariant && a_Title,
 		QVariant && a_LastPlayed,
 		QVariant && a_Rating
 	, QVariant && a_LastMetadataUpdated);

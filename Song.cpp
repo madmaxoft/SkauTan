@@ -29,6 +29,8 @@ Song::Song(
 	QVariant && a_Length,
 	QVariant && a_Genre,
 	QVariant && a_MeasuresPerMinute,
+	QVariant && a_Author,
+	QVariant && a_Title,
 	QVariant && a_LastPlayed,
 	QVariant && a_Rating,
 	QVariant && a_LastMetadataUpdated
@@ -42,6 +44,8 @@ Song::Song(
 	m_MeasuresPerMinute(std::move(a_MeasuresPerMinute)),
 	m_LastPlayed(std::move(a_LastPlayed)),
 	m_Rating(std::move(a_Rating)),
+	m_Author(std::move(a_Author)),
+	m_Title(std::move(a_Title)),
 	m_LastMetadataUpdated(std::move(a_LastMetadataUpdated))
 {
 	// Nothing needed

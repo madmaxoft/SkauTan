@@ -217,6 +217,8 @@ void SongDatabase::loadSongs()
 	auto fiLength              = query.record().indexOf("Length");
 	auto fiGenre               = query.record().indexOf("Genre");
 	auto fiMeasuresPerMinute   = query.record().indexOf("MeasuresPerMinute");
+	auto fiAuthor              = query.record().indexOf("Author");
+	auto fiTitle               = query.record().indexOf("Title");
 	auto fiLastPlayed          = query.record().indexOf("LastPlayed");
 	auto fiRating              = query.record().indexOf("Rating");
 	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
@@ -243,6 +245,8 @@ void SongDatabase::loadSongs()
 			std::move(fieldValue(rec.field(fiLength))),
 			std::move(fieldValue(rec.field(fiGenre))),
 			std::move(fieldValue(rec.field(fiMeasuresPerMinute))),
+			std::move(fieldValue(rec.field(fiAuthor))),
+			std::move(fieldValue(rec.field(fiTitle))),
 			std::move(fieldValue(rec.field(fiLastPlayed))),
 			std::move(fieldValue(rec.field(fiRating))),
 			std::move(fieldValue(rec.field(fiLastMetadataUpdated)))

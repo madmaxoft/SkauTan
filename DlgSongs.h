@@ -71,6 +71,9 @@ private slots:
 	Signature needs to match QPushButton::clicked(bool). */
 	void addSelectedToPlaylist(bool a_IsChecked);
 
+	/** Emitted by the model after the user edits a song. */
+	void modelSongEdited(Song * a_Song);
+
 signals:
 
 	/** Emitted when the user asks to add songs to the playlist. */
