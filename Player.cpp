@@ -45,6 +45,7 @@ Player::Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent):
 	m_Thread.setObjectName("AudioOutput");
 	m_Output.reset(new QAudioOutput(m_Format));
 	m_Output->moveToThread(&m_Thread);
+	connect(m_Output.get(), &QAudioOutput::stateChanged, this, &Player::outputStateChanged);
 	m_Thread.start(QThread::HighPriority);
 }
 
@@ -69,6 +70,7 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 	m_FadeoutProgress = 0;
 	m_State = a_FadeOutState;
+	m_OutputIO->fadeOut(500);  // TODO: Settable FadeOut length
 }
 
 
@@ -224,4 +226,49 @@ void Player::pause()
 	}
 
 	fadeOut(psFadeOutToStop);
+}
+
+
+
+
+
+void Player::outputStateChanged(QAudio::State a_NewState)
+{
+	if (a_NewState == QAudio::IdleState)
+	{
+		// The playe has become idle, which means there's no more audio to play.
+		// Either the song finished, or the fadeout was completed.
+		switch (m_State)
+		{
+			case psPlaying:
+			{
+				// Play the next song in the playlist, if any:
+				m_State = psStopped;
+				if (m_Playlist->nextItem())
+				{
+					start();
+				}
+				return;
+			}
+			case psFadeOutToStop:
+			{
+				// Stop playing completely:
+				m_State = psStopped;
+				return;
+			}
+			case psFadeOutToTrack:
+			{
+				// Start playing the next scheduled track:
+				m_State = psStopped;
+				start();
+				return;
+			}
+			case psStopped:
+			{
+				// Nothing needed
+				break;
+			}
+		}
+		return;
+	}
 }

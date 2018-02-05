@@ -96,6 +96,23 @@ private:
 	Protected against multithreaded access by m_Mtx. */
 	size_t m_CurrentWritePos;
 
+	/** Set to true if FadeOut was requested.
+	If true, data being read will get faded out until the end of FadeOut is reached, at which point no more data will
+	be returned by the readData() function.
+	Protected against multithreaded access by m_Mtx. */
+	bool m_IsFadingOut;
+
+	/** Total number of samples across which the FadeOut should be done.
+	Only used when m_IsFadingOut is true.
+	Protected against multithreaded access by m_Mtx. */
+	int m_FadeOutTotalSamples;
+
+	/** Number of samples that will be faded out, before reaching zero volume.
+	Each read operation after a fadeout will decrease this numer by the number of samples read, until it reaches
+	zero, at which point the readData() function will abort decoding and return no more data.
+	Protected against multithreaded access by m_Mtx. */
+	int m_FadeOutRemaining;
+
 
 	/** Writes a single block of data that is guaranteed to fit into the current free space.
 	Assumes m_Mtx is locked and there is enough free space for the write operation.
@@ -109,6 +126,10 @@ private:
 	/** Returns the number of bytes that can be read currently.
 	Assumes m_Mtx is locked. */
 	size_t numAvailRead();
+
+	/** Applies FadeOut, if appropriate, to the specified data, and updates the FadeOut progress.
+	a_Data is the data to be returned from the read operation, it is assumed to be in complete samples. */
+	void applyFadeOut(void * a_Data, int a_NumBytes);
 };
 
 #endif // PLAYBACKBUFFER_H
