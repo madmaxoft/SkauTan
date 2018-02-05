@@ -66,6 +66,10 @@ private slots:
 	Signature must match QPushButton::clicked(). */
 	void showSongs(bool a_IsChecked);
 
+	/** Shows the History dialog.
+	Signature must match QPushButton::clicked(). */
+	void showHistory(bool a_IsChecked);
+
 	/** Adds the specified song to the playlist.
 	The song is assumed to be present in m_DB (but not checked). */
 	void addSong(std::shared_ptr<Song> a_Song);
@@ -90,6 +94,9 @@ private slots:
 
 	/** Emitted by tblPlaylist when the user dblclicks a track. */
 	void trackDoubleClicked(const QModelIndex & a_Track);
+
+	/** Emitted by m_Player before it starts playing the specified item. */
+	void startingItemPlayback(IPlaylistItem * a_Item);
 };
 
 

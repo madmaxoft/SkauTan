@@ -119,10 +119,19 @@ void SongDatabase::fixupTables()
 		{"MeasuresPerMinute",   "NUMBER"},
 		{"LastPlayed",          "DATETIME"},
 		{"Rating",              "NUMBER"},
+		{"Author",              "TEXT"},
+		{"Title",               "TEXT"},
 		{"LastMetadataUpdated", "DATETIME"},
 	};
 
+	static const std::vector<std::pair<QString, QString>> cdPlaybackHistory =
+	{
+		{"SongID",    "NUMBER"},
+		{"Timestamp", "DATETIME"},
+	};
+
 	fixupTable("Songs", cdSongs);
+	fixupTable("PlaybackHistory", cdPlaybackHistory);
 }
 
 
@@ -256,6 +265,7 @@ void SongDatabase::saveSong(const Song & a_Song)
 	if (!query.prepare("UPDATE Songs SET "
 		"FileName = ?, FileSize = ?, Hash = ?, "
 		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
+		"Author = ?, Title = ?, "
 		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
 		"WHERE RowID = ?")
 	)
@@ -263,16 +273,18 @@ void SongDatabase::saveSong(const Song & a_Song)
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
 		return;
 	}
-	query.bindValue(0, a_Song.fileName());
-	query.bindValue(1, a_Song.fileSize());
-	query.bindValue(2, a_Song.hash());
-	query.bindValue(3, a_Song.length());
-	query.bindValue(4, a_Song.genre());
-	query.bindValue(5, a_Song.measuresPerMinute());
-	query.bindValue(6, a_Song.lastPlayed());
-	query.bindValue(7, a_Song.rating());
-	query.bindValue(8, a_Song.lastMetadataUpdated());
-	query.bindValue(9, a_Song.dbRowId());
+	query.addBindValue(a_Song.fileName());
+	query.addBindValue(a_Song.fileSize());
+	query.addBindValue(a_Song.hash());
+	query.addBindValue(a_Song.length());
+	query.addBindValue(a_Song.genre());
+	query.addBindValue(a_Song.measuresPerMinute());
+	query.addBindValue(a_Song.author());
+	query.addBindValue(a_Song.title());
+	query.addBindValue(a_Song.lastPlayed());
+	query.addBindValue(a_Song.rating());
+	query.addBindValue(a_Song.lastMetadataUpdated());
+	query.addBindValue(a_Song.dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
@@ -288,6 +300,32 @@ void SongDatabase::songScanned(Song * a_Song)
 {
 	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
 	saveSong(*a_Song);
+}
+
+
+
+
+
+void SongDatabase::songPlaybackStarted(Song * a_Song)
+{
+	auto now = QDateTime::currentDateTimeUtc();
+	a_Song->setLastPlayed(now);
+	saveSong(*a_Song);
+
+	// Add a history playlist record:
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT INTO PlaybackHistory (SongID, Timestamp) VALUES (?, ?)"))
+	{
+		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		return;
+	}
+	query.bindValue(0, a_Song->dbRowId());
+	query.bindValue(1, now);
+	if (!query.exec())
+	{
+		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		return;
+	}
 }
 
 

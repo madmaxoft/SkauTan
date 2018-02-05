@@ -16,6 +16,7 @@
 // fwd:
 class PlaybackBuffer;
 class Playlist;
+class IPlaylistItem;
 
 
 
@@ -78,7 +79,11 @@ protected:
 	Must not be fading out already. */
 	void fadeOut(State a_FadeOutState);
 
+
 signals:
+
+	/** Emitted before starting to play the specified item. */
+	void startingPlayback(IPlaylistItem * a_Item);
 
 
 public slots:

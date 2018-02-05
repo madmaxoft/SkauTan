@@ -66,7 +66,8 @@ SOURCES += \
 	Player.cpp \
 	PlaybackBuffer.cpp \
 	SongDecoder.cpp \
-	AVPP.cpp
+	AVPP.cpp \
+	DlgHistory.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -83,8 +84,10 @@ HEADERS += \
 	Player.h \
 	PlaybackBuffer.h \
 	SongDecoder.h \
-	AVPP.h
+	AVPP.h \
+	DlgHistory.h
 
 FORMS += \
 	PlayerWindow.ui \
-	DlgSongs.ui
+	DlgSongs.ui \
+	DlgHistory.ui

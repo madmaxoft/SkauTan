@@ -50,6 +50,8 @@ public:
 	Skips duplicate entries. */
 	void addSongFile(const QString & a_FileName, qulonglong a_FileSize);
 
+	QSqlDatabase & database() { return m_Database; }
+
 protected:
 
 	/** The DB connection .*/
@@ -71,7 +73,6 @@ protected:
 
 	/** Updates the specified table to contain at least the specified columns.
 	a_ColumnDefs is a vector of string tuples, each tuple is column name and its type. */
-	// void fixupTable(const QString & a_TableName, size_t a_NumColumns, const std::pair<QString, QString> * a_ColumnDefs);
 	void fixupTable(const QString & a_TableName, const std::vector<std::pair<QString, QString>> & a_ColumnDefs);
 
 	/** Loads all the songs in the DB into m_Songs.
@@ -95,6 +96,12 @@ protected slots:
 	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
 	Writes the whole updated song to the DB. */
 	void songScanned(Song * a_Song);
+
+
+public slots:
+
+	/** Indicates that the song has started playing and the DB should store that info. */
+	void songPlaybackStarted(Song * a_Song);
 };
 
 
