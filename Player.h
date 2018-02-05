@@ -107,6 +107,13 @@ public slots:
 	Fades the current track out first.
 	Ignored is the player is not playing anything. */
 	void pause();
+
+
+protected slots:
+
+	/** Emitted by m_Output when its state changes.
+	Used to detect end-of-track and end-of-fade. */
+	void outputStateChanged(QAudio::State a_NewState);
 };
 
 
