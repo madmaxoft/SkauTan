@@ -1,6 +1,9 @@
 #include "SongModel.h"
+#include <assert.h>
 #include <QDebug>
 #include <QSize>
+#include <QComboBox>
+#include <QLineEdit>
 #include "SongDatabase.h"
 
 
@@ -29,7 +32,7 @@ static QString formatMPM(const Song & a_Song)
 	{
 		return SongModel::tr("<unknown>", "MPM");
 	}
-	return QString::number(a_Song.measuresPerMinute().toDouble(), 'f', 1);
+	return QLocale().toString(a_Song.measuresPerMinute().toDouble(), 'f', 1);
 }
 
 
@@ -254,3 +257,178 @@ void SongModel::addSongFile(Song * a_NewSong)
 	beginInsertRows(QModelIndex(), lastIdx, lastIdx + 1);
 	endInsertRows();
 }
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SongModelEditorDelegate:
+
+SongModelEditorDelegate::SongModelEditorDelegate(QWidget * a_Parent):
+	Super(a_Parent)
+{
+}
+
+
+
+
+
+QWidget * SongModelEditorDelegate::createEditor(
+	QWidget * a_Parent,
+	const QStyleOptionViewItem & a_Option,
+	const QModelIndex & a_Index
+) const
+{
+	if (!a_Index.isValid())
+	{
+		return nullptr;
+	}
+	switch (a_Index.column())
+	{
+		case SongModel::colAuthor:
+		case SongModel::colTitle:
+		{
+			// Default text editor:
+			return Super::createEditor(a_Parent, a_Option, a_Index);
+		}
+		case SongModel::colMeasuresPerMinute:
+		{
+			// Text editor limited to entering numbers:
+			auto res = new QLineEdit(a_Parent);
+			res->setFrame(false);
+			res->setValidator(new QDoubleValidator(res));
+			return res;
+		}
+		case SongModel::colFileName:
+		case SongModel::colLastPlayed:
+		case SongModel::colLength:
+		case SongModel::colRating:
+		{
+			// Not editable
+			return nullptr;
+		}
+		case SongModel::colGenre:
+		{
+			// Special editor:
+			auto res = new QComboBox(a_Parent);
+			res->setFrame(false);
+			res->addItems({"SW", "TG", "VW", "SF", "QS", "SB", "CH", "RU", "PD", "JI", "PO", "BL"});
+			return res;
+		}
+	}
+	assert(!"Unknown column");
+	return nullptr;
+}
+
+
+
+
+
+void SongModelEditorDelegate::setEditorData(
+	QWidget * a_Editor,
+	const QModelIndex & a_Index
+) const
+{
+	if (!a_Index.isValid())
+	{
+		return;
+	}
+	switch (a_Index.column())
+	{
+		case SongModel::colAuthor:
+		case SongModel::colTitle:
+		{
+			// Default text editor:
+			Super::setEditorData(a_Editor, a_Index);
+			return;
+		}
+		case SongModel::colMeasuresPerMinute:
+		{
+			auto le = qobject_cast<QLineEdit *>(a_Editor);
+			assert(le != nullptr);
+			le->setText(a_Index.data().toString());
+			return;
+		}
+		case SongModel::colFileName:
+		case SongModel::colLastPlayed:
+		case SongModel::colLength:
+		case SongModel::colRating:
+		{
+			// Not editable
+			assert(!"Attempting to edit an uneditable field");
+			return;
+		}
+		case SongModel::colGenre:
+		{
+			// Special editor:
+			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			cb->setCurrentText(a_Index.data().toString());
+			return;
+		}
+	}
+	assert(!"Unknown column");
+}
+
+
+
+
+
+void SongModelEditorDelegate::setModelData(
+	QWidget * a_Editor,
+	QAbstractItemModel * a_Model,
+	const QModelIndex & a_Index
+) const
+{
+	if (!a_Index.isValid())
+	{
+		return;
+	}
+	switch (a_Index.column())
+	{
+		case SongModel::colAuthor:
+		case SongModel::colTitle:
+		{
+			// Default text editor:
+			Super::setModelData(a_Editor, a_Model, a_Index);
+			return;
+		}
+		case SongModel::colMeasuresPerMinute:
+		{
+			auto le = qobject_cast<QLineEdit *>(a_Editor);
+			assert(le != nullptr);
+			a_Model->setData(a_Index, le->locale().toDouble(le->text()));
+			return;
+		}
+		case SongModel::colFileName:
+		case SongModel::colLastPlayed:
+		case SongModel::colLength:
+		case SongModel::colRating:
+		{
+			// Not editable
+			return;
+		}
+		case SongModel::colGenre:
+		{
+			// Special editor:
+			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			a_Model->setData(a_Index, cb->currentText());
+			return;
+		}
+	}
+	assert(!"Unknown column");
+}
+
+
+
+
+
+void SongModelEditorDelegate::commitAndCloseEditor()
+{
+	auto editor = qobject_cast<QWidget *>(sender());
+	emit commitData(editor);
+	emit closeEditor(editor);
+}
+

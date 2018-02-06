@@ -5,6 +5,7 @@
 
 
 #include <QAbstractTableModel>
+#include <QStyledItemDelegate>
 #include "Song.h"
 
 
@@ -73,6 +74,49 @@ signals:
 
 	/** Emitted after the specified song has been edited by the user. */
 	void songEdited(Song * a_Song);
+};
+
+
+
+
+
+/** A QItemDelegate descendant that provides specialized editors for SongModel-based views:
+- MPM gets a QLineEdit with a QDoubleValidator
+- Genre gets a QComboBox pre-filled with genres.
+*/
+class SongModelEditorDelegate:
+	public QStyledItemDelegate
+{
+	using Super = QStyledItemDelegate;
+	Q_OBJECT
+
+
+public:
+
+	SongModelEditorDelegate(QWidget * a_Parent = nullptr);
+
+	// QStyledItemDelegate overrides:
+	virtual QWidget * createEditor(
+		QWidget * a_Parent,
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) const override;
+
+	virtual void setEditorData(
+		QWidget * a_Editor,
+		const QModelIndex & a_Index
+	) const override;
+
+	virtual void setModelData(
+		QWidget * a_Editor,
+		QAbstractItemModel * a_Model,
+		const QModelIndex & a_Index
+	) const override;
+
+
+private slots:
+
+	void commitAndCloseEditor();
 };
 
 
