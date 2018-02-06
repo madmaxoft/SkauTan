@@ -16,6 +16,7 @@ TEMPLATE = app
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += TAGLIB_STATIC
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -24,8 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
-win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib
-unix:LIBS += -lavformat -lavutil -lavcodec -lswresample
+win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib tag.lib zlib.lib
+unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz
 
 
 

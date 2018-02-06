@@ -254,7 +254,7 @@ void SongDatabase::loadSongs()
 		m_Songs.push_back(song);
 		if (song->needsMetadataRescan())
 		{
-			m_MetadataScanner.scan(song);
+			m_MetadataScanner.queueScan(song);
 		}
 	}
 }

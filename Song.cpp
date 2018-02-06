@@ -72,13 +72,18 @@ bool Song::needsMetadataRescan() const
 		return true;
 	}
 
+	// Length is needed, update it if invalid:
+	if (!m_Length.isValid() || (m_Length.toDouble() < 0))
+	{
+		return true;
+	}
+
 	// Invalid metadata trigger a rescan only if it has been enough time since the last metadata update:
 	if (!m_LastMetadataUpdated.isValid())
 	{
 		return true;
 	}
 	if (
-		(m_Length < 0) ||
 		(m_MeasuresPerMinute < 0) ||
 		(m_Rating < 0) ||
 		!m_Author.isValid() ||

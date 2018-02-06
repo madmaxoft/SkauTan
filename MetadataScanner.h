@@ -37,7 +37,7 @@ public:
 
 	/** Queues the specified song for scanning.
 	Once the song is scanned, the songScanned() signal is emitted. */
-	void scan(SongPtr a_Song);
+	void queueScan(SongPtr a_Song);
 
 
 protected:

@@ -1,6 +1,7 @@
 #include "MetadataScanner.h"
 #include <assert.h>
 #include <QDebug>
+#include <taglib/fileref.h>
 #include "Song.h"
 #include "HashCalculator.h"
 
@@ -22,9 +23,8 @@ public:
 	void process()
 	{
 		HashCalculator::calc(*m_Song);
-		// TODO: Parse ID3v1 and ID3v2 tags
+		parseTagLibMetadata(m_Song->fileName());
 		parseFileNameIntoMetadata(m_Song->fileName());
-		// TODO: Find out song length
 	}
 
 
@@ -32,6 +32,46 @@ protected:
 
 	/** The song being processed. */
 	SongPtr m_Song;
+
+
+	/** Parses any tags within the song using TagLib. */
+	void parseTagLibMetadata(const QString & a_FileName)
+	{
+		TagLib::FileRef fr(a_FileName.toUtf8().constData());
+		if (fr.isNull())
+		{
+			// File format not recognized
+			qDebug() << __FUNCTION__ << ": Unable to parse file.";
+			return;
+		}
+
+		// Set the song length:
+		auto ap = fr.audioProperties();
+		if (ap != nullptr)
+		{
+			m_Song->setLength(static_cast<double>(ap->lengthInMilliseconds()) / 1000);
+		}
+		else
+		{
+			qDebug() << __FUNCTION__ << ": AudioProperties not found.";
+		}
+
+		// Set the author / title:
+		auto tag = fr.tag();
+		if (tag == nullptr)
+		{
+			qDebug() << __FUNCTION__ << ": No TagLib-extractable information found";
+			return;
+		}
+		if (!m_Song->author().isValid())
+		{
+			m_Song->setAuthor(QString::fromStdString(tag->artist().to8Bit(true)));
+		}
+		if (!m_Song->title().isValid())
+		{
+			m_Song->setTitle(QString::fromStdString(tag->title().to8Bit(true)));
+		}
+	}
 
 
 	/** Attempts to parse the filename into metadata.
@@ -158,7 +198,7 @@ MetadataScanner::~MetadataScanner()
 
 
 
-void MetadataScanner::scan(SongPtr a_Song)
+void MetadataScanner::queueScan(SongPtr a_Song)
 {
 	qDebug() << __FUNCTION__ << ": Adding song " << a_Song->fileName() << " to metadata scan queue.";
 	{
