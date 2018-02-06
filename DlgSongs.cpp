@@ -20,6 +20,7 @@ DlgSongs::DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent):
 {
 	m_UI->setupUi(this);
 	m_UI->tblSongs->setModel(&m_SongModel);
+	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
 	connect(m_UI->btnAddFolder,     &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
