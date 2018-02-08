@@ -25,7 +25,9 @@ DEFINES += TAGLIB_STATIC
 
 CONFIG += c++11
 
-win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib tag.lib zlib.lib
+win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib
+win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib
+win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib
 unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz
 
 
