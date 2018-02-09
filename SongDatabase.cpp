@@ -109,8 +109,13 @@ void SongDatabase::addSongFile(const QString & a_FileName, qulonglong a_FileSize
 
 void SongDatabase::fixupTables()
 {
+	/* For songs, we want unique RowID keys even after deletion, so that bound data doesn't get re-assigned
+	to newly added songs.
+	See the SQLite docs for details: https://sqlite.org/autoinc.html
+	*/
 	static const std::vector<std::pair<QString, QString>> cdSongs =
 	{
+		{"RowID",               "INTEGER PRIMARY KEY AUTOINCREMENT"},
 		{"FileName",            "TEXT"},
 		{"FileSize",            "NUMBER"},
 		{"Hash",                "BLOB"},
