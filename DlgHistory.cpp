@@ -3,13 +3,13 @@
 #include <QSqlQueryModel>
 #include <QSqlError>
 #include <QDebug>
-#include "SongDatabase.h"
+#include "Database.h"
 
 
 
 
 
-DlgHistory::DlgHistory(SongDatabase & a_SongDB, QWidget * a_Parent) :
+DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 	Super(a_Parent),
 	m_UI(new Ui::DlgHistory)
 {
@@ -22,7 +22,7 @@ DlgHistory::DlgHistory(SongDatabase & a_SongDB, QWidget * a_Parent) :
 		"Songs.Title, "
 		"Songs.FileName "
 		"FROM PlaybackHistory LEFT JOIN Songs ON Songs.RowID = PlaybackHistory.SongID",
-		a_SongDB.database()
+		a_DB.database()
 	);
 	if (model->lastError().type() != QSqlError::NoError)
 	{

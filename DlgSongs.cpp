@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QProcessEnvironment>
 #include "ui_DlgSongs.h"
-#include "SongDatabase.h"
+#include "Database.h"
 
 
 
@@ -12,11 +12,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 // DlgSongs:
 
-DlgSongs::DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent):
+DlgSongs::DlgSongs(Database & a_DB, QWidget * a_Parent):
 	Super(a_Parent),
-	m_SongDB(a_SongDB),
+	m_DB(a_DB),
 	m_UI(new Ui::DlgSongs),
-	m_SongModel(a_SongDB)
+	m_SongModel(a_DB)
 {
 	m_UI->setupUi(this);
 	m_UI->tblSongs->setModel(&m_SongModel);
@@ -78,7 +78,7 @@ void DlgSongs::addFolder(const QString & a_Path)
 		return;
 	}
 	qDebug() << __FUNCTION__ << ": Adding " << songs.size() << " songs from folder " << a_Path;
-	m_SongDB.addSongFiles(songs);
+	m_DB.addSongFiles(songs);
 }
 
 
@@ -133,5 +133,5 @@ void DlgSongs::addSelectedToPlaylist(bool a_IsChecked)
 
 void DlgSongs::modelSongEdited(Song * a_Song)
 {
-	m_SongDB.saveSong(*a_Song);
+	m_DB.saveSong(*a_Song);
 }

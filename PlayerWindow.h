@@ -17,7 +17,7 @@
 class QShortcut;
 class Player;
 class Song;
-class SongDatabase;
+class Database;
 namespace Ui
 {
 	class PlayerWindow;
@@ -45,7 +45,7 @@ private:
 
 	std::unique_ptr<Ui::PlayerWindow> m_UI;
 
-	std::unique_ptr<SongDatabase> m_DB;
+	std::unique_ptr<Database> m_DB;
 
 	/** The current playlist. */
 	std::shared_ptr<Playlist> m_Playlist;
@@ -65,6 +65,10 @@ private slots:
 	/** Shows the Songs dialog.
 	Signature must match QPushButton::clicked(). */
 	void showSongs(bool a_IsChecked);
+
+	/** Shows the TemplateList dialog.
+	Signature must match QPushButton::clicked(). */
+	void showTemplates(bool a_IsChecked);
 
 	/** Shows the History dialog.
 	Signature must match QPushButton::clicked(). */

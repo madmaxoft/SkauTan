@@ -15,7 +15,7 @@
 
 // fwd:
 class Song;
-class SongDatabase;
+class Database;
 namespace Ui
 {
 	class DlgSongs;
@@ -35,7 +35,7 @@ class DlgSongs:
 
 public:
 
-	explicit DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent = nullptr);
+	explicit DlgSongs(Database & a_DB, QWidget * a_Parent = nullptr);
 
 	~DlgSongs();
 
@@ -47,7 +47,7 @@ public:
 private:
 
 	/** The Song DB that is being displayed and manipulated. */
-	SongDatabase & m_SongDB;
+	Database & m_DB;
 
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;

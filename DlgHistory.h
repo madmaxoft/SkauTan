@@ -13,7 +13,7 @@
 
 
 // fwd:
-class SongDatabase;
+class Database;
 namespace Ui
 {
 	class DlgHistory;
@@ -32,7 +32,7 @@ class DlgHistory:\
 
 public:
 
-	explicit DlgHistory(SongDatabase & a_SongDB, QWidget * a_Parent = nullptr);
+	explicit DlgHistory(Database & a_DB, QWidget * a_Parent = nullptr);
 	~DlgHistory();
 
 

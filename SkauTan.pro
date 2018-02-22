@@ -60,7 +60,7 @@ SOURCES += \
 	Playlist.cpp \
 	PlaylistItemSong.cpp \
 	Song.cpp \
-	SongDatabase.cpp \
+	Database.cpp \
 	DlgSongs.cpp \
 	SongModel.cpp \
 	MetadataScanner.cpp \
@@ -70,7 +70,11 @@ SOURCES += \
 	PlaybackBuffer.cpp \
 	SongDecoder.cpp \
 	AVPP.cpp \
-	DlgHistory.cpp
+	DlgHistory.cpp \
+	Template.cpp \
+	DlgTemplatesList.cpp \
+	DlgEditTemplate.cpp \
+	DlgEditTemplateItem.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -78,7 +82,7 @@ HEADERS += \
 	Playlist.h \
 	PlaylistItemSong.h \
 	Song.h \
-	SongDatabase.h \
+	Database.h \
 	DlgSongs.h \
 	SongModel.h \
 	MetadataScanner.h \
@@ -88,9 +92,16 @@ HEADERS += \
 	PlaybackBuffer.h \
 	SongDecoder.h \
 	AVPP.h \
-	DlgHistory.h
+	DlgHistory.h \
+	Template.h \
+	DlgTemplatesList.h \
+	DlgEditTemplate.h \
+	DlgEditTemplateItem.h
 
 FORMS += \
 	PlayerWindow.ui \
 	DlgSongs.ui \
-	DlgHistory.ui
+	DlgHistory.ui \
+	DlgTemplatesList.ui \
+	DlgEditTemplate.ui \
+	DlgEditTemplateItem.ui

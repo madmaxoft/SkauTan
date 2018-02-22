@@ -4,7 +4,7 @@
 #include <QSize>
 #include <QComboBox>
 #include <QLineEdit>
-#include "SongDatabase.h"
+#include "Database.h"
 
 
 
@@ -68,10 +68,10 @@ static QString formatRating(const Song & a_Song)
 ////////////////////////////////////////////////////////////////////////////////
 // SongModel:
 
-SongModel::SongModel(SongDatabase & a_DB):
+SongModel::SongModel(Database & a_DB):
 	m_DB(a_DB)
 {
-	connect(&m_DB, &SongDatabase::songFileAdded, this, &SongModel::addSongFile);
+	connect(&m_DB, &Database::songFileAdded, this, &SongModel::addSongFile);
 }
 
 
