@@ -4,12 +4,78 @@
 #include <QStyledItemDelegate>
 #include <QDebug>
 #include <QMessageBox>
+#include <QComboBox>
+
+
+
+
+
+#define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
 
 
 
 
 
 static const auto roleFilterPtr = Qt::UserRole + 1;
+
+static Template::Filter::SongProperty g_SongProperties[] =
+{
+	Template::Filter::fspAuthor,
+	Template::Filter::fspTitle,
+	Template::Filter::fspGenre,
+	Template::Filter::fspLength,
+	Template::Filter::fspMeasuresPerMinute,
+	Template::Filter::fspRating,
+	Template::Filter::fspLastPlayed,
+};
+
+static Template::Filter::Comparison g_Comparisons[] =
+{
+	Template::Filter::fcEqual,
+	Template::Filter::fcNotEqual,
+	Template::Filter::fcContains,
+	Template::Filter::fcNotContains,
+	Template::Filter::fcGreaterThan,
+	Template::Filter::fcGreaterThanOrEqual,
+	Template::Filter::fcLowerThan,
+	Template::Filter::fcLowerThanOrEqual,
+};
+
+
+
+
+
+/** Returns the index into g_SongProperties that has the same property as the specified filter.
+Returns -1 if not found. */
+static int indexFromSongProperty(const Template::Filter & a_Filter)
+{
+	auto prop = a_Filter.songProperty();
+	for (size_t i = 0; i < ARRAYCOUNT(g_SongProperties); ++i)
+	{
+		if (g_SongProperties[i] == prop)
+		{
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
+
+
+
+
+
+static int indexFromComparison(const Template::Filter & a_Filter)
+{
+	auto cmp = a_Filter.comparison();
+	for (size_t i = 0; i < ARRAYCOUNT(g_Comparisons); ++i)
+	{
+		if (g_Comparisons[i] == cmp)
+		{
+			return static_cast<int>(i);
+		}
+	}
+	return -1;
+}
 
 
 
@@ -27,7 +93,147 @@ class FilterDelegate:
 public:
 	FilterDelegate(){}
 
-	// TODO
+
+
+	// Add the combobox to size:
+	virtual QSize sizeHint(
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) const override
+	{
+		Q_UNUSED(a_Index);
+		auto widget = a_Option.widget;
+		auto style = (widget != nullptr) ? widget->style() : QApplication::style();
+		return style->sizeFromContents(QStyle::CT_ComboBox, &a_Option, Super::sizeHint(a_Option, a_Index), widget);
+	}
+
+
+
+	// editing
+	virtual QWidget * createEditor(
+		QWidget * a_Parent,
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) const override
+	{
+		Q_UNUSED(a_Option);
+
+		// HACK: TreeWidget stores its QTreeWidgetItem ptrs in the index's internalPtr:
+		auto item = reinterpret_cast<const QTreeWidgetItem *>(a_Index.internalPointer());
+		auto filter = reinterpret_cast<Template::Filter *>(item->data(0, roleFilterPtr).toULongLong());
+
+		if (filter->canHaveChildren())
+		{
+			// This is a combinator, use a single combobox as the editor:
+			auto res = new QComboBox(a_Parent);
+			res->setEditable(false);
+			res->setProperty("filterPtr", reinterpret_cast<qulonglong>(filter));
+			res->addItems({
+				DlgEditTemplateItem::tr("And", "FilterTreeEditor"),
+				DlgEditTemplateItem::tr("Or", "FilterTreeEditor")
+			});
+			return res;
+		}
+		else
+		{
+			// This is a comparison filter, use a layout for the editor
+			auto editor = new QFrame(a_Parent);
+			editor->setFrameShape(QFrame::Panel);
+			editor->setLineWidth(0);
+			editor->setFrameShadow(QFrame::Plain);
+			auto layout = new QHBoxLayout(editor);
+			layout->setContentsMargins(0, 0, 0, 0);
+			layout->setMargin(0);
+			auto cbProp = new QComboBox();
+			auto cbComparison = new QComboBox();
+			auto leValue = new QLineEdit();
+			for (const auto sp: g_SongProperties)
+			{
+				cbProp->addItem(Template::Filter::songPropertyCaption(sp));
+			}
+			for (const auto cmp: g_Comparisons)
+			{
+				cbComparison->addItem(Template::Filter::comparisonCaption(cmp));
+			}
+			layout->addWidget(cbProp);
+			layout->addWidget(cbComparison);
+			layout->addWidget(leValue);
+			editor->setProperty("cbProp",       QVariant::fromValue(cbProp));
+			editor->setProperty("cbComparison", QVariant::fromValue(cbComparison));
+			editor->setProperty("leValue",      QVariant::fromValue(leValue));
+			editor->setProperty("filterPtr",    reinterpret_cast<qulonglong>(filter));
+			return editor;
+		}
+	}
+
+
+
+	virtual void setEditorData(QWidget * a_Editor, const QModelIndex & a_Index) const override
+	{
+		Q_UNUSED(a_Index);
+		auto filter = reinterpret_cast<const Template::Filter *>(a_Editor->property("filterPtr").toULongLong());
+		assert(filter != nullptr);
+		if (filter->canHaveChildren())
+		{
+			auto cb = reinterpret_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			cb->setCurrentIndex((filter->kind() == Template::Filter::fkOr) ? 1 : 0);
+		}
+		else
+		{
+			auto cbProp       = a_Editor->property("cbProp").value<QComboBox *>();
+			auto cbComparison = a_Editor->property("cbComparison").value<QComboBox *>();
+			auto leValue      = a_Editor->property("leValue").value<QLineEdit *>();
+			assert(cbProp != nullptr);
+			assert(cbComparison != nullptr);
+			assert(leValue != nullptr);
+			cbProp->setCurrentIndex(indexFromSongProperty(*filter));
+			cbComparison->setCurrentIndex(indexFromComparison(*filter));
+			leValue->setText(filter->value().toString());
+		}
+	}
+
+
+
+	virtual void setModelData(
+		QWidget * a_Editor,
+		QAbstractItemModel * a_Model,
+		const QModelIndex & a_Index
+	) const override
+	{
+		Q_UNUSED(a_Model);
+		Q_UNUSED(a_Index);
+
+		auto filter = reinterpret_cast<Template::Filter *>(a_Editor->property("filterPtr").toULongLong());
+		assert(filter != nullptr);
+		if (filter->canHaveChildren())
+		{
+			auto cb = reinterpret_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			filter->setKind((cb->currentIndex() == 0) ? Template::Filter::fkAnd : Template::Filter::fkOr);
+		}
+		else
+		{
+			auto cbProp       = a_Editor->property("cbProp").value<QComboBox *>();
+			auto cbComparison = a_Editor->property("cbComparison").value<QComboBox *>();
+			auto leValue      = a_Editor->property("leValue").value<QLineEdit *>();
+			assert(cbProp != nullptr);
+			assert(cbComparison != nullptr);
+			assert(leValue != nullptr);
+			auto propIdx = cbProp->currentIndex();
+			if (propIdx >= 0)
+			{
+				filter->setSongProperty(g_SongProperties[propIdx]);
+			}
+			auto cmpIdx = cbComparison->currentIndex();
+			if (cmpIdx >= 0)
+			{
+				filter->setComparison(g_Comparisons[cmpIdx]);
+			}
+			filter->setValue(leValue->text());
+		}
+		a_Model->setData(a_Index, filter->getCaption());
+	}
 };
 
 
@@ -44,7 +250,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(Template::Item & a_Item, QWidget * a_Pa
 {
 	m_Item.checkFilterConsistency();
 	m_UI->setupUi(this);
-	// m_UI->tvFilters->setItemDelegate(new FilterDelegate);
+	m_UI->twFilters->setItemDelegate(new FilterDelegate);
 
 	// Connect the signals:
 	connect(m_UI->btnClose,            &QPushButton::clicked, this, &DlgEditTemplateItem::saveAndClose);
@@ -149,31 +355,10 @@ void DlgEditTemplateItem::addFilterChildren(Template::Filter & a_ParentFilter, Q
 
 QTreeWidgetItem * DlgEditTemplateItem::createItemFromFilter(const Template::Filter & a_Filter)
 {
-	auto res = new QTreeWidgetItem({getFilterCaption(a_Filter)});
+	auto res = new QTreeWidgetItem({a_Filter.getCaption()});
+	res->setFlags(res->flags() | Qt::ItemIsEditable);
 	res->setData(0, roleFilterPtr, reinterpret_cast<qulonglong>(&a_Filter));
 	return res;
-}
-
-
-
-
-
-QString DlgEditTemplateItem::getFilterCaption(const Template::Filter & a_Filter)
-{
-	switch (a_Filter.kind())
-	{
-		case Template::Filter::fkAnd: return tr("And", "FilterModel-ItemCaption");
-		case Template::Filter::fkOr:  return tr("Or",  "FilterModel-ItemCaption");
-		case Template::Filter::fkComparison:
-		{
-			return QString("%1 %2 %3").arg(
-				Template::Filter::songPropertyCaption(a_Filter.songProperty()),
-				Template::Filter::comparisonCaption(a_Filter.comparison()),
-				a_Filter.value().toString()
-			);
-		}
-	}
-	return QString("<invalid filter kind: %1>").arg(a_Filter.kind());
 }
 
 

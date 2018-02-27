@@ -112,6 +112,15 @@ public:
 		Only valid for fkComparison filters. */
 		QVariant value() const;
 
+		/** Updates the filter kind.
+		If moving from a combinator to a comparator, clears the children. */
+		void setKind(Kind a_Kind);
+
+		// Setters for the comparators; assert when not a comparator:
+		void setSongProperty(SongProperty a_SongProperty);
+		void setComparison(Comparison a_Comparison);
+		void setValue(QVariant a_Value);
+
 		/** Returns true if the specified song satisfies this filter. */
 		bool isSatisfiedBy(const Song & a_Song) const;
 
@@ -136,7 +145,11 @@ public:
 		/** Checks that this filter's children have their parent set to this, and recurses into them. */
 		void checkConsistency() const;
 
-		/** Returns a human-readable description of the filter. */
+		/** Returns a human-readable caption for this specific filter (not considering sub-filters).
+		Returns either the comparison as "Length >= 0", or the combinator as "And" etc. */
+		QString getCaption() const;
+
+		/** Returns a human-readable description of the filter, including its possible sub-filters. */
 		QString getDescription() const;
 
 		/** Returns the Kind that matches the specified integer value.
@@ -201,6 +214,9 @@ public:
 		const QString & notes() const { return m_Notes; }
 		bool isFavorite() const { return m_IsFavorite; }
 		FilterPtr filter() const { return m_Filter; }
+
+		/** Returns the user-visible description of the entire filter. */
+		QString getFilterDescription() const { return m_Filter->getDescription(); }
 
 		void setDisplayName(const QString & a_DisplayName) { m_DisplayName = a_DisplayName; }
 		void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }

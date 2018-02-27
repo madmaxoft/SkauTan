@@ -79,6 +79,53 @@ QVariant Template::Filter::value() const
 
 
 
+void Template::Filter::setKind(Template::Filter::Kind a_Kind)
+{
+	if (m_Kind == a_Kind)
+	{
+		return;
+	}
+	m_Kind = a_Kind;
+	if (!canHaveChildren())
+	{
+		m_Children.clear();
+	}
+}
+
+
+
+
+
+void Template::Filter::setSongProperty(Template::Filter::SongProperty a_SongProperty)
+{
+	assert(!canHaveChildren());
+	m_SongProperty = a_SongProperty;
+}
+
+
+
+
+
+void Template::Filter::setComparison(Template::Filter::Comparison a_Comparison)
+{
+	assert(!canHaveChildren());
+	m_Comparison = a_Comparison;
+}
+
+
+
+
+
+void Template::Filter::setValue(QVariant a_Value)
+{
+	assert(!canHaveChildren());
+	m_Value = a_Value;
+}
+
+
+
+
+
 bool Template::Filter::canHaveChildren() const
 {
 	return ((m_Kind == fkAnd) || (m_Kind == fkOr));
@@ -156,15 +203,15 @@ void Template::Filter::checkConsistency() const
 
 
 
-QString Template::Filter::getDescription() const
+QString Template::Filter::getCaption() const
 {
 	switch (m_Kind)
 	{
-		case fkAnd: return concatChildrenDescriptions(Template::tr(" and ", "FilterConcatString"));
-		case fkOr:  return concatChildrenDescriptions(Template::tr(" or ",  "FilterConcatString"));
+		case fkAnd: return Template::tr("And", "FilterCaption");
+		case fkOr:  return Template::tr("Or",  "FilterCaption");
 		case fkComparison:
 		{
-			return QString("(%1 %2 %3)").arg(
+			return QString("%1 %2 %3").arg(
 				songPropertyCaption(m_SongProperty),
 				comparisonCaption(m_Comparison),
 				m_Value.toString()
@@ -172,7 +219,23 @@ QString Template::Filter::getDescription() const
 		}
 	}
 	assert(!"Unknown filter kind");
-	return QString("Unknown filter kind");
+	return QString("<invalid filter kind: %1>").arg(m_Kind);
+}
+
+
+
+
+
+QString Template::Filter::getDescription() const
+{
+	switch (m_Kind)
+	{
+		case fkAnd: return concatChildrenDescriptions(Template::tr(" and ", "FilterConcatString"));
+		case fkOr:  return concatChildrenDescriptions(Template::tr(" or ",  "FilterConcatString"));
+		case fkComparison: return QString("(%1)").arg(getCaption());
+	}
+	assert(!"Unknown filter kind");
+	return QString("<invalid filter kind: %1>").arg(m_Kind);
 }
 
 
