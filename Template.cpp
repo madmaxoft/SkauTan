@@ -8,7 +8,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Template::Filter:
 
-Template::Filter::Filter(Template::Filter::SongProperty a_SongProperty,
+Template::Filter::Filter(
+	Template::Filter::SongProperty a_SongProperty,
 	Template::Filter::Comparison a_Comparison,
 	QVariant a_Value
 ):
@@ -33,6 +34,27 @@ Template::Filter::Filter(
 	m_Children(a_SubFilters)
 {
 	assert(canHaveChildren());  // This constructor can only create children-able filters
+}
+
+
+
+
+
+Template::FilterPtr Template::Filter::clone() const
+{
+	if (canHaveChildren())
+	{
+		auto res = std::make_shared<Template::Filter>(m_Kind, std::vector<Template::FilterPtr>());
+		for (const auto & ch: m_Children)
+		{
+			res->addChild(ch->clone());
+		}
+		return res;
+	}
+	else
+	{
+		return std::make_shared<Template::Filter>(m_SongProperty, m_Comparison, m_Value);
+	}
 }
 
 
@@ -384,6 +406,17 @@ Template::Item::Item(
 
 
 
+Template::ItemPtr Template::Item::clone() const
+{
+	auto res = std::make_shared<Template::Item>(m_DisplayName, m_Notes, false);
+	res->setFilter(m_Filter->clone());
+	return res;
+}
+
+
+
+
+
 void Template::Item::setNoopFilter()
 {
 	m_Filter.reset(new Template::Filter(
@@ -451,6 +484,15 @@ Template::ItemPtr Template::addItem(
 	assert(a_DstIndex <= static_cast<int>(m_Items.size()));
 	m_Items.insert(m_Items.begin() + static_cast<size_t>(a_DstIndex), res);
 	return res;
+}
+
+
+
+
+
+void Template::appendExistingItem(Template::ItemPtr a_Item)
+{
+	m_Items.push_back(a_Item);
 }
 
 

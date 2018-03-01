@@ -74,7 +74,8 @@ SOURCES += \
 	Template.cpp \
 	DlgTemplatesList.cpp \
 	DlgEditTemplate.cpp \
-	DlgEditTemplateItem.cpp
+	DlgEditTemplateItem.cpp \
+	DlgPickTemplateFavoriteItem.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -96,7 +97,8 @@ HEADERS += \
 	Template.h \
 	DlgTemplatesList.h \
 	DlgEditTemplate.h \
-	DlgEditTemplateItem.h
+	DlgEditTemplateItem.h \
+	DlgPickTemplateFavoriteItem.h
 
 FORMS += \
 	PlayerWindow.ui \
@@ -104,4 +106,5 @@ FORMS += \
 	DlgHistory.ui \
 	DlgTemplatesList.ui \
 	DlgEditTemplate.ui \
-	DlgEditTemplateItem.ui
+	DlgEditTemplateItem.ui \
+    DlgPickTemplateFavoriteItem.ui

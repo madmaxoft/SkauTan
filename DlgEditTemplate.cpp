@@ -1,6 +1,7 @@
 #include "DlgEditTemplate.h"
 #include "ui_DlgEditTemplate.h"
 #include "DlgEditTemplateItem.h"
+#include "DlgPickTemplateFavoriteItem.h"
 #include "Database.h"
 
 
@@ -146,7 +147,34 @@ void DlgEditTemplate::editSelectedItem()
 
 void DlgEditTemplate::addFavoriteItem()
 {
-	// TODO
+	auto favorites = m_DB.getFavoriteTemplateItems();
+	if (favorites.empty())
+	{
+		return;
+	}
+	DlgPickTemplateFavoriteItem dlg(std::move(favorites));
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	auto item = dlg.itemSelected();
+	if (item == nullptr)
+	{
+		return;
+	}
+	item = item->clone();
+	if (item == nullptr)
+	{
+		return;
+	}
+	m_Template.appendExistingItem(item);
+	m_DB.saveTemplate(m_Template);
+
+	// Add the item in the UI:
+	auto idx = m_UI->tblItems->rowCount();
+	m_UI->tblItems->setRowCount(idx + 1);
+	setItem(idx, *item);
+	m_UI->tblItems->resizeColumnsToContents();
 }
 
 

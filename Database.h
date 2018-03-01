@@ -73,6 +73,9 @@ public:
 	/** Saves the changes in the specified template to the DB. */
 	void saveTemplate(const Template & a_Template);
 
+	/** Returns all template items from all templates that have been marked as "favorite". */
+	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
+
 
 protected:
 

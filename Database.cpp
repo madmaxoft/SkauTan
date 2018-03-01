@@ -221,6 +221,26 @@ void Database::saveTemplate(const Template & a_Template)
 
 
 
+std::vector<Template::ItemPtr> Database::getFavoriteTemplateItems() const
+{
+	std::vector<Template::ItemPtr> res;
+	for (const auto & tmpl: m_Templates)
+	{
+		for (const auto & item: tmpl->items())
+		{
+			if (item->isFavorite())
+			{
+				res.push_back(item);
+			}
+		}
+	}
+	return res;
+}
+
+
+
+
+
 void Database::fixupTables()
 {
 	/* For songs, we want unique RowID keys even after deletion, so that bound data doesn't get re-assigned

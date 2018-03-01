@@ -36,6 +36,7 @@ public:
 	class Filter;
 	class Item;
 	using FilterPtr = std::shared_ptr<Filter>;
+	using ItemPtr = std::shared_ptr<Item>;
 
 
 	/** Represents a filter, which a song must satisfy in order to be considered
@@ -92,6 +93,9 @@ public:
 
 		/** Create a "combination" filter over the specified sub-filters. */
 		Filter(Kind a_Combination, const std::vector<FilterPtr> a_SubFilters = {});
+
+		/** Returns a clone of this filter, including a clone of its subtree. */
+		FilterPtr clone() const;
 
 		Filter * parent() const { return m_Parent; }
 		Kind kind() const { return m_Kind; }
@@ -210,6 +214,9 @@ public:
 	public:
 		Item(const QString & a_DisplayName, const QString & a_Notes, bool a_IsFavorite);
 
+		/** Returns a clone of this item, with IsFavorite set to false. */
+		ItemPtr clone() const;
+
 		const QString & displayName() const { return m_DisplayName; }
 		const QString & notes() const { return m_Notes; }
 		bool isFavorite() const { return m_IsFavorite; }
@@ -246,8 +253,6 @@ public:
 		FilterPtr m_Filter;
 	};
 
-	using ItemPtr = std::shared_ptr<Item>;
-
 
 
 	/** Creates a new empty template. */
@@ -273,6 +278,9 @@ public:
 		bool a_IsFavorite,
 		int a_DstIndex = -1
 	);
+
+	/** Adds the specified item at the end of the item list. */
+	void appendExistingItem(ItemPtr a_Item);
 
 	/** Moves an item from the specified source index to the specified destination index.
 	Asserts if the indices are not valid. */
