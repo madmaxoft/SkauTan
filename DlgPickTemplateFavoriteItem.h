@@ -59,6 +59,13 @@ private:
 	/** Called for each keypress in the dialog, unless it is handled by the currently focused widget.
 	Used to monitor for the Enter and Esc keypresses. */
 	virtual void keyPressEvent(QKeyEvent * a_Event) override;
+
+
+protected slots:
+
+	/** Emitted by tblItems when a cell in it is dblclicked.
+	a_Row and a_Column are the cell coords. */
+	void itemDblClicked(int a_Row, int a_Column);
 };
 
 

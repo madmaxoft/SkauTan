@@ -13,6 +13,9 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 {
 	m_UI->setupUi(this);
 
+	// Connect signals:
+	connect(m_UI->tblItems, &QTableWidget::cellDoubleClicked, this, &DlgPickTemplateFavoriteItem::itemDblClicked);
+
 	// Fill in items:
 	m_UI->tblItems->setColumnCount(4);
 	m_UI->tblItems->setHorizontalHeaderLabels({
@@ -67,4 +70,19 @@ void DlgPickTemplateFavoriteItem::keyPressEvent(QKeyEvent * a_Event)
 		}
 	}
 	Super::keyPressEvent(a_Event);
+}
+
+
+
+
+
+void DlgPickTemplateFavoriteItem::itemDblClicked(int a_Row, int a_Column)
+{
+	Q_UNUSED(a_Column);
+
+	if (a_Row >= 0)
+	{
+		m_ItemSelected = m_Items[a_Row];
+		accept();
+	}
 }
