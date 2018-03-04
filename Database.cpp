@@ -88,6 +88,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	if (!query.prepare("INSERT INTO Songs (FileName, FileSize) VALUES(?, ?)"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.bindValue(0, a_FileName);
@@ -95,6 +96,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 
@@ -120,6 +122,7 @@ void Database::saveSong(const Song & a_Song)
 	)
 	{
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.addBindValue(a_Song.fileName());
@@ -137,6 +140,7 @@ void Database::saveSong(const Song & a_Song)
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 }
@@ -152,6 +156,7 @@ TemplatePtr Database::addTemplate()
 	if (!query.prepare("INSERT INTO Templates (DisplayName, Notes) VALUES(?, ?)"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
 		return nullptr;
 	}
 	query.bindValue(0, QString());
@@ -159,6 +164,7 @@ TemplatePtr Database::addTemplate()
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
 		return nullptr;
 	}
 
@@ -178,10 +184,55 @@ void Database::delTemplate(const Template * a_Template)
 	{
 		if (itr->get() == a_Template)
 		{
+			// Erase from the DB:
+			QSqlQuery query(m_Database);
+			if (!query.prepare("DELETE FROM Templates WHERE RowID = ?"))
+			{
+				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(Templates) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			query.addBindValue(a_Template->dbRowId());
+			if (!query.exec())
+			{
+				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(Templates) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			if (!query.prepare("DELETE FROM TemplateItems WHERE TemplateID = ?"))
+			{
+				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(TemplateItems) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			query.addBindValue(a_Template->dbRowId());
+			if (!query.exec())
+			{
+				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(TemplateItems) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			if (!query.prepare("DELETE FROM TemplateFilters WHERE TemplateID = ?"))
+			{
+				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(TemplateFilters) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			query.addBindValue(a_Template->dbRowId());
+			if (!query.exec())
+			{
+				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(TemplateFilters) statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+
+			// Remove from the internal list:
 			m_Templates.erase(itr);
 			return;
 		}
 	}
+	qWarning() << __FUNCTION__ << ": Attempting to remove a template not in the list: " << a_Template->displayName();
+	assert(!"Template not in list");
 }
 
 
@@ -193,11 +244,12 @@ void Database::saveTemplate(const Template & a_Template)
 	// Save the template direct values:
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE Templates SET "
-		"DisplayName = ?, Notes = ?"
+		"DisplayName = ?, Notes = ? "
 		"WHERE RowID = ?")
 	)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		qWarning() << __FUNCTION__ << ": Cannot prepare UPDATE statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.addBindValue(a_Template.displayName());
@@ -205,10 +257,28 @@ void Database::saveTemplate(const Template & a_Template)
 	query.addBindValue(a_Template.dbRowId());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		qWarning() << __FUNCTION__ << ": Cannot exec UPDATE statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 
+	// Remove all template's items from the DB:
+	if (query.prepare("DELETE FROM TemplateItems WHERE TemplateID = ?"))
+	{
+		query.addBindValue(a_Template.dbRowId());
+		if (!query.exec())
+		{
+			qWarning() << __FUNCTION__ << ": Cannot exec DELETE statement: " << query.lastError();
+			assert(!"DB error");
+		}
+	}
+	else
+	{
+		qWarning() << __FUNCTION__ << ": Cannot prepare DELETE statement: " << query.lastError();
+		assert(!"DB error");
+	}
+
+	// Re-add all template's items into the DB:
 	int idx = 0;
 	for (const auto & item: a_Template.items())
 	{
@@ -290,6 +360,7 @@ void Database::fixupTables()
 	{
 		{"RowID",        "INTEGER PRIMARY KEY"},
 		{"ItemID",       "INTEGER"},  // RowID of the TemplateItem that owns this filter
+		{"TemplateID",   "INTEGER"},  // RowID of the Template that owns this filter's item
 		{"ParentID",     "INTEGER"},  // RowID of this filter's parent, or -1 if root
 		{"Kind",         "INTEGER"},  // Numeric representation of the Template::Filter::Kind enum
 		{"SongProperty", "INTEGER"},  // Numeric representation of the Template::Filter::SongProperty enum
@@ -378,6 +449,7 @@ void Database::loadSongs()
 	if (!query.exec("SELECT RowID, * FROM Songs"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot query songs from the DB: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	auto fiFileName            = query.record().indexOf("FileName");
@@ -397,11 +469,13 @@ void Database::loadSongs()
 	if (!query.isActive())
 	{
 		qWarning() << __FUNCTION__ << ": Query not active";
+		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
 		qWarning() << __FUNCTION__ << ": Not a select";
+		assert(!"DB error");
 		return;
 	}
 	while (query.next())
@@ -441,6 +515,7 @@ void Database::loadTemplates()
 	if (!query.exec("SELECT RowID, * FROM Templates"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot query templates from the DB: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	auto fiDisplayName = query.record().indexOf("DisplayName");
@@ -451,11 +526,13 @@ void Database::loadTemplates()
 	if (!query.isActive())
 	{
 		qWarning() << __FUNCTION__ << ": Query not active";
+		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
 		qWarning() << __FUNCTION__ << ": Not a select";
+		assert(!"DB error");
 		return;
 	}
 	while (query.next())
@@ -484,6 +561,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 		qWarning() << __FUNCTION__ << ": Cannot query template items from the DB, template "
 			<< a_Template->displayName()
 			<< ", prep error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.addBindValue(a_Template->dbRowId());
@@ -492,6 +570,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 		qWarning() << __FUNCTION__ << ": Cannot query template items from the DB, template "
 			<< a_Template->displayName()
 			<< ", exec error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	auto fiRowId       = query.record().indexOf("RowID");
@@ -503,11 +582,13 @@ void Database::loadTemplate(TemplatePtr a_Template)
 	if (!query.isActive())
 	{
 		qWarning() << __FUNCTION__ << ": Query not active";
+		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
 		qWarning() << __FUNCTION__ << ": Not a select";
+		assert(!"DB error");
 		return;
 	}
 	while (query.next())
@@ -544,6 +625,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 			<< "template " << a_Template->displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.addBindValue(a_ItemRowId);
@@ -553,6 +635,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 			<< "template " << a_Template->displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	auto fiRowId        = query.record().indexOf("RowID");
@@ -572,11 +655,13 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 	if (!query.isActive())
 	{
 		qWarning() << __FUNCTION__ << ": Query not active";
+		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
 		qWarning() << __FUNCTION__ << ": Not a select";
+		assert(!"DB error");
 		return;
 	}
 	while (query.next())
@@ -685,84 +770,37 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 
 void Database::saveTemplateItem(const Template & a_Template, int a_Index, const Template::Item & a_Item)
 {
-	// Check if item exists:
+	// Insert the item into the DB:
 	QSqlQuery query(m_Database);
 	query.setForwardOnly(true);
-	if (!query.prepare("SELECT RowID FROM TemplateItems WHERE TemplateID = ? AND IndexInParent = ?"))
+	qlonglong rowId = -1;
+	if (!query.prepare(
+		"INSERT INTO TemplateItems (DisplayName, Notes, IsFavorite, TemplateID, IndexInParent)"
+		"VALUES (?, ?, ?, ?, ?)"
+	))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template items count from the DB, template "
+		qWarning() << __FUNCTION__ << ": Cannot insert template item into the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
+	query.addBindValue(a_Item.displayName());
+	query.addBindValue(a_Item.notes());
+	query.addBindValue(a_Item.isFavorite());
 	query.addBindValue(a_Template.dbRowId());
 	query.addBindValue(a_Index);
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template items count from the DB, template "
+		qWarning() << __FUNCTION__ << ": Cannot insert template item in the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
-
-	// Insert / update:
-	auto doesExist = query.next();
-	qlonglong rowId = -1;
-	if (doesExist)
-	{
-		// Exists, update:
-		rowId = query.value(0).toLongLong();
-		if (!query.prepare(
-			"UPDATE TemplateItems SET DisplayName = ?, Notes = ?, IsFavorite = ?"
-			"WHERE TemplateID = ? AND IndexInParent = ?"
-		))
-		{
-			qWarning() << __FUNCTION__ << ": Cannot update template item in the DB, template "
-				<< a_Template.displayName()
-				<< ", item " << a_Item.displayName()
-				<< ", prep error: " << query.lastError();
-			return;
-		}
-		query.addBindValue(a_Item.displayName());
-		query.addBindValue(a_Item.notes());
-		query.addBindValue(a_Item.isFavorite());
-		query.addBindValue(a_Template.dbRowId());
-		query.addBindValue(a_Index);
-	}
-	else
-	{
-		// Doesn't exist, create:
-		if (!query.prepare(
-			"INSERT INTO TemplateItems (DisplayName, Notes, IsFavorite, TemplateID, IndexInParent)"
-			"VALUES (?, ?, ?, ?, ?)"
-		))
-		{
-			qWarning() << __FUNCTION__ << ": Cannot insert template item into the DB, template "
-				<< a_Template.displayName()
-				<< ", item " << a_Item.displayName()
-				<< ", exec error: " << query.lastError();
-			return;
-		}
-		query.addBindValue(a_Item.displayName());
-		query.addBindValue(a_Item.notes());
-		query.addBindValue(a_Item.isFavorite());
-		query.addBindValue(a_Template.dbRowId());
-		query.addBindValue(a_Index);
-	}
-	if (!query.exec())
-	{
-		qWarning() << __FUNCTION__ << ": Cannot update template item in the DB, template "
-			<< a_Template.displayName()
-			<< ", item " << a_Item.displayName()
-			<< ", exec error: " << query.lastError();
-		return;
-	}
-	if (!doesExist)
-	{
-		rowId = query.lastInsertId().toLongLong();
-	}
+	rowId = query.lastInsertId().toLongLong();
 	assert(rowId != -1);
 
 	// Remove all filters assigned to this item:
@@ -772,6 +810,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.addBindValue(rowId);
@@ -781,11 +820,12 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 
 	// Save the filters recursively:
-	saveTemplateFilters(rowId, *(a_Item.filter()), -1);
+	saveTemplateFilters(a_Template.dbRowId(), rowId, *(a_Item.filter()), -1);
 }
 
 
@@ -793,6 +833,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 
 
 void Database::saveTemplateFilters(
+	qlonglong a_TemplateRowId,
 	qlonglong a_TemplateItemRowId,
 	const Template::Filter & a_Filter,
 	qlonglong a_ParentFilterRowId
@@ -802,14 +843,16 @@ void Database::saveTemplateFilters(
 	if (a_Filter.canHaveChildren())
 	{
 		if (!query.prepare(
-			"INSERT INTO TemplateFilters (ItemID, ParentID, Kind) "
-			"VALUES (?, ?, ?)"
+			"INSERT INTO TemplateFilters (TemplateID, ItemID, ParentID, Kind) "
+			"VALUES (?, ?, ?, ?)"
 		))
 		{
 			qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
 				", prep error:" << query.lastError();
+			assert(!"DB error");
 			return;
 		}
+		query.addBindValue(a_TemplateRowId);
 		query.addBindValue(a_TemplateItemRowId);
 		query.addBindValue(a_ParentFilterRowId);
 		query.addBindValue(static_cast<int>(a_Filter.kind()));
@@ -817,14 +860,16 @@ void Database::saveTemplateFilters(
 	else
 	{
 		if (!query.prepare(
-			"INSERT INTO TemplateFilters (ItemID, ParentID, Kind, SongProperty, Comparison, Value) "
-			"VALUES (?, ?, ?, ?, ?, ?)"
+			"INSERT INTO TemplateFilters (TemplateID, ItemID, ParentID, Kind, SongProperty, Comparison, Value) "
+			"VALUES (?, ?, ?, ?, ?, ?, ?)"
 		))
 		{
 			qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
 				", prep error:" << query.lastError();
+			assert(!"DB error");
 			return;
 		}
+		query.addBindValue(a_TemplateRowId);
 		query.addBindValue(a_TemplateItemRowId);
 		query.addBindValue(a_ParentFilterRowId);
 		query.addBindValue(static_cast<int>(Template::Filter::fkComparison));
@@ -836,6 +881,7 @@ void Database::saveTemplateFilters(
 	{
 		qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
 			", exec error:" << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	auto rowId = query.lastInsertId().toLongLong();
@@ -845,7 +891,7 @@ void Database::saveTemplateFilters(
 	{
 		for (const auto & ch: a_Filter.children())
 		{
-			saveTemplateFilters(a_TemplateItemRowId, *ch, rowId);
+			saveTemplateFilters(a_TemplateRowId, a_TemplateItemRowId, *ch, rowId);
 		}
 	}
 }
@@ -875,6 +921,7 @@ void Database::songPlaybackStarted(Song * a_Song)
 	if (!query.prepare("INSERT INTO PlaybackHistory (SongID, Timestamp) VALUES (?, ?)"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 	query.bindValue(0, a_Song->dbRowId());
@@ -882,6 +929,7 @@ void Database::songPlaybackStarted(Song * a_Song)
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
 		return;
 	}
 }

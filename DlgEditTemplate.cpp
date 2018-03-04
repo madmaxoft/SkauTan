@@ -1,4 +1,5 @@
 #include "DlgEditTemplate.h"
+#include <QMessageBox>
 #include "ui_DlgEditTemplate.h"
 #include "DlgEditTemplateItem.h"
 #include "DlgPickTemplateFavoriteItem.h"
@@ -183,7 +184,39 @@ void DlgEditTemplate::addFavoriteItem()
 
 void DlgEditTemplate::removeSelectedItems()
 {
-	// TODO
+	auto selRows = m_UI->tblItems->selectionModel()->selectedRows();
+	if (selRows.isEmpty())
+	{
+		return;
+	}
+
+	// Ask the user:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan - Remove items"),
+		tr("Are you sure you want to remove the selected items?"),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	// Sort the rows from the last to the first:
+	std::vector<int> rows;
+	rows.reserve(static_cast<size_t>(selRows.size()));
+	for (const auto & row: selRows)
+	{
+		rows.push_back(row.row());
+	}
+	std::sort(rows.begin(), rows.end(), std::greater<int>());
+
+	// Remove the rows:
+	for (const auto row: rows)
+	{
+		m_Template.delItem(row);
+		m_UI->tblItems->removeRow(row);
+	}
+	m_DB.saveTemplate(m_Template);
 }
 
 

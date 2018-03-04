@@ -123,9 +123,11 @@ protected:
 	void saveTemplateItem(const Template & a_Template, int a_Index, const Template::Item & a_Item);
 
 	/** Recursively saves (inserts) the filter subtree from a_Filter.
+	a_TemplateRowId is the RowID of the template to which the filter belongs, through its template item
 	a_TemplateItemRowId is the RowID of the template item to which the filter belongs
 	a_ParentFilterRowId is the RowID of the filter that is the parent of a_Filter, -1 for root filter. */
 	void saveTemplateFilters(
+		qlonglong a_TemplateRowId,
 		qlonglong a_TemplateItemRowId,
 		const Template::Filter & a_Filter,
 		qlonglong a_ParentFilterRowId

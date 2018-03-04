@@ -41,6 +41,7 @@ DlgTemplatesList::DlgTemplatesList(Database & a_DB, QWidget * a_Parent):
 		const auto & tmpl = templates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
+	m_UI->tblTemplates->resizeColumnsToContents();
 }
 
 
@@ -78,7 +79,7 @@ TemplatePtr DlgTemplatesList::templateFromRow(int a_Row)
 
 void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 {
-	auto numItems = QString::number(a_Template.children().size());
+	auto numItems = QString::number(a_Template.items().size());
 	m_UI->tblTemplates->setItem(a_Row, 0, new QTableWidgetItem(a_Template.displayName()));
 	m_UI->tblTemplates->setItem(a_Row, 1, new QTableWidgetItem(numItems));
 	m_UI->tblTemplates->setItem(a_Row, 2, new QTableWidgetItem(a_Template.notes()));

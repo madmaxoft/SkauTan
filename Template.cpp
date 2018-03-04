@@ -496,3 +496,14 @@ void Template::appendExistingItem(Template::ItemPtr a_Item)
 }
 
 
+
+
+
+void Template::delItem(int a_Index)
+{
+	assert(a_Index >= 0);
+	assert(static_cast<size_t>(a_Index) < m_Items.size());
+	m_Items.erase(m_Items.begin() + a_Index);
+}
+
+
