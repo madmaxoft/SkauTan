@@ -35,12 +35,15 @@ class DlgEditTemplateItem:
 public:
 
 	/** Creates a new dialog instance for editing the specified item. */
-	explicit DlgEditTemplateItem(Template::Item & a_Item, QWidget * a_Parent = nullptr);
+	explicit DlgEditTemplateItem(Database & a_DB, Template::Item & a_Item, QWidget * a_Parent = nullptr);
 
 	~DlgEditTemplateItem();
 
 
 private:
+
+	/** The DB on which the operations take place. */
+	Database & m_DB;
 
 	/** The item being edited. */
 	Template::Item & m_Item;
@@ -101,6 +104,9 @@ protected slots:
 	Propagates the deletion as far as needed so that the filter tree is normalized.
 	If the propagation causes the filter to become empty, re-initializes the filter to "all pass". */
 	void removeFilter();
+
+	/** Shows a preview of the filter - lists all matching songs. */
+	void previewFilter();
 
 	/** Called when the selection in the Filters tree changes. */
 	void filterSelectionChanged();

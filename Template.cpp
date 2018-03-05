@@ -1,5 +1,14 @@
 #include "Template.h"
 #include <assert.h>
+#include <QLocale>
+#include "Song.h"
+
+
+
+
+
+/** The difference that is still considered equal when comparing two numerical property values in a Filter. */
+static const double EPS = 0.000001;
 
 
 
@@ -142,6 +151,47 @@ void Template::Filter::setValue(QVariant a_Value)
 {
 	assert(!canHaveChildren());
 	m_Value = a_Value;
+}
+
+
+
+
+
+bool Template::Filter::isSatisfiedBy(const Song & a_Song) const
+{
+	switch (m_Kind)
+	{
+		case fkAnd:
+		{
+			for (const auto ch: m_Children)
+			{
+				if (!ch->isSatisfiedBy(a_Song))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		case fkOr:
+		{
+			for (const auto ch: m_Children)
+			{
+				if (ch->isSatisfiedBy(a_Song))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		case fkComparison:
+		{
+			return isComparisonSatisfiedBy(a_Song);
+		}
+	}
+	assert(!"Unknown filter kind");
+	return false;
 }
 
 
@@ -381,6 +431,93 @@ QString Template::Filter::concatChildrenDescriptions(const QString & a_Separator
 	}
 	res.append(")");
 	return res;
+}
+
+
+
+
+
+bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
+{
+	assert(m_Kind == fkComparison);
+	switch (m_SongProperty)
+	{
+		case fspAuthor:            return isStringComparisonSatisfiedBy(a_Song.author().toString());
+		case fspGenre:             return isStringComparisonSatisfiedBy(a_Song.genre().toString());
+		case fspLastPlayed:        return isDateComparisonSatisfiedBy(a_Song.lastPlayed().toDateTime());
+		case fspLength:            return isNumberComparisonSatisfiedBy(a_Song.length().toDouble());
+		case fspMeasuresPerMinute: return isNumberComparisonSatisfiedBy(a_Song.measuresPerMinute().toDouble());
+		case fspRating:            return isNumberComparisonSatisfiedBy(a_Song.rating().toDouble());
+		case fspTitle:             return isStringComparisonSatisfiedBy(a_Song.title().toString());
+	}
+	assert(!"Unknown song property in comparison");
+	return false;
+}
+
+
+
+
+
+bool Template::Filter::isStringComparisonSatisfiedBy(const QString & a_Value) const
+{
+	assert(m_Kind == fkComparison);
+	switch (m_Comparison)
+	{
+		case fcContains:           return  a_Value.contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcNotContains:        return !a_Value.contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcEqual:              return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) == 0);
+		case fcNotEqual:           return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) != 0);
+		case fcGreaterThan:        return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) >  0);
+		case fcGreaterThanOrEqual: return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) >= 0);
+		case fcLowerThan:          return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) <  0);
+		case fcLowerThanOrEqual:   return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) <= 0);
+	}
+	assert(!"Unknown comparison");
+	return false;
+}
+
+
+
+
+
+bool Template::Filter::isNumberComparisonSatisfiedBy(double a_Value) const
+{
+	assert(m_Kind == fkComparison);
+	switch (m_Comparison)
+	{
+		case fcContains:           return  QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcNotContains:        return !QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcEqual:              return (std::abs(a_Value - m_Value.toDouble()) < EPS);
+		case fcNotEqual:           return (std::abs(a_Value - m_Value.toDouble()) >= EPS);
+		case fcGreaterThan:        return (a_Value >  m_Value.toDouble());
+		case fcGreaterThanOrEqual: return (a_Value >= m_Value.toDouble());
+		case fcLowerThan:          return (a_Value <  m_Value.toDouble());
+		case fcLowerThanOrEqual:   return (a_Value <= m_Value.toDouble());
+	}
+	assert(!"Unknown comparison");
+	return false;
+}
+
+
+
+
+
+bool Template::Filter::isDateComparisonSatisfiedBy(QDateTime a_Value) const
+{
+	assert(m_Kind == fkComparison);
+	switch (m_Comparison)
+	{
+		case fcContains:           return  a_Value.toString(QLocale().dateTimeFormat()).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcNotContains:        return !a_Value.toString(QLocale().dateTimeFormat()).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcEqual:              return (a_Value == m_Value.toDateTime());
+		case fcNotEqual:           return (a_Value != m_Value.toDateTime());
+		case fcGreaterThan:        return (a_Value >  m_Value.toDateTime());
+		case fcGreaterThanOrEqual: return (a_Value >= m_Value.toDateTime());
+		case fcLowerThan:          return (a_Value <  m_Value.toDateTime());
+		case fcLowerThanOrEqual:   return (a_Value <= m_Value.toDateTime());
+	}
+	assert(!"Unknown comparison");
+	return false;
 }
 
 

@@ -19,7 +19,7 @@ static QString formatLength(const Song & a_Song)
 		return SongModel::tr("<unknown>", "Length");
 	}
 	auto len = static_cast<int>(floor(a_Song.length().toDouble() + 0.5));
-	return QString("%1:%2").arg(len / 60).arg(len % 60);
+	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, QChar('0'));
 }
 
 
@@ -84,12 +84,20 @@ SongPtr SongModel::songFromIndex(const QModelIndex & a_Idx) const
 	{
 		return nullptr;
 	}
-	auto row = a_Idx.row();
-	if ((row < 0) || (static_cast<size_t>(row) >= m_DB.songs().size()))
+	return songFromRow(a_Idx.row());
+}
+
+
+
+
+
+SongPtr SongModel::songFromRow(int a_Row) const
+{
+	if ((a_Row < 0) || (static_cast<size_t>(a_Row) >= m_DB.songs().size()))
 	{
 		return nullptr;
 	}
-	return m_DB.songs()[row];
+	return m_DB.songs()[a_Row];
 }
 
 

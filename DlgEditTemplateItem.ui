@@ -84,6 +84,13 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QPushButton" name="btnPreview">
+           <property name="text">
+            <string>&amp;Preview...</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

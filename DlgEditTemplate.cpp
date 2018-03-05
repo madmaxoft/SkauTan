@@ -111,7 +111,7 @@ void DlgEditTemplate::saveAndClose()
 void DlgEditTemplate::addItem()
 {
 	auto item = m_Template.addItem(tr("New item"), QString(), false);
-	DlgEditTemplateItem dlg(*item, this);
+	DlgEditTemplateItem dlg(m_DB, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 
@@ -135,7 +135,7 @@ void DlgEditTemplate::editSelectedItem()
 	}
 	auto row = sel[0].row();
 	auto item = m_Template.items()[row];
-	DlgEditTemplateItem dlg(*item, this);
+	DlgEditTemplateItem dlg(m_DB, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	setItem(row, *item);
@@ -228,7 +228,7 @@ void DlgEditTemplate::cellDoubleClicked(int a_Row, int a_Column)
 	Q_UNUSED(a_Column);
 
 	auto item = m_Template.items()[a_Row];
-	DlgEditTemplateItem dlg(*item, this);
+	DlgEditTemplateItem dlg(m_DB, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	setItem(a_Row, *item);

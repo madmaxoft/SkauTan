@@ -50,6 +50,9 @@ public:
 	/** Returns the song represented by the specified model index. */
 	SongPtr songFromIndex(const QModelIndex & a_Idx) const;
 
+	/** Returns the song represented by the specified row. */
+	SongPtr songFromRow(int a_Row) const;
+
 protected:
 
 	/** The DB on which the model is based. */

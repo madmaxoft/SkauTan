@@ -12,14 +12,30 @@
 ////////////////////////////////////////////////////////////////////////////////
 // DlgSongs:
 
-DlgSongs::DlgSongs(Database & a_DB, QWidget * a_Parent):
+DlgSongs::DlgSongs(
+	Database & a_DB,
+	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
+	bool a_ShowManipulators,
+	QWidget * a_Parent
+):
 	Super(a_Parent),
 	m_DB(a_DB),
 	m_UI(new Ui::DlgSongs),
+	m_FilterModel(std::move(a_FilterModel)),
 	m_SongModel(a_DB)
 {
 	m_UI->setupUi(this);
-	m_UI->tblSongs->setModel(&m_SongModel);
+	if (m_FilterModel == nullptr)
+	{
+		m_FilterModel.reset(new QSortFilterProxyModel);
+	}
+	if (!a_ShowManipulators)
+	{
+		m_UI->btnAddFolder->hide();
+		m_UI->btnAddToPlaylist->hide();
+	}
+	m_FilterModel->setSourceModel(&m_SongModel);
+	m_UI->tblSongs->setModel(m_FilterModel.get());
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
@@ -28,8 +44,10 @@ DlgSongs::DlgSongs(Database & a_DB, QWidget * a_Parent):
 	connect(m_UI->btnAddToPlaylist, &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
 	connect(&m_SongModel,           &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
 
+	#if 0
 	// Set the column widths to reasonable defaults:
 	QFontMetrics fm(m_UI->tblSongs->horizontalHeader()->font());
+	m_UI->tblSongs->setColumnWidth(SongModel::colRating,            fm.width("WRatingW"));
 	m_UI->tblSongs->setColumnWidth(SongModel::colGenre,             fm.width("WGenreW"));
 	m_UI->tblSongs->setColumnWidth(SongModel::colLength,            fm.width("W000:00:00W"));
 	m_UI->tblSongs->setColumnWidth(SongModel::colMeasuresPerMinute, fm.width("WMPMW"));
@@ -37,6 +55,8 @@ DlgSongs::DlgSongs(Database & a_DB, QWidget * a_Parent):
 	m_UI->tblSongs->setColumnWidth(SongModel::colAuthor,   defaultWid * 2);
 	m_UI->tblSongs->setColumnWidth(SongModel::colTitle,    defaultWid * 2);
 	m_UI->tblSongs->setColumnWidth(SongModel::colFileName, defaultWid * 3);
+	#endif
+	m_UI->tblSongs->resizeColumnsToContents();
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);

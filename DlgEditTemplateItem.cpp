@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QComboBox>
+#include "DlgSongs.h"
 
 
 
@@ -76,6 +77,56 @@ static int indexFromComparison(const Template::Filter & a_Filter)
 	}
 	return -1;
 }
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FilterModel:
+
+/** A filter model that applies the specified Template::Filter onto the underlying SongModel. */
+class FilterModel:
+	public QSortFilterProxyModel
+{
+public:
+	FilterModel(Template::FilterPtr a_Filter):
+		m_Filter(a_Filter)
+	{
+	}
+
+
+protected:
+
+	/** The filter to be applied. */
+	Template::FilterPtr m_Filter;
+
+
+	virtual bool filterAcceptsRow(int a_SourceRow, const QModelIndex & a_SourceParent) const override
+	{
+		if (!a_SourceParent.isValid())
+		{
+			assert(!"This filter should not be used for multi-level data");
+			return false;
+		}
+
+		auto sm = dynamic_cast<SongModel *>(sourceModel());
+		if (sm == nullptr)
+		{
+			qWarning() << __FUNCTION__ << ": Expected a SongModel source";
+			assert(!"Unexpected source model type");
+			return true;
+		}
+		auto song = sm->songFromRow(a_SourceRow);
+		if (song == nullptr)
+		{
+			qWarning() << __FUNCTION__ << ": Underlying model returned nullptr song for row " << a_SourceRow;
+			assert(!"Unexpected nullptr song");
+			return false;
+		}
+		return m_Filter->isSatisfiedBy(*song);
+	}
+};
 
 
 
@@ -243,8 +294,9 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // DlgEditTemplateItem:
 
-DlgEditTemplateItem::DlgEditTemplateItem(Template::Item & a_Item, QWidget * a_Parent):
+DlgEditTemplateItem::DlgEditTemplateItem(Database & a_DB, Template::Item & a_Item, QWidget * a_Parent):
 	Super(a_Parent),
+	m_DB(a_DB),
 	m_Item(a_Item),
 	m_UI(new Ui::DlgEditTemplateItem)
 {
@@ -257,6 +309,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(Template::Item & a_Item, QWidget * a_Pa
 	connect(m_UI->btnAddSibling,       &QPushButton::clicked, this, &DlgEditTemplateItem::addFilterSibling);
 	connect(m_UI->btnInsertCombinator, &QPushButton::clicked, this, &DlgEditTemplateItem::insertFilterCombinator);
 	connect(m_UI->btnRemoveFilter,     &QPushButton::clicked, this, &DlgEditTemplateItem::removeFilter);
+	connect(m_UI->btnPreview,          &QPushButton::clicked, this, &DlgEditTemplateItem::previewFilter);
 	connect(
 		m_UI->twFilters->selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &DlgEditTemplateItem::filterSelectionChanged
@@ -554,6 +607,16 @@ void DlgEditTemplateItem::removeFilter()
 
 	rebuildFilterModel();
 	m_UI->twFilters->expandAll();
+}
+
+
+
+
+
+void DlgEditTemplateItem::previewFilter()
+{
+	DlgSongs dlg(m_DB, std::make_unique<FilterModel>(m_Item.filter()), false, this);
+	dlg.exec();
 }
 
 

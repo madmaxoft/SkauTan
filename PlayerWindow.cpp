@@ -30,11 +30,13 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 
+	#if 0
 	// DEBUG: Add all songs into the playlist, to ease debugging:
 	for (const auto & song: m_DB->songs())
 	{
 		addSong(song);
 	}
+	#endif
 
 	// Connect the signals:
 	connect(m_UI->btnSongs,     &QPushButton::clicked,      this, &PlayerWindow::showSongs);
@@ -75,7 +77,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(*m_DB, this);
+	DlgSongs dlg(*m_DB, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
 	dlg.exec();
 }

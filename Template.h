@@ -188,6 +188,22 @@ public:
 		Assumes that the filter is fkAnd or fkOr. */
 		QString concatChildrenDescriptions(const QString & a_Separator) const;
 
+		/** Returns true if the comparison in this filter is satisfied by the song.
+		Asserts if this filter is not a fkComparison. */
+		bool isComparisonSatisfiedBy(const Song & a_Song) const;
+
+		/** Returns true if the comparison in this filter is satisfied by the specified value.
+		Asserts if this filter is not a fkComparison. */
+		bool isStringComparisonSatisfiedBy(const QString & a_Value) const;
+
+		/** Returns true if the comparison in this filter is satisfied by the specified value.
+		Asserts if this filter is not a fkComparison. */
+		bool isNumberComparisonSatisfiedBy(double a_Value) const;
+
+		/** Returns true if the comparison in this filter is satisfied by the specified value.
+		Asserts if this filter is not a fkComparison. */
+		bool isDateComparisonSatisfiedBy(QDateTime a_Value) const;
+
 
 	private:
 
