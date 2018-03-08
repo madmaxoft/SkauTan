@@ -1,6 +1,8 @@
 #include "Playlist.h"
 #include <assert.h>
 #include <QDebug>
+#include "Database.h"
+#include "PlaylistItemSong.h"
 
 
 
@@ -160,4 +162,109 @@ bool Playlist::setCurrentItem(const IPlaylistItem * a_Item)
 		idx += 1;
 	}
 	return false;
+}
+
+
+
+
+
+void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Template)
+{
+	for (const auto & item: a_Template.items())
+	{
+		addFromTemplateItem(a_DB, *item);
+	}
+}
+
+
+
+
+
+bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item & a_Item)
+{
+	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
+	int totalWeight = 0;
+	for (const auto song: a_DB.songs())
+	{
+		if (a_Item.filter()->isSatisfiedBy(*song))
+		{
+			auto weight = getSongWeight(a_DB, *song);
+			songs.push_back(std::make_pair(song, weight));
+			totalWeight += weight;
+			// DEBUG: qDebug() << __FUNCTION__ << ": Candidate " << song->title().toString() << ": weight " << weight;
+		}
+	}
+
+	if (songs.empty())
+	{
+		qDebug() << __FUNCTION__ << ": No song matches item " << a_Item.displayName();
+		return false;
+	}
+
+	auto chosen = songs[0].first;
+	totalWeight = std::max(totalWeight, 1);
+	auto threshold = std::rand() % totalWeight;
+	for (const auto & song: songs)
+	{
+		threshold -= song.second;
+		if (threshold <= 0)
+		{
+			chosen = song.first;
+			break;
+		}
+	}
+	assert(chosen != nullptr);
+	addItem(std::make_shared<PlaylistItemSong>(chosen));
+	// DEBUG: qDebug() << __FUNCTION__ << ": Chosen " << chosen->title().toString();
+	return true;
+}
+
+
+
+
+
+int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
+{
+	Q_UNUSED(a_DB);
+	int res = 10000;  // Base weight
+
+	// Penalize the last played date:
+	auto lastPlayed = a_Song.lastPlayed();
+	if (lastPlayed.isValid())
+	{
+		auto numDays = lastPlayed.toDateTime().daysTo(QDateTime::currentDateTime());
+		res = res * (numDays + 1) / (numDays + 2);  // The more days have passed, the less penalty
+	}
+
+	// Penalize presence in the list:
+	int idx = 0;
+	for (const auto itm: items())
+	{
+		auto spi = dynamic_cast<PlaylistItemSong *>(itm.get());
+		if (spi != nullptr)
+		{
+			if (spi->song().get() == &a_Song)
+			{
+				// This song is already present, penalize depending on distance from the end (where presumably it is to be added):
+				auto numInBetween = static_cast<int>(m_Items.size()) - idx;
+				res = res * (numInBetween + 100) / (numInBetween + 200);
+				// Do not stop processing - if present multiple times, penalize multiple times
+			}
+		}
+		idx += 1;
+	}
+
+	// Penalize by rating:
+	auto rating = a_Song.rating();
+	if (rating.isValid())
+	{
+		res = res * (rating.toInt() + 1) / 5;  // Even zero-rating songs need *some* chance
+	}
+	else
+	{
+		// Default to 2.5-star rating:
+		res = res * 3.5 / 5;
+	}
+
+	return res;
 }

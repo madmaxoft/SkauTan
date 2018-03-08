@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <QDialog>
+#include <QSortFilterProxyModel>
 #include "SongModel.h"
 
 
@@ -15,7 +16,7 @@
 
 // fwd:
 class Song;
-class SongDatabase;
+class Database;
 namespace Ui
 {
 	class DlgSongs;
@@ -35,7 +36,15 @@ class DlgSongs:
 
 public:
 
-	explicit DlgSongs(SongDatabase & a_SongDB, QWidget * a_Parent = nullptr);
+	/** Creates a new dialog instance.
+	a_FilterModel is the filter to apply to songs before displaying, nullptr to show all songs.
+	If a_ShowManipulators is true, the buttons for adding songs / adding to playlist are shown. */
+	explicit DlgSongs(
+		Database & a_DB,
+		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
+		bool a_ShowManipulators,
+		QWidget * a_Parent
+	);
 
 	~DlgSongs();
 
@@ -44,13 +53,17 @@ public:
 	Skips duplicate files. Schedules the added files for metadata re-scan. */
 	void addFolder(const QString & a_Path);
 
+
 private:
 
 	/** The Song DB that is being displayed and manipulated. */
-	SongDatabase & m_SongDB;
+	Database & m_DB;
 
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;
+
+	/** The filter that is applied to m_SongModel before displaying. */
+	std::unique_ptr<QSortFilterProxyModel> m_FilterModel;
 
 	/** The songs, displayed in the UI. */
 	SongModel m_SongModel;

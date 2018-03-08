@@ -12,13 +12,14 @@
 #include "Song.h"
 #include "Playlist.h"
 #include "MetadataScanner.h"
+#include "Template.h"
 
 
 
 
 
 /** The central object that binds everything together and provides DB serialization. */
-class SongDatabase:
+class Database:
 	public QObject
 {
 	Q_OBJECT
@@ -26,7 +27,7 @@ class SongDatabase:
 
 
 public:
-	SongDatabase();
+	Database();
 
 	/** Opens the specified SQLite file and reads its contents into this object.
 	Keeps the DB open for subsequent immediate updates.
@@ -56,6 +57,25 @@ public:
 	Assumes (doesn't check) that the song is contained within this DB. */
 	void saveSong(const Song & a_Song);
 
+	/** Returns all templates stored in the DB. */
+	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
+
+	/** Adds a new empty template and returns it.
+	Note that changes aren't saved automatically, you need to call saveTemplate() to save. */
+	TemplatePtr addTemplate();
+
+	/** Removes the specified template from the DB. */
+	void delTemplate(const TemplatePtr a_Template) { delTemplate(a_Template.get()); }
+
+	/** Removes the specified template from the DB. */
+	void delTemplate(const Template * a_Template);
+
+	/** Saves the changes in the specified template to the DB. */
+	void saveTemplate(const Template & a_Template);
+
+	/** Returns all template items from all templates that have been marked as "favorite". */
+	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
+
 
 protected:
 
@@ -71,6 +91,9 @@ protected:
 	/** The worker thread that scans the songs' metadata in the background. */
 	MetadataScanner m_MetadataScanner;
 
+	/** All the templates that can be used for filling the playlist. */
+	std::vector<TemplatePtr> m_Templates;
+
 
 	/** Updates all tables to the current format.
 	Adds any missing tables and rows. */
@@ -84,6 +107,31 @@ protected:
 	Note that songs are not checked whether they exists on the disk or if their hash still fits.
 	Use Song::isStillValid() for checking before adding the song to playlist / before starting playback. */
 	void loadSongs();
+
+	/** Loads all the templates in the DB into m_Templates. */
+	void loadTemplates();
+
+	/** Loads the specified template from the DB.
+	The template has its direct members initialized, this loads its items and their filters. */
+	void loadTemplate(TemplatePtr a_Template);
+
+	/**	Loads the specified Template Item's filters from the DB. */
+	void loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId, Template::Item & a_Item);
+
+	/** Saves or updates the specified template item in the DB.
+	a_Index is the item's index within a_Template. */
+	void saveTemplateItem(const Template & a_Template, int a_Index, const Template::Item & a_Item);
+
+	/** Recursively saves (inserts) the filter subtree from a_Filter.
+	a_TemplateRowId is the RowID of the template to which the filter belongs, through its template item
+	a_TemplateItemRowId is the RowID of the template item to which the filter belongs
+	a_ParentFilterRowId is the RowID of the filter that is the parent of a_Filter, -1 for root filter. */
+	void saveTemplateFilters(
+		qlonglong a_TemplateRowId,
+		qlonglong a_TemplateItemRowId,
+		const Template::Filter & a_Filter,
+		qlonglong a_ParentFilterRowId
+	);
 
 
 signals:

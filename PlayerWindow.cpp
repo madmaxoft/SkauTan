@@ -3,11 +3,13 @@
 #include <QDebug>
 #include <QShortcut>
 #include "ui_PlayerWindow.h"
-#include "SongDatabase.h"
+#include "Database.h"
 #include "DlgSongs.h"
+#include "DlgTemplatesList.h"
 #include "DlgHistory.h"
 #include "PlaylistItemSong.h"
 #include "Player.h"
+#include "DlgPickTemplate.h"
 
 
 
@@ -16,7 +18,7 @@
 PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	Super(a_Parent),
 	m_UI(new Ui::PlayerWindow),
-	m_DB(new SongDatabase),
+	m_DB(new Database),
 	m_Playlist(new Playlist)
 {
 	assert(m_Playlist != nullptr);
@@ -29,21 +31,25 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 
+	#if 0
 	// DEBUG: Add all songs into the playlist, to ease debugging:
 	for (const auto & song: m_DB->songs())
 	{
 		addSong(song);
 	}
+	#endif
 
 	// Connect the signals:
-	connect(m_UI->btnSongs,    &QPushButton::clicked,      this, &PlayerWindow::showSongs);
-	connect(m_UI->btnHistory,  &QPushButton::clicked,      this, &PlayerWindow::showHistory);
-	connect(m_scDel.get(),     &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
-	connect(m_UI->btnPrev,     &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
-	connect(m_UI->btnPlay,     &QPushButton::clicked,      this, &PlayerWindow::playPause);
-	connect(m_UI->btnNext,     &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
-	connect(m_UI->tblPlaylist, &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
-	connect(m_Player.get(),    &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
+	connect(m_UI->btnSongs,           &QPushButton::clicked,      this, &PlayerWindow::showSongs);
+	connect(m_UI->btnTemplates,       &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
+	connect(m_UI->btnHistory,         &QPushButton::clicked,      this, &PlayerWindow::showHistory);
+	connect(m_UI->btnAddFromTemplate, &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
+	connect(m_scDel.get(),            &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->btnPrev,            &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,            &QPushButton::clicked,      this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
+	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
+	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -73,8 +79,20 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(*m_DB, this);
+	DlgSongs dlg(*m_DB, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
+	dlg.exec();
+}
+
+
+
+
+
+void PlayerWindow::showTemplates(bool a_IsChecked)
+{
+	Q_UNUSED(a_IsChecked);
+
+	DlgTemplatesList dlg(*m_DB, this);
 	dlg.exec();
 }
 
@@ -184,4 +202,23 @@ void PlayerWindow::startingItemPlayback(IPlaylistItem * a_Item)
 	{
 		m_DB->songPlaybackStarted(spi->song().get());
 	}
+}
+
+
+
+
+
+void PlayerWindow::addFromTemplate()
+{
+	DlgPickTemplate dlg(*m_DB, this);
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	auto tmpl = dlg.selectedTemplate();
+	if (tmpl == nullptr)
+	{
+		return;
+	}
+	m_Playlist->addFromTemplate(*m_DB, *tmpl);
 }

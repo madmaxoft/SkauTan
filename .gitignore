@@ -1,5 +1,6 @@
 # Qt Creator files:
 *.user
+*.user.*
 
 # Runtime files:
 SkauTan.sqlite

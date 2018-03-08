@@ -23,7 +23,7 @@ DEFINES += TAGLIB_STATIC
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11
+CONFIG += c++14
 
 win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib
 win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib
@@ -60,7 +60,7 @@ SOURCES += \
 	Playlist.cpp \
 	PlaylistItemSong.cpp \
 	Song.cpp \
-	SongDatabase.cpp \
+	Database.cpp \
 	DlgSongs.cpp \
 	SongModel.cpp \
 	MetadataScanner.cpp \
@@ -70,7 +70,13 @@ SOURCES += \
 	PlaybackBuffer.cpp \
 	SongDecoder.cpp \
 	AVPP.cpp \
-	DlgHistory.cpp
+	DlgHistory.cpp \
+	Template.cpp \
+	DlgTemplatesList.cpp \
+	DlgEditTemplate.cpp \
+	DlgEditTemplateItem.cpp \
+	DlgPickTemplateFavoriteItem.cpp \
+	DlgPickTemplate.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -78,7 +84,7 @@ HEADERS += \
 	Playlist.h \
 	PlaylistItemSong.h \
 	Song.h \
-	SongDatabase.h \
+	Database.h \
 	DlgSongs.h \
 	SongModel.h \
 	MetadataScanner.h \
@@ -88,9 +94,20 @@ HEADERS += \
 	PlaybackBuffer.h \
 	SongDecoder.h \
 	AVPP.h \
-	DlgHistory.h
+	DlgHistory.h \
+	Template.h \
+	DlgTemplatesList.h \
+	DlgEditTemplate.h \
+	DlgEditTemplateItem.h \
+	DlgPickTemplateFavoriteItem.h \
+	DlgPickTemplate.h
 
 FORMS += \
 	PlayerWindow.ui \
 	DlgSongs.ui \
-	DlgHistory.ui
+	DlgHistory.ui \
+	DlgTemplatesList.ui \
+	DlgEditTemplate.ui \
+	DlgEditTemplateItem.ui \
+	DlgPickTemplateFavoriteItem.ui \
+	DlgPickTemplate.ui

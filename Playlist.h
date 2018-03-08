@@ -8,6 +8,14 @@
 #include <vector>
 #include <QObject>
 #include "IPlaylistItem.h"
+#include "Template.h"
+
+
+
+
+
+// fwd:
+class Database;
 
 
 
@@ -58,6 +66,12 @@ public:
 	Returns true iff the current item has been set. */
 	bool setCurrentItem(const IPlaylistItem * a_Item);
 
+	/** Adds new random songs based on the specified template, using songs from the specified DB. */
+	void addFromTemplate(const Database & a_DB, const Template & a_Template);
+
+	/** Adds a new random song based on the specified template item, using songs from the specified DB. */
+	bool addFromTemplateItem(const Database & a_DB, const Template::Item & a_Item);
+
 
 protected:
 
@@ -70,6 +84,10 @@ protected:
 	/** If true, m_CurrentItem is being played back. */
 	bool m_IsPlaying;
 
+
+	/** Returns the relative "weight" of a song, when choosing by a template.
+	The weight is adjusted based on song's rating, last played date, if it is already in the playlist etc. */
+	int getSongWeight(const Database & a_DB, const Song & a_Song);
 
 signals:
 

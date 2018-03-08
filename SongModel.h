@@ -13,7 +13,7 @@
 
 
 // fwd:
-class SongDatabase;
+class Database;
 
 
 
@@ -45,15 +45,18 @@ public:
 	};
 
 
-	SongModel(SongDatabase & a_DB);
+	SongModel(Database & a_DB);
 
 	/** Returns the song represented by the specified model index. */
 	SongPtr songFromIndex(const QModelIndex & a_Idx) const;
 
+	/** Returns the song represented by the specified row. */
+	SongPtr songFromRow(int a_Row) const;
+
 protected:
 
 	/** The DB on which the model is based. */
-	SongDatabase & m_DB;
+	Database & m_DB;
 
 
 	// QAbstractTableModel overrides:
