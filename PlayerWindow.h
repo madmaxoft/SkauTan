@@ -101,6 +101,9 @@ private slots:
 
 	/** Emitted by m_Player before it starts playing the specified item. */
 	void startingItemPlayback(IPlaylistItem * a_Item);
+
+	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
+	void addFromTemplate();
 };
 
 

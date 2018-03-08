@@ -9,6 +9,7 @@
 #include "DlgHistory.h"
 #include "PlaylistItemSong.h"
 #include "Player.h"
+#include "DlgPickTemplate.h"
 
 
 
@@ -39,15 +40,16 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	#endif
 
 	// Connect the signals:
-	connect(m_UI->btnSongs,     &QPushButton::clicked,      this, &PlayerWindow::showSongs);
-	connect(m_UI->btnTemplates, &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
-	connect(m_UI->btnHistory,   &QPushButton::clicked,      this, &PlayerWindow::showHistory);
-	connect(m_scDel.get(),      &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
-	connect(m_UI->btnPrev,      &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
-	connect(m_UI->btnPlay,      &QPushButton::clicked,      this, &PlayerWindow::playPause);
-	connect(m_UI->btnNext,      &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
-	connect(m_UI->tblPlaylist,  &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
-	connect(m_Player.get(),     &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
+	connect(m_UI->btnSongs,           &QPushButton::clicked,      this, &PlayerWindow::showSongs);
+	connect(m_UI->btnTemplates,       &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
+	connect(m_UI->btnHistory,         &QPushButton::clicked,      this, &PlayerWindow::showHistory);
+	connect(m_UI->btnAddFromTemplate, &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
+	connect(m_scDel.get(),            &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->btnPrev,            &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,            &QPushButton::clicked,      this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
+	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
+	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -200,4 +202,23 @@ void PlayerWindow::startingItemPlayback(IPlaylistItem * a_Item)
 	{
 		m_DB->songPlaybackStarted(spi->song().get());
 	}
+}
+
+
+
+
+
+void PlayerWindow::addFromTemplate()
+{
+	DlgPickTemplate dlg(*m_DB, this);
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+	auto tmpl = dlg.selectedTemplate();
+	if (tmpl == nullptr)
+	{
+		return;
+	}
+	m_Playlist->addFromTemplate(*m_DB, *tmpl);
 }
