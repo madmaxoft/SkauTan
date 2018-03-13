@@ -71,18 +71,15 @@ private:
 
 private slots:
 
-	/** Opens up a folder picker, then adds the songs from the picked folder into the DB.
-	Signature needs to match QPushButton::clicked(bool). */
-	void chooseAddFolder(bool a_IsChecked);
-
-	/** Closes the dialog.
-	Signature needs to match QPushButton::clicked(bool). */
-	void closeByButton(bool a_IsChecked);
+	/** Opens up a folder picker, then adds the songs from the picked folder into the DB. */
+	void chooseAddFolder();
 
 	/** Adds the selected songs into the playlist.
-	Emits the addSong() signal for each selected song.
-	Signature needs to match QPushButton::clicked(bool). */
-	void addSelectedToPlaylist(bool a_IsChecked);
+	Emits the addSongToPlaylist() signal for each selected song. */
+	void addSelectedToPlaylist();
+
+	/** Queues the selected songs for metadata rescan. */
+	void rescanMetadata();
 
 	/** Emitted by the model after the user edits a song. */
 	void modelSongEdited(Song * a_Song);
