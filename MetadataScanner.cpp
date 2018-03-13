@@ -72,6 +72,13 @@ protected:
 		{
 			m_Song->setTitle(QString::fromStdString(tag->title().to8Bit(true)));
 		}
+		auto comment = QString::fromStdString(tag->comment().to8Bit(true));
+		comment = tryMatchBPM(comment);
+		comment = tryMatchGenreMPM(comment);
+		Q_UNUSED(comment);
+		auto genre = QString::fromStdString(tag->genre().to8Bit(true));
+		genre = tryMatchGenreMPM(genre);
+		Q_UNUSED(genre);
 	}
 
 
@@ -171,22 +178,38 @@ protected:
 		// Pairs of regexp -> genre
 		static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
 		{
-			{ QRegularExpression("(^|[\\W])SW(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
-			{ QRegularExpression("(^|[\\W])TG(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
-			{ QRegularExpression("(^|[\\W])TA(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
-			{ QRegularExpression("(^|[\\W])VW(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
-			{ QRegularExpression("(^|[\\W])SF(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
-			{ QRegularExpression("(^|[\\W])QS(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
-			{ QRegularExpression("(^|[\\W])SB(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
-			{ QRegularExpression("(^|[\\W])SA(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
-			{ QRegularExpression("(^|[\\W])CH(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
-			{ QRegularExpression("(^|[\\W])CC(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
-			{ QRegularExpression("(^|[\\W])RU(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
-			{ QRegularExpression("(^|[\\W])RB(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
-			{ QRegularExpression("(^|[\\W])PD(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
-			{ QRegularExpression("(^|[\\W])JI(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
-			{ QRegularExpression("(^|[\\W])BL(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
-			{ QRegularExpression("(^|[\\W])PO(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
+			// Shortcut-based genre + optional MPM:
+			{ QRegularExpression("(^|[\\W])SW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])TG(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])TA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])VW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])SF(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
+			{ QRegularExpression("(^|[\\W])QS(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
+			{ QRegularExpression("(^|[\\W])SB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])SA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])CH(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])CC(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])RU(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])RB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])PD(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
+			{ QRegularExpression("(^|[\\W])JI(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])BL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
+			{ QRegularExpression("(^|[\\W])PO(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
+
+			// Full genre name + optional MPM:
+			{ QRegularExpression("(^|[\\W])slow[-\\s]?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",    QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",               QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",              QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])viennese[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])slow\\-?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  QRegularExpression::CaseInsensitiveOption), "SF" },
+			{ QRegularExpression("(^|[\\W])quick\\-?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "QS" },
+			{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",               QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])cha\\-?cha(\\-?cha)\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",             QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])paso[-\\s]?doble\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",    QRegularExpression::CaseInsensitiveOption), "PD" },
+			{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",               QRegularExpression::CaseInsensitiveOption), "BL" },
+			{ QRegularExpression("(^|[\\W])polka\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",               QRegularExpression::CaseInsensitiveOption), "PO" },
 		};
 
 		for (const auto & p: genreMap)
@@ -198,13 +221,14 @@ protected:
 			}
 			if (!m_Song->measuresPerMinute().isValid())
 			{
-				m_Song->setMeasuresPerMinute(match.captured(2).toInt());
+				m_Song->setMeasuresPerMinute(match.captured("mpm").toInt());
 			}
 			if (!m_Song->genre().isValid())
 			{
 				m_Song->setGenre(p.second);
 			}
-			return a_Input.left(match.capturedStart(1) - 1) + " " + a_Input.mid(match.capturedEnd(3));
+			auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1) - 1) : QString();
+			return prefix + " " + a_Input.mid(match.capturedEnd("end"));
 		}
 		return res;
 	}
