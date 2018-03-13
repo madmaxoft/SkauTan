@@ -34,10 +34,9 @@ if not exist c:\projects\lib\include\taglib\tag.h (
 )
 echo Libraries checked, compiling now...
 
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" amd64
 set LIB=%LIB%;c:\projects\lib\lib
 set INCLUDE=%INCLUDE%;c:\projects\lib\include
-
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" amd64
 qmake SkauTan.pro
 set
 nmake
