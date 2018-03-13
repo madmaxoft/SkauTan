@@ -1,6 +1,7 @@
 #include "MetadataScanner.h"
 #include <assert.h>
 #include <QDebug>
+#include <QRegularExpression>
 #include <taglib/fileref.h>
 #include "Song.h"
 #include "HashCalculator.h"
@@ -75,7 +76,7 @@ protected:
 
 
 	/** Attempts to parse the filename into metadata.
-	Assumes that most of our songs are named "[30 BPM] Author - Title.mp3" and are in genre-based folders. */
+	Assumes that most of our songs have some info in their filename or the containing folders. */
 	void parseFileNameIntoMetadata(const QString & a_FileName)
 	{
 		auto idxLastSlash = a_FileName.lastIndexOf('/');
@@ -99,41 +100,31 @@ protected:
 			}
 		}
 
-		// Detect MPM from the "[30 BPM]" string:
+		// Detect and remove genre + MPM from filename substring:
 		auto fileBareName = a_FileName.mid(idxLastSlash + 1);
 		auto idxExt = fileBareName.lastIndexOf('.');
 		if (idxExt >= 0)
 		{
 			fileBareName.remove(idxExt, fileBareName.length());
 		}
-		int start = 0;
-		if (
-			(fileBareName.length() > 8) &&
-			(fileBareName[0] == '[') &&
-			(fileBareName.mid(1, 2).toInt() > 0) &&
-			(fileBareName.mid(3, 5) == " BPM]")
-		)
-		{
-			if (!m_Song->measuresPerMinute().isValid())
-			{
-				m_Song->setMeasuresPerMinute(fileBareName.mid(1, 2).toInt());
-			}
-			start = 8;
-		}
-		auto idxSeparator = fileBareName.indexOf(" - ", start);
+		fileBareName = tryMatchGenreMPM(fileBareName);
+		fileBareName = tryMatchBPM(fileBareName);
+
+		// Try split into author - title:
+		auto idxSeparator = fileBareName.indexOf(" - ");
 		if (idxSeparator < 0)
 		{
 			// No separator, consider the entire filename the title:
 			if (!m_Song->title().isValid())
 			{
-				m_Song->setTitle(fileBareName.mid(start));
+				m_Song->setTitle(fileBareName);
 			}
 		}
 		else
 		{
 			if (!m_Song->title().isValid() && !m_Song->author().isValid())
 			{
-				m_Song->setAuthor(fileBareName.mid(start, idxSeparator - start).trimmed());
+				m_Song->setAuthor(fileBareName.mid(0, idxSeparator).trimmed());
 				m_Song->setTitle(fileBareName.mid(idxSeparator + 3).trimmed());
 			}
 		}
@@ -157,6 +148,8 @@ protected:
 			{ "paso",      "PD" },
 			{ "pasodoble", "PD" },
 			{ "jive",      "JI" },
+			{ "blues",     "BL" },
+			{ "polka",     "PO" },
 		};
 		auto itr = genreMap.find(a_FolderName.toLower());
 		if (itr == genreMap.end())
@@ -164,6 +157,103 @@ protected:
 			return QString();
 		}
 		return itr->second;
+	}
+
+
+	/** Attempts to find the genre in the specified string.
+	Detects strings such as "SW" and "SW30".
+	If found, and the song doesn't have its genre / MPM set, it is set into the song.
+	Returns the string excluding the genre / MPM substring. */
+	QString tryMatchGenreMPM(const QString & a_Input)
+	{
+		auto res = a_Input;
+
+		// Pairs of regexp -> genre
+		static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
+		{
+			{ QRegularExpression("(^|[\\W])SW(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])TG(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])TA(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])VW(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])SF(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
+			{ QRegularExpression("(^|[\\W])QS(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
+			{ QRegularExpression("(^|[\\W])SB(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])SA(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])CH(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])CC(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])RU(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])RB(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])PD(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
+			{ QRegularExpression("(^|[\\W])JI(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])BL(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
+			{ QRegularExpression("(^|[\\W])PO(\\d*)([\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
+		};
+
+		for (const auto & p: genreMap)
+		{
+			auto match = p.first.match(a_Input);
+			if (!match.hasMatch())
+			{
+				continue;
+			}
+			if (!m_Song->measuresPerMinute().isValid())
+			{
+				m_Song->setMeasuresPerMinute(match.captured(2).toInt());
+			}
+			if (!m_Song->genre().isValid())
+			{
+				m_Song->setGenre(p.second);
+			}
+			return a_Input.left(match.capturedStart(1) - 1) + " " + a_Input.mid(match.capturedEnd(3));
+		}
+		return res;
+	}
+
+
+	/** Detects and removes MPM from the "[30 BPM]" substring.
+	If the substring is found and song has no MPM set, it is set into the song.
+	Returns the input string after removing the potential match.
+	Assumes that the match is not in the middle of "author - title", but rather at either end. */
+	QString tryMatchBPM(const QString & a_Input)
+	{
+		static const QRegularExpression re("(.*?)(\\d+) bpm(.*)", QRegularExpression::CaseInsensitiveOption);
+		auto match = re.match(a_Input);
+		if (match.hasMatch())
+		{
+			if (!m_Song->measuresPerMinute().isValid())
+			{
+				m_Song->setMeasuresPerMinute(match.captured(2).toInt());
+			}
+			auto prefix = match.captured(1);
+			if (prefix.length() < 4)
+			{
+				prefix.clear();
+			}
+			if (prefix.endsWith('['))
+			{
+				prefix.chop(1);
+			}
+			auto suffix = match.captured(3);
+			if (suffix.length() < 4)
+			{
+				suffix.clear();
+			}
+			if (suffix.startsWith(']'))
+			{
+				suffix.remove(0, 1);
+			}
+			// Decide whether to further use the suffix or the prefix, regular filenames don't have BPM in the middle
+			// Just use the longer one:
+			if (suffix.length() > prefix.length())
+			{
+				return suffix;
+			}
+			else
+			{
+				return prefix;
+			}
+		}
+		return a_Input;
 	}
 };
 
