@@ -1,6 +1,7 @@
 #include "MetadataScanner.h"
 #include <assert.h>
 #include <QDebug>
+#include <QRegularExpression>
 #include <taglib/fileref.h>
 #include "Song.h"
 #include "HashCalculator.h"
@@ -71,11 +72,18 @@ protected:
 		{
 			m_Song->setTitle(QString::fromStdString(tag->title().to8Bit(true)));
 		}
+		auto comment = QString::fromStdString(tag->comment().to8Bit(true));
+		comment = tryMatchBPM(comment);
+		comment = tryMatchGenreMPM(comment);
+		Q_UNUSED(comment);
+		auto genre = QString::fromStdString(tag->genre().to8Bit(true));
+		genre = tryMatchGenreMPM(genre);
+		Q_UNUSED(genre);
 	}
 
 
 	/** Attempts to parse the filename into metadata.
-	Assumes that most of our songs are named "[30 BPM] Author - Title.mp3" and are in genre-based folders. */
+	Assumes that most of our songs have some info in their filename or the containing folders. */
 	void parseFileNameIntoMetadata(const QString & a_FileName)
 	{
 		auto idxLastSlash = a_FileName.lastIndexOf('/');
@@ -84,86 +92,165 @@ protected:
 			return;
 		}
 
-		// Auto-detect genre from the folder name:
+		// Auto-detect genre from the parent folders names:
 		if (!m_Song->genre().isValid())
 		{
-			auto idxPrevSlash = a_FileName.lastIndexOf('/', idxLastSlash - 1);
-			if (idxPrevSlash >= 0)
+			auto parents = a_FileName.split('/', QString::SkipEmptyParts);
+			for (const auto & p: parents)
 			{
-				auto lastFolder = a_FileName.mid(idxPrevSlash + 1, idxLastSlash - idxPrevSlash - 1);
-				auto genre = folderNameToGenre(lastFolder);
-				if (!genre.isEmpty())
+				tryMatchGenreMPM(p);
+				if (m_Song->genre().isValid())  // Did we assign a genre?
 				{
-					m_Song->setGenre(genre);
+					break;
 				}
 			}
 		}
 
-		// Detect MPM from the "[30 BPM]" string:
+		// Detect and remove genre + MPM from filename substring:
 		auto fileBareName = a_FileName.mid(idxLastSlash + 1);
 		auto idxExt = fileBareName.lastIndexOf('.');
 		if (idxExt >= 0)
 		{
 			fileBareName.remove(idxExt, fileBareName.length());
 		}
-		int start = 0;
-		if (
-			(fileBareName.length() > 8) &&
-			(fileBareName[0] == '[') &&
-			(fileBareName.mid(1, 2).toInt() > 0) &&
-			(fileBareName.mid(3, 5) == " BPM]")
-		)
-		{
-			if (!m_Song->measuresPerMinute().isValid())
-			{
-				m_Song->setMeasuresPerMinute(fileBareName.mid(1, 2).toInt());
-			}
-			start = 8;
-		}
-		auto idxSeparator = fileBareName.indexOf(" - ", start);
+		fileBareName = tryMatchGenreMPM(fileBareName);
+		fileBareName = tryMatchBPM(fileBareName);
+
+		// Try split into author - title:
+		auto idxSeparator = fileBareName.indexOf(" - ");
 		if (idxSeparator < 0)
 		{
 			// No separator, consider the entire filename the title:
 			if (!m_Song->title().isValid())
 			{
-				m_Song->setTitle(fileBareName.mid(start));
+				m_Song->setTitle(fileBareName);
 			}
 		}
 		else
 		{
 			if (!m_Song->title().isValid() && !m_Song->author().isValid())
 			{
-				m_Song->setAuthor(fileBareName.mid(start, idxSeparator - start).trimmed());
+				m_Song->setAuthor(fileBareName.mid(0, idxSeparator).trimmed());
 				m_Song->setTitle(fileBareName.mid(idxSeparator + 3).trimmed());
 			}
 		}
 	}
 
 
-	/** Returns the song genre that is usually contained in a folder of the specified name.
-	Returns empty string if no such song genre is known. */
-	static QString folderNameToGenre(const QString & a_FolderName)
+	/** Attempts to find the genre in the specified string.
+	Detects strings such as "SW" and "SW30".
+	If found, and the song doesn't have its genre / MPM set, it is set into the song.
+	Returns the string excluding the genre / MPM substring. */
+	QString tryMatchGenreMPM(const QString & a_Input)
 	{
-		static const std::map<QString, QString> genreMap =
+		// Pairs of regexp -> genre
+		static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
 		{
-			{ "waltz",     "SW" },
-			{ "tango",     "TG" },
-			{ "valčík",    "VW" },
-			{ "slowfox",   "SF" },
-			{ "quickstep", "QS" },
-			{ "samba",     "SB" },
-			{ "chacha",    "CH" },
-			{ "rumba",     "RB" },
-			{ "paso",      "PD" },
-			{ "pasodoble", "PD" },
-			{ "jive",      "JI" },
+			// Shortcut-based genre + optional MPM:
+			{ QRegularExpression("(^|[\\W])SW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])TG(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])TA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])VW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])SF(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
+			{ QRegularExpression("(^|[\\W])QS(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
+			{ QRegularExpression("(^|[\\W])SB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])SA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])CH(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])CC(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])RU(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])RB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])PD(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
+			{ QRegularExpression("(^|[\\W])JI(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])BL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
+			{ QRegularExpression("(^|[\\W])PO(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
+
+			// Full genre name + optional MPM:
+			{ QRegularExpression("(^|[\\W])vien(nese|n?a)[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "vienna waltz" matches SW too
+			{ QRegularExpression("(^|[\\W])(slow[-\\s]?)?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "TG" },
+			{ QRegularExpression("(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])slow\\-?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",        QRegularExpression::CaseInsensitiveOption), "SF" },
+			{ QRegularExpression("(^|[\\W])quick\\-?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",             QRegularExpression::CaseInsensitiveOption), "QS" },
+			{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])cha\\-?cha(\\-?cha)\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   QRegularExpression::CaseInsensitiveOption), "RU" },
+			{ QRegularExpression("(^|[\\W])paso[-\\s]?doble\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          QRegularExpression::CaseInsensitiveOption), "PD" },
+			{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "BL" },
+			{ QRegularExpression("(^|[\\W])polka\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "PO" },
 		};
-		auto itr = genreMap.find(a_FolderName.toLower());
-		if (itr == genreMap.end())
+
+		for (const auto & p: genreMap)
 		{
-			return QString();
+			auto match = p.first.match(a_Input);
+			if (!match.hasMatch())
+			{
+				continue;
+			}
+			if (!m_Song->measuresPerMinute().isValid())
+			{
+				bool isOK = false;
+				auto mpm = match.captured("mpm").toInt(&isOK);
+				if (isOK && (mpm > 0))
+				{
+					m_Song->setMeasuresPerMinute(mpm);
+				}
+			}
+			if (!m_Song->genre().isValid())
+			{
+				m_Song->setGenre(p.second);
+			}
+			auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1) - 1) : QString();
+			return prefix + " " + a_Input.mid(match.capturedEnd("end"));
 		}
-		return itr->second;
+		return a_Input;
+	}
+
+
+	/** Detects and removes MPM from the "[30 BPM]" substring.
+	If the substring is found and song has no MPM set, it is set into the song.
+	Returns the input string after removing the potential match.
+	Assumes that the match is not in the middle of "author - title", but rather at either end. */
+	QString tryMatchBPM(const QString & a_Input)
+	{
+		static const QRegularExpression re("(.*?)(\\d+) bpm(.*)", QRegularExpression::CaseInsensitiveOption);
+		auto match = re.match(a_Input);
+		if (match.hasMatch())
+		{
+			if (!m_Song->measuresPerMinute().isValid())
+			{
+				m_Song->setMeasuresPerMinute(match.captured(2).toInt());
+			}
+			auto prefix = match.captured(1);
+			if (prefix.length() < 4)
+			{
+				prefix.clear();
+			}
+			if (prefix.endsWith('['))
+			{
+				prefix.chop(1);
+			}
+			auto suffix = match.captured(3);
+			if (suffix.length() < 4)
+			{
+				suffix.clear();
+			}
+			if (suffix.startsWith(']'))
+			{
+				suffix.remove(0, 1);
+			}
+			// Decide whether to further use the suffix or the prefix, regular filenames don't have BPM in the middle
+			// Just use the longer one:
+			if (suffix.length() > prefix.length())
+			{
+				return suffix;
+			}
+			else
+			{
+				return prefix;
+			}
+		}
+		return a_Input;
 	}
 };
 

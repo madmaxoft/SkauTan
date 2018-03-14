@@ -71,7 +71,8 @@ static QString formatRating(const Song & a_Song)
 SongModel::SongModel(Database & a_DB):
 	m_DB(a_DB)
 {
-	connect(&m_DB, &Database::songFileAdded, this, &SongModel::addSongFile);
+	connect(&m_DB,                   &Database::songFileAdded,      this, &SongModel::addSongFile);
+	connect(&m_DB.metadataScanner(), &MetadataScanner::songScanned, this, &SongModel::songMetadataScanned);
 }
 
 
@@ -98,6 +99,26 @@ SongPtr SongModel::songFromRow(int a_Row) const
 		return nullptr;
 	}
 	return m_DB.songs()[a_Row];
+}
+
+
+
+
+
+QModelIndex SongModel::indexFromSong(const Song * a_Song, int a_Column)
+{
+	const auto & songs = m_DB.songs();
+	int row = 0;
+	for (const auto & s: songs)
+	{
+		if (s.get() == a_Song)
+		{
+			return createIndex(row, a_Column);
+		}
+		row += 1;
+	}
+	assert(!"Song not found");
+	return QModelIndex();
 }
 
 
@@ -264,6 +285,21 @@ void SongModel::addSongFile(Song * a_NewSong)
 	auto lastIdx = static_cast<int>(m_DB.songs().size()) - 1;
 	beginInsertRows(QModelIndex(), lastIdx, lastIdx + 1);
 	endInsertRows();
+}
+
+
+
+
+
+void SongModel::songMetadataScanned(Song * a_Song)
+{
+	auto idx = indexFromSong(a_Song);
+	if (!idx.isValid())
+	{
+		return;
+	}
+	auto idx2 = createIndex(idx.row(), colMax - 1);
+	emit dataChanged(idx, idx2, {Qt::DisplayRole});
 }
 
 

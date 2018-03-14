@@ -76,6 +76,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btnRescanMetadata">
+       <property name="text">
+        <string>&amp;Rescan metadata</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

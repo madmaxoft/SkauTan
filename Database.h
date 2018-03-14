@@ -76,6 +76,8 @@ public:
 	/** Returns all template items from all templates that have been marked as "favorite". */
 	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
 
+	MetadataScanner & metadataScanner() { return m_MetadataScanner; }
+
 
 protected:
 

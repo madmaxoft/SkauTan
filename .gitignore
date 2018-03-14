@@ -5,3 +5,5 @@
 # Runtime files:
 SkauTan.sqlite
 SkauTan.bak.sqlite
+*.mp3
+

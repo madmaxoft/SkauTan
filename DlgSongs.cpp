@@ -4,6 +4,7 @@
 #include <QProcessEnvironment>
 #include "ui_DlgSongs.h"
 #include "Database.h"
+#include "MetadataScanner.h"
 
 
 
@@ -39,23 +40,12 @@ DlgSongs::DlgSongs(
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
-	connect(m_UI->btnAddFolder,     &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnClose,         &QPushButton::clicked,  this, &DlgSongs::closeByButton);
-	connect(m_UI->btnAddToPlaylist, &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
-	connect(&m_SongModel,           &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
+	connect(m_UI->btnAddFolder,      &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnClose,          &QPushButton::clicked,  this, &DlgSongs::close);
+	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,  this, &DlgSongs::rescanMetadata);
+	connect(&m_SongModel,            &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
 
-	#if 0
-	// Set the column widths to reasonable defaults:
-	QFontMetrics fm(m_UI->tblSongs->horizontalHeader()->font());
-	m_UI->tblSongs->setColumnWidth(SongModel::colRating,            fm.width("WRatingW"));
-	m_UI->tblSongs->setColumnWidth(SongModel::colGenre,             fm.width("WGenreW"));
-	m_UI->tblSongs->setColumnWidth(SongModel::colLength,            fm.width("W000:00:00W"));
-	m_UI->tblSongs->setColumnWidth(SongModel::colMeasuresPerMinute, fm.width("WMPMW"));
-	auto defaultWid = m_UI->tblSongs->columnWidth(SongModel::colFileName);
-	m_UI->tblSongs->setColumnWidth(SongModel::colAuthor,   defaultWid * 2);
-	m_UI->tblSongs->setColumnWidth(SongModel::colTitle,    defaultWid * 2);
-	m_UI->tblSongs->setColumnWidth(SongModel::colFileName, defaultWid * 3);
-	#endif
 	m_UI->tblSongs->resizeColumnsToContents();
 
 	// Make the dialog have Maximize button on Windows:
@@ -105,10 +95,8 @@ void DlgSongs::addFolder(const QString & a_Path)
 
 
 
-void DlgSongs::chooseAddFolder(bool a_IsChecked)
+void DlgSongs::chooseAddFolder()
 {
-	Q_UNUSED(a_IsChecked);
-
 	auto dir = QFileDialog::getExistingDirectory(
 		this,
 		tr("Choose folder to add"),
@@ -125,25 +113,25 @@ void DlgSongs::chooseAddFolder(bool a_IsChecked)
 
 
 
-void DlgSongs::closeByButton(bool a_IsChecked)
+void DlgSongs::addSelectedToPlaylist()
 {
-	Q_UNUSED(a_IsChecked);
-
-	close();
+	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	{
+		auto song = m_SongModel.songFromIndex(idx);
+		emit addSongToPlaylist(song);
+	}
 }
 
 
 
 
 
-void DlgSongs::addSelectedToPlaylist(bool a_IsChecked)
+void DlgSongs::rescanMetadata()
 {
-	Q_UNUSED(a_IsChecked);
-
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = m_SongModel.songFromIndex(idx);
-		emit addSongToPlaylist(song);
+		m_DB.metadataScanner().queueScan(song);
 	}
 }
 

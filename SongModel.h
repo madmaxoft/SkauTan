@@ -53,6 +53,10 @@ public:
 	/** Returns the song represented by the specified row. */
 	SongPtr songFromRow(int a_Row) const;
 
+	/** Returns the QModelIndex representing the specified song, pointing to the specified column.
+	Asserts and returns an invalid QModelIndex if song not found. */
+	QModelIndex indexFromSong(const Song * a_Song, int a_Column = 0);
+
 protected:
 
 	/** The DB on which the model is based. */
@@ -67,10 +71,14 @@ protected:
 	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
 	virtual bool setData(const QModelIndex & a_Index, const QVariant & a_Value, int a_Role) override;
 
+
 protected slots:
 
-	/** Called by m_DB when a new song is added to it. */
+	/** Emitted by m_DB when a new song is added to it. */
 	void addSongFile(Song * a_NewSong);
+
+	/** Emitted by m_DB.metadataScanner after a song metadata is updated by a scan. */
+	void songMetadataScanned(Song * a_Song);
 
 
 signals:
