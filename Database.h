@@ -51,6 +51,10 @@ public:
 	Skips duplicate entries. */
 	void addSongFile(const QString & a_FileName, qulonglong a_FileSize);
 
+	/** Removes the specified song entry from the DB.
+	Assumes (doesn't check) that the song is contained within this DB. */
+	void delSong(const Song & a_Song);
+
 	QSqlDatabase & database() { return m_Database; }
 
 	/** Saves the specified song into the DB.
@@ -141,6 +145,12 @@ signals:
 	/** Emitted after a new song file is added to the list of songs (addSongFile, addSongFiles).
 	NOT emitted when loading songs from the DB! */
 	void songFileAdded(Song * a_Song);
+
+	/** Emitted just before a song is removed from the DB. */
+	void songRemoving(const Song * a_Song, size_t a_Index);
+
+	/** Emitted after a song is removed from the DB. */
+	void songRemoved(const Song * a_Song, size_t a_Index);
 
 
 protected slots:

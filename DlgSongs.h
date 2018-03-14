@@ -74,6 +74,9 @@ private slots:
 	/** Opens up a folder picker, then adds the songs from the picked folder into the DB. */
 	void chooseAddFolder();
 
+	/** After confirmation, removes the selected songs from the DB. */
+	void removeSelected();
+
 	/** Adds the selected songs into the playlist.
 	Emits the addSongToPlaylist() signal for each selected song. */
 	void addSelectedToPlaylist();

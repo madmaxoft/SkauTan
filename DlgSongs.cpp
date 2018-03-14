@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QProcessEnvironment>
+#include <QMessageBox>
 #include "ui_DlgSongs.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -33,6 +34,7 @@ DlgSongs::DlgSongs(
 	if (!a_ShowManipulators)
 	{
 		m_UI->btnAddFolder->hide();
+		m_UI->btnRemove->hide();
 		m_UI->btnAddToPlaylist->hide();
 	}
 	m_FilterModel->setSourceModel(&m_SongModel);
@@ -41,6 +43,7 @@ DlgSongs::DlgSongs(
 
 	// Connect the signals:
 	connect(m_UI->btnAddFolder,      &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnRemove,         &QPushButton::clicked,  this, &DlgSongs::removeSelected);
 	connect(m_UI->btnClose,          &QPushButton::clicked,  this, &DlgSongs::close);
 	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
 	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,  this, &DlgSongs::rescanMetadata);
@@ -107,6 +110,41 @@ void DlgSongs::chooseAddFolder()
 		return;
 	}
 	addFolder(dir);
+}
+
+
+
+
+
+void DlgSongs::removeSelected()
+{
+	// Collect the songs to remove:
+	std::vector<SongPtr> songs;
+	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	{
+		songs.push_back(m_SongModel.songFromIndex(idx));
+	}
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan - Remove songs?"),
+		tr("Are you sure you want to remove the selected songs? This operation cannot be undone!"),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB:
+	for (const auto song: songs)
+	{
+		m_DB.delSong(*song);
+	}
 }
 
 
