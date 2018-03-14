@@ -63,6 +63,13 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QPushButton" name="btnAddFile">
+       <property name="text">
+        <string>&amp;Add file...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btnAddFolder">
        <property name="minimumSize">
         <size>
@@ -71,7 +78,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Add folder...</string>
+        <string>Add &amp;folder...</string>
        </property>
       </widget>
      </item>
@@ -111,7 +118,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Add to playlist</string>
+        <string>Add to &amp;playlist</string>
        </property>
       </widget>
      </item>
