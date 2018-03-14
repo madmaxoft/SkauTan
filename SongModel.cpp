@@ -291,6 +291,19 @@ void SongModel::addSongFile(Song * a_NewSong)
 
 
 
+void SongModel::delSong(const Song * a_Song, size_t a_Index)
+{
+	Q_UNUSED(a_Song);
+
+	auto idx = static_cast<int>(a_Index);
+	beginRemoveRows(QModelIndex(), idx, idx);
+	endRemoveRows();
+}
+
+
+
+
+
 void SongModel::songMetadataScanned(Song * a_Song)
 {
 	auto idx = indexFromSong(a_Song);

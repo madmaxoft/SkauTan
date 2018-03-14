@@ -76,9 +76,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btnRemove">
+       <property name="text">
+        <string>&amp;Remove...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="btnRescanMetadata">
        <property name="text">
-        <string>&amp;Rescan metadata</string>
+        <string>Re&amp;scan metadata</string>
        </property>
       </widget>
      </item>

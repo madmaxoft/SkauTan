@@ -110,6 +110,44 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 
 
 
+void Database::delSong(const Song & a_Song)
+{
+	size_t idx = 0;
+	for (auto itr = m_Songs.cbegin(), end = m_Songs.cend(); itr != end; ++itr, ++idx)
+	{
+		if (itr->get() != &a_Song)
+		{
+			continue;
+		}
+		emit songRemoving(&a_Song, idx);
+		m_Songs.erase(itr);
+
+		// Remove from the DB:
+		QSqlQuery query(m_Database);
+		if (!query.prepare("DELETE FROM Songs WHERE RowID = ?"))
+		{
+			qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.addBindValue(a_Song.dbRowId());
+		if (!query.exec())
+		{
+			qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+
+		emit songRemoved(&a_Song, idx);
+		return;
+	}
+	assert(!"Song not in the DB");
+}
+
+
+
+
+
 void Database::saveSong(const Song & a_Song)
 {
 	QSqlQuery query(m_Database);
