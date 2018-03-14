@@ -42,6 +42,7 @@ DlgSongs::DlgSongs(
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
+	connect(m_UI->btnAddFile,        &QPushButton::clicked,  this, &DlgSongs::chooseAddFile);
 	connect(m_UI->btnAddFolder,      &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
 	connect(m_UI->btnRemove,         &QPushButton::clicked,  this, &DlgSongs::removeSelected);
 	connect(m_UI->btnClose,          &QPushButton::clicked,  this, &DlgSongs::close);
@@ -62,6 +63,30 @@ DlgSongs::DlgSongs(
 DlgSongs::~DlgSongs()
 {
 	// Nothing explicit needed, but the destructor needs to be defined in the CPP file due to m_UI.
+}
+
+
+
+
+
+void DlgSongs::addFiles(const QStringList & a_FileNames)
+{
+	// Duplicates are skippen inside m_DB, no need to handle them here
+	std::vector<std::pair<QString, qulonglong>> songs;
+	for (const auto & fnam: a_FileNames)
+	{
+		QFileInfo fi(fnam);
+		if (fi.exists())
+		{
+			songs.emplace_back(fnam, static_cast<qulonglong>(fi.size()));
+		}
+	}
+	if (songs.empty())
+	{
+		return;
+	}
+	qDebug() << __FUNCTION__ << ": Adding " << songs.size() << " song files";
+	m_DB.addSongFiles(songs);
 }
 
 
@@ -98,11 +123,29 @@ void DlgSongs::addFolder(const QString & a_Path)
 
 
 
+void DlgSongs::chooseAddFile()
+{
+	auto files = QFileDialog::getOpenFileNames(
+		this,
+		tr("SkauTan - Choose files to add"),
+		QProcessEnvironment::systemEnvironment().value("SKAUTAN_MUSIC_PATH", "")
+	);
+	if (files.isEmpty())
+	{
+		return;
+	}
+	addFiles(files);
+}
+
+
+
+
+
 void DlgSongs::chooseAddFolder()
 {
 	auto dir = QFileDialog::getExistingDirectory(
 		this,
-		tr("Choose folder to add"),
+		tr("SkauTan - Choose folder to add"),
 		QProcessEnvironment::systemEnvironment().value("SKAUTAN_MUSIC_PATH", "")
 	);
 	if (dir.isEmpty())

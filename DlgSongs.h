@@ -48,6 +48,9 @@ public:
 
 	~DlgSongs();
 
+	/** Adds songs from the specified files to the DB.
+	Duplicate files are skipped. */
+	void addFiles(const QStringList & a_FileNames);
 
 	/** Adds songs from the specified path to the DB, recursively.
 	Skips duplicate files. Schedules the added files for metadata re-scan. */
@@ -70,6 +73,9 @@ private:
 
 
 private slots:
+
+	/** Opens up a file picker, then adds the selected song files into the DB. */
+	void chooseAddFile();
 
 	/** Opens up a folder picker, then adds the songs from the picked folder into the DB. */
 	void chooseAddFolder();
