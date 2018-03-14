@@ -92,17 +92,16 @@ protected:
 			return;
 		}
 
-		// Auto-detect genre from the folder name:
+		// Auto-detect genre from the parent folders names:
 		if (!m_Song->genre().isValid())
 		{
-			auto idxPrevSlash = a_FileName.lastIndexOf('/', idxLastSlash - 1);
-			if (idxPrevSlash >= 0)
+			auto parents = a_FileName.split('/', QString::SkipEmptyParts);
+			for (const auto & p: parents)
 			{
-				auto lastFolder = a_FileName.mid(idxPrevSlash + 1, idxLastSlash - idxPrevSlash - 1);
-				auto genre = folderNameToGenre(lastFolder);
-				if (!genre.isEmpty())
+				tryMatchGenreMPM(p);
+				if (m_Song->genre().isValid())  // Did we assign a genre?
 				{
-					m_Song->setGenre(genre);
+					break;
 				}
 			}
 		}
@@ -135,35 +134,6 @@ protected:
 				m_Song->setTitle(fileBareName.mid(idxSeparator + 3).trimmed());
 			}
 		}
-	}
-
-
-	/** Returns the song genre that is usually contained in a folder of the specified name.
-	Returns empty string if no such song genre is known. */
-	static QString folderNameToGenre(const QString & a_FolderName)
-	{
-		static const std::map<QString, QString> genreMap =
-		{
-			{ "waltz",     "SW" },
-			{ "tango",     "TG" },
-			{ "valčík",    "VW" },
-			{ "slowfox",   "SF" },
-			{ "quickstep", "QS" },
-			{ "samba",     "SB" },
-			{ "chacha",    "CH" },
-			{ "rumba",     "RB" },
-			{ "paso",      "PD" },
-			{ "pasodoble", "PD" },
-			{ "jive",      "JI" },
-			{ "blues",     "BL" },
-			{ "polka",     "PO" },
-		};
-		auto itr = genreMap.find(a_FolderName.toLower());
-		if (itr == genreMap.end())
-		{
-			return QString();
-		}
-		return itr->second;
 	}
 
 
