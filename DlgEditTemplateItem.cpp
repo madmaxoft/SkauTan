@@ -104,7 +104,7 @@ protected:
 
 	virtual bool filterAcceptsRow(int a_SourceRow, const QModelIndex & a_SourceParent) const override
 	{
-		if (!a_SourceParent.isValid())
+		if (a_SourceParent.isValid())
 		{
 			assert(!"This filter should not be used for multi-level data");
 			return false;
