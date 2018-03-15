@@ -75,13 +75,25 @@ public:
 		Stored in the DB as a number, must keep numeric values across DB versions. */
 		enum SongProperty
 		{
-			fspAuthor            = 0,
-			fspTitle             = 1,
-			fspGenre             = 2,
-			fspLength            = 3,
-			fspMeasuresPerMinute = 4,
-			fspRating            = 5,
-			fspLastPlayed        = 6,
+			fspAuthor                    = 0,  // ANY author tag
+			fspTitle                     = 1,  // ANY title tag
+			fspGenre                     = 2,  // ANY genre tag
+			fspLength                    = 3,
+			fspMeasuresPerMinute         = 4,  // ANY mpm tag
+			fspRating                    = 5,
+			fspLastPlayed                = 6,
+			fspManualAuthor              = 7,
+			fspManualTitle               = 8,
+			fspManualGenre               = 9,
+			fspManualMeasuresPerMinute   = 10,
+			fspFileNameAuthor            = 11,
+			fspFileNameTitle             = 12,
+			fspFileNameGenre             = 13,
+			fspFileNameMeasuresPerMinute = 14,
+			fspId3Author                 = 15,
+			fspId3Title                  = 16,
+			fspId3Genre                  = 17,
+			fspId3MeasuresPerMinute      = 18,
 		};
 
 
