@@ -26,13 +26,13 @@ static QString formatLength(const Song & a_Song)
 
 
 
-static QString formatMPM(const Song & a_Song)
+static QString formatMPM(const QVariant & a_SongMPM)
 {
-	if (!a_Song.measuresPerMinute().isValid())
+	if (!a_SongMPM.isValid())
 	{
 		return SongModel::tr("<unknown>", "MPM");
 	}
-	return QLocale().toString(a_Song.measuresPerMinute().toDouble(), 'f', 1);
+	return QLocale().toString(a_SongMPM.toDouble(), 'f', 1);
 }
 
 
@@ -165,14 +165,22 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		{
 			switch (a_Index.column())
 			{
-				case colFileName:          return song->fileName();
-				case colGenre:             return song->genre();
-				case colLength:            return formatLength(*song);
-				case colMeasuresPerMinute: return formatMPM(*song);
-				case colLastPlayed:        return formatLastPlayed(*song);
-				case colRating:            return formatRating(*song);
-				case colAuthor:            return song->author();
-				case colTitle:             return song->title();
+				case colFileName:                  return song->fileName();
+				case colLength:                    return formatLength(*song);
+				case colLastPlayed:                return formatLastPlayed(*song);
+				case colRating:                    return formatRating(*song);
+				case colManualAuthor:              return song->author();
+				case colManualTitle:               return song->title();
+				case colManualGenre:               return song->genre();
+				case colManualMeasuresPerMinute:   return formatMPM(song->measuresPerMinute());
+				case colFileNameAuthor:            return song->tagFileName().m_Author;
+				case colFileNameTitle:             return song->tagFileName().m_Title;
+				case colFileNameGenre:             return song->tagFileName().m_Genre;
+				case colFileNameMeasuresPerMinute: return formatMPM(song->tagFileName().m_MeasuresPerMinute);
+				case colId3Author:                 return song->tagId3().m_Author;
+				case colId3Title:                  return song->tagId3().m_Title;
+				case colId3Genre:                  return song->tagId3().m_Genre;
+				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
 			}
 			break;
 		}
@@ -196,14 +204,22 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 	}
 	switch (a_Section)
 	{
-		case colFileName:          return tr("File name");
-		case colGenre:             return tr("Genre");
-		case colLength:            return tr("Length");
-		case colMeasuresPerMinute: return tr("MPM");
-		case colLastPlayed:        return tr("Last played");
-		case colRating:            return tr("Rating");
-		case colAuthor:            return tr("Author");
-		case colTitle:             return tr("Title");
+		case colFileName:                  return tr("File name");
+		case colLength:                    return tr("Length");
+		case colLastPlayed:                return tr("Last played");
+		case colRating:                    return tr("Rating");
+		case colManualAuthor:              return tr("Author (M)", "Manual");
+		case colManualTitle:               return tr("Title (M)", "Manual");
+		case colManualGenre:               return tr("Genre (M)", "Manual");
+		case colManualMeasuresPerMinute:   return tr("MPM (M)", "Manual");
+		case colFileNameAuthor:            return tr("Author (F)", "FileName");
+		case colFileNameTitle:             return tr("Title (F)", "FileName");
+		case colFileNameGenre:             return tr("Genre (F)", "FileName");
+		case colFileNameMeasuresPerMinute: return tr("MPM (F)", "FileName");
+		case colId3Author:                 return tr("Author (T)", "ID3 Tag");
+		case colId3Title:                  return tr("Title (T)", "ID3 Tag");
+		case colId3Genre:                  return tr("Genre (T)", "ID3 Tag");
+		case colId3MeasuresPerMinute:      return tr("MPM (T)", "ID3 Tag");
 	}
 	return QVariant();
 }
@@ -218,10 +234,10 @@ Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
 	{
 		switch (a_Index.column())
 		{
-			case colAuthor:
-			case colGenre:
-			case colMeasuresPerMinute:
-			case colTitle:
+			case colManualAuthor:
+			case colManualGenre:
+			case colManualMeasuresPerMinute:
+			case colManualTitle:
 			{
 				// Editable:
 				return Super::flags(a_Index) | Qt::ItemIsEditable;
@@ -260,14 +276,14 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 	const auto & song = m_DB.songs()[a_Index.row()];
 	switch (a_Index.column())
 	{
-		case colAuthor: song->setAuthor(a_Value.toString()); break;
 		case colFileName: return false;
-		case colGenre: song->setGenre(a_Value.toString()); break;
 		case colLastPlayed: return false;
 		case colLength: return false;
-		case colMeasuresPerMinute: song->setMeasuresPerMinute(a_Value.toDouble()); break;
 		case colRating: return false;
-		case colTitle: song->setTitle(a_Value.toString()); break;
+		case colManualAuthor: song->setAuthor(a_Value.toString()); break;
+		case colManualTitle: song->setTitle(a_Value.toString()); break;
+		case colManualGenre: song->setGenre(a_Value.toString()); break;
+		case colManualMeasuresPerMinute: song->setMeasuresPerMinute(a_Value.toDouble()); break;
 	}
 	emit songEdited(song.get());
 	emit dataChanged(a_Index, a_Index, {a_Role});
@@ -343,13 +359,21 @@ QWidget * SongModelEditorDelegate::createEditor(
 	}
 	switch (a_Index.column())
 	{
-		case SongModel::colAuthor:
-		case SongModel::colTitle:
+		case SongModel::colManualAuthor:
+		case SongModel::colManualTitle:
 		{
 			// Default text editor:
 			return Super::createEditor(a_Parent, a_Option, a_Index);
 		}
-		case SongModel::colMeasuresPerMinute:
+		case SongModel::colManualGenre:
+		{
+			// Special editor:
+			auto res = new QComboBox(a_Parent);
+			res->setFrame(false);
+			res->addItems({"SW", "TG", "VW", "SF", "QS", "SB", "CH", "RU", "PD", "JI", "PO", "BL"});
+			return res;
+		}
+		case SongModel::colManualMeasuresPerMinute:
 		{
 			// Text editor limited to entering numbers:
 			auto res = new QLineEdit(a_Parent);
@@ -361,17 +385,17 @@ QWidget * SongModelEditorDelegate::createEditor(
 		case SongModel::colLastPlayed:
 		case SongModel::colLength:
 		case SongModel::colRating:
+		case SongModel::colFileNameAuthor:
+		case SongModel::colFileNameTitle:
+		case SongModel::colFileNameGenre:
+		case SongModel::colFileNameMeasuresPerMinute:
+		case SongModel::colId3Author:
+		case SongModel::colId3Title:
+		case SongModel::colId3Genre:
+		case SongModel::colId3MeasuresPerMinute:
 		{
 			// Not editable
 			return nullptr;
-		}
-		case SongModel::colGenre:
-		{
-			// Special editor:
-			auto res = new QComboBox(a_Parent);
-			res->setFrame(false);
-			res->addItems({"SW", "TG", "VW", "SF", "QS", "SB", "CH", "RU", "PD", "JI", "PO", "BL"});
-			return res;
 		}
 	}
 	assert(!"Unknown column");
@@ -393,14 +417,22 @@ void SongModelEditorDelegate::setEditorData(
 	}
 	switch (a_Index.column())
 	{
-		case SongModel::colAuthor:
-		case SongModel::colTitle:
+		case SongModel::colManualAuthor:
+		case SongModel::colManualTitle:
 		{
 			// Default text editor:
 			Super::setEditorData(a_Editor, a_Index);
 			return;
 		}
-		case SongModel::colMeasuresPerMinute:
+		case SongModel::colManualGenre:
+		{
+			// Special editor:
+			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			cb->setCurrentText(a_Index.data().toString());
+			return;
+		}
+		case SongModel::colManualMeasuresPerMinute:
 		{
 			auto le = qobject_cast<QLineEdit *>(a_Editor);
 			assert(le != nullptr);
@@ -411,17 +443,17 @@ void SongModelEditorDelegate::setEditorData(
 		case SongModel::colLastPlayed:
 		case SongModel::colLength:
 		case SongModel::colRating:
+		case SongModel::colFileNameAuthor:
+		case SongModel::colFileNameTitle:
+		case SongModel::colFileNameGenre:
+		case SongModel::colFileNameMeasuresPerMinute:
+		case SongModel::colId3Author:
+		case SongModel::colId3Title:
+		case SongModel::colId3Genre:
+		case SongModel::colId3MeasuresPerMinute:
 		{
 			// Not editable
 			assert(!"Attempting to edit an uneditable field");
-			return;
-		}
-		case SongModel::colGenre:
-		{
-			// Special editor:
-			auto cb = qobject_cast<QComboBox *>(a_Editor);
-			assert(cb != nullptr);
-			cb->setCurrentText(a_Index.data().toString());
 			return;
 		}
 	}
@@ -444,14 +476,22 @@ void SongModelEditorDelegate::setModelData(
 	}
 	switch (a_Index.column())
 	{
-		case SongModel::colAuthor:
-		case SongModel::colTitle:
+		case SongModel::colManualAuthor:
+		case SongModel::colManualTitle:
 		{
 			// Default text editor:
 			Super::setModelData(a_Editor, a_Model, a_Index);
 			return;
 		}
-		case SongModel::colMeasuresPerMinute:
+		case SongModel::colManualGenre:
+		{
+			// Special editor:
+			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			assert(cb != nullptr);
+			a_Model->setData(a_Index, cb->currentText());
+			return;
+		}
+		case SongModel::colManualMeasuresPerMinute:
 		{
 			auto le = qobject_cast<QLineEdit *>(a_Editor);
 			assert(le != nullptr);
@@ -462,16 +502,16 @@ void SongModelEditorDelegate::setModelData(
 		case SongModel::colLastPlayed:
 		case SongModel::colLength:
 		case SongModel::colRating:
+		case SongModel::colFileNameAuthor:
+		case SongModel::colFileNameTitle:
+		case SongModel::colFileNameGenre:
+		case SongModel::colFileNameMeasuresPerMinute:
+		case SongModel::colId3Author:
+		case SongModel::colId3Title:
+		case SongModel::colId3Genre:
+		case SongModel::colId3MeasuresPerMinute:
 		{
 			// Not editable
-			return;
-		}
-		case SongModel::colGenre:
-		{
-			// Special editor:
-			auto cb = qobject_cast<QComboBox *>(a_Editor);
-			assert(cb != nullptr);
-			a_Model->setData(a_Index, cb->currentText());
 			return;
 		}
 	}

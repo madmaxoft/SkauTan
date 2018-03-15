@@ -64,20 +64,16 @@ protected:
 			qDebug() << __FUNCTION__ << ": No TagLib-extractable information found";
 			return;
 		}
-		if (!m_Song->author().isValid())
-		{
-			m_Song->setAuthor(QString::fromStdString(tag->artist().to8Bit(true)));
-		}
-		if (!m_Song->title().isValid())
-		{
-			m_Song->setTitle(QString::fromStdString(tag->title().to8Bit(true)));
-		}
+		Song::Tag songTag;
+		songTag.m_Author = QString::fromStdString(tag->artist().to8Bit(true));
+		songTag.m_Title = QString::fromStdString(tag->title().to8Bit(true));
 		auto comment = QString::fromStdString(tag->comment().to8Bit(true));
-		comment = tryMatchBPM(comment);
-		comment = tryMatchGenreMPM(comment);
+		comment = tryMatchBPM(comment, songTag);
+		comment = tryMatchGenreMPM(comment, songTag);
 		Q_UNUSED(comment);
 		auto genre = QString::fromStdString(tag->genre().to8Bit(true));
-		genre = tryMatchGenreMPM(genre);
+		genre = tryMatchGenreMPM(genre, songTag);
+		m_Song->setId3Tag(songTag);
 		Q_UNUSED(genre);
 	}
 
@@ -93,16 +89,14 @@ protected:
 		}
 
 		// Auto-detect genre from the parent folders names:
-		if (!m_Song->genre().isValid())
+		Song::Tag songTag;
+		auto parents = a_FileName.split('/', QString::SkipEmptyParts);
+		for (const auto & p: parents)
 		{
-			auto parents = a_FileName.split('/', QString::SkipEmptyParts);
-			for (const auto & p: parents)
+			tryMatchGenreMPM(p, songTag);
+			if (songTag.m_Genre.isValid())  // Did we assign a genre?
 			{
-				tryMatchGenreMPM(p);
-				if (m_Song->genre().isValid())  // Did we assign a genre?
-				{
-					break;
-				}
+				break;
 			}
 		}
 
@@ -113,35 +107,29 @@ protected:
 		{
 			fileBareName.remove(idxExt, fileBareName.length());
 		}
-		fileBareName = tryMatchGenreMPM(fileBareName);
-		fileBareName = tryMatchBPM(fileBareName);
+		fileBareName = tryMatchGenreMPM(fileBareName, songTag);
+		fileBareName = tryMatchBPM(fileBareName, songTag);
 
 		// Try split into author - title:
 		auto idxSeparator = fileBareName.indexOf(" - ");
 		if (idxSeparator < 0)
 		{
 			// No separator, consider the entire filename the title:
-			if (!m_Song->title().isValid())
-			{
-				m_Song->setTitle(fileBareName);
-			}
+			songTag.m_Title = fileBareName;
 		}
 		else
 		{
-			if (!m_Song->title().isValid() && !m_Song->author().isValid())
-			{
-				m_Song->setAuthor(fileBareName.mid(0, idxSeparator).trimmed());
-				m_Song->setTitle(fileBareName.mid(idxSeparator + 3).trimmed());
-			}
+			songTag.m_Author = fileBareName.mid(0, idxSeparator).trimmed();
+			songTag.m_Title = fileBareName.mid(idxSeparator + 3).trimmed();
 		}
+		m_Song->setFileNameTag(songTag);
 	}
 
 
-	/** Attempts to find the genre in the specified string.
-	Detects strings such as "SW" and "SW30".
-	If found, and the song doesn't have its genre / MPM set, it is set into the song.
+	/** Attempts to find the genre and MPM in the specified string.
+	Detects strings such as "SW" and "SW30". Any found matches are set into a_OutputTag.
 	Returns the string excluding the genre / MPM substring. */
-	QString tryMatchGenreMPM(const QString & a_Input)
+	QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag)
 	{
 		// Pairs of regexp -> genre
 		static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
@@ -187,19 +175,13 @@ protected:
 			{
 				continue;
 			}
-			if (!m_Song->measuresPerMinute().isValid())
+			bool isOK = false;
+			auto mpm = match.captured("mpm").toInt(&isOK);
+			if (isOK && (mpm > 0))
 			{
-				bool isOK = false;
-				auto mpm = match.captured("mpm").toInt(&isOK);
-				if (isOK && (mpm > 0))
-				{
-					m_Song->setMeasuresPerMinute(mpm);
-				}
+				a_OutputTag.m_MeasuresPerMinute = mpm;
 			}
-			if (!m_Song->genre().isValid())
-			{
-				m_Song->setGenre(p.second);
-			}
+			a_OutputTag.m_Genre = p.second;
 			auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1) - 1) : QString();
 			return prefix + " " + a_Input.mid(match.capturedEnd("end"));
 		}
@@ -211,15 +193,17 @@ protected:
 	If the substring is found and song has no MPM set, it is set into the song.
 	Returns the input string after removing the potential match.
 	Assumes that the match is not in the middle of "author - title", but rather at either end. */
-	QString tryMatchBPM(const QString & a_Input)
+	QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 	{
 		static const QRegularExpression re("(.*?)(\\d+) bpm(.*)", QRegularExpression::CaseInsensitiveOption);
 		auto match = re.match(a_Input);
 		if (match.hasMatch())
 		{
-			if (!m_Song->measuresPerMinute().isValid())
+			bool isOK = false;
+			auto mpm = match.captured(2).toInt(&isOK);
+			if (isOK && (mpm > 0))
 			{
-				m_Song->setMeasuresPerMinute(match.captured(2).toInt());
+				a_OutputTag.m_MeasuresPerMinute = mpm;
 			}
 			auto prefix = match.captured(1);
 			if (prefix.length() < 4)

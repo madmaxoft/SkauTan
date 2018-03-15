@@ -1,6 +1,7 @@
 #include "Database.h"
 #include <assert.h>
 #include <set>
+#include <array>
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -22,6 +23,40 @@ static QVariant fieldValue(const QSqlField & a_Field)
 	}
 	return a_Field.value();
 }
+
+
+
+
+
+/** Constructs a Song::Tag instance from the specified SQL record,
+reading the four values from the columns at the specified indices.
+Index 0: author column
+Index 1: title column
+Index 2: genre column
+Index 3: MPM column
+If any index is negative, the value in the resulting tag is an uninitialized variant. */
+static Song::Tag tagFromFields(const QSqlRecord & a_Record, const std::array<int, 4> & a_Indices)
+{
+	Song::Tag res;
+	if (a_Indices[0] >= 0)
+	{
+		res.m_Author = fieldValue(a_Record.field(a_Indices[0]));
+	}
+	if (a_Indices[1] >= 0)
+	{
+		res.m_Title = fieldValue(a_Record.field(a_Indices[1]));
+	}
+	if (a_Indices[2] >= 0)
+	{
+		res.m_Genre = fieldValue(a_Record.field(a_Indices[2]));
+	}
+	if (a_Indices[3] >= 0)
+	{
+		res.m_MeasuresPerMinute = fieldValue(a_Record.field(a_Indices[3]));
+	}
+	return res;
+}
+
 
 
 
@@ -155,6 +190,8 @@ void Database::saveSong(const Song & a_Song)
 		"FileName = ?, FileSize = ?, Hash = ?, "
 		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
 		"Author = ?, Title = ?, "
+		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
+		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
 		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
 		"WHERE RowID = ?")
 	)
@@ -171,6 +208,14 @@ void Database::saveSong(const Song & a_Song)
 	query.addBindValue(a_Song.measuresPerMinute());
 	query.addBindValue(a_Song.author());
 	query.addBindValue(a_Song.title());
+	query.addBindValue(a_Song.tagFileName().m_Author);
+	query.addBindValue(a_Song.tagFileName().m_Title);
+	query.addBindValue(a_Song.tagFileName().m_Genre);
+	query.addBindValue(a_Song.tagFileName().m_MeasuresPerMinute);
+	query.addBindValue(a_Song.tagId3().m_Author);
+	query.addBindValue(a_Song.tagId3().m_Title);
+	query.addBindValue(a_Song.tagId3().m_Genre);
+	query.addBindValue(a_Song.tagId3().m_MeasuresPerMinute);
 	query.addBindValue(a_Song.lastPlayed());
 	query.addBindValue(a_Song.rating());
 	query.addBindValue(a_Song.lastMetadataUpdated());
@@ -357,18 +402,26 @@ void Database::fixupTables()
 	*/
 	static const std::vector<std::pair<QString, QString>> cdSongs =
 	{
-		{"RowID",               "INTEGER PRIMARY KEY AUTOINCREMENT"},
-		{"FileName",            "TEXT"},
-		{"FileSize",            "NUMBER"},
-		{"Hash",                "BLOB"},
-		{"Length",              "NUMBER"},
-		{"Genre",               "TEXT"},
-		{"MeasuresPerMinute",   "NUMBER"},
-		{"LastPlayed",          "DATETIME"},
-		{"Rating",              "NUMBER"},
-		{"Author",              "TEXT"},
-		{"Title",               "TEXT"},
-		{"LastMetadataUpdated", "DATETIME"},
+		{"RowID",                     "INTEGER PRIMARY KEY AUTOINCREMENT"},
+		{"FileName",                  "TEXT"},
+		{"FileSize",                  "NUMBER"},
+		{"Hash",                      "BLOB"},
+		{"Length",                    "NUMBER"},
+		{"Author",                    "TEXT"},
+		{"Title",                     "TEXT"},
+		{"Genre",                     "TEXT"},
+		{"MeasuresPerMinute",         "NUMBER"},
+		{"FileNameAuthor",            "TEXT"},
+		{"FileNameTitle",             "TEXT"},
+		{"FileNameGenre",             "TEXT"},
+		{"FileNameMeasuresPerMinute", "NUMBER"},
+		{"ID3Author",                 "TEXT"},
+		{"ID3Title",                  "TEXT"},
+		{"ID3Genre",                  "TEXT"},
+		{"ID3MeasuresPerMinute",      "NUMBER"},
+		{"LastPlayed",                "DATETIME"},
+		{"Rating",                    "NUMBER"},
+		{"LastMetadataUpdated",       "DATETIME"},
 	};
 
 	static const std::vector<std::pair<QString, QString>> cdPlaybackHistory =
@@ -495,13 +548,30 @@ void Database::loadSongs()
 	auto fiRowId               = query.record().indexOf("RowID");
 	auto fiHash                = query.record().indexOf("Hash");
 	auto fiLength              = query.record().indexOf("Length");
-	auto fiGenre               = query.record().indexOf("Genre");
-	auto fiMeasuresPerMinute   = query.record().indexOf("MeasuresPerMinute");
-	auto fiAuthor              = query.record().indexOf("Author");
-	auto fiTitle               = query.record().indexOf("Title");
 	auto fiLastPlayed          = query.record().indexOf("LastPlayed");
 	auto fiRating              = query.record().indexOf("Rating");
 	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
+	std::array<int, 4> fisManual
+	{
+		query.record().indexOf("Author"),
+		query.record().indexOf("Title"),
+		query.record().indexOf("Genre"),
+		query.record().indexOf("MeasuresPerMinute"),
+	};
+	std::array<int, 4> fisFileName
+	{
+		query.record().indexOf("FileNameAuthor"),
+		query.record().indexOf("FileNameTitle"),
+		query.record().indexOf("FileNameGenre"),
+		query.record().indexOf("FileNameMeasuresPerMinute"),
+	};
+	std::array<int, 4> fisId3 =
+	{
+		query.record().indexOf("Id3Author"),
+		query.record().indexOf("Id3Title"),
+		query.record().indexOf("Id3Genre"),
+		query.record().indexOf("Id3MeasuresPerMinute"),
+	};
 
 	// Load each song:
 	if (!query.isActive())
@@ -525,10 +595,9 @@ void Database::loadSongs()
 			query.value(fiRowId).toLongLong(),
 			std::move(fieldValue(rec.field(fiHash))),
 			std::move(fieldValue(rec.field(fiLength))),
-			std::move(fieldValue(rec.field(fiGenre))),
-			std::move(fieldValue(rec.field(fiMeasuresPerMinute))),
-			std::move(fieldValue(rec.field(fiAuthor))),
-			std::move(fieldValue(rec.field(fiTitle))),
+			tagFromFields(rec, fisManual),
+			tagFromFields(rec, fisFileName),
+			tagFromFields(rec, fisId3),
 			std::move(fieldValue(rec.field(fiLastPlayed))),
 			std::move(fieldValue(rec.field(fiRating))),
 			std::move(fieldValue(rec.field(fiLastMetadataUpdated)))
