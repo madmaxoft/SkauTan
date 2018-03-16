@@ -332,7 +332,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(Database & a_DB, Template::Item & a_Ite
 
 DlgEditTemplateItem::~DlgEditTemplateItem()
 {
-	// Nothing explicit needed
+	delete m_UI->twFilters->itemDelegate();
 }
 
 
@@ -520,7 +520,6 @@ void DlgEditTemplateItem::insertFilterCombinator()
 	{
 		// Need to update item's root
 		m_Item.setFilter(combinator);
-		parent = combinator.get();
 	}
 	else
 	{

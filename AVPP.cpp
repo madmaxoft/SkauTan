@@ -263,7 +263,7 @@ bool Resampler::init(int a_SrcChannelLayout, int a_SrcSampleRate, AVSampleFormat
 		}
 	}
 	auto dstNumChannels = av_get_channel_layout_nb_channels(dstChannelLayout);
-	assert(dstNumChannels = a_Output->format().channelCount());
+	assert(dstNumChannels == a_Output->format().channelCount());
 
 	switch (a_Output->format().sampleType())
 	{

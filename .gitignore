@@ -1,6 +1,7 @@
 # Qt Creator files:
 *.user
 *.user.*
+leaks.xml
 
 # Runtime files:
 SkauTan.sqlite
