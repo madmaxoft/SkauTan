@@ -99,6 +99,9 @@ private slots:
 	/** Emitted by tblPlaylist when the user dblclicks a track. */
 	void trackDoubleClicked(const QModelIndex & a_Track);
 
+	/** Emitted by the global volume control slider; updates the player volume. */
+	void volumeSliderMoved(int a_NewValue);
+
 	/** Emitted by m_Player before it starts playing the specified item. */
 	void startingItemPlayback(IPlaylistItem * a_Item);
 

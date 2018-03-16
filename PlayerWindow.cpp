@@ -49,6 +49,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_UI->btnPlay,            &QPushButton::clicked,      this, &PlayerWindow::playPause);
 	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
 	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
+	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
 	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
 
 	// Set up the header sections:
@@ -189,6 +190,15 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
 	{
 		m_Player->jumpTo(a_Track.row());
 	}
+}
+
+
+
+
+
+void PlayerWindow::volumeSliderMoved(int a_NewValue)
+{
+	m_Player->setVolume(static_cast<double>(a_NewValue) / 100);
 }
 
 

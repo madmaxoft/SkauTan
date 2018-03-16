@@ -38,6 +38,10 @@ public:
 	/** Returns the current playback position in the current track, in seconds. */
 	double currentPosition() const { return m_CurrentPosition; }
 
+	/** Sets the volume for playback. */
+	void setVolume(qreal a_NewVolume);
+
+
 protected:
 
 	/** The internal state of the player. */

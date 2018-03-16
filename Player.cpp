@@ -77,6 +77,15 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 
 
+void Player::setVolume(qreal a_NewVolume)
+{
+	m_Output->setVolume(a_NewVolume);
+}
+
+
+
+
+
 void Player::nextTrack()
 {
 	if (!m_Playlist->nextItem())
