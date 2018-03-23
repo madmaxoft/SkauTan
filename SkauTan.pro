@@ -84,7 +84,8 @@ SOURCES += \
 	RingBuffer.cpp \
 	AudioEffects.cpp \
 	Stopwatch.cpp \
-	DlgChooseImportTemplates.cpp
+	DlgChooseImportTemplates.cpp \
+	BackgroundTasks.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -114,7 +115,8 @@ HEADERS += \
 	AudioDataSource.h \
 	Stopwatch.h \
 	AudioEffects.h \
-	DlgChooseImportTemplates.h
+	DlgChooseImportTemplates.h \
+	BackgroundTasks.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -126,7 +128,7 @@ FORMS += \
 	DlgPickTemplateFavoriteItem.ui \
 	DlgPickTemplate.ui \
 	DlgQuickPlayer.ui \
-	DlgChooseImportTemplates.ui
+	DlgChooseImportTemplates.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc
