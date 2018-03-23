@@ -6,6 +6,7 @@
 #include "ui_DlgSongs.h"
 #include "Database.h"
 #include "MetadataScanner.h"
+#include "AVPP.h"
 
 
 
@@ -76,10 +77,15 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 	for (const auto & fnam: a_FileNames)
 	{
 		QFileInfo fi(fnam);
-		if (fi.exists())
+		if (!fi.exists())
 		{
-			songs.emplace_back(fnam, static_cast<qulonglong>(fi.size()));
+			continue;
 		}
+		if (!AVPP::isExtensionSupported(fi.suffix()))
+		{
+			continue;
+		}
+		songs.emplace_back(fnam, static_cast<qulonglong>(fi.size()));
 	}
 	if (songs.empty())
 	{
@@ -106,7 +112,10 @@ void DlgSongs::addFolder(const QString & a_Path)
 		}
 		if (!item.isFile())
 		{
-			qDebug() << __FUNCTION__ << ": Skipping object " << item.absoluteFilePath();
+			continue;
+		}
+		if (!AVPP::isExtensionSupported(item.suffix()))
+		{
 			continue;
 		}
 		songs.emplace_back(item.absoluteFilePath(), static_cast<qulonglong>(item.size()));

@@ -210,6 +210,10 @@ namespace AVPP
 		/** Outputs the specified audio data frame into m_AudioOutput. */
 		void outputAudioData(AVFrame * a_Frame);
 	};  // class Format
+
+
+
+	bool isExtensionSupported(const QString & a_Extension);
 }
 
 #endif // AVPP_H

@@ -21,10 +21,38 @@ namespace AVPP
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Initializer:
+
+/** Singleton-like class that initializes the LibAV framework.
+Before using any LibAV functions, a call to Initializer::init() should be made. */
+class Initializer
+{
+	Initializer()
+	{
+		av_register_all();
+	}
+
+
+public:
+
+	/** Initializes the LibAV. */
+	static Initializer & init()
+	{
+		static Initializer instance;
+		return instance;
+	}
+};
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // FileIO:
 
 std::shared_ptr<FileIO> FileIO::createContext(const QString & a_FileName)
 {
+	Initializer::init();
 	auto res = std::shared_ptr<FileIO>(new FileIO);
 	if (res == nullptr)
 	{
@@ -143,6 +171,7 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 
 std::shared_ptr<CodecContext> CodecContext::create(AVCodec * a_Codec)
 {
+	Initializer::init();
 	auto res = std::shared_ptr<CodecContext>(new CodecContext(a_Codec));
 	if (res->m_Context == nullptr)
 	{
@@ -202,6 +231,7 @@ Resampler * Resampler::create(
 	PlaybackBuffer * a_Output
 )
 {
+	Initializer::init();
 	auto res = std::unique_ptr<Resampler>(new Resampler);
 	if (!res->init(a_SrcChannelMap, a_SrcSampleRate, a_SrcSampleFormat, a_Output))
 	{
@@ -368,6 +398,8 @@ bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
 
 Format * Format::createContext(const QString & a_FileName)
 {
+	Initializer::init();
+
 	// Create an IO wrapper:
 	auto io = FileIO::createContext(a_FileName);
 	if (io == nullptr)
@@ -555,6 +587,71 @@ void Format::outputAudioData(AVFrame * a_Frame)
 		}
 	}
 	m_ShouldTerminate = !m_Resampler->push(const_cast<const uint8_t **>(a_Frame->data), a_Frame->nb_samples);
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// InputFormats:
+
+/** Singleton that provides the list of all supported input formats. */
+class InputFormats
+{
+	InputFormats()
+	{
+		Initializer::init();
+		AVInputFormat * fmt = nullptr;
+		while ((fmt = av_iformat_next(fmt)) != nullptr)
+		{
+			if (fmt->extensions != nullptr)
+			{
+				auto ext = QString::fromLocal8Bit(fmt->extensions);
+				for (const auto & e: ext.split(','))
+				{
+					m_Extensions.push_back(e.toLower());
+				}
+			}
+		}
+	}
+
+	std::vector<QString> m_Extensions;
+
+public:
+
+	static InputFormats & get()
+	{
+		static InputFormats instance;
+		return instance;
+	}
+
+	/** Returns true iff the extension is supported by the input formats. */
+	bool isExtensionSupported(const QString & a_Extension)
+	{
+		auto lcExt = a_Extension.toLower();
+		for (const auto & ext: m_Extensions)
+		{
+			if (lcExt == ext)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+};
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// AVPP namespace:
+
+bool isExtensionSupported(const QString & a_Extension)
+{
+	Q_UNUSED(a_Extension);
+	return InputFormats::get().isExtensionSupported(a_Extension);
 }
 
 
