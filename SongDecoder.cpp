@@ -48,18 +48,12 @@ void SongDecoder::decode()
 
 void SongDecoder::decodeInternal()
 {
-	// Initialize AV libs:
-	static bool isAVInitialized = false;
-	if (!isAVInitialized)
-	{
-		isAVInitialized = true;
-		av_register_all();
-	}
-
 	// Open the file:
 	auto fmtCtx = AVPP::Format::createContext(m_Song->fileName());
 	if (fmtCtx == nullptr)
 	{
+		qDebug() << "Decoding failed for file " << m_Song->fileName();
+		abort();
 		return;
 	}
 	fmtCtx->routeAudioTo(this);
