@@ -2,6 +2,7 @@
 #include "assert.h"
 #include <QDebug>
 #include <QShortcut>
+#include <QTimer>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
 #include "DlgSongs.h"
@@ -19,7 +20,8 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	Super(a_Parent),
 	m_UI(new Ui::PlayerWindow),
 	m_DB(new Database),
-	m_Playlist(new Playlist)
+	m_Playlist(new Playlist),
+	m_UpdateUITimer(new QTimer)
 {
 	assert(m_Playlist != nullptr);
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Playlist));
@@ -51,6 +53,11 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
 	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
 	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
+	connect(m_Player.get(),           &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
+	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
+
+	// Update the UI every 200 msec:
+	m_UpdateUITimer->start(200);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -207,6 +214,7 @@ void PlayerWindow::volumeSliderMoved(int a_NewValue)
 
 void PlayerWindow::startingItemPlayback(IPlaylistItem * a_Item)
 {
+	// Update the "last played" value in the DB:
 	auto spi = dynamic_cast<PlaylistItemSong *>(a_Item);
 	if (spi != nullptr)
 	{
@@ -231,4 +239,31 @@ void PlayerWindow::addFromTemplate()
 		return;
 	}
 	m_Playlist->addFromTemplate(*m_DB, *tmpl);
+}
+
+
+
+
+
+void PlayerWindow::updatePositionRange()
+{
+	auto length = static_cast<int>(m_Playlist->currentItem()->displayLength() + 0.5);
+	m_UI->hsPosition->setMaximum(length);
+	updateTimePos();
+}
+
+
+
+
+
+
+void PlayerWindow::updateTimePos()
+{
+	auto position  = static_cast<int>(m_Player->currentPosition() + 0.5);
+	auto curItem = m_Playlist->currentItem();
+	auto length = (curItem == nullptr) ? 0 : static_cast<int>(curItem->displayLength() + 0.5);
+	auto remaining = length - position;
+	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));
+	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
+	m_UI->hsPosition->setValue(position);
 }

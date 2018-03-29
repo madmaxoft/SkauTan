@@ -35,8 +35,9 @@ public:
 
 	~Player();
 
-	/** Returns the current playback position in the current track, in seconds. */
-	double currentPosition() const { return m_CurrentPosition; }
+	/** Returns the current playback position in the current track, in seconds.
+	Returns 0 if not playing back anything. */
+	double currentPosition() const;
 
 	/** Sets the volume for playback. */
 	void setVolume(qreal a_NewVolume);
@@ -63,10 +64,6 @@ protected:
 	0 = fadeout just started. */
 	int m_FadeoutProgress;
 
-	/** The current playback position in the current track, in seconds.
-	Only valid when m_State is psPlaying. */
-	double m_CurrentPosition;
-
 	/** The actual audio output. */
 	std::unique_ptr<QAudioOutput> m_Output;
 
@@ -86,8 +83,13 @@ protected:
 
 signals:
 
-	/** Emitted before starting to play the specified item. */
+	/** Emitted before starting to play the specified item.
+	The item is not yet set in the player, so values such as currentPosition() still give old values. */
 	void startingPlayback(IPlaylistItem * a_Item);
+
+	/** Emitted just after starting to play the specified item.
+	The item is already set in the player, values such as currentPosition() give valid values. */
+	void startedPlayback(IPlaylistItem * a_Item);
 
 
 public slots:

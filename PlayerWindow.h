@@ -15,6 +15,7 @@
 
 // fwd:
 class QShortcut;
+class QTimer;
 class Player;
 class Song;
 class Database;
@@ -58,6 +59,9 @@ private:
 
 	/** The player that sends the audio data to the output. */
 	std::unique_ptr<Player> m_Player;
+
+	/** The timer that periodically updates the UI. */
+	std::unique_ptr<QTimer> m_UpdateUITimer;
 
 
 private slots:
@@ -107,6 +111,13 @@ private slots:
 
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();
+
+	/** Updates the range on the position slider. */
+	void updatePositionRange();
+
+	/** Updates the time position indicators.
+	Called regularly from a timer, and when changing tracks. */
+	void updateTimePos();
 };
 
 

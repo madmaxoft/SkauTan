@@ -12,6 +12,7 @@ PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_OutputFormat):
 	m_Mtx(QMutex::NonRecursive),
 	m_CurrentReadPos(0),
 	m_CurrentWritePos(0),
+	m_CurrentSongPosition(0),
 	m_IsFadingOut(false),
 	m_FadeOutTotalSamples(0),
 	m_FadeOutRemaining(0)
@@ -96,6 +97,15 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 
 
 
+double PlaybackBuffer::currentSongPosition() const
+{
+	return static_cast<double>(m_CurrentSongPosition) / m_OutputFormat.sampleRate();
+}
+
+
+
+
+
 qint64 PlaybackBuffer::readData(char * a_Data, qint64 a_MaxLen)
 {
 	assert(a_MaxLen >= 0);
@@ -122,7 +132,8 @@ qint64 PlaybackBuffer::readData(char * a_Data, qint64 a_MaxLen)
 		if (numBytesToRead == 0)
 		{
 			m_CVHasFreeSpace.wakeAll();
-			return numToCopy;
+			m_CurrentSongPosition += numToCopy / 4;  // 4 bytes per frame
+			return static_cast<qint64>(numToCopy);
 		}
 	}
 	// Now the data is guaranteed to be contiguous, copy the rest:
@@ -135,7 +146,8 @@ qint64 PlaybackBuffer::readData(char * a_Data, qint64 a_MaxLen)
 		numBytesRead += numToCopy;
 	}
 	m_CVHasFreeSpace.wakeAll();
-	return numBytesRead;
+	m_CurrentSongPosition += numBytesRead / 4;  // 4 bytes per frame
+	return static_cast<qint64>(numBytesRead);
 }
 
 
@@ -246,7 +258,7 @@ void PlaybackBuffer::applyFadeOut(void * a_Data, int a_NumBytes)
 	{
 		// Reached the end of fadeout, just zero out all remaining data
 		qDebug() << __FUNCTION__ << ": Reached end of fadeout.";
-		memset(a_Data, 0, a_NumBytes);
+		memset(a_Data, 0, static_cast<size_t>(a_NumBytes));
 		return;
 	}
 	auto numSamples = a_NumBytes / 2;
