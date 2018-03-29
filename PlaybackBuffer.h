@@ -28,7 +28,7 @@ public:
 	PlaybackBuffer(const QAudioFormat & a_OutputFormat);
 
 	// Force a virtual destructor in descendants
-	virtual ~PlaybackBuffer() {}
+	virtual ~PlaybackBuffer() override {}
 
 	/** Signals that the operations should abort, instead of waiting for async operations to finish.
 	Used mainly by destructors. */
@@ -51,6 +51,9 @@ public:
 	bool writeDecodedAudio(const void * a_Data, size_t a_Len);
 
 	const QAudioFormat & format() const { return m_OutputFormat; }
+
+	/** Returns the position in the playback, as fractional seconds. */
+	double currentSongPosition() const;
 
 protected:
 
@@ -95,6 +98,10 @@ private:
 	/** Position in m_Buffer where the next write operation will take place.
 	Protected against multithreaded access by m_Mtx. */
 	size_t m_CurrentWritePos;
+
+	/** The playback position, in frames.
+	Updated at the time the audiodata is read by the player, so it is a bit ahead of the actual playback. */
+	std::atomic<size_t> m_CurrentSongPosition;
 
 	/** Set to true if FadeOut was requested.
 	If true, data being read will get faded out until the end of FadeOut is reached, at which point no more data will

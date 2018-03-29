@@ -12,8 +12,7 @@ Player::Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent):
 	Super(a_Parent),
 	m_Playlist(a_Playlist),
 	m_State(psStopped),
-	m_FadeoutProgress(0),
-	m_CurrentPosition(0)
+	m_FadeoutProgress(0)
 {
 	assert(m_Playlist != nullptr);
 
@@ -57,6 +56,19 @@ Player::~Player()
 {
 	m_Thread.quit();
 	m_Thread.wait();
+}
+
+
+
+
+
+double Player::currentPosition() const
+{
+	if (m_OutputIO == nullptr)
+	{
+		return 0;
+	}
+	return m_OutputIO->currentSongPosition();
 }
 
 
@@ -222,6 +234,7 @@ void Player::start()
 	m_Output->setBufferSize(bufSize);
 	m_Output->start(m_OutputIO.get());
 	m_State = psPlaying;
+	emit startedPlayback(track.get());
 }
 
 
