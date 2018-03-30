@@ -55,6 +55,16 @@ public:
 	/** Returns the position in the playback, as fractional seconds. */
 	double currentSongPosition() const;
 
+	/** Seeks to the specified timestamp.
+	Descendants provide the actual seeking, this implementation only updates the internal song position. */
+	virtual void seekTo(double a_Time);
+
+	/** Clears the current data from the buffer.
+	Asserts that the buffer is frame-aligned.
+	(Otherwise the decoder may be waiting to write a few more bytes from the last decoded frame.)
+	Assumed to be called from within the decoder thread between calls to writeDecodedAudio(). */
+	void clear();
+
 protected:
 
 	/** The audio format of the output data. */

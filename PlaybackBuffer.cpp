@@ -106,6 +106,31 @@ double PlaybackBuffer::currentSongPosition() const
 
 
 
+void PlaybackBuffer::seekTo(double a_Time)
+{
+	QMutexLocker lock(&m_Mtx);
+	m_CurrentSongPosition = static_cast<size_t>(a_Time * m_OutputFormat.sampleRate());
+}
+
+
+
+
+
+void PlaybackBuffer::clear()
+{
+	QMutexLocker lock(&m_Mtx);
+	qDebug() << "Clearing buffer, current availRead = " << numAvailRead() << ", numAvailWrite = " << numAvailWrite();
+	assert(numAvailRead() % 4 == 0);  // Needs to be frame-aligned
+	m_CurrentReadPos = 0;
+	m_CurrentWritePos = 0;
+	assert(numAvailRead() == 0);
+	m_CVHasFreeSpace.notify_one();
+}
+
+
+
+
+
 qint64 PlaybackBuffer::readData(char * a_Data, qint64 a_MaxLen)
 {
 	assert(a_MaxLen >= 0);
@@ -231,6 +256,10 @@ size_t PlaybackBuffer::numAvailRead()
 {
 	assert(m_CurrentReadPos  < sizeof(m_Buffer));
 	assert(m_CurrentWritePos < sizeof(m_Buffer));
+	if (m_CurrentReadPos == m_CurrentWritePos)
+	{
+		return 0;
+	}
 	if (m_CurrentReadPos > m_CurrentWritePos)
 	{
 		// Wrap around the buffer end:

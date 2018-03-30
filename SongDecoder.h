@@ -8,6 +8,7 @@
 #include <QSemaphore>
 #include "PlaybackBuffer.h"
 #include "Song.h"
+#include "AVPP.h"
 
 
 
@@ -23,6 +24,8 @@ public:
 
 	virtual ~SongDecoder();
 
+	virtual void seekTo(double a_Time) override;
+
 
 protected:
 
@@ -32,6 +35,9 @@ protected:
 	/** Semaphore used to coordinate termination.
 	The asynchronous decoder signals this semaphore when it finishes. */
 	QSemaphore m_Termination;
+
+	/** The LibAV handle to the decoder. */
+	AVPP::FormatPtr m_FmtCtx;
 
 
 	/** Decodes the song data asynchronously. */

@@ -21,7 +21,8 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI(new Ui::PlayerWindow),
 	m_DB(new Database),
 	m_Playlist(new Playlist),
-	m_UpdateUITimer(new QTimer)
+	m_UpdateUITimer(new QTimer),
+	m_IsInternalPositionUpdate(false)
 {
 	assert(m_Playlist != nullptr);
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Playlist));
@@ -55,6 +56,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
 	connect(m_Player.get(),           &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
 	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
+	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
 
 	// Update the UI every 200 msec:
 	m_UpdateUITimer->start(200);
@@ -265,5 +267,21 @@ void PlayerWindow::updateTimePos()
 	auto remaining = length - position;
 	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
+	m_IsInternalPositionUpdate = true;
 	m_UI->hsPosition->setValue(position);
+	m_IsInternalPositionUpdate = false;
+}
+
+
+
+
+
+void PlayerWindow::setTimePos(int a_NewValue)
+{
+	if (m_IsInternalPositionUpdate)
+	{
+		// This is an update from the player,not from the user. Bail out
+		return;
+	}
+	m_Player->seekTo(a_NewValue);
 }

@@ -106,7 +106,7 @@ namespace AVPP
 		Returns nullptr on error.
 		The input format is specified in LIBAV* terms, the output format is deduced from a_Output. */
 		static Resampler * create(
-			int a_SrcChannelMap,
+			uint64_t a_SrcChannelLayout,
 			int a_SrcSampleRate,
 			AVSampleFormat a_SrcSampleFormat,
 			PlaybackBuffer * a_Output
@@ -144,12 +144,19 @@ namespace AVPP
 		The input format is specified in LIBAV* terms, the output format is deduced from a_Output.
 		Returns true on success, false on error. */
 		bool init(
-			int a_SrcChannelLayout,
+			uint64_t a_SrcChannelLayout,
 			int a_SrcSampleRate,
 			AVSampleFormat a_SrcSampleFormat,
 			PlaybackBuffer * a_Output
 		);
 	};
+
+
+
+
+	// fwd:
+	class Format;
+	using FormatPtr = std::unique_ptr<Format>;
 
 
 
@@ -160,7 +167,7 @@ namespace AVPP
 	public:
 		/** Creates a new AVFormatContext instance tied to the specified input file.
 		Returns nullptr on error. */
-		static Format * createContext(const QString & a_FileName);
+		static FormatPtr createContext(const QString & a_FileName);
 
 		~Format();
 
@@ -170,8 +177,12 @@ namespace AVPP
 		Returns true if an audio decoder was successfully initialized for the decoding. */
 		bool routeAudioTo(PlaybackBuffer * a_PlaybackBuffer);
 
-		/** Reads the input and decodes any data found in it, according to routing set with routeAudioTo(). */
+		/** Reads the input and decodes any data found in it, according to routing set with routeAudioTo().
+		Blocks until the entire input is decoded (or seeked out of, using seekTo() from another thread). */
 		void decode();
+
+		/** Seeks to the specified timestamp, in fractional seconds. */
+		void seekTo(double a_Time);
 
 	protected:
 
@@ -203,6 +214,13 @@ namespace AVPP
 		/** The resampler used to conver audio data from LibAV output to m_AudioOutput. */
 		std::unique_ptr<Resampler> m_Resampler;
 
+		/** Set to true when there's a seek request (with a valid m_SeekTo).
+		The decoding thread checks this periodically and seeks, if needed. */
+		std::atomic<bool> m_ShouldSeek;
+
+		/** The timestamp to seek to, in units for av_seek_frame(). */
+		std::atomic<int64_t> m_SeekTo;
+
 
 		/** Creates a new instance and binds it to the specified IO. */
 		Format(std::shared_ptr<FileIO> a_IO);
@@ -213,7 +231,14 @@ namespace AVPP
 
 
 
+
+
 	bool isExtensionSupported(const QString & a_Extension);
-}
+}  // namespace AVPP
+
+
+
+
+
 
 #endif // AVPP_H
