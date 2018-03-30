@@ -63,6 +63,9 @@ private:
 	/** The timer that periodically updates the UI. */
 	std::unique_ptr<QTimer> m_UpdateUITimer;
 
+	/** Set to true if the position update is coming from the player internals (rather than user input). */
+	bool m_IsInternalPositionUpdate;
+
 
 private slots:
 
@@ -118,6 +121,9 @@ private slots:
 	/** Updates the time position indicators.
 	Called regularly from a timer, and when changing tracks. */
 	void updateTimePos();
+
+	/** Sets the playback position to the specified value (in seconds). */
+	void setTimePos(int a_NewValue);
 };
 
 

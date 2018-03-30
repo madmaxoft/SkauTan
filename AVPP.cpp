@@ -117,7 +117,7 @@ bool FileIO::Open(const QString & a_FileName)
 int FileIO::read(void * a_This, uint8_t * a_Dst, int a_Size)
 {
 	auto This = reinterpret_cast<FileIO *>(a_This);
-	return This->m_File->read(reinterpret_cast<char *>(a_Dst), a_Size);
+	return static_cast<int>(This->m_File->read(reinterpret_cast<char *>(a_Dst), a_Size));
 }
 
 
@@ -225,7 +225,7 @@ CodecContext::CodecContext(AVCodec * a_Codec):
 // Resampler:
 
 Resampler * Resampler::create(
-	int a_SrcChannelMap,
+	uint64_t a_SrcChannelLayout,
 	int a_SrcSampleRate,
 	AVSampleFormat a_SrcSampleFormat,
 	PlaybackBuffer * a_Output
@@ -233,7 +233,7 @@ Resampler * Resampler::create(
 {
 	Initializer::init();
 	auto res = std::unique_ptr<Resampler>(new Resampler);
-	if (!res->init(a_SrcChannelMap, a_SrcSampleRate, a_SrcSampleFormat, a_Output))
+	if (!res->init(a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat, a_Output))
 	{
 		return nullptr;
 	}
@@ -266,7 +266,8 @@ Resampler::~Resampler()
 	}
 	if (m_Buffer != nullptr)
 	{
-		free(m_Buffer);
+		av_freep(&m_Buffer[0]);
+		// free(m_Buffer);
 	}
 }
 
@@ -274,10 +275,15 @@ Resampler::~Resampler()
 
 
 
-bool Resampler::init(int a_SrcChannelLayout, int a_SrcSampleRate, AVSampleFormat a_SrcSampleFormat, PlaybackBuffer * a_Output)
+bool Resampler::init(
+	uint64_t a_SrcChannelLayout,
+	int a_SrcSampleRate,
+	AVSampleFormat a_SrcSampleFormat,
+	PlaybackBuffer * a_Output
+)
 {
 	// Translate QAudioFormat into LibAV/SWR format:
-	int dstChannelLayout;
+	uint64_t dstChannelLayout;
 	switch (a_Output->format().channelCount())
 	{
 		case 1: dstChannelLayout = AV_CH_LAYOUT_MONO;    break;
@@ -312,10 +318,10 @@ bool Resampler::init(int a_SrcChannelLayout, int a_SrcSampleRate, AVSampleFormat
 	// Create and init the context:
 	m_Context = swr_alloc_set_opts(
 		nullptr,
-		dstChannelLayout,
+		static_cast<int64_t>(dstChannelLayout),
 		m_BufferSampleFormat,
 		a_Output->format().sampleRate(),
-		a_SrcChannelLayout,
+		static_cast<int64_t>(a_SrcChannelLayout),
 		a_SrcSampleFormat,
 		a_SrcSampleRate,
 		0, nullptr  // logging - unused
@@ -386,7 +392,7 @@ bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
 
 	// Output through to AudioOutput:
 	auto bytesPerSample = m_Output->format().channelCount() * (m_Output->format().sampleSize() / 8);
-	return m_Output->writeDecodedAudio(m_Buffer[0], numOutputSamples * bytesPerSample);
+	return m_Output->writeDecodedAudio(m_Buffer[0], static_cast<size_t>(numOutputSamples * bytesPerSample));
 }
 
 
@@ -396,7 +402,7 @@ bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
 ////////////////////////////////////////////////////////////////////////////////
 // Format:
 
-Format * Format::createContext(const QString & a_FileName)
+FormatPtr Format::createContext(const QString & a_FileName)
 {
 	Initializer::init();
 
@@ -434,7 +440,7 @@ Format * Format::createContext(const QString & a_FileName)
 	}
 
 	qDebug() << __FUNCTION__ << ": Format context initialized.";
-	return res.release();
+	return res;
 }
 
 
@@ -447,7 +453,8 @@ Format::Format(std::shared_ptr<FileIO> a_IO):
 	m_AudioOutput(nullptr),
 	m_AudioStreamIdx(-1),
 	m_Buffer(nullptr),
-	m_BufferSize(0)
+	m_BufferSize(0),
+	m_ShouldSeek(false)
 {
 	if (m_Context != nullptr)
 	{
@@ -527,6 +534,12 @@ void Format::decode()
 	m_ShouldTerminate = false;
 	while (!m_ShouldTerminate)
 	{
+		if (m_ShouldSeek)
+		{
+			av_seek_frame(m_Context, -1, m_SeekTo, 0);
+			m_AudioOutput->clear();
+			m_ShouldSeek = false;
+		}
 		auto ret = av_read_frame(m_Context, &packet);
 		if (ret < 0)
 		{
@@ -562,6 +575,16 @@ void Format::decode()
 		av_packet_unref(&packet);
 	}
 	qDebug() << __FUNCTION__ << ": Decoding done.";
+}
+
+
+
+
+
+void Format::seekTo(double a_Time)
+{
+	m_SeekTo = static_cast<int64_t>(a_Time * AV_TIME_BASE);
+	m_ShouldSeek = true;
 }
 
 

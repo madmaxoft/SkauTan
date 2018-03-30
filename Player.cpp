@@ -89,6 +89,23 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 
 
+void Player::seekTo(double a_Time)
+{
+	if (m_State != psPlaying)
+	{
+		return;
+	}
+	if (m_OutputIO == nullptr)
+	{
+		return;
+	}
+	m_OutputIO->seekTo(a_Time);
+}
+
+
+
+
+
 void Player::setVolume(qreal a_NewVolume)
 {
 	m_Output->setVolume(a_NewVolume);

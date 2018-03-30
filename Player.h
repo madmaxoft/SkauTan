@@ -42,6 +42,10 @@ public:
 	/** Sets the volume for playback. */
 	void setVolume(qreal a_NewVolume);
 
+	/** Seeks to the specified timestamp.
+	Ignored if not playing. */
+	void seekTo(double a_Time);
+
 
 protected:
 

@@ -1,6 +1,5 @@
 #include "SongDecoder.h"
 #include <QtConcurrent/QtConcurrent>
-#include "AVPP.h"
 
 
 
@@ -36,6 +35,19 @@ SongDecoder::~SongDecoder()
 
 
 
+void SongDecoder::seekTo(double a_Time)
+{
+	// Seek in the decoder:
+	m_FmtCtx->seekTo(a_Time);
+
+	// Seek in the PlaybackBuffer:
+	Super::seekTo(a_Time);
+}
+
+
+
+
+
 void SongDecoder::decode()
 {
 	decodeInternal();
@@ -49,13 +61,13 @@ void SongDecoder::decode()
 void SongDecoder::decodeInternal()
 {
 	// Open the file:
-	auto fmtCtx = AVPP::Format::createContext(m_Song->fileName());
-	if (fmtCtx == nullptr)
+	m_FmtCtx = AVPP::Format::createContext(m_Song->fileName());
+	if (m_FmtCtx == nullptr)
 	{
 		qDebug() << "Decoding failed for file " << m_Song->fileName();
 		abort();
 		return;
 	}
-	fmtCtx->routeAudioTo(this);
-	fmtCtx->decode();
+	m_FmtCtx->routeAudioTo(this);
+	m_FmtCtx->decode();
 }
