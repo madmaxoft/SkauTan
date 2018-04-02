@@ -193,7 +193,7 @@ void DlgSongs::removeSelected()
 	}
 
 	// Remove from the DB:
-	for (const auto song: songs)
+	for (const auto & song: songs)
 	{
 		m_DB.delSong(*song);
 	}

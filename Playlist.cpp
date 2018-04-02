@@ -1,4 +1,5 @@
 #include "Playlist.h"
+#include <limits>
 #include <assert.h>
 #include <QDebug>
 #include "Database.h"
@@ -29,15 +30,15 @@ void Playlist::addItem(IPlaylistItemPtr a_Item)
 
 
 
-void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
+void Playlist::moveItem(size_t a_FromIdx, size_t a_ToIdx)
 {
 	assert(a_FromIdx >= 0);
 	assert(a_ToIdx >= 0);
-	assert(static_cast<size_t>(a_FromIdx) < m_Items.size());
+	assert(a_FromIdx < m_Items.size());
 	assert(
-		(static_cast<size_t>(a_ToIdx) < m_Items.size()) ||
+		(a_ToIdx < m_Items.size()) ||
 		(
-			(static_cast<size_t>(a_ToIdx) == m_Items.size()) &&
+			(a_ToIdx == m_Items.size()) &&
 			(a_FromIdx < a_ToIdx)
 		)
 	);
@@ -50,7 +51,7 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 	if (a_FromIdx > a_ToIdx)
 	{
 		// Item moving up the list
-		for (int i = a_FromIdx; i > a_ToIdx; --i)
+		for (size_t i = a_FromIdx; i > a_ToIdx; --i)
 		{
 			m_Items[i] = m_Items[i - 1];
 		}
@@ -59,7 +60,7 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 	{
 		// Item moving down the list:
 		a_ToIdx -= 1;
-		for (int i = a_FromIdx; i < a_ToIdx; ++i)
+		for (size_t i = a_FromIdx; i < a_ToIdx; ++i)
 		{
 			m_Items[i] = m_Items[i + 1];
 		}
@@ -73,7 +74,7 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 
 void Playlist::deleteItem(int a_Index)
 {
-	emit itemDeleting(m_Items[a_Index].get(), a_Index);
+	emit itemDeleting(m_Items[static_cast<size_t>(a_Index)].get(), a_Index);
 	m_Items.erase(m_Items.begin() + a_Index);
 	if (m_CurrentItemIdx > a_Index)
 	{
@@ -93,7 +94,7 @@ IPlaylistItemPtr Playlist::currentItem() const
 		return nullptr;
 	}
 	assert(static_cast<size_t>(m_CurrentItemIdx) < m_Items.size());
-	return m_Items[m_CurrentItemIdx];
+	return m_Items[static_cast<size_t>(m_CurrentItemIdx)];
 }
 
 
@@ -184,7 +185,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 {
 	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
 	int totalWeight = 0;
-	for (const auto song: a_DB.songs())
+	for (const auto & song: a_DB.songs())
 	{
 		if (a_Item.filter()->isSatisfiedBy(*song))
 		{
@@ -226,7 +227,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 {
 	Q_UNUSED(a_DB);
-	int res = 10000;  // Base weight
+	qint64 res = 10000;  // Base weight
 
 	// Penalize the last played date:
 	auto lastPlayed = a_Song.lastPlayed();
@@ -238,7 +239,7 @@ int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 
 	// Penalize presence in the list:
 	int idx = 0;
-	for (const auto itm: items())
+	for (const auto & itm: items())
 	{
 		auto spi = dynamic_cast<PlaylistItemSong *>(itm.get());
 		if (spi != nullptr)
@@ -263,8 +264,12 @@ int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 	else
 	{
 		// Default to 2.5-star rating:
-		res = res * 3.5 / 5;
+		res = static_cast<qint64>(res * 3.5 / 5);
 	}
 
-	return res;
+	if (res > std::numeric_limits<int>::max())
+	{
+		return std::numeric_limits<int>::max();
+	}
+	return static_cast<int>(res);
 }

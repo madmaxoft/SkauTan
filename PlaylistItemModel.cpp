@@ -110,7 +110,7 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 	while (!rows.empty())
 	{
 		auto row = rows.back();
-		m_Playlist->moveItem(row, a_Row);
+		m_Playlist->moveItem(static_cast<size_t>(row), static_cast<size_t>(a_Row));
 		if (minRow > row)
 		{
 			minRow = row;
@@ -201,7 +201,7 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			{
 				return QVariant();
 			}
-			const auto & item = m_Playlist->items()[a_Index.row()];
+			const auto & item = m_Playlist->items()[static_cast<size_t>(a_Index.row())];
 			switch (a_Index.column())
 			{
 				case colGenre:             return item->displayGenre();

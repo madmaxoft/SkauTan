@@ -61,7 +61,7 @@ void DlgPickTemplateFavoriteItem::keyPressEvent(QKeyEvent * a_Event)
 			auto curIdx = m_UI->tblItems->currentRow();
 			if (curIdx >= 0)
 			{
-				m_ItemSelected = m_Items[curIdx];
+				m_ItemSelected = m_Items[static_cast<size_t>(curIdx)];
 				accept();
 				return;
 			}
@@ -82,7 +82,7 @@ void DlgPickTemplateFavoriteItem::itemDblClicked(int a_Row, int a_Column)
 
 	if (a_Row >= 0)
 	{
-		m_ItemSelected = m_Items[a_Row];
+		m_ItemSelected = m_Items[static_cast<size_t>(a_Row)];
 		accept();
 	}
 }

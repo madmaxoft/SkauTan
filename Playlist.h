@@ -39,7 +39,7 @@ public:
 
 	/** Moves the item at a_FromIdex to a_ToIdx, shifting the items in between accordingly.
 	Doesn't emit any signal. */
-	void moveItem(int a_FromIdx, int a_ToIdx);
+	void moveItem(size_t a_FromIdx, size_t a_ToIdx);
 
 	/** Deletes the item at the specified index.
 	Emits the appropriate signals. */
