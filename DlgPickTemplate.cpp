@@ -23,7 +23,7 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 	m_UI->tblTemplates->setRowCount(static_cast<int>(a_DB.templates().size()));
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Template"), tr("#"), tr("Notes")});
 	int idx = 0;
-	for (const auto tmpl: a_DB.templates())
+	for (const auto & tmpl: a_DB.templates())
 	{
 		m_UI->tblTemplates->setItem(idx, 0, new QTableWidgetItem(tmpl->displayName()));
 		m_UI->tblTemplates->setItem(idx, 1, new QTableWidgetItem(QString::number(tmpl->items().size())));
@@ -58,7 +58,7 @@ void DlgPickTemplate::keyPressEvent(QKeyEvent * a_Event)
 			if (curIdx >= 0)
 			{
 				assert(curIdx < static_cast<int>(m_DB.templates().size()));
-				m_SelectedTemplate = m_DB.templates()[curIdx];
+				m_SelectedTemplate = m_DB.templates()[static_cast<size_t>(curIdx)];
 				accept();
 				return;
 			}
@@ -80,7 +80,7 @@ void DlgPickTemplate::cellDblClicked(int a_Row, int a_Column)
 	if (a_Row >= 0)
 	{
 		assert(a_Row < static_cast<int>(m_DB.templates().size()));
-		m_SelectedTemplate = m_DB.templates()[a_Row];
+		m_SelectedTemplate = m_DB.templates()[static_cast<size_t>(a_Row)];
 		accept();
 	}
 }

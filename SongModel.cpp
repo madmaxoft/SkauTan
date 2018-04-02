@@ -98,7 +98,7 @@ SongPtr SongModel::songFromRow(int a_Row) const
 	{
 		return nullptr;
 	}
-	return m_DB.songs()[a_Row];
+	return m_DB.songs()[static_cast<size_t>(a_Row)];
 }
 
 
@@ -157,7 +157,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 	{
 		return QVariant();
 	}
-	const auto & song = m_DB.songs()[a_Index.row()];
+	const auto & song = m_DB.songs()[static_cast<size_t>(a_Index.row())];
 	switch (a_Role)
 	{
 		case Qt::DisplayRole:
@@ -273,7 +273,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 	{
 		return false;
 	}
-	const auto & song = m_DB.songs()[a_Index.row()];
+	const auto & song = m_DB.songs()[static_cast<size_t>(a_Index.row())];
 	switch (a_Index.column())
 	{
 		case colFileName: return false;

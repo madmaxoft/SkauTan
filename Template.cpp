@@ -163,7 +163,7 @@ bool Template::Filter::isSatisfiedBy(const Song & a_Song) const
 	{
 		case fkAnd:
 		{
-			for (const auto ch: m_Children)
+			for (const auto & ch: m_Children)
 			{
 				if (!ch->isSatisfiedBy(a_Song))
 				{
@@ -175,7 +175,7 @@ bool Template::Filter::isSatisfiedBy(const Song & a_Song) const
 
 		case fkOr:
 		{
-			for (const auto ch: m_Children)
+			for (const auto & ch: m_Children)
 			{
 				if (ch->isSatisfiedBy(a_Song))
 				{
@@ -671,7 +671,7 @@ Template::ItemPtr Template::addItem(
 		return res;
 	}
 	assert(a_DstIndex <= static_cast<int>(m_Items.size()));
-	m_Items.insert(m_Items.begin() + static_cast<size_t>(a_DstIndex), res);
+	m_Items.insert(m_Items.begin() + a_DstIndex, res);
 	return res;
 }
 

@@ -552,26 +552,26 @@ void Database::loadSongs()
 	auto fiRating              = query.record().indexOf("Rating");
 	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
 	std::array<int, 4> fisManual
-	{
+	{{
 		query.record().indexOf("Author"),
 		query.record().indexOf("Title"),
 		query.record().indexOf("Genre"),
 		query.record().indexOf("MeasuresPerMinute"),
-	};
+	}};
 	std::array<int, 4> fisFileName
-	{
+	{{
 		query.record().indexOf("FileNameAuthor"),
 		query.record().indexOf("FileNameTitle"),
 		query.record().indexOf("FileNameGenre"),
 		query.record().indexOf("FileNameMeasuresPerMinute"),
-	};
+	}};
 	std::array<int, 4> fisId3 =
-	{
+	{{
 		query.record().indexOf("Id3Author"),
 		query.record().indexOf("Id3Title"),
 		query.record().indexOf("Id3Genre"),
 		query.record().indexOf("Id3MeasuresPerMinute"),
-	};
+	}};
 
 	// Load each song:
 	if (!query.isActive())
@@ -590,17 +590,17 @@ void Database::loadSongs()
 	{
 		const auto & rec = query.record();
 		auto song = std::make_shared<Song>(
-			std::move(query.value(fiFileName).toString()),
+			query.value(fiFileName).toString(),
 			query.value(fiFileSize).toULongLong(),
 			query.value(fiRowId).toLongLong(),
-			std::move(fieldValue(rec.field(fiHash))),
-			std::move(fieldValue(rec.field(fiLength))),
+			fieldValue(rec.field(fiHash)),
+			fieldValue(rec.field(fiLength)),
 			tagFromFields(rec, fisManual),
 			tagFromFields(rec, fisFileName),
 			tagFromFields(rec, fisId3),
-			std::move(fieldValue(rec.field(fiLastPlayed))),
-			std::move(fieldValue(rec.field(fiRating))),
-			std::move(fieldValue(rec.field(fiLastMetadataUpdated)))
+			fieldValue(rec.field(fiLastPlayed)),
+			fieldValue(rec.field(fiRating)),
+			fieldValue(rec.field(fiLastMetadataUpdated))
 		);
 		m_Songs.push_back(song);
 		if (song->needsMetadataRescan())
@@ -646,8 +646,8 @@ void Database::loadTemplates()
 	{
 		auto tmpl = std::make_shared<Template>(
 			query.value(fiRowId).toLongLong(),
-			std::move(query.value(fiDisplayName).toString()),
-			std::move(query.value(fiNotes).toString())
+			query.value(fiDisplayName).toString(),
+			query.value(fiNotes).toString()
 		);
 		m_Templates.push_back(tmpl);
 		loadTemplate(tmpl);
