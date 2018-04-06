@@ -64,11 +64,11 @@ Player::~Player()
 
 double Player::currentPosition() const
 {
-	if (m_OutputIO == nullptr)
+	if (m_AudioDataSource == nullptr)
 	{
 		return 0;
 	}
-	return m_OutputIO->currentSongPosition();
+	return m_AudioDataSource->currentSongPosition();
 }
 
 
@@ -82,7 +82,7 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 	m_FadeoutProgress = 0;
 	m_State = a_FadeOutState;
-	m_OutputIO->fadeOut(500);  // TODO: Settable FadeOut length
+	m_AudioDataSource->fadeOut(500);  // TODO: Settable FadeOut length
 }
 
 
@@ -95,11 +95,11 @@ void Player::seekTo(double a_Time)
 	{
 		return;
 	}
-	if (m_OutputIO == nullptr)
+	if (m_AudioDataSource == nullptr)
 	{
 		return;
 	}
-	m_OutputIO->seekTo(a_Time);
+	m_AudioDataSource->seekTo(a_Time);
 }
 
 
@@ -231,8 +231,8 @@ void Player::start()
 		{
 			// We were stopping a track; continue stopping, but schedule the new track to start playing afterwards
 			m_State = psFadeOutToTrack;
-			return;
-		}
+		return;
+	}
 		case psFadeOutToTrack:
 		{
 			// We're already scheduled to start playing the new track, ignore the request
@@ -246,28 +246,28 @@ void Player::start()
 		case psStopped:
 		{
 			// We're stopped, start the playback:
-			qDebug() << "Player: Starting playback of track " << track->displayName();
-			emit startingPlayback(track.get());
-			m_OutputIO.reset(track->startDecoding(m_Format));
-			if (m_OutputIO == nullptr)
-			{
-				qDebug() << "Cannot start playback, decoder returned failure";
-				// TODO: Next song?
-				return;
-			}
-			if (!m_OutputIO->waitForData())
-			{
-				qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
-				m_OutputIO.reset();
-				return;
-			}
-			auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
-			qDebug() << "Setting audio output buffer size to " << bufSize;
-			m_Output->setBufferSize(bufSize);
-			m_Output->start(m_OutputIO.get());
-			m_State = psPlaying;
-			emit startedPlayback(track.get());
-		}
+	qDebug() << "Player: Starting playback of track " << track->displayName();
+	emit startingPlayback(track.get());
+	m_AudioDataSource.reset(track->startDecoding(m_Format));
+	if (m_AudioDataSource == nullptr)
+	{
+		qDebug() << "Cannot start playback, decoder returned failure";
+		// TODO: Next song?
+		return;
+	}
+	if (!m_AudioDataSource->waitForData())
+	{
+		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
+		return;
+	}
+	m_AudioDataSourceAdapter = std::make_unique<AudioDataSourceIO>(std::move(m_AudioDataSource));
+	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+	qDebug() << "Setting audio output buffer size to " << bufSize;
+	m_Output->setBufferSize(bufSize);
+	m_Output->start(m_AudioDataSourceAdapter.get());
+	m_State = psPlaying;
+	emit startedPlayback(track.get());
+}
 	}
 }
 

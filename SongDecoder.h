@@ -22,7 +22,7 @@ class SongDecoder:
 public:
 	SongDecoder(const QAudioFormat & a_OutputFormat, SongPtr a_Song);
 
-	virtual ~SongDecoder();
+	virtual ~SongDecoder() override;
 
 	virtual void seekTo(double a_Time) override;
 

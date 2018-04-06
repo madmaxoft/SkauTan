@@ -17,6 +17,7 @@
 class PlaybackBuffer;
 class Playlist;
 class IPlaylistItem;
+class AudioDataSource;
 
 
 
@@ -71,8 +72,11 @@ protected:
 	/** The actual audio output. */
 	std::unique_ptr<QAudioOutput> m_Output;
 
-	/** The source of the audio data (from the decoder). */
-	std::unique_ptr<PlaybackBuffer> m_OutputIO;
+	/** The source of the audio data (the decoder). */
+	std::unique_ptr<AudioDataSource> m_AudioDataSource;
+
+	/** The adapter between AudioDataSource and QIODevice. */
+	std::unique_ptr<QIODevice> m_AudioDataSourceAdapter;
 
 	/** The format used by the audio output. */
 	QAudioFormat m_Format;
