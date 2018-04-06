@@ -130,6 +130,9 @@ private slots:
 
 	/** The QuickPlay dialog wants us to enqueue and play this item. */
 	void addAndPlayTemplateItem(Template::Item * a_Item);
+
+	/** Emitted by the global tempo slider; updates the playback tempo. */
+	void tempoSliderMoved(int a_NewValue);
 };
 
 
