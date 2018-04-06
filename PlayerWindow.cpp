@@ -59,6 +59,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_Player.get(),           &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
 	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
 	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
+	connect(m_UI->vsTempo,            &QSlider::sliderMoved,      this, &PlayerWindow::tempoSliderMoved);
 
 	// Update the UI every 200 msec:
 	m_UpdateUITimer->start(200);
@@ -314,4 +315,14 @@ void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
 	m_Player->pause();
 	m_Playlist->setCurrentItem(static_cast<int>(m_Playlist->items().size() - 1));
 	m_Player->start();
+}
+
+
+
+
+
+void PlayerWindow::tempoSliderMoved(int a_NewValue)
+{
+	Q_UNUSED(a_NewValue);
+	// TODO
 }
