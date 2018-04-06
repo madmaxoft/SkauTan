@@ -1,7 +1,6 @@
 #include "RingBuffer.h"
 #include <assert.h>
 #include <QDebug>
-#include "Stopwatch.h"
 
 
 
@@ -10,6 +9,7 @@
 RingBuffer::RingBuffer(size_t a_Size):
 	m_Mtx(QMutex::NonRecursive),
 	m_Buffer(new char[a_Size]),
+	m_BufferSize(a_Size),
 	m_CurrentReadPos(0),
 	m_CurrentWritePos(0),
 	m_ShouldAbort(false)
@@ -31,7 +31,6 @@ RingBuffer::~RingBuffer()
 
 size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 {
-	// STOPWATCH;
 	auto numBytesToRead = a_MaxLen;
 	auto dest = reinterpret_cast<char *>(a_Dest);
 	size_t numBytesRead = 0;
@@ -39,6 +38,7 @@ size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 	while (numBytesToRead > 0)
 	{
 		// Wait until there's some data in the buffer:
+		size_t numEmptyCycles = 0;
 		while (lockedAvailRead() == 0)
 		{
 			m_CVHasData.wait(&m_Mtx);
@@ -47,19 +47,20 @@ size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 				qDebug() << __FUNCTION__ << ": Read aborted, returning " << numBytesRead << " bytes";
 				return numBytesRead;
 			}
+			numEmptyCycles += 1;
 		}
 
 		// Read as much data as possible:
 		if (m_CurrentWritePos < m_CurrentReadPos)
 		{
 			// The data spans across the ringbuffer end, copy the part until the boundary:
-			auto tillEnd = sizeof(m_Buffer) - m_CurrentReadPos;
+			auto tillEnd = m_BufferSize - m_CurrentReadPos;
 			auto numToCopy = std::min(tillEnd, std::min(numBytesToRead, lockedAvailRead()));
 			memcpy(dest, m_Buffer + m_CurrentReadPos, numToCopy);
 			dest += numToCopy;
 			numBytesToRead -= numToCopy;
 			numBytesRead += numToCopy;
-			m_CurrentReadPos = (m_CurrentReadPos + numToCopy) % sizeof(m_Buffer);
+			m_CurrentReadPos = (m_CurrentReadPos + numToCopy) % m_BufferSize;
 		}
 		else
 		{
@@ -82,7 +83,6 @@ size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 
 size_t RingBuffer::writeData(const char * a_Data, size_t a_Len)
 {
-	// STOPWATCH;
 	auto data = a_Data;
 	size_t numWritten = 0;
 	QMutexLocker lock(&m_Mtx);
@@ -183,8 +183,8 @@ void RingBuffer::singleWrite(const void * a_Data, size_t a_Len)
 		auto curFreeSpace = lockedAvailWrite();
 		auto curReadableSpace = lockedAvailRead();
 	#endif
-	assert(sizeof(m_Buffer) >= m_CurrentWritePos);
-	auto tillEnd = sizeof(m_Buffer) - m_CurrentWritePos;
+	assert(m_BufferSize >= m_CurrentWritePos);
+	auto tillEnd = m_BufferSize - m_CurrentWritePos;
 	auto data = reinterpret_cast<const char *>(a_Data);
 	size_t writtenBytes = 0;
 	if (tillEnd <= a_Len)
@@ -218,18 +218,18 @@ void RingBuffer::singleWrite(const void * a_Data, size_t a_Len)
 
 size_t RingBuffer::lockedAvailWrite()
 {
-	assert(m_CurrentReadPos  < sizeof(m_Buffer));
-	assert(m_CurrentWritePos < sizeof(m_Buffer));
+	assert(m_CurrentReadPos  < m_BufferSize);
+	assert(m_CurrentWritePos < m_BufferSize);
 	if (m_CurrentWritePos >= m_CurrentReadPos)
 	{
 		// The free space is fragmented across the ringbuffer boundary:
-		assert(sizeof(m_Buffer) >= m_CurrentWritePos);
-		assert((sizeof(m_Buffer) - m_CurrentWritePos + m_CurrentReadPos) >= 1);
-		return sizeof(m_Buffer) - m_CurrentWritePos + m_CurrentReadPos - 1;
+		assert(m_BufferSize >= m_CurrentWritePos);
+		assert((m_BufferSize - m_CurrentWritePos + m_CurrentReadPos) >= 1);
+		return m_BufferSize - m_CurrentWritePos + m_CurrentReadPos - 1;
 	}
 	// The free space is contiguous:
-	assert(sizeof(m_Buffer) >= m_CurrentWritePos);
-	assert(sizeof(m_Buffer) - m_CurrentWritePos >= 1);
+	assert(m_BufferSize >= m_CurrentWritePos);
+	assert(m_BufferSize - m_CurrentWritePos >= 1);
 	return m_CurrentReadPos - m_CurrentWritePos - 1;
 }
 
@@ -239,8 +239,8 @@ size_t RingBuffer::lockedAvailWrite()
 
 size_t RingBuffer::lockedAvailRead()
 {
-	assert(m_CurrentReadPos  < sizeof(m_Buffer));
-	assert(m_CurrentWritePos < sizeof(m_Buffer));
+	assert(m_CurrentReadPos  < m_BufferSize);
+	assert(m_CurrentWritePos < m_BufferSize);
 	if (m_CurrentReadPos == m_CurrentWritePos)
 	{
 		return 0;
@@ -248,8 +248,8 @@ size_t RingBuffer::lockedAvailRead()
 	if (m_CurrentReadPos > m_CurrentWritePos)
 	{
 		// Wrap around the buffer end:
-		assert(sizeof(m_Buffer) >= m_CurrentReadPos);
-		return sizeof(m_Buffer) - m_CurrentReadPos + m_CurrentWritePos;
+		assert(m_BufferSize >= m_CurrentReadPos);
+		return m_BufferSize - m_CurrentReadPos + m_CurrentWritePos;
 	}
 	// Single readable space partition:
 	assert(m_CurrentWritePos >= m_CurrentReadPos);
