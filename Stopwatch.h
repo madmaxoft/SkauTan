@@ -16,10 +16,10 @@
 class Stopwatch
 {
 public:
-	Stopwatch(const char * a_SrcFile, int a_SrcLine, const char * a_Function):
+	Stopwatch(const char * a_SrcFile, int a_SrcLine, const char * a_Action):
 		m_SrcFile(a_SrcFile),
 		m_SrcLine(a_SrcLine),
-		m_Function(a_Function)
+		m_Action(a_Action)
 	{
 		m_Timer.start();
 	}
@@ -27,7 +27,7 @@ public:
 
 	~Stopwatch()
 	{
-		qDebug() << "Function " << m_Function.c_str() << " took " << m_Timer.elapsed() << "msec.";
+		qDebug() << m_Action.c_str() << " took " << m_Timer.elapsed() << "msec.";
 	}
 
 
@@ -35,11 +35,11 @@ protected:
 
 	const std::string m_SrcFile;
 	const int m_SrcLine;
-	const std::string m_Function;
+	const std::string m_Action;
 	QElapsedTimer m_Timer;
 };
 
-#define STOPWATCH Stopwatch sw(__FILE__, __LINE__, __FUNCTION__);
+#define STOPWATCH(X) Stopwatch sw(__FILE__, __LINE__, X);
 
 
 

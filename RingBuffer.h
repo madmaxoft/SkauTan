@@ -73,6 +73,9 @@ protected:
 	Protected against multithreaded access by m_Mtx. */
 	char * m_Buffer;
 
+	/** Size of m_Buffer, in bytes. */
+	const size_t m_BufferSize;
+
 	/** Position in m_Buffer where the next read operation will take place.
 	Protected against multithreaded access by m_Mtx. */
 	size_t m_CurrentReadPos;
