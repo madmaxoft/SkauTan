@@ -27,15 +27,16 @@ class PlaybackBuffer:
 public:
 	PlaybackBuffer(const QAudioFormat & a_OutputFormat);
 
-	/** Signals that the operations should abort, instead of waiting for async operations to finish.
-	Used mainly by destructors. */
+	// AudioDataSource overrides:
 	virtual void abort() override;
-
-	/** Returns true iff the decoder should terminate (abort has been called). */
 	virtual bool shouldAbort() const override { return m_RingBuffer.shouldAbort(); }
-
-	/** Fades the data out and sets the termination flag, so that the output is terminated after the fadeout. */
 	virtual void fadeOut(int a_Msec) override;
+	virtual const QAudioFormat & format() const override { return m_OutputFormat; }
+	virtual double currentSongPosition() const override;
+	virtual void seekTo(double a_Time) override;
+	virtual void clear() override;
+	virtual bool waitForData() override { return m_RingBuffer.waitForData(); }
+	virtual size_t read(void * a_Dest, size_t a_Len) override;
 
 	/** Writes the specified data to the buffer.
 	Blocks until all the data can fit into the buffer.
@@ -43,25 +44,6 @@ public:
 	Returns true if the decoder should continue, false if it should abort. */
 	bool writeDecodedAudio(const void * a_Data, size_t a_Len);
 
-	virtual const QAudioFormat & format() const override { return m_OutputFormat; }
-
-	/** Returns the position in the playback, as fractional seconds. */
-	virtual double currentSongPosition() const override;
-
-	/** Seeks to the specified timestamp.
-	Descendants provide the actual seeking, this implementation only updates the internal song position. */
-	virtual void seekTo(double a_Time) override;
-
-	/** Clears the current data from the buffer.
-	Asserts that the buffer is frame-aligned.
-	(Otherwise the decoder may be waiting to write a few more bytes from the last decoded frame.)
-	Assumed to be called from within the decoder thread between calls to writeDecodedAudio(). */
-	virtual void clear() override;
-
-	virtual bool waitForData() override { return m_RingBuffer.waitForData(); }
-	virtual size_t read(void * a_Dest, size_t a_Len) override;
-
-	//
 
 protected:
 

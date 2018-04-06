@@ -87,15 +87,31 @@ void PlaybackBuffer::clear()
 size_t PlaybackBuffer::read(void * a_Data, size_t a_MaxLen)
 {
 	assert(a_MaxLen >= 0);
+
+	// Fade-out completion check (TODO: refactor this out into a separate AudioDataSource subclass)
 	if (m_IsFadingOut && (m_FadeOutRemaining <= 0))
 	{
 		qDebug() << __FUNCTION__ << ": Faded out completely, signaling end of stream.";
 		abort();
 		return 0;
 	}
-	auto numBytesToRead = static_cast<size_t>(a_MaxLen & ~0x03U);  // Only read in multiples of 4 bytes
+
+	auto numBytesToRead = static_cast<size_t>(a_MaxLen & ~0x03u);  // Only read in multiples of 4 bytes
 	auto numBytesRead = m_RingBuffer.readData(a_Data, numBytesToRead);
+
+	// If there's non-multiple of 4 at the end of the data, trim it off:
+	if ((numBytesRead & 0x03u) != 0)
+	{
+		qDebug() << __FUNCTION__ << ": Dropping non-aligned data at the end of the buffer";
+		numBytesRead = numBytesRead & ~0x03u;
+	}
+
+	// Advance the internal position:
+	m_CurrentSongPosition += numBytesRead / 4;
+
+	// Fade-out (TODO: refactor this out into a separate AudioDataSource subclass)
 	applyFadeOut(a_Data, numBytesRead);
+
 	return numBytesRead;
 }
 
