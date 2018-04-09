@@ -144,7 +144,7 @@ bool RingBuffer::waitForData()
 void RingBuffer::clear()
 {
 	QMutexLocker lock(&m_Mtx);
-	qDebug() << "Clearing buffer, current availRead = " << numAvailRead() << ", numAvailWrite = " << numAvailWrite();
+	qDebug() << "Clearing buffer, current availRead = " << lockedAvailRead() << ", numAvailWrite = " << lockedAvailWrite();
 	assert(lockedAvailRead() % 4 == 0);  // Needs to be frame-aligned
 	m_CurrentReadPos = 0;
 	m_CurrentWritePos = 0;
