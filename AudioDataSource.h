@@ -8,6 +8,8 @@
 #include <assert.h>
 #include <memory>
 #include <QIODevice>
+#include <QDebug>
+#include "Stopwatch.h"
 
 
 
@@ -73,6 +75,13 @@ class AudioDataSourceChain:
 public:
 	AudioDataSourceChain(std::unique_ptr<AudioDataSource> && a_Lower):
 		m_Lower(std::move(a_Lower))
+	{
+	}
+
+
+	/** Creates a new chain object, takes ownership of the Lower source. */
+	AudioDataSourceChain(AudioDataSource * a_Lower):
+		m_Lower(a_Lower)
 	{
 	}
 
@@ -149,7 +158,11 @@ public:
 	virtual qint64 readData(char * a_Data, qint64 a_MaxLen) override
 	{
 		assert(a_MaxLen >= 0);
-		return static_cast<qint64>(AudioDataSourceChain::read(a_Data, static_cast<size_t>(a_MaxLen)));
+		auto res = static_cast<qint64>(AudioDataSourceChain::read(a_Data, static_cast<size_t>(a_MaxLen)));
+		#ifdef _DEBUG
+			qDebug() << __FUNCTION__ << " @ " << TimeSinceStart::msecElapsed() << ": Requested " << a_MaxLen << " bytes, got " << res << " bytes.";
+		#endif  // _DEBUG
+		return res;
 	}
 
 

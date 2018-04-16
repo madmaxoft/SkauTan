@@ -3,6 +3,7 @@
 #include <QDebug>
 #include "Playlist.h"
 #include "PlaybackBuffer.h"
+#include "AudioEffects.h"
 
 
 
@@ -82,7 +83,10 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 	m_FadeoutProgress = 0;
 	m_State = a_FadeOutState;
-	m_AudioDataSource->fadeOut(500);  // TODO: Settable FadeOut length
+	if (m_AudioDataSource != nullptr)
+	{
+		m_AudioDataSource->fadeOut(500);  // TODO: Settable FadeOut length
+	}
 }
 
 
@@ -248,23 +252,23 @@ void Player::start()
 			// We're stopped, start the playback:
 	qDebug() << "Player: Starting playback of track " << track->displayName();
 	emit startingPlayback(track.get());
-	m_AudioDataSource.reset(track->startDecoding(m_Format));
-	if (m_AudioDataSource == nullptr)
+	auto audioDataSource = std::make_unique<AudioFadeOut>(track->startDecoding(m_Format));
+	if (audioDataSource == nullptr)
 	{
 		qDebug() << "Cannot start playback, decoder returned failure";
 		// TODO: Next song?
 		return;
 	}
-	if (!m_AudioDataSource->waitForData())
+	if (!audioDataSource->waitForData())
 	{
 		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
 		return;
 	}
-	m_AudioDataSourceAdapter = std::make_unique<AudioDataSourceIO>(std::move(m_AudioDataSource));
-	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+	m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
+	auto bufSize = m_Format.bytesForDuration(1500 * 1000);  // 1500 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;
 	m_Output->setBufferSize(bufSize);
-	m_Output->start(m_AudioDataSourceAdapter.get());
+	m_Output->start(m_AudioDataSource.get());
 	m_State = psPlaying;
 	emit startedPlayback(track.get());
 }

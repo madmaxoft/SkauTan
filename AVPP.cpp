@@ -370,7 +370,7 @@ bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
 	}
 	if (outLen > m_BufferMaxNumSamples)
 	{
-		qDebug() << __FUNCTION__ << ": Reallocating output sample buffer.";
+		qDebug() << __FUNCTION__ << ": Reallocating output sample buffer to " << outLen << " bytes.";
 		m_BufferMaxNumSamples = outLen;
 		av_freep(&m_Buffer[0]);
 		auto err = av_samples_alloc(
