@@ -78,7 +78,9 @@ SOURCES += \
 	DlgPickTemplateFavoriteItem.cpp \
 	DlgPickTemplate.cpp \
 	DlgQuickPlayer.cpp \
-	RingBuffer.cpp
+	RingBuffer.cpp \
+	AudioEffects.cpp \
+	Stopwatch.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -106,7 +108,8 @@ HEADERS += \
 	DlgQuickPlayer.h \
 	RingBuffer.h \
 	AudioDataSource.h \
-	Stopwatch.h
+	Stopwatch.h \
+	AudioEffects.h
 
 FORMS += \
 	PlayerWindow.ui \
