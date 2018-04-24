@@ -224,16 +224,82 @@ CodecContext::CodecContext(AVCodec * a_Codec):
 ////////////////////////////////////////////////////////////////////////////////
 // Resampler:
 
+AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType a_SampleType)
+{
+	switch (a_SampleType)
+	{
+		case QAudioFormat::SignedInt: return AV_SAMPLE_FMT_S16;
+		case QAudioFormat::Float:     return AV_SAMPLE_FMT_FLT;
+		default:
+		{
+			qWarning() << __FUNCTION__ << ": Unhandled sample type: " << a_SampleType;
+			throw std::runtime_error("Unhandled sample type");;
+		}
+	}
+}
+
+
+
+
+
+uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
+{
+	switch (a_ChannelCount)
+	{
+		case 1: return AV_CH_LAYOUT_MONO;
+		case 2: return AV_CH_LAYOUT_STEREO;
+		case 4: return AV_CH_LAYOUT_3POINT1;
+		case 5: return AV_CH_LAYOUT_5POINT0;
+		case 6: return AV_CH_LAYOUT_5POINT1;
+		default:
+		{
+			qWarning() << __FUNCTION__ << ": Unhandled ChannelCount:" << a_ChannelCount;
+			throw std::runtime_error("Unhandled ChannelCount");
+		}
+	}
+}
+
+
+
+
+
 Resampler * Resampler::create(
 	uint64_t a_SrcChannelLayout,
 	int a_SrcSampleRate,
 	AVSampleFormat a_SrcSampleFormat,
-	PlaybackBuffer * a_Output
+	const QAudioFormat & a_OutputFormat
 )
 {
 	Initializer::init();
 	auto res = std::unique_ptr<Resampler>(new Resampler);
-	if (!res->init(a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat, a_Output))
+	if (!res->init(a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat, a_OutputFormat))
+	{
+		return nullptr;
+	}
+	return res.release();
+}
+
+
+
+
+
+Resampler * Resampler::create(
+	int a_SrcSampleRate,
+	int a_DstSampleRate,
+	uint64_t a_ChannelLayout,
+	AVSampleFormat a_SampleFormat
+)
+{
+	Initializer::init();
+	auto res = std::unique_ptr<Resampler>(new Resampler);
+	if (!res->init(
+		a_ChannelLayout,
+		a_SrcSampleRate,
+		a_SampleFormat,
+		a_ChannelLayout,
+		a_DstSampleRate,
+		a_SampleFormat
+	))
 	{
 		return nullptr;
 	}
@@ -245,7 +311,6 @@ Resampler * Resampler::create(
 
 
 Resampler::Resampler():
-	m_Output(nullptr),
 	m_Context(nullptr),
 	m_Buffer(nullptr),
 	m_BufferMaxNumSamples(0),
@@ -267,7 +332,6 @@ Resampler::~Resampler()
 	if (m_Buffer != nullptr)
 	{
 		av_freep(&m_Buffer[0]);
-		// free(m_Buffer);
 	}
 }
 
@@ -279,48 +343,47 @@ bool Resampler::init(
 	uint64_t a_SrcChannelLayout,
 	int a_SrcSampleRate,
 	AVSampleFormat a_SrcSampleFormat,
-	PlaybackBuffer * a_Output
+	const QAudioFormat & a_OutputFormat
 )
 {
-	// Translate QAudioFormat into LibAV/SWR format:
-	uint64_t dstChannelLayout;
-	switch (a_Output->format().channelCount())
+	try
 	{
-		case 1: dstChannelLayout = AV_CH_LAYOUT_MONO;    break;
-		case 2: dstChannelLayout = AV_CH_LAYOUT_STEREO;  break;
-		case 4: dstChannelLayout = AV_CH_LAYOUT_3POINT1; break;
-		case 5: dstChannelLayout = AV_CH_LAYOUT_5POINT0; break;
-		case 6: dstChannelLayout = AV_CH_LAYOUT_5POINT1; break;
-		default:
-		{
-			qWarning() << __FUNCTION__ << ": Cannot create SWR context, unhandled output format's ChannelCount:"
-				<< a_Output->format().channelCount();
-			return false;
-		}
-	}
-	auto dstNumChannels = av_get_channel_layout_nb_channels(dstChannelLayout);
-	assert(dstNumChannels == a_Output->format().channelCount());
+		// Translate QAudioFormat into LibAV/SWR format:
+		auto dstChannelLayout = channelLayoutFromChannelCount(a_OutputFormat.channelCount());
+		assert(av_get_channel_layout_nb_channels(dstChannelLayout) == a_OutputFormat.channelCount());
+		AVSampleFormat dstSampleFormat = sampleFormatFromSampleType(a_OutputFormat.sampleType());
 
-	switch (a_Output->format().sampleType())
+		return init(
+			a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat,
+			dstChannelLayout, a_OutputFormat.sampleRate(), dstSampleFormat
+		);
+	}
+	catch (const std::exception & exc)
 	{
-		case QAudioFormat::SignedInt: m_BufferSampleFormat = AV_SAMPLE_FMT_S16; break;
-		case QAudioFormat::Float:     m_BufferSampleFormat = AV_SAMPLE_FMT_FLT; break;
-		case QAudioFormat::UnSignedInt:  // No SWR equivalent, raise error:
-		default:
-		{
-			qWarning() << __FUNCTION__ << ": Cannot create SWR context, unhandled sample format: "
-				<< a_Output->format().sampleType();
-			m_BufferSampleFormat = AV_SAMPLE_FMT_S16P;
-			return false;
-		}
+		qDebug() << __FUNCTION__ << ": Cannot initialize SWR: " << exc.what();
+		return false;
 	}
+}
 
+
+
+
+
+bool Resampler::init(
+	uint64_t a_SrcChannelLayout,
+	int a_SrcSampleRate,
+	AVSampleFormat a_SrcSampleFormat,
+	uint64_t a_DstChannelLayout,
+	int a_DstSampleRate,
+	AVSampleFormat a_DstSampleFormat
+)
+{
 	// Create and init the context:
 	m_Context = swr_alloc_set_opts(
 		nullptr,
-		static_cast<int64_t>(dstChannelLayout),
-		m_BufferSampleFormat,
-		a_Output->format().sampleRate(),
+		static_cast<int64_t>(a_DstChannelLayout),
+		a_DstSampleFormat,
+		a_DstSampleRate,
 		static_cast<int64_t>(a_SrcChannelLayout),
 		a_SrcSampleFormat,
 		a_SrcSampleRate,
@@ -339,9 +402,10 @@ bool Resampler::init(
 	}
 
 	// Create the output buffer structure:
+	m_DstChannelCount = av_get_channel_layout_nb_channels(a_DstChannelLayout);
 	err = av_samples_alloc_array_and_samples(
-		&m_Buffer, &m_BufferLineSize, dstNumChannels,
-		1000, m_BufferSampleFormat, 0
+		&m_Buffer, &m_BufferLineSize, m_DstChannelCount,
+		1000, a_DstSampleFormat, 0
 	);
 	if (err < 0)
 	{
@@ -349,7 +413,7 @@ bool Resampler::init(
 		return false;
 	}
 
-	m_Output = a_Output;
+	m_BufferSampleFormat = a_DstSampleFormat;
 	return true;
 }
 
@@ -357,10 +421,9 @@ bool Resampler::init(
 
 
 
-bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
+std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int a_Len)
 {
 	assert(m_Context != nullptr);
-	assert(m_Output != nullptr);
 
 	int outLen = swr_get_out_samples(m_Context, a_Len);
 	if (outLen < 0)
@@ -370,29 +433,28 @@ bool Resampler::push(const uint8_t ** a_Buffers, int a_Len)
 	}
 	if (outLen > m_BufferMaxNumSamples)
 	{
-		qDebug() << __FUNCTION__ << ": Reallocating output sample buffer to " << outLen << " bytes.";
+		qDebug() << __FUNCTION__ << ": Reallocating output sample buffer to " << outLen << " samples.";
 		m_BufferMaxNumSamples = outLen;
 		av_freep(&m_Buffer[0]);
 		auto err = av_samples_alloc(
-			m_Buffer, &m_BufferLineSize, m_Output->format().channelCount(),
+			m_Buffer, &m_BufferLineSize, m_DstChannelCount,
 			m_BufferMaxNumSamples, m_BufferSampleFormat, 1
 		);
 		if (err < 0)
 		{
 			qWarning() << __FUNCTION__ << ": Failed to realloc sample buffer: " << err;
-			return true;  // Abort
+			return std::make_pair(nullptr, 0);
 		}
 	}
 	auto numOutputSamples = swr_convert(m_Context, m_Buffer, m_BufferMaxNumSamples, a_Buffers, a_Len);
 	if (numOutputSamples < 0)
 	{
 		qWarning() << __FUNCTION__ << ": Sample conversion failed: " << numOutputSamples;
-		return true;  // Abort
+		return std::make_pair(nullptr, 0);
 	}
 
 	// Output through to AudioOutput:
-	auto bytesPerSample = m_Output->format().channelCount() * (m_Output->format().sampleSize() / 8);
-	return m_Output->writeDecodedAudio(m_Buffer[0], static_cast<size_t>(numOutputSamples * bytesPerSample));
+	return std::make_pair(m_Buffer[0], static_cast<size_t>(numOutputSamples));
 }
 
 
@@ -600,7 +662,7 @@ void Format::outputAudioData(AVFrame * a_Frame)
 			a_Frame->channel_layout,
 			a_Frame->sample_rate,
 			static_cast<AVSampleFormat>(a_Frame->format),
-			m_AudioOutput
+			m_AudioOutput->format()
 		));
 		if (m_Resampler == nullptr)
 		{
@@ -609,7 +671,9 @@ void Format::outputAudioData(AVFrame * a_Frame)
 			return;
 		}
 	}
-	m_ShouldTerminate = !m_Resampler->push(const_cast<const uint8_t **>(a_Frame->data), a_Frame->nb_samples);
+	auto out = m_Resampler->convert(const_cast<const uint8_t **>(a_Frame->data), a_Frame->nb_samples);
+	auto numBytes = out.second * static_cast<size_t>(m_AudioOutput->format().bytesPerFrame());
+	m_ShouldTerminate = !m_AudioOutput->writeDecodedAudio(out.first, numBytes);
 }
 
 

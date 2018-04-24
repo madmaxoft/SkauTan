@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <QFile>
+#include <QAudioFormat>
 extern "C"
 {
 	#include <libavformat/avformat.h>
@@ -102,26 +103,45 @@ namespace AVPP
 	class Resampler
 	{
 	public:
-		/** Creates a new Resampler instance that converts the Src format into a_Output's format.
+
+		/** Returns the LibAV's AVSampleFormat representing the specified QAudioFormat's sample format.
+		Throws a std::runtime_error if the conversion fails. */
+		static AVSampleFormat sampleFormatFromSampleType(QAudioFormat::SampleType a_SampleType);
+
+		/** Returns the best guess of LibAV's channel layout representing the specified QAudioFormat's channel count.
+		Throws a std::runtime_error if the conversion fails. */
+		static uint64_t channelLayoutFromChannelCount(int a_ChannelCount);
+
+		/** Creates a new Resampler instance that converts the Src format into a_OutputFormat.
 		Returns nullptr on error.
-		The input format is specified in LIBAV* terms, the output format is deduced from a_Output. */
+		The input format is specified in LIBAV* terms. */
 		static Resampler * create(
 			uint64_t a_SrcChannelLayout,
 			int a_SrcSampleRate,
 			AVSampleFormat a_SrcSampleFormat,
-			PlaybackBuffer * a_Output
+			const QAudioFormat & a_OutputFormat
 		);
 
-		/** Pushes the specified input data through the resampler and into the output.
-		Returns false if the audio output indicated termination, true on success and continuation. */
-		bool push(const uint8_t ** a_Buffers, int a_Len);
+		/** Creates a new Resampler instance that only changes the sample rate.
+		Returns nullptr on error. */
+		static Resampler * create(
+			int a_SrcSampleRate,
+			int a_DstSampleRate,
+			uint64_t a_ChannelLayout,
+			AVSampleFormat a_SampleFormat
+		);
+
+		/** Converts the specified input data into output format.
+		a_Buffers is a LibAV structure for the input data stream(s)
+		a_Len is the input data length, in frames
+		Returns the pointer to converted data (in m_Buffer) and its size, in frames.
+		The returned pointer is valid until the next call to convert().
+		Returns <nullptr, 0> if the conversion fails. */
+		std::pair<uint8_t *, size_t> convert(const uint8_t ** a_Buffers, int a_Len);
 
 		~Resampler();
 
 	protected:
-
-		/** The buffer into which the output data is sent after resampling. */
-		PlaybackBuffer * m_Output;
 
 		/** The SWR context. */
 		SwrContext * m_Context;
@@ -134,6 +154,7 @@ namespace AVPP
 
 		int m_BufferLineSize;
 		AVSampleFormat m_BufferSampleFormat;
+		int m_DstChannelCount;
 
 
 		/** Creates a new instance of the resampler.
@@ -147,7 +168,19 @@ namespace AVPP
 			uint64_t a_SrcChannelLayout,
 			int a_SrcSampleRate,
 			AVSampleFormat a_SrcSampleFormat,
-			PlaybackBuffer * a_Output
+			const QAudioFormat & a_OutputFormat
+		);
+
+		/** Initializes the resampler.
+		Both formats are specified in LIBAV* terms.
+		Returns true on success, false on error. */
+		bool init(
+			uint64_t a_SrcChannelLayout,
+			int a_SrcSampleRate,
+			AVSampleFormat a_SrcSampleFormat,
+			uint64_t a_DstChannelLayout,
+			int a_DstSampleRate,
+			AVSampleFormat a_DstSampleFormat
 		);
 	};
 
