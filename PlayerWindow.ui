@@ -18,6 +18,13 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <widget class="QPushButton" name="btnQuickPlayer">
+        <property name="text">
+         <string>&amp;QuickPlayer...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="btnAddFromTemplate">
         <property name="text">
          <string>&amp;Add from template...</string>
