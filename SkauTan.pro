@@ -76,7 +76,8 @@ SOURCES += \
 	DlgEditTemplate.cpp \
 	DlgEditTemplateItem.cpp \
 	DlgPickTemplateFavoriteItem.cpp \
-	DlgPickTemplate.cpp
+	DlgPickTemplate.cpp \
+	DlgQuickPlayer.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -100,7 +101,8 @@ HEADERS += \
 	DlgEditTemplate.h \
 	DlgEditTemplateItem.h \
 	DlgPickTemplateFavoriteItem.h \
-	DlgPickTemplate.h
+	DlgPickTemplate.h \
+	DlgQuickPlayer.h
 
 FORMS += \
 	PlayerWindow.ui \
@@ -110,4 +112,8 @@ FORMS += \
 	DlgEditTemplate.ui \
 	DlgEditTemplateItem.ui \
 	DlgPickTemplateFavoriteItem.ui \
-	DlgPickTemplate.ui
+	DlgPickTemplate.ui \
+	DlgQuickPlayer.ui
+
+RESOURCES += \
+	res/SkauTan.qrc

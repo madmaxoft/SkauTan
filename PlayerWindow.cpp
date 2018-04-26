@@ -11,6 +11,7 @@
 #include "PlaylistItemSong.h"
 #include "Player.h"
 #include "DlgPickTemplate.h"
+#include "DlgQuickPlayer.h"
 
 
 
@@ -43,6 +44,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	#endif
 
 	// Connect the signals:
+	connect(m_UI->btnQuickPlayer,     &QPushButton::clicked,      this, &PlayerWindow::showQuickPlayer);
 	connect(m_UI->btnSongs,           &QPushButton::clicked,      this, &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,       &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,         &QPushButton::clicked,      this, &PlayerWindow::showHistory);
@@ -79,6 +81,18 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 PlayerWindow::~PlayerWindow()
 {
 	// Nothing explicit needed, but the destructor still needs to be defined in the CPP file due to m_UI
+}
+
+
+
+
+
+void PlayerWindow::showQuickPlayer()
+{
+	DlgQuickPlayer dlg(*m_DB, *m_Playlist, *m_Player);
+	connect(&dlg, &DlgQuickPlayer::addAndPlayItem, this,           &PlayerWindow::addAndPlayTemplateItem);
+	connect(&dlg, &DlgQuickPlayer::pause,          m_Player.get(), &Player::pause);
+	dlg.exec();
 }
 
 
@@ -284,4 +298,20 @@ void PlayerWindow::setTimePos(int a_NewValue)
 		return;
 	}
 	m_Player->seekTo(a_NewValue);
+}
+
+
+
+
+
+void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
+{
+	if (!m_Playlist->addFromTemplateItem(*m_DB, *a_Item))
+	{
+		qDebug() << __FUNCTION__ << ": Failed to add a template item to playlist.";
+		return;
+	}
+	m_Player->pause();
+	m_Playlist->setCurrentItem(static_cast<int>(m_Playlist->items().size() - 1));
+	m_Player->start();
 }

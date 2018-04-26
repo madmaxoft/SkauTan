@@ -69,6 +69,9 @@ private:
 
 private slots:
 
+	/** Shows the QuickPlayer dialog. */
+	void showQuickPlayer();
+
 	/** Shows the Songs dialog.
 	Signature must match QPushButton::clicked(). */
 	void showSongs(bool a_IsChecked);
@@ -124,6 +127,9 @@ private slots:
 
 	/** Sets the playback position to the specified value (in seconds). */
 	void setTimePos(int a_NewValue);
+
+	/** The QuickPlay dialog wants us to enqueue and play this item. */
+	void addAndPlayTemplateItem(Template::Item * a_Item);
 };
 
 
