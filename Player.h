@@ -95,6 +95,9 @@ signals:
 	The item is already set in the player, values such as currentPosition() give valid values. */
 	void startedPlayback(IPlaylistItem * a_Item);
 
+	/** Emitted just after an item has finished playing. */
+	void finishedPlayback();
+
 
 public slots:
 
