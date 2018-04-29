@@ -11,7 +11,17 @@
 
 
 
+// fwd:
+namespace AVPP
+{
+	class Resampler;
+};
 
+
+
+
+
+/** Filter that fades the audio out and then terminates on given signal. */
 class AudioFadeOut:
 	public AudioDataSourceChain
 {
@@ -48,6 +58,42 @@ private:
 	/** Applies FadeOut, if appropriate, to the specified data, and updates the FadeOut progress.
 	a_Data is the data to be returned from the read operation, it is assumed to be in complete samples. */
 	void applyFadeOut(void * a_Data, size_t a_NumBytes);
+};
+
+
+
+
+
+/** Filter that changes the tempo (and pitch) by resampling the audio into a different samplerate. */
+class AudioTempoChange:
+	public AudioDataSourceChain
+{
+	using Super = AudioDataSourceChain;
+
+public:
+
+	AudioTempoChange(std::unique_ptr<AudioDataSource> && a_Lower);
+	AudioTempoChange(AudioDataSource * a_Lower);
+
+	virtual ~AudioTempoChange() override;
+
+	// AudioDataSource overrides:
+	virtual size_t read(void * a_Dest, size_t a_MaxLen) override;
+	virtual void setTempo(double a_Tempo) override;
+
+
+protected:
+
+	/** The resampler that does the actual tempo change. */
+	std::unique_ptr<AVPP::Resampler> m_Resampler;
+
+	/** The sample rate that is requested for the conversion.
+	Read in the player thread, set in the UI thread, hence the atomicity requirement. */
+	std::atomic<int> m_DestSampleRate;
+
+	/** The sample rate currently used in m_Resampler's dst.
+	If this doesn't queal to m_DestSampleRate on next read, the resampler will be reinitialized. */
+	int m_CurrentSampleRate;
 };
 
 

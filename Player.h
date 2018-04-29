@@ -43,6 +43,9 @@ public:
 	/** Sets the volume for playback. */
 	void setVolume(qreal a_NewVolume);
 
+	/** Sets the tempo for playback. */
+	void setTempo(qreal a_NewTempo);
+
 	/** Seeks to the specified timestamp.
 	Ignored if not playing. */
 	void seekTo(double a_Time);
@@ -80,6 +83,10 @@ protected:
 
 	/** The thread in which the audio output is run. */
 	QThread m_Thread;
+
+	/** The tempo to be used for playback. */
+	qreal m_Tempo;
+
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
 	Must not be fading out already. */

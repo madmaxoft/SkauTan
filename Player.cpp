@@ -13,7 +13,8 @@ Player::Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent):
 	Super(a_Parent),
 	m_Playlist(a_Playlist),
 	m_State(psStopped),
-	m_FadeoutProgress(0)
+	m_FadeoutProgress(0),
+	m_Tempo(1)
 {
 	assert(m_Playlist != nullptr);
 
@@ -113,6 +114,20 @@ void Player::seekTo(double a_Time)
 void Player::setVolume(qreal a_NewVolume)
 {
 	m_Output->setVolume(a_NewVolume);
+}
+
+
+
+
+
+void Player::setTempo(qreal a_NewTempo)
+{
+	m_Tempo = a_NewTempo;
+	if (m_AudioDataSource == nullptr)
+	{
+		return;
+	}
+	m_AudioDataSource->setTempo(a_NewTempo);
 }
 
 
@@ -250,28 +265,34 @@ void Player::start()
 		case psStopped:
 		{
 			// We're stopped, start the playback:
-	qDebug() << "Player: Starting playback of track " << track->displayName();
-	emit startingPlayback(track.get());
-	auto audioDataSource = std::make_unique<AudioFadeOut>(track->startDecoding(m_Format));
-	if (audioDataSource == nullptr)
-	{
-		qDebug() << "Cannot start playback, decoder returned failure";
-		// TODO: Next song?
-		return;
-	}
-	if (!audioDataSource->waitForData())
-	{
-		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
-		return;
-	}
-	m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
-	auto bufSize = m_Format.bytesForDuration(1500 * 1000);  // 1500 msec buffer
-	qDebug() << "Setting audio output buffer size to " << bufSize;
-	m_Output->setBufferSize(bufSize);
-	m_Output->start(m_AudioDataSource.get());
-	m_State = psPlaying;
-	emit startedPlayback(track.get());
-}
+			qDebug() << "Player: Starting playback of track " << track->displayName();
+			emit startingPlayback(track.get());
+			auto decoder = track->startDecoding(m_Format);
+			if (decoder == nullptr)
+			{
+				qDebug() << "Cannot start playback, decoder returned failure";
+				// TODO: Next song?
+				return;
+			}
+			if (!decoder->waitForData())
+			{
+				qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
+				return;
+			}
+			auto audioDataSource =
+				std::make_unique<AudioFadeOut>(
+				std::make_unique<AudioTempoChange>(
+				std::move(decoder)
+			));
+			audioDataSource->setTempo(m_Tempo);
+			m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
+			auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+			qDebug() << "Setting audio output buffer size to " << bufSize;
+			m_Output->setBufferSize(bufSize);
+			m_Output->start(m_AudioDataSource.get());
+			m_State = psPlaying;
+			emit startedPlayback(track.get());
+		}
 	}
 }
 

@@ -37,6 +37,7 @@ public:
 	virtual void clear() override;
 	virtual bool waitForData() override { return m_RingBuffer.waitForData(); }
 	virtual size_t read(void * a_Dest, size_t a_Len) override;
+	virtual void setTempo(double a_Tempo) override { Q_UNUSED(a_Tempo); }
 
 	/** Writes the specified data to the buffer.
 	Blocks until all the data can fit into the buffer.

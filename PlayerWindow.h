@@ -132,7 +132,10 @@ private slots:
 	void addAndPlayTemplateItem(Template::Item * a_Item);
 
 	/** Emitted by the global tempo slider; updates the playback tempo. */
-	void tempoSliderMoved(int a_NewValue);
+	void tempoValueChanged(int a_NewValue);
+
+	/** The user clicker the Reset tempo button, resets tempo to 100 %. */
+	void resetTempo();
 };
 
 

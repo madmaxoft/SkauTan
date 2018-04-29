@@ -2,6 +2,7 @@
 #include <QAudioFormat>
 #include <QDebug>
 #include "Stopwatch.h"
+#include "AVPP.h"
 
 
 
@@ -114,4 +115,98 @@ void AudioFadeOut::applyFadeOut(void * a_Data, size_t a_NumBytes)
 			return;
 		}
 	}
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// AudioTempoChange:
+
+AudioTempoChange::AudioTempoChange(std::unique_ptr<AudioDataSource> && a_Lower):
+	Super(std::move(a_Lower)),
+	m_DestSampleRate(a_Lower->format().sampleRate()),
+	m_CurrentSampleRate(-1)
+{
+}
+
+
+
+
+
+AudioTempoChange::AudioTempoChange(AudioDataSource * a_Lower):
+	Super(a_Lower),
+	m_DestSampleRate(a_Lower->format().sampleRate()),
+	m_CurrentSampleRate(-1)
+{
+}
+
+
+
+
+
+AudioTempoChange::~AudioTempoChange()
+{
+	// Nothing explicit needed, but needs to be in CPP file due to m_Resampler's destructor
+}
+
+
+
+
+
+size_t AudioTempoChange::read(void * a_Dest, size_t a_MaxLen)
+{
+	// If the resampler params have changed, re-initialize the resampler:
+	if ((m_Resampler == nullptr) || (m_DestSampleRate != m_CurrentSampleRate))
+	{
+		try
+		{
+			auto dstSampleRate = m_DestSampleRate.load();
+			m_Resampler.reset(AVPP::Resampler::create(
+				m_Lower->format().sampleRate(),
+				dstSampleRate,
+				AVPP::Resampler::channelLayoutFromChannelCount(m_Lower->format().channelCount()),
+				AVPP::Resampler::sampleFormatFromSampleType(m_Lower->format().sampleType())
+			));
+			m_CurrentSampleRate = dstSampleRate;
+		}
+		catch (const std::exception & exc)
+		{
+			qDebug() << __FUNCTION__ << ": Cannot reinitialize resampler: " << exc.what();
+			return 0;
+		}
+	}
+
+	// Read from m_Lower, then pass through Resampler:
+	auto numToRead = static_cast<size_t>(static_cast<long long>(a_MaxLen) * m_Lower->format().sampleRate() / m_CurrentSampleRate);
+	if (numToRead > a_MaxLen)
+	{
+		numToRead = a_MaxLen;  // a_Dest is only a_MaxLen bytes long, cannot read more
+	}
+	auto numRead = m_Lower->read(a_Dest, numToRead & ~0x03UL);
+	if (numRead == 0)
+	{
+		return 0;
+	}
+	auto bytesPerFrame = static_cast<size_t>(m_Lower->format().bytesPerFrame());
+	auto out = m_Resampler->convert(
+		const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&a_Dest)),
+		static_cast<int>(numRead / bytesPerFrame)
+	);
+	if (out.second > 0)
+	{
+		memcpy(a_Dest, out.first, out.second * bytesPerFrame);
+	}
+	return out.second * bytesPerFrame;
+}
+
+
+
+
+
+void AudioTempoChange::setTempo(double a_Tempo)
+{
+	m_DestSampleRate = static_cast<int>(m_Lower->format().sampleRate() / a_Tempo);
+	// The resampler will be reinitialized in the read() function to avoid threading issues
 }
