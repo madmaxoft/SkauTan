@@ -16,6 +16,11 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QListWidget" name="lwFavorites">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+      </font>
+     </property>
      <property name="autoScroll">
       <bool>false</bool>
      </property>
@@ -31,7 +36,7 @@
      <property name="horizontalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
-     <property name="uniformItemSizes">
+     <property name="isWrapping" stdset="0">
       <bool>true</bool>
      </property>
     </widget>
