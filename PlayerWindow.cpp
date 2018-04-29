@@ -59,7 +59,8 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_Player.get(),           &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
 	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
 	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
-	connect(m_UI->vsTempo,            &QSlider::sliderMoved,      this, &PlayerWindow::tempoSliderMoved);
+	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
 
 	// Update the UI every 200 msec:
 	m_UpdateUITimer->start(200);
@@ -73,6 +74,12 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colAuthor,      defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
+
+	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
+	fm = m_UI->btnTempoReset->fontMetrics();
+	m_UI->btnTempoReset->setMinimumWidth(
+		m_UI->btnTempoReset->sizeHint().width() - fm.width(m_UI->btnTempoReset->text()) + fm.width("+99.9 %")
+	);
 }
 
 
@@ -321,8 +328,25 @@ void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
 
 
 
-void PlayerWindow::tempoSliderMoved(int a_NewValue)
+void PlayerWindow::tempoValueChanged(int a_NewValue)
 {
-	Q_UNUSED(a_NewValue);
-	// TODO
+	auto percent = static_cast<double>(a_NewValue) / 3;
+	if (a_NewValue >= 0)
+	{
+		m_UI->btnTempoReset->setText(QString("+%1 %").arg(QString::number(percent, 'f', 1)));
+	}
+	else
+	{
+		m_UI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
+	}
+	m_Player->setTempo(static_cast<double>(percent + 100) / 100);
+}
+
+
+
+
+
+void PlayerWindow::resetTempo()
+{
+	m_UI->vsTempo->setValue(0);
 }
