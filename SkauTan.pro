@@ -31,6 +31,9 @@ win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib
 unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz
 
 
+# Add the app icon:
+win32:RC_ICONS = res/img/SkauTan.ico
+
 
 # Turn on warnings-as-errors and extra warnings
 msvc {
