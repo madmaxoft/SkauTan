@@ -232,29 +232,41 @@ void Database::saveSong(const Song & a_Song)
 
 
 
-TemplatePtr Database::addTemplate()
+TemplatePtr Database::createTemplate()
 {
+	auto res = std::make_shared<Template>(-1);
+	addTemplate(res);
+	return res;
+}
+
+
+
+
+
+void Database::addTemplate(TemplatePtr a_Template)
+{
+	assert(a_Template->dbRowId() == -1);  // No RowID assigned yet
+
 	// Insert into DB:
 	QSqlQuery query(m_Database);
 	if (!query.prepare("INSERT INTO Templates (DisplayName, Notes) VALUES(?, ?)"))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
-		return nullptr;
+		return;
 	}
-	query.bindValue(0, QString());
-	query.bindValue(1, QString());
+	query.bindValue(0, a_Template->displayName());
+	query.bindValue(1, a_Template->notes());
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
-		return nullptr;
+		return;
 	}
 
 	// Insert into memory:
-	auto res = std::make_shared<Template>(query.lastInsertId().toLongLong());
-	m_Templates.push_back(res);
-	return res;
+	a_Template->setDbRowId(query.lastInsertId().toLongLong());
+	m_Templates.push_back(a_Template);
 }
 
 

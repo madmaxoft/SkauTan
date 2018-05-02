@@ -1,8 +1,11 @@
 #include "DlgTemplatesList.h"
 #include <assert.h>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QDomDocument>
 #include "ui_DlgTemplatesList.h"
 #include "DlgEditTemplate.h"
+#include "DlgChooseImportTemplates.h"
 #include "Database.h"
 
 
@@ -24,6 +27,8 @@ DlgTemplatesList::DlgTemplatesList(Database & a_DB, QWidget * a_Parent):
 	connect(m_UI->tblTemplates,      &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateAt);
 	connect(m_UI->tblTemplates,      &QTableWidget::currentCellChanged,   this, &DlgTemplatesList::templateSelected);
 	connect(m_UI->tblTemplates,      &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
+	connect(m_UI->btnExport,         &QPushButton::clicked,               this, &DlgTemplatesList::exportTemplates);
+	connect(m_UI->btnImport,         &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
 
 	// Update the UI state:
 	const auto & templates = m_DB.templates();
@@ -89,15 +94,91 @@ void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 
 
 
+void DlgTemplatesList::exportTemplatesTo(const QString & a_FileName)
+{
+	QFile f(a_FileName);
+	if (!f.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Export templates"),
+			tr("SkauTan could not export templates to the specified file, because the file cannot be written to.")
+		);
+		return;
+	}
+	std::vector<TemplatePtr> templates;
+	for (const auto & row: m_UI->tblTemplates->selectionModel()->selectedRows())
+	{
+		templates.push_back(m_DB.templates()[static_cast<size_t>(row.row())]);
+	}
+	f.write(TemplateXmlExport::run(templates));
+	f.close();
+}
+
+
+
+
+
+void DlgTemplatesList::importTemplatesFrom(const QString & a_FileName)
+{
+	QFile f(a_FileName);
+	if (!f.open(QIODevice::ReadOnly))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Import templates"),
+			tr("SkauTan could not import templates from \"%1\", because the file cannot be read from.").arg(a_FileName)
+		);
+		return;
+	}
+	auto templates = TemplateXmlImport::run(f.readAll());
+	if (templates.empty())
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Import templates"),
+			tr("There are not SkauTan templates in \"%1\".").arg(a_FileName)
+		);
+		return;
+	}
+
+	// Ask the user which templates to import:
+	DlgChooseImportTemplates dlg(std::move(templates), this);
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+
+	// Import the chosen templates:
+	for (const auto & tmpl: dlg.chosenTemplates())
+	{
+		m_DB.addTemplate(tmpl);
+		m_DB.saveTemplate(*tmpl);
+	}
+
+	// Insert the imported templates into the UI:
+	m_UI->tblTemplates->setRowCount(static_cast<int>(m_DB.templates().size()));
+	int row = 0;
+	for (const auto & tmpl: m_DB.templates())
+	{
+		updateTemplateRow(row, *tmpl);
+		row += 1;
+	}
+}
+
+
+
+
+
 void DlgTemplatesList::addTemplate()
 {
-	auto tmpl = m_DB.addTemplate();
+	auto tmpl = m_DB.createTemplate();
 	if (tmpl == nullptr)
 	{
 		QMessageBox::warning(
 			this,
-			tr("SkauTan: Cannot add template"),  // title
-			tr("Cannot add template possibly DB failure? Inspect the log.")
+			tr("SkauTan: Cannot add template"),
+			tr("Cannot add template, possibly due to DB failure? Inspect the log.")
 		);
 		return;
 	}
@@ -202,7 +283,8 @@ void DlgTemplatesList::templateSelectionChanged()
 {
 	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
 	m_UI->btnEditTemplate->setEnabled(selection.size() == 1);
-	m_UI->btnRemoveTemplate->setEnabled(selection.size() > 0);
+	m_UI->btnRemoveTemplate->setEnabled(!selection.isEmpty());
+	m_UI->btnExport->setEnabled(!selection.isEmpty());
 
 	// Update the list of items in a template:
 	if (selection.size() == 1)
@@ -226,4 +308,47 @@ void DlgTemplatesList::templateSelectionChanged()
 	{
 		m_UI->tblItems->setRowCount(0);
 	}
+}
+
+
+
+
+
+void DlgTemplatesList::exportTemplates()
+{
+	auto fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("SkauTan: Export templates"),
+		{},
+		tr("SkauTan templates (*.SkauTanTemplates)")
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+	exportTemplatesTo(fileName);
+	QMessageBox::information(
+		this,
+		tr("SkauTan: Export complete"),
+		tr("Templates have been exported to \"%1\".").arg(fileName)
+	);
+}
+
+
+
+
+
+void DlgTemplatesList::importTemplates()
+{
+	auto fileName = QFileDialog::getOpenFileName(
+		this,
+		tr("SkauTan: Import templates"),
+		{},
+		tr("SkauTan templates (*.SkauTanTemplates)")
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+	importTemplatesFrom(fileName);
 }
