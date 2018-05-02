@@ -26,12 +26,17 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 	});
 	m_UI->tblItems->setRowCount(static_cast<int>(m_Items.size()));
 	int row = 0;
+	auto colCount = m_UI->tblItems->columnCount();
 	for (const auto & item: m_Items)
 	{
 		m_UI->tblItems->setItem(row, 0, new QTableWidgetItem(item->displayName()));
 		m_UI->tblItems->setItem(row, 1, new QTableWidgetItem(item->notes()));
 		m_UI->tblItems->setItem(row, 2, new QTableWidgetItem(item->isFavorite() ? tr("Y", "IsFavorite") : QString()));
 		m_UI->tblItems->setItem(row, 3, new QTableWidgetItem(item->filter()->getDescription()));
+		for (int col = 0; col < colCount; ++col)
+		{
+			m_UI->tblItems->item(row, col)->setBackgroundColor(item->bgColor());
+		}
 		row += 1;
 	}
 	m_UI->tblItems->resizeColumnsToContents();

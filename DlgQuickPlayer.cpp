@@ -28,6 +28,7 @@ DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Playlist & a_Playlist, Player & 
 		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwFavorites);
 		item->setIcon(playIcon);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(fav.get()));
+		item->setBackgroundColor(fav->bgColor());
 	}
 
 	// Connect the signals:
