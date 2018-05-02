@@ -64,9 +64,15 @@ public:
 	/** Returns all templates stored in the DB. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
 
-	/** Adds a new empty template and returns it.
+	/** Creates a new empty template, adds it to the DB and returns it.
 	Note that changes aren't saved automatically, you need to call saveTemplate() to save. */
-	TemplatePtr addTemplate();
+	TemplatePtr createTemplate();
+
+	/** Adds the specified template to the DB.
+	Used for importing templates, assumes that the template has no DB RowID assigned to it yet.
+	Modifies a_Template - assigns a new DB RowID.
+	Note that changes aren't saved automatically, you need to call saveTemplate() to save. */
+	void addTemplate(TemplatePtr a_Template);
 
 	/** Removes the specified template from the DB. */
 	void delTemplate(const TemplatePtr a_Template) { delTemplate(a_Template.get()); }

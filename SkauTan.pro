@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia sql
+QT       += core gui multimedia sql xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -80,7 +80,8 @@ SOURCES += \
 	DlgQuickPlayer.cpp \
 	RingBuffer.cpp \
 	AudioEffects.cpp \
-	Stopwatch.cpp
+	Stopwatch.cpp \
+	DlgChooseImportTemplates.cpp
 
 HEADERS += \
 	PlayerWindow.h \
@@ -109,7 +110,8 @@ HEADERS += \
 	RingBuffer.h \
 	AudioDataSource.h \
 	Stopwatch.h \
-	AudioEffects.h
+	AudioEffects.h \
+	DlgChooseImportTemplates.h
 
 FORMS += \
 	PlayerWindow.ui \
@@ -120,7 +122,8 @@ FORMS += \
 	DlgEditTemplateItem.ui \
 	DlgPickTemplateFavoriteItem.ui \
 	DlgPickTemplate.ui \
-	DlgQuickPlayer.ui
+	DlgQuickPlayer.ui \
+	DlgChooseImportTemplates.ui
 
 RESOURCES += \
 	res/SkauTan.qrc

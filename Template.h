@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <QVariant>
+#include <QDomDocument>
 
 
 
@@ -299,6 +300,10 @@ public:
 	void setDisplayName(const QString & a_DisplayName) { m_DisplayName = a_DisplayName; }
 	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
 
+	/** Sets the DB RowID for the template.
+	Checks that a RowID hasn't been assigned yet. */
+	void setDbRowId(qlonglong a_DbRowId);
+
 	/** Adds a new item at the specified index (-1 = at the end). */
 	ItemPtr addItem(
 		const QString & a_DisplayName,
@@ -320,9 +325,10 @@ public:
 	/** Adds the items to the specified playlist. a_Songs is the song database from which to choose songs. */
 	void addToPlaylist(Playlist & a_Dst, Database & a_Songs);
 
+
 protected:
 
-	/** The RowID in the DB. */
+	/** The RowID in the DB. -1 if not assigned yet. */
 	qlonglong m_DbRowId;
 
 	QString m_DisplayName;
@@ -331,6 +337,75 @@ protected:
 };
 
 using TemplatePtr = std::shared_ptr<Template>;
+
+
+
+
+
+/** Helper class that implements exporting multiple templates into a XML format. */
+class TemplateXmlExport
+{
+public:
+
+	/** Exports the specified templates to a XML format.
+	Returns the exported data as a byte array. */
+	static QByteArray run(const std::vector<TemplatePtr> & a_Templates);
+
+
+protected:
+
+	/** The DOM document representation used for building the XML. */
+	QDomDocument m_Document;
+
+
+	/** Creates a new instance of this class, initializes the internal state. */
+	TemplateXmlExport();
+
+	/** Exports the specified templates to XML format, returns the data as a byte array. */
+	QByteArray exportAll(const std::vector<TemplatePtr> & a_Templates);
+
+	/** Adds the specified filter to m_Document as a child of the specified DOM element. */
+	void addFilterToDom(const Template::FilterPtr && a_Filter, QDomElement & a_ParentElement);
+};
+
+
+
+
+
+class TemplateXmlImport
+{
+public:
+
+	/** Imports the templates from the specified XML-formatted data.
+	Returns an empty vector on error. */
+	static std::vector<TemplatePtr> run(const QByteArray & a_XmlData);
+
+
+protected:
+
+	/** The DOM document representation of the input data. */
+	QDomDocument m_Document;
+
+
+	/** Creates a new instance of this class. */
+	TemplateXmlImport();
+
+	/** Imports the templates from the specified XML-formatted data.
+	Returns an empty vector on error. */
+	std::vector<TemplatePtr> importAll(const QByteArray & a_XmlData);
+
+	/** Reads and returns a Template from the specified XML element.
+	a_TemplateXmlElement is supposed to represent the <SkauTanTemplate> element in the XML. */
+	TemplatePtr readTemplate(const QDomElement & a_TemplateXmlElement);
+
+	/** Reads and returns a Template::Item from the specified XML element.
+	a_ItemXmlElement is supposed to represent the <item> element in the XML. */
+	Template::ItemPtr readTemplateItem(const QDomElement & a_ItemXmlElement);
+
+	/** Reads and returns a Template::Filter from the specified XML element.
+	a_FilterXmlElement is supposed to represent the <and>, <or> or <comparison> element in the XML. */
+	Template::FilterPtr readTemplateFilter(const QDomElement & a_FilterXmlElement);
+};
 
 
 

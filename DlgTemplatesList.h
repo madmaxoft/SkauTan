@@ -53,6 +53,12 @@ private:
 	/** Updates the specified row in the template list with the current template data. */
 	void updateTemplateRow(int a_Row, const Template & a_Template);
 
+	/** Exports the selected templates to the specified file. */
+	void exportTemplatesTo(const QString & a_FileName);
+
+	/** Imports the templates from the specified file, lets the user choose which ones to import. */
+	void importTemplatesFrom(const QString & a_FileName);
+
 
 protected slots:
 
@@ -73,6 +79,14 @@ protected slots:
 
 	/** The selection in the template list has changed. */
 	void templateSelectionChanged();
+
+	/** The user clicked the Export button.
+	Shows a file selection dialog, then exports selected templates into that file. */
+	void exportTemplates();
+
+	/** The user clicked the Import button.
+	Shows a file selection dialog, then imports templates from the file. */
+	void importTemplates();
 };
 
 
