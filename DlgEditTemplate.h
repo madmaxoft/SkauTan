@@ -87,6 +87,13 @@ protected slots:
 	/** Called when the selection in tblItems changes.
 	Updates the button availability. */
 	void itemSelectionChanged();
+
+	/** The text in the BgColor LineEdit has changed.
+	Applies the new color to the LineEdit's background. */
+	void bgColorTextChanged(const QString & a_NewText);
+
+	/** Opens the color chooser, sets the selected color to leBgColor. */
+	void chooseBgColor();
 };
 
 

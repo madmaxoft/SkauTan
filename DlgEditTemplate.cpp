@@ -1,5 +1,6 @@
 #include "DlgEditTemplate.h"
 #include <QMessageBox>
+#include <QColorDialog>
 #include "ui_DlgEditTemplate.h"
 #include "DlgEditTemplateItem.h"
 #include "DlgPickTemplateFavoriteItem.h"
@@ -18,11 +19,13 @@ DlgEditTemplate::DlgEditTemplate(Database & a_DB, Template & a_Template, QWidget
 	m_UI->setupUi(this);
 
 	// Connect the slots:
-	connect(m_UI->btnClose,           &QPushButton::clicked, this, &DlgEditTemplate::saveAndClose);
-	connect(m_UI->btnAddItem,         &QPushButton::clicked, this, &DlgEditTemplate::addItem);
-	connect(m_UI->btnAddFavoriteItem, &QPushButton::clicked, this, &DlgEditTemplate::addFavoriteItem);
-	connect(m_UI->btnEditItem,        &QPushButton::clicked, this, &DlgEditTemplate::editSelectedItem);
-	connect(m_UI->btnRemoveItem,      &QPushButton::clicked, this, &DlgEditTemplate::removeSelectedItems);
+	connect(m_UI->btnClose,           &QPushButton::clicked,   this, &DlgEditTemplate::saveAndClose);
+	connect(m_UI->btnAddItem,         &QPushButton::clicked,   this, &DlgEditTemplate::addItem);
+	connect(m_UI->btnAddFavoriteItem, &QPushButton::clicked,   this, &DlgEditTemplate::addFavoriteItem);
+	connect(m_UI->btnEditItem,        &QPushButton::clicked,   this, &DlgEditTemplate::editSelectedItem);
+	connect(m_UI->btnRemoveItem,      &QPushButton::clicked,   this, &DlgEditTemplate::removeSelectedItems);
+	connect(m_UI->leBgColor,          &QLineEdit::textChanged, this, &DlgEditTemplate::bgColorTextChanged);
+	connect(m_UI->btnBgColor,         &QPushButton::clicked,   this, &DlgEditTemplate::chooseBgColor);
 	connect(
 		m_UI->tblItems, &QTableWidget::cellDoubleClicked,
 		this, &DlgEditTemplate::cellDoubleClicked
@@ -38,6 +41,7 @@ DlgEditTemplate::DlgEditTemplate(Database & a_DB, Template & a_Template, QWidget
 	m_UI->tblItems->setRowCount(static_cast<int>(a_Template.items().size()));
 	m_UI->tblItems->setColumnCount(4);
 	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
+	m_UI->leBgColor->setText(a_Template.bgColor().name());
 	int idx = 0;
 	for (const auto & itm: a_Template.items())
 	{
@@ -78,6 +82,11 @@ void DlgEditTemplate::save()
 {
 	m_Template.setDisplayName(m_UI->leDisplayName->text());
 	m_Template.setNotes(m_UI->pteNotes->toPlainText());
+	QColor c(m_UI->leBgColor->text());
+	if (c.isValid())
+	{
+		m_Template.setBgColor(c);
+	}
 }
 
 
@@ -92,6 +101,10 @@ void DlgEditTemplate::setItem(int a_Idx, const Template::Item & a_Item)
 	m_UI->tblItems->setItem(a_Idx, 1, new QTableWidgetItem(a_Item.notes()));
 	m_UI->tblItems->setItem(a_Idx, 2, new QTableWidgetItem(favDesc));
 	m_UI->tblItems->setItem(a_Idx, 3, new QTableWidgetItem(filterDesc));
+	for (int i = 0; i < 4; ++i)
+	{
+		m_UI->tblItems->item(a_Idx, i)->setBackgroundColor(a_Item.bgColor());
+	}
 }
 
 
@@ -244,4 +257,36 @@ void DlgEditTemplate::itemSelectionChanged()
 	const auto & sel = m_UI->tblItems->selectionModel()->selectedRows();
 	m_UI->btnEditItem->setEnabled(sel.size() == 1);
 	m_UI->btnRemoveItem->setEnabled(!sel.isEmpty());
+}
+
+
+
+
+
+void DlgEditTemplate::bgColorTextChanged(const QString & a_NewText)
+{
+	QColor c(a_NewText);
+	if (!c.isValid())
+	{
+		m_UI->leBgColor->setStyleSheet({});
+		return;
+	}
+	m_UI->leBgColor->setStyleSheet(QString("background-color: %1").arg(a_NewText));
+}
+
+
+
+
+
+void DlgEditTemplate::chooseBgColor()
+{
+	auto c = QColorDialog::getColor(
+		QColor(m_UI->leBgColor->text()),
+		this,
+		tr("SkauTan: Choose template color")
+	);
+	if (c.isValid())
+	{
+		m_UI->leBgColor->setText(c.name());
+	}
 }

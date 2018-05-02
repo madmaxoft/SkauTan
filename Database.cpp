@@ -339,7 +339,7 @@ void Database::saveTemplate(const Template & a_Template)
 	// Save the template direct values:
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE Templates SET "
-		"DisplayName = ?, Notes = ? "
+		"DisplayName = ?, Notes = ?, BgColor = ? "
 		"WHERE RowID = ?")
 	)
 	{
@@ -349,6 +349,7 @@ void Database::saveTemplate(const Template & a_Template)
 	}
 	query.addBindValue(a_Template.displayName());
 	query.addBindValue(a_Template.notes());
+	query.addBindValue(a_Template.bgColor().name());
 	query.addBindValue(a_Template.dbRowId());
 	if (!query.exec())
 	{
@@ -447,6 +448,7 @@ void Database::fixupTables()
 		{"RowID",       "INTEGER PRIMARY KEY"},
 		{"DisplayName", "TEXT"},
 		{"Notes",       "TEXT"},
+		{"BgColor",     "TEXT"},  // "#rrggbb"
 	};
 
 	static const std::vector<std::pair<QString, QString>> cdTemplateItems =
@@ -457,6 +459,7 @@ void Database::fixupTables()
 		{"DisplayName",   "TEXT"},
 		{"Notes",         "TEXT"},
 		{"IsFavorite",    "INTEGER"},
+		{"BgColor",       "TEXT"},  // "#rrggbb"
 	};
 
 	static const std::vector<std::pair<QString, QString>> cdTemplateFilters =
@@ -639,6 +642,7 @@ void Database::loadTemplates()
 	}
 	auto fiDisplayName = query.record().indexOf("DisplayName");
 	auto fiNotes       = query.record().indexOf("Notes");
+	auto fiBgColor     = query.record().indexOf("BgColor");
 	auto fiRowId       = query.record().indexOf("RowID");
 
 	// Load each template:
@@ -661,6 +665,11 @@ void Database::loadTemplates()
 			query.value(fiDisplayName).toString(),
 			query.value(fiNotes).toString()
 		);
+		QColor c(query.value(fiBgColor).toString());
+		if (c.isValid())
+		{
+			tmpl->setBgColor(c);
+		}
 		m_Templates.push_back(tmpl);
 		loadTemplate(tmpl);
 	}
@@ -696,6 +705,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 	auto fiDisplayName = query.record().indexOf("DisplayName");
 	auto fiNotes       = query.record().indexOf("Notes");
 	auto fiIsFavorite  = query.record().indexOf("IsFavorite");
+	auto fiBgColor     = query.record().indexOf("BgColor");
 
 	// Load each template:
 	if (!query.isActive())
@@ -717,6 +727,11 @@ void Database::loadTemplate(TemplatePtr a_Template)
 			query.value(fiNotes).toString(),
 			query.value(fiIsFavorite).toBool()
 		);
+		QColor c(query.value(fiBgColor).toString());
+		if (c.isValid())
+		{
+			item->setBgColor(c);
+		}
 		auto rowId = query.value(fiRowId).toLongLong();
 		loadTemplateFilters(a_Template, rowId, *item);
 		if (item->filter() == nullptr)
@@ -894,8 +909,8 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.setForwardOnly(true);
 	qlonglong rowId = -1;
 	if (!query.prepare(
-		"INSERT INTO TemplateItems (DisplayName, Notes, IsFavorite, TemplateID, IndexInParent)"
-		"VALUES (?, ?, ?, ?, ?)"
+		"INSERT INTO TemplateItems (DisplayName, Notes, IsFavorite, TemplateID, IndexInParent, BgColor)"
+		"VALUES (?, ?, ?, ?, ?, ?)"
 	))
 	{
 		qWarning() << __FUNCTION__ << ": Cannot insert template item into the DB, template "
@@ -910,6 +925,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.addBindValue(a_Item.isFavorite());
 	query.addBindValue(a_Template.dbRowId());
 	query.addBindValue(a_Index);
+	query.addBindValue(a_Item.bgColor().name());
 	if (!query.exec())
 	{
 		qWarning() << __FUNCTION__ << ": Cannot insert template item in the DB, template "

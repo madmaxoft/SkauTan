@@ -23,11 +23,16 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 	m_UI->tblTemplates->setRowCount(static_cast<int>(a_DB.templates().size()));
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Template"), tr("#"), tr("Notes")});
 	int idx = 0;
+	auto colCount = m_UI->tblTemplates->columnCount();
 	for (const auto & tmpl: a_DB.templates())
 	{
 		m_UI->tblTemplates->setItem(idx, 0, new QTableWidgetItem(tmpl->displayName()));
 		m_UI->tblTemplates->setItem(idx, 1, new QTableWidgetItem(QString::number(tmpl->items().size())));
 		m_UI->tblTemplates->setItem(idx, 2, new QTableWidgetItem(tmpl->notes()));
+		for (int col = 0; col < colCount; ++col)
+		{
+			m_UI->tblTemplates->item(idx, col)->setBackgroundColor(tmpl->bgColor());
+		}
 		idx += 1;
 	}
 	m_UI->tblTemplates->resizeColumnsToContents();

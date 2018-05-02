@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QComboBox>
+#include <QColorDialog>
 #include "DlgSongs.h"
 
 
@@ -305,11 +306,13 @@ DlgEditTemplateItem::DlgEditTemplateItem(Database & a_DB, Template::Item & a_Ite
 	m_UI->twFilters->setItemDelegate(new FilterDelegate);
 
 	// Connect the signals:
-	connect(m_UI->btnClose,            &QPushButton::clicked, this, &DlgEditTemplateItem::saveAndClose);
-	connect(m_UI->btnAddSibling,       &QPushButton::clicked, this, &DlgEditTemplateItem::addFilterSibling);
-	connect(m_UI->btnInsertCombinator, &QPushButton::clicked, this, &DlgEditTemplateItem::insertFilterCombinator);
-	connect(m_UI->btnRemoveFilter,     &QPushButton::clicked, this, &DlgEditTemplateItem::removeFilter);
-	connect(m_UI->btnPreview,          &QPushButton::clicked, this, &DlgEditTemplateItem::previewFilter);
+	connect(m_UI->btnClose,            &QPushButton::clicked,   this, &DlgEditTemplateItem::saveAndClose);
+	connect(m_UI->btnAddSibling,       &QPushButton::clicked,   this, &DlgEditTemplateItem::addFilterSibling);
+	connect(m_UI->btnInsertCombinator, &QPushButton::clicked,   this, &DlgEditTemplateItem::insertFilterCombinator);
+	connect(m_UI->btnRemoveFilter,     &QPushButton::clicked,   this, &DlgEditTemplateItem::removeFilter);
+	connect(m_UI->btnPreview,          &QPushButton::clicked,   this, &DlgEditTemplateItem::previewFilter);
+	connect(m_UI->leBgColor,           &QLineEdit::textChanged, this, &DlgEditTemplateItem::bgColorTextChanged);
+	connect(m_UI->btnBgColor,          &QPushButton::clicked,   this, &DlgEditTemplateItem::chooseBgColor);
 	connect(
 		m_UI->twFilters->selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &DlgEditTemplateItem::filterSelectionChanged
@@ -319,6 +322,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(Database & a_DB, Template::Item & a_Ite
 	m_UI->leDisplayName->setText(m_Item.displayName());
 	m_UI->chbIsFavorite->setChecked(m_Item.isFavorite());
 	m_UI->pteNotes->setPlainText(m_Item.notes());
+	m_UI->leBgColor->setText(m_Item.bgColor().name());
 
 	// Display the filters tree:
 	m_UI->twFilters->setHeaderLabels({tr("Filter", "FilterTree")});
@@ -356,6 +360,11 @@ void DlgEditTemplateItem::save()
 	m_Item.setDisplayName(m_UI->leDisplayName->text());
 	m_Item.setIsFavorite(m_UI->chbIsFavorite->isChecked());
 	m_Item.setNotes(m_UI->pteNotes->toPlainText());
+	QColor c(m_UI->leBgColor->text());
+	if (c.isValid())
+	{
+		m_Item.setBgColor(c);
+	}
 }
 
 
@@ -627,4 +636,36 @@ void DlgEditTemplateItem::filterSelectionChanged()
 	auto curFilter = selectedFilter();
 	m_UI->btnAddSibling->setEnabled(curFilter != nullptr);
 	m_UI->btnRemoveFilter->setEnabled(curFilter != nullptr);
+}
+
+
+
+
+
+void DlgEditTemplateItem::bgColorTextChanged(const QString & a_NewText)
+{
+	QColor c(a_NewText);
+	if (!c.isValid())
+	{
+		m_UI->leBgColor->setStyleSheet({});
+		return;
+	}
+	m_UI->leBgColor->setStyleSheet(QString("background-color: %1").arg(a_NewText));
+}
+
+
+
+
+
+void DlgEditTemplateItem::chooseBgColor()
+{
+	auto c = QColorDialog::getColor(
+		QColor(m_UI->leBgColor->text()),
+		this,
+		tr("SkauTan: Choose template item color")
+	);
+	if (c.isValid())
+	{
+		m_UI->leBgColor->setText(c.name());
+	}
 }

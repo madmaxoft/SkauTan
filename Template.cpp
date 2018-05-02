@@ -587,7 +587,8 @@ Template::Item::Item(
 ):
 	m_DisplayName(a_DisplayName),
 	m_Notes(a_Notes),
-	m_IsFavorite(a_IsFavorite)
+	m_IsFavorite(a_IsFavorite),
+	m_BgColor(255, 255, 255)
 {
 	setNoopFilter();
 }
@@ -638,7 +639,8 @@ void Template::Item::checkFilterConsistency() const
 // Template:
 
 Template::Template(qlonglong a_DbRowId):
-	m_DbRowId(a_DbRowId)
+	m_DbRowId(a_DbRowId),
+	m_BgColor(255, 255, 255)
 {
 }
 
@@ -649,7 +651,8 @@ Template::Template(qlonglong a_DbRowId):
 Template::Template(qlonglong a_DbRowId, QString && a_DisplayName, QString && a_Notes):
 	m_DbRowId(a_DbRowId),
 	m_DisplayName(std::move(a_DisplayName)),
-	m_Notes(std::move(a_Notes))
+	m_Notes(std::move(a_Notes)),
+	m_BgColor(255, 255, 255)
 {
 }
 
@@ -742,12 +745,14 @@ QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & a_Templ
 		auto templateElement = m_Document.createElement("SkauTanTemplate");
 		templateElement.setAttribute("name", tmpl->displayName());
 		templateElement.setAttribute("notes", tmpl->notes());
+		templateElement.setAttribute("bgColor", tmpl->bgColor().name());
 		auto itemsElement = m_Document.createElement("items");
 		for (const auto & item: tmpl->items())
 		{
 			auto itemElement = m_Document.createElement("item");
 			itemElement.setAttribute("name", item->displayName());
 			itemElement.setAttribute("notes", item->notes());
+			itemElement.setAttribute("bgColor", item->bgColor().name());
 			if (item->isFavorite())
 			{
 				itemElement.setAttribute("isFavorite", 1);
@@ -872,6 +877,13 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 		return nullptr;
 	}
 
+	// Read the template's bgColor:
+	QColor c(a_TemplateXmlElement.attribute("bgColor"));
+	if (c.isValid())
+	{
+		res->setBgColor(c);
+	}
+
 	// Read the template's items:
 	auto items = a_TemplateXmlElement.firstChildElement("items");
 	if (items.isNull())
@@ -904,6 +916,13 @@ Template::ItemPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_Item
 	if (res == nullptr)
 	{
 		return nullptr;
+	}
+
+	// Read the item's bgColor:
+	QColor c(a_ItemXmlElement.attribute("bgColor"));
+	if (c.isValid())
+	{
+		res->setBgColor(c);
 	}
 
 	// Read the item's filter:

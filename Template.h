@@ -9,6 +9,7 @@
 #include <vector>
 #include <QVariant>
 #include <QDomDocument>
+#include <QColor>
 
 
 
@@ -250,6 +251,7 @@ public:
 		const QString & notes() const { return m_Notes; }
 		bool isFavorite() const { return m_IsFavorite; }
 		FilterPtr filter() const { return m_Filter; }
+		const QColor & bgColor() const { return m_BgColor; }
 
 		/** Returns the user-visible description of the entire filter. */
 		QString getFilterDescription() const { return m_Filter->getDescription(); }
@@ -258,6 +260,7 @@ public:
 		void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
 		void setIsFavorite(bool a_IsFavorite) { m_IsFavorite = a_IsFavorite; }
 		void setFilter(FilterPtr a_Filter) { m_Filter = a_Filter; m_Filter->setParent(nullptr); }
+		void setBgColor(const QColor & a_BgColor) { m_BgColor = a_BgColor; }
 
 		/** Sets the filter to a noop filter.
 		Used when loader detects invalid filter. */
@@ -280,6 +283,9 @@ public:
 
 		/** The filter on which this item is filled. */
 		FilterPtr m_Filter;
+
+		/** The color to use for background when displaying this item. */
+		QColor m_BgColor;
 	};
 
 
@@ -295,10 +301,12 @@ public:
 	const QString & displayName() const { return m_DisplayName; }
 	const QString & notes() const { return m_Notes; }
 	const std::vector<ItemPtr> & items() const { return m_Items; }
+	const QColor & bgColor() const { return m_BgColor; }
 
 	// Simple setters:
 	void setDisplayName(const QString & a_DisplayName) { m_DisplayName = a_DisplayName; }
 	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
+	void setBgColor(const QColor & a_BgColor) { m_BgColor = a_BgColor; }
 
 	/** Sets the DB RowID for the template.
 	Checks that a RowID hasn't been assigned yet. */
@@ -334,6 +342,9 @@ protected:
 	QString m_DisplayName;
 	QString m_Notes;
 	std::vector<ItemPtr> m_Items;
+
+	/** The background color to use when displaying this template. */
+	QColor m_BgColor;
 };
 
 using TemplatePtr = std::shared_ptr<Template>;

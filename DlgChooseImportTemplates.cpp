@@ -57,6 +57,11 @@ void DlgChooseImportTemplates::updateTemplateRow(int a_Row, const Template & a_T
 	m_UI->tblTemplates->setItem(a_Row, 0, item);
 	m_UI->tblTemplates->setItem(a_Row, 1, new QTableWidgetItem(QString::number(a_Template.items().size())));
 	m_UI->tblTemplates->setItem(a_Row, 2, new QTableWidgetItem(a_Template.notes()));
+	auto colCount = m_UI->tblTemplates->columnCount();
+	for (int col = 0; col < colCount; ++col)
+	{
+		m_UI->tblTemplates->item(a_Row, col)->setBackgroundColor(a_Template.bgColor());
+	}
 }
 
 
@@ -93,6 +98,7 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 		const auto & tmpl = m_Templates[static_cast<size_t>(selection[0].row())];
 		m_UI->tblItems->setRowCount(static_cast<int>(tmpl->items().size()));
 		int idx = 0;
+		auto colCount = m_UI->tblItems->columnCount();
 		for (const auto & item: tmpl->items())
 		{
 			auto favDesc = item->isFavorite() ? tr("Y", "IsFavorite") : QString();
@@ -101,6 +107,10 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 			m_UI->tblItems->setItem(idx, 1, new QTableWidgetItem(item->notes()));
 			m_UI->tblItems->setItem(idx, 2, new QTableWidgetItem(favDesc));
 			m_UI->tblItems->setItem(idx, 3, new QTableWidgetItem(filterDesc));
+			for (int col = 0; col < colCount; ++col)
+			{
+				m_UI->tblItems->item(idx, col)->setBackgroundColor(item->bgColor());
+			}
 			idx += 1;
 		}
 		m_UI->tblItems->resizeColumnsToContents();
