@@ -33,7 +33,8 @@ class DlgChooseImportTemplates:
 public:
 
 	explicit DlgChooseImportTemplates(std::vector<TemplatePtr> && a_Templates, QWidget * a_Parent = nullptr);
-	~DlgChooseImportTemplates();
+
+	virtual ~DlgChooseImportTemplates() override;
 
 	/** Returns the templates that the user chose for import. */
 	const std::vector<TemplatePtr> & chosenTemplates() const { return m_ChosenTemplates; }

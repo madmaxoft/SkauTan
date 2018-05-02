@@ -39,7 +39,8 @@ public:
 
 	explicit DlgQuickPlayer(Database & a_DB, Playlist & a_Playlist, Player & a_Player);
 
-	~DlgQuickPlayer();
+	virtual ~DlgQuickPlayer() override;
+
 
 private:
 

@@ -34,7 +34,8 @@ class DlgEditTemplate:
 public:
 
 	explicit DlgEditTemplate(Database & a_DB, Template & a_Template, QWidget * a_Parent = nullptr);
-	~DlgEditTemplate();
+
+	virtual ~DlgEditTemplate() override;
 
 
 private:

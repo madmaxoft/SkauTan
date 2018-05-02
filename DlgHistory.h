@@ -33,7 +33,8 @@ class DlgHistory:\
 public:
 
 	explicit DlgHistory(Database & a_DB, QWidget * a_Parent = nullptr);
-	~DlgHistory();
+
+	virtual ~DlgHistory() override;
 
 
 private:

@@ -38,7 +38,7 @@ public:
 		QWidget * a_Parent = nullptr
 	);
 
-	~DlgPickTemplateFavoriteItem();
+	virtual ~DlgPickTemplateFavoriteItem() override;
 
 	/** Returns the item selected by the user. */
 	Template::ItemPtr itemSelected() const { return m_ItemSelected; }

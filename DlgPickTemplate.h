@@ -35,7 +35,7 @@ public:
 
 	explicit DlgPickTemplate(const Database & a_DB, QWidget * a_Parent = nullptr);
 
-	~DlgPickTemplate();
+	virtual ~DlgPickTemplate() override;
 
 	/** Returns the template that the user selected, or nullptr if none selected. */
 	TemplatePtr selectedTemplate() const { return m_SelectedTemplate; }

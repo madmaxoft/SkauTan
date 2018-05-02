@@ -46,7 +46,7 @@ public:
 		QWidget * a_Parent
 	);
 
-	~DlgSongs();
+	virtual ~DlgSongs() override;
 
 	/** Adds songs from the specified files to the DB.
 	Duplicate files are skipped. */

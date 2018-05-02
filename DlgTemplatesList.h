@@ -35,7 +35,7 @@ public:
 
 	explicit DlgTemplatesList(Database & a_DB, QWidget * a_Parent = nullptr);
 
-	~DlgTemplatesList();
+	virtual ~DlgTemplatesList() override;
 
 
 private:

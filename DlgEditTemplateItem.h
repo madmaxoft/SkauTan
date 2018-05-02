@@ -37,7 +37,7 @@ public:
 	/** Creates a new dialog instance for editing the specified item. */
 	explicit DlgEditTemplateItem(Database & a_DB, Template::Item & a_Item, QWidget * a_Parent = nullptr);
 
-	~DlgEditTemplateItem();
+	virtual ~DlgEditTemplateItem() override;
 
 
 private:
