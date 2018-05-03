@@ -5,6 +5,7 @@
 
 
 
+#include <atomic>
 #include <memory>
 #include <QFile>
 #include <QAudioFormat>

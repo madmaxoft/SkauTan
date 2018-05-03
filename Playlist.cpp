@@ -32,8 +32,6 @@ void Playlist::addItem(IPlaylistItemPtr a_Item)
 
 void Playlist::moveItem(size_t a_FromIdx, size_t a_ToIdx)
 {
-	assert(a_FromIdx >= 0);
-	assert(a_ToIdx >= 0);
 	assert(a_FromIdx < m_Items.size());
 	assert(
 		(a_ToIdx < m_Items.size()) ||

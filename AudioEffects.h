@@ -6,6 +6,7 @@
 
 
 
+#include <atomic>
 #include "AudioDataSource.h"
 
 

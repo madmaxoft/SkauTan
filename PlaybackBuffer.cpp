@@ -72,8 +72,6 @@ void PlaybackBuffer::clear()
 
 size_t PlaybackBuffer::read(void * a_Data, size_t a_MaxLen)
 {
-	assert(a_MaxLen >= 0);
-
 	auto numBytesToRead = a_MaxLen & ~0x03u;  // Only read in multiples of 4 bytes
 	auto numBytesRead = m_RingBuffer.readData(a_Data, numBytesToRead);
 

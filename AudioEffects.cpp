@@ -47,7 +47,6 @@ void AudioFadeOut::fadeOut(int a_Msec)
 size_t AudioFadeOut::read(void * a_Dest, size_t a_MaxLen)
 {
 	// STOPWATCH(__FUNCTION__);
-	assert(a_MaxLen >= 0);
 
 	// If the Fade-out is completed, return end-of-stream:
 	if (m_IsFadingOut && (m_FadeOutRemaining <= 0))
