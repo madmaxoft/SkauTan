@@ -149,7 +149,7 @@ void RingBuffer::clear()
 	m_CurrentReadPos = 0;
 	m_CurrentWritePos = 0;
 	assert(lockedAvailRead() == 0);
-	m_CVHasFreeSpace.notify_one();
+	m_CVHasFreeSpace.wakeAll();
 }
 
 
