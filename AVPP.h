@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <memory>
+#include <functional>
 #include <QFile>
 #include <QAudioFormat>
 extern "C"
@@ -210,6 +211,11 @@ namespace AVPP
 		Only one audio stream can be decoded from the input data.
 		Returns true if an audio decoder was successfully initialized for the decoding. */
 		bool routeAudioTo(PlaybackBuffer * a_PlaybackBuffer);
+
+		/** Finds the best audio stream and passes all raw (compressed) audio data from that stream
+		to the specified callback function.
+		Returns true if feeding was successful, false on error. */
+		bool feedRawAudioDataTo(std::function<void (const void * /*a_Data */, int /* a_Size */)> a_Function);
 
 		/** Reads the input and decodes any data found in it, according to routing set with routeAudioTo().
 		Blocks until the entire input is decoded (or seeked out of, using seekTo() from another thread). */

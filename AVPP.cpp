@@ -584,6 +584,51 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 
 
 
+bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, int /* a_Size */)> a_Function)
+{
+	assert(m_AudioOutput == nullptr);  // Cannot work as both decoder and feeder
+
+	// Find the stream to feed:
+	AVCodec * audioDecoder = nullptr;
+	m_AudioStreamIdx = av_find_best_stream(m_Context, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
+	if (m_AudioStreamIdx < 0)
+	{
+		qWarning() << __FUNCTION__ << ": Failed to find an audio stream in the file: " << m_AudioStreamIdx;
+		m_AudioStreamIdx = -1;
+		return false;
+	}
+
+	// Feed the stream:
+	AVPacket packet;
+	while (true)
+	{
+		auto ret = av_read_frame(m_Context, &packet);
+		if (ret < 0)
+		{
+			break;
+		}
+
+		if (packet.stream_index == m_AudioStreamIdx)
+		{
+			if (packet.size >= 0)
+			{
+				a_Function(packet.data, packet.size);
+			}
+			else
+			{
+				qDebug() << __FUNCTION__ << ": Negative packet size.";
+			}
+		}
+		av_packet_unref(&packet);
+	}
+	qDebug() << __FUNCTION__ << ": Feeding done.";
+	return true;
+}
+
+
+
+
+
 void Format::decode()
 {
 	assert(m_AudioOutput != nullptr);
