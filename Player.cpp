@@ -8,6 +8,41 @@
 
 
 
+class Player::OutputThread:
+	public QThread
+{
+public:
+
+	OutputThread(Player & a_Player, QAudioFormat & a_Format);
+
+	// QThread overrides:
+	virtual void run() override;
+
+
+protected slots:
+
+	/** Starts playing the specified track.
+	Connects self to Player's startingPlayback() in the class constructor. */
+	void startPlaying(IPlaylistItem * a_Track);
+
+
+protected:
+
+	friend class Player;
+
+	/** The player that owns this thread. */
+	Player & m_Player;
+
+	/** The format that the audio output should consume.*/
+	QAudioFormat m_Format;
+
+	/** The actual audio output. */
+	std::unique_ptr<QAudioOutput> m_Output;
+};
+
+
+
+
 
 Player::Player(QObject * a_Parent):
 	Super(a_Parent),
@@ -41,11 +76,8 @@ Player::Player(QObject * a_Parent):
 			qDebug() << "Output audio format: " << m_Format;
 		}
 	}
-	m_Thread.setObjectName("AudioOutput");
-	m_Output.reset(new QAudioOutput(m_Format));
-	m_Output->moveToThread(&m_Thread);
-	connect(m_Output.get(), &QAudioOutput::stateChanged, this, &Player::outputStateChanged);
-	m_Thread.start(QThread::HighPriority);
+	m_OutputThread = std::make_unique<OutputThread>(*this, m_Format);
+	m_OutputThread->start(QThread::HighPriority);
 }
 
 
@@ -54,8 +86,12 @@ Player::Player(QObject * a_Parent):
 
 Player::~Player()
 {
-	m_Thread.quit();
-	m_Thread.wait();
+	auto outputThread = std::move(m_OutputThread);
+	if (outputThread != nullptr)
+	{
+		outputThread->quit();
+		outputThread->wait();
+	}
 }
 
 
@@ -111,7 +147,7 @@ void Player::seekTo(double a_Time)
 
 void Player::setVolume(qreal a_NewVolume)
 {
-	m_Output->setVolume(a_NewVolume);
+	m_OutputThread->m_Output->setVolume(a_NewVolume);
 }
 
 
@@ -248,8 +284,8 @@ void Player::start()
 		{
 			// We were stopping a track; continue stopping, but schedule the new track to start playing afterwards
 			m_State = psFadeOutToTrack;
-		return;
-	}
+			return;
+		}
 		case psFadeOutToTrack:
 		{
 			// We're already scheduled to start playing the new track, ignore the request
@@ -265,31 +301,6 @@ void Player::start()
 			// We're stopped, start the playback:
 			qDebug() << "Player: Starting playback of track " << track->displayName();
 			emit startingPlayback(track.get());
-			auto decoder = track->startDecoding(m_Format);
-			if (decoder == nullptr)
-			{
-				qDebug() << "Cannot start playback, decoder returned failure";
-				// TODO: Next song?
-				return;
-			}
-			if (!decoder->waitForData())
-			{
-				qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
-				return;
-			}
-			auto audioDataSource =
-				std::make_unique<AudioFadeOut>(
-				std::make_unique<AudioTempoChange>(
-				std::move(decoder)
-			));
-			audioDataSource->setTempo(m_Tempo);
-			m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
-			auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
-			qDebug() << "Setting audio output buffer size to " << bufSize;
-			m_Output->setBufferSize(bufSize);
-			m_Output->start(m_AudioDataSource.get());
-			m_State = psPlaying;
-			emit startedPlayback(track.get());
 		}
 	}
 }
@@ -390,4 +401,64 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 		}
 		return;
 	}
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Player::OutputThread:
+
+Player::OutputThread::OutputThread(Player & a_Player, QAudioFormat & a_Format):
+	m_Player(a_Player),
+	m_Format(a_Format)
+{
+	setObjectName("Player::OutputThread");
+	moveToThread(this);
+	connect(&m_Player, &Player::startingPlayback, this, &Player::OutputThread::startPlaying, Qt::QueuedConnection);
+}
+
+
+
+
+
+void Player::OutputThread::run()
+{
+	m_Output.reset(new QAudioOutput(m_Format));
+	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged);
+	exec();
+}
+
+
+
+
+
+void Player::OutputThread::startPlaying(IPlaylistItem * a_Track)
+{
+	auto decoder = a_Track->startDecoding(m_Format);
+	if (decoder == nullptr)
+	{
+		qDebug() << "Cannot start playback, decoder returned failure";
+		// TODO: Next song?
+		return;
+	}
+	if (!decoder->waitForData())
+	{
+		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
+		return;
+	}
+	auto audioDataSource =
+		std::make_unique<AudioFadeOut>(
+		std::make_unique<AudioTempoChange>(
+		std::move(decoder)
+	));
+	audioDataSource->setTempo(m_Player.m_Tempo);
+	m_Player.m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
+	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+	qDebug() << "Setting audio output buffer size to " << bufSize;
+	m_Output->setBufferSize(bufSize);
+	m_Output->start(m_Player.m_AudioDataSource.get());
+	m_Player.m_State = psPlaying;
+	emit m_Player.startedPlayback(a_Track);
 }

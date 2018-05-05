@@ -65,6 +65,11 @@ protected:
 		psFadeOutToStop,   ///< The player is fading out a track and will stop playing once done.
 	};
 
+
+	// fwd:
+	class OutputThread;
+
+
 	/** The playlist on which this instance is operating. */
 	std::shared_ptr<Playlist> m_Playlist;
 
@@ -75,17 +80,14 @@ protected:
 	0 = fadeout just started. */
 	int m_FadeoutProgress;
 
-	/** The actual audio output. */
-	std::unique_ptr<QAudioOutput> m_Output;
+	/** The thread that does the audio output processing. */
+	std::unique_ptr<OutputThread> m_OutputThread;
 
 	/** The source of the audio data, adapted into QIODevice interface. */
 	std::unique_ptr<AudioDataSourceIO> m_AudioDataSource;
 
 	/** The format used by the audio output. */
 	QAudioFormat m_Format;
-
-	/** The thread in which the audio output is run. */
-	QThread m_Thread;
 
 	/** The tempo to be used for playback. */
 	qreal m_Tempo;
