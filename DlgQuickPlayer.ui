@@ -55,7 +55,7 @@
            <item>
             <widget class="QLabel" name="lblPosition">
              <property name="text">
-              <string>0:01</string>
+              <string notr="true">0:01</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -65,7 +65,7 @@
            <item>
             <widget class="QLabel" name="lblRemaining">
              <property name="text">
-              <string>-0:02</string>
+              <string notr="true">-0:02</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

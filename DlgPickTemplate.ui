@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>SkauTan: Pick a template</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
