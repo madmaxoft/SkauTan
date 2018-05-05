@@ -80,7 +80,7 @@ void Database::open(const QString & a_DBFileName)
 	m_Database.setDatabaseName(a_DBFileName);
 	if (!m_Database.open())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot open DB " << a_DBFileName << ": " << m_Database.lastError();
+		qWarning() << ": Cannot open DB " << a_DBFileName << ": " << m_Database.lastError();
 		return;
 	}
 	fixupTables();
@@ -111,7 +111,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	{
 		if (song->fileName() == a_FileName)
 		{
-			qDebug() << __FUNCTION__ << ": Skipping duplicate " << a_FileName;
+			qDebug() << ": Skipping duplicate " << a_FileName;
 			return;
 		}
 	}
@@ -120,7 +120,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	QSqlQuery query(m_Database);
 	if (!query.prepare("INSERT INTO Songs (FileName, FileSize) VALUES(?, ?)"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -128,7 +128,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	query.bindValue(1, a_FileSize);
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		qWarning() << ": Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -160,14 +160,14 @@ void Database::delSong(const Song & a_Song)
 		QSqlQuery query(m_Database);
 		if (!query.prepare("DELETE FROM Songs WHERE RowID = ?"))
 		{
-			qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+			qWarning() << ": Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
 		query.addBindValue(a_Song.dbRowId());
 		if (!query.exec())
 		{
-			qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+			qWarning() << ": Cannot exec statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
@@ -201,7 +201,7 @@ void Database::addTemplate(TemplatePtr a_Template)
 	QSqlQuery query(m_Database);
 	if (!query.prepare("INSERT INTO Templates (DisplayName, Notes) VALUES(?, ?)"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -209,7 +209,7 @@ void Database::addTemplate(TemplatePtr a_Template)
 	query.bindValue(1, a_Template->notes());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		qWarning() << ": Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -233,40 +233,40 @@ void Database::delTemplate(const Template * a_Template)
 			QSqlQuery query(m_Database);
 			if (!query.prepare("DELETE FROM Templates WHERE RowID = ?"))
 			{
-				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(Templates) statement: " << query.lastError();
+				qWarning() << ": Cannot prep DELETE(Templates) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
 			query.addBindValue(a_Template->dbRowId());
 			if (!query.exec())
 			{
-				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(Templates) statement: " << query.lastError();
+				qWarning() << ": Cannot exec DELETE(Templates) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
 			if (!query.prepare("DELETE FROM TemplateItems WHERE TemplateID = ?"))
 			{
-				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(TemplateItems) statement: " << query.lastError();
+				qWarning() << ": Cannot prep DELETE(TemplateItems) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
 			query.addBindValue(a_Template->dbRowId());
 			if (!query.exec())
 			{
-				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(TemplateItems) statement: " << query.lastError();
+				qWarning() << ": Cannot exec DELETE(TemplateItems) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
 			if (!query.prepare("DELETE FROM TemplateFilters WHERE TemplateID = ?"))
 			{
-				qWarning() << __FUNCTION__ << ": Cannot prep DELETE(TemplateFilters) statement: " << query.lastError();
+				qWarning() << ": Cannot prep DELETE(TemplateFilters) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
 			query.addBindValue(a_Template->dbRowId());
 			if (!query.exec())
 			{
-				qWarning() << __FUNCTION__ << ": Cannot exec DELETE(TemplateFilters) statement: " << query.lastError();
+				qWarning() << ": Cannot exec DELETE(TemplateFilters) statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
@@ -276,7 +276,7 @@ void Database::delTemplate(const Template * a_Template)
 			return;
 		}
 	}
-	qWarning() << __FUNCTION__ << ": Attempting to remove a template not in the list: " << a_Template->displayName();
+	qWarning() << ": Attempting to remove a template not in the list: " << a_Template->displayName();
 	assert(!"Template not in list");
 }
 
@@ -293,7 +293,7 @@ void Database::saveTemplate(const Template & a_Template)
 		"WHERE RowID = ?")
 	)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare UPDATE statement: " << query.lastError();
+		qWarning() << ": Cannot prepare UPDATE statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -303,7 +303,7 @@ void Database::saveTemplate(const Template & a_Template)
 	query.addBindValue(a_Template.dbRowId());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec UPDATE statement: " << query.lastError();
+		qWarning() << ": Cannot exec UPDATE statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -314,13 +314,13 @@ void Database::saveTemplate(const Template & a_Template)
 		query.addBindValue(a_Template.dbRowId());
 		if (!query.exec())
 		{
-			qWarning() << __FUNCTION__ << ": Cannot exec DELETE statement: " << query.lastError();
+			qWarning() << ": Cannot exec DELETE statement: " << query.lastError();
 			assert(!"DB error");
 		}
 	}
 	else
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare DELETE statement: " << query.lastError();
+		qWarning() << ": Cannot prepare DELETE statement: " << query.lastError();
 		assert(!"DB error");
 	}
 
@@ -452,7 +452,7 @@ void Database::fixupTable(const QString & a_TableName, const std::vector<std::pa
 	QSqlQuery query(m_Database);
 	if (!query.exec(createQuery))
 	{
-		qWarning() << __FUNCTION__
+		qWarning()
 			<< ": Failed to fixup table " << a_TableName
 			<< ", query CreateTable: " << createQuery
 			<< ": " << query.lastError();
@@ -462,7 +462,7 @@ void Database::fixupTable(const QString & a_TableName, const std::vector<std::pa
 	std::set<QString> columns;
 	if (!query.exec(QString("PRAGMA table_info(%1)").arg(a_TableName)))
 	{
-		qWarning() << __FUNCTION__
+		qWarning()
 			<< ": Failed to query columns for table " << a_TableName
 			<< ": " << query.lastError();
 		return;
@@ -480,12 +480,12 @@ void Database::fixupTable(const QString & a_TableName, const std::vector<std::pa
 			// Column already exists
 			continue;
 		}
-		qDebug() << __FUNCTION__ << ": Adding column " << a_TableName << "." << col.first << " " << col.second;
+		qDebug() << ": Adding column " << a_TableName << "." << col.first << " " << col.second;
 		if (!query.exec(QString("ALTER TABLE %1 ADD COLUMN %2 %3")
 			.arg(a_TableName, col.first, col.second))
 		)
 		{
-			qWarning() << __FUNCTION__
+			qWarning()
 				<< ": Failed to add column " << col.first
 				<< " to table " << a_TableName
 				<< ": " << query.lastError();
@@ -504,7 +504,7 @@ void Database::loadSongs()
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT RowID, * FROM Songs"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query songs from the DB: " << query.lastError();
+		qWarning() << ": Cannot query songs from the DB: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -541,13 +541,13 @@ void Database::loadSongs()
 	// Load each song:
 	if (!query.isActive())
 	{
-		qWarning() << __FUNCTION__ << ": Query not active";
+		qWarning() << ": Query not active";
 		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
-		qWarning() << __FUNCTION__ << ": Not a select";
+		qWarning() << ": Not a select";
 		assert(!"DB error");
 		return;
 	}
@@ -593,7 +593,7 @@ void Database::loadTemplates()
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT RowID, * FROM Templates"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query templates from the DB: " << query.lastError();
+		qWarning() << ": Cannot query templates from the DB: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -605,13 +605,13 @@ void Database::loadTemplates()
 	// Load each template:
 	if (!query.isActive())
 	{
-		qWarning() << __FUNCTION__ << ": Query not active";
+		qWarning() << ": Query not active";
 		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
-		qWarning() << __FUNCTION__ << ": Not a select";
+		qWarning() << ": Not a select";
 		assert(!"DB error");
 		return;
 	}
@@ -643,7 +643,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 	query.setForwardOnly(true);
 	if (!query.prepare("SELECT RowID, * FROM TemplateItems WHERE TemplateID = ? ORDER BY IndexInParent ASC"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template items from the DB, template "
+		qWarning() << ": Cannot query template items from the DB, template "
 			<< a_Template->displayName()
 			<< ", prep error: " << query.lastError();
 		assert(!"DB error");
@@ -652,7 +652,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 	query.addBindValue(a_Template->dbRowId());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template items from the DB, template "
+		qWarning() << ": Cannot query template items from the DB, template "
 			<< a_Template->displayName()
 			<< ", exec error: " << query.lastError();
 		assert(!"DB error");
@@ -667,13 +667,13 @@ void Database::loadTemplate(TemplatePtr a_Template)
 	// Load each template:
 	if (!query.isActive())
 	{
-		qWarning() << __FUNCTION__ << ": Query not active";
+		qWarning() << ": Query not active";
 		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
-		qWarning() << __FUNCTION__ << ": Not a select";
+		qWarning() << ": Not a select";
 		assert(!"DB error");
 		return;
 	}
@@ -693,7 +693,7 @@ void Database::loadTemplate(TemplatePtr a_Template)
 		loadTemplateFilters(a_Template, rowId, *item);
 		if (item->filter() == nullptr)
 		{
-			qWarning() << __FUNCTION__ << ": Empty filter detected in item "
+			qWarning() << ": Empty filter detected in item "
 				<< "item " << item->displayName()
 				<< "(rowId " << rowId << "), changing to no-op filter";
 			item->setNoopFilter();
@@ -712,7 +712,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 	query.setForwardOnly(true);
 	if (!query.prepare("SELECT RowID, * FROM TemplateFilters WHERE ItemID = ?"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template filters from the DB, "
+		qWarning() << ": Cannot query template filters from the DB, "
 			<< "template " << a_Template->displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
@@ -722,7 +722,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 	query.addBindValue(a_ItemRowId);
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query template filters from the DB, "
+		qWarning() << ": Cannot query template filters from the DB, "
 			<< "template " << a_Template->displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
@@ -745,13 +745,13 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 	std::map<qlonglong, std::pair<qlonglong, Template::FilterPtr>> filters;
 	if (!query.isActive())
 	{
-		qWarning() << __FUNCTION__ << ": Query not active";
+		qWarning() << ": Query not active";
 		assert(!"DB error");
 		return;
 	}
 	if (!query.isSelect())
 	{
-		qWarning() << __FUNCTION__ << ": Not a select";
+		qWarning() << ": Not a select";
 		assert(!"DB error");
 		return;
 	}
@@ -768,7 +768,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 		}
 		catch (const std::runtime_error & exc)
 		{
-			qWarning() << __FUNCTION__ << ": Failed to load Kind for filter for "
+			qWarning() << ": Failed to load Kind for filter for "
 				<< " item " << a_Item.displayName()
 				<< ", RowID = " << rowId
 				<< ", err: " << exc.what();
@@ -788,7 +788,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 				}
 				catch (const std::runtime_error & exc)
 				{
-					qWarning() << __FUNCTION__ << ": Failed to load Comparison for filter for "
+					qWarning() << ": Failed to load Comparison for filter for "
 						<< " item " << a_Item.displayName()
 						<< ", RowID = " << rowId
 						<< ", err: " << exc.what();
@@ -800,7 +800,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 				}
 				catch (const std::runtime_error & exc)
 				{
-					qWarning() << __FUNCTION__ << ": Failed to load SongProperty for filter for "
+					qWarning() << ": Failed to load SongProperty for filter for "
 						<< " item " << a_Item.displayName()
 						<< ", RowID = " << rowId
 						<< ", err: " << exc.what();
@@ -830,7 +830,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 		{
 			if (hasSetRoot)
 			{
-				qWarning() << __FUNCTION__ << ": Multiple root filters detected.";
+				qWarning() << ": Multiple root filters detected.";
 				continue;
 			}
 			a_Item.setFilter(filter);
@@ -841,13 +841,13 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 			auto parentItr = filters.find(parentId);
 			if (parentItr == filters.end())
 			{
-				qWarning() << __FUNCTION__ << ": Invalid filter parent: " << parentId;
+				qWarning() << ": Invalid filter parent: " << parentId;
 				continue;
 			}
 			auto & parent = parentItr->second.second;
 			if (!parent->canHaveChildren())
 			{
-				qWarning() << __FUNCTION__ << ": Bad filter parent, cannot have child filters: " << parentId;
+				qWarning() << ": Bad filter parent, cannot have child filters: " << parentId;
 				continue;
 			}
 			parent->addChild(filter);
@@ -870,7 +870,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 		"VALUES (?, ?, ?, ?, ?, ?)"
 	))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot insert template item into the DB, template "
+		qWarning() << ": Cannot insert template item into the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
@@ -885,7 +885,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.addBindValue(a_Item.bgColor().name());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot insert template item in the DB, template "
+		qWarning() << ": Cannot insert template item in the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
@@ -898,7 +898,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	// Remove all filters assigned to this item:
 	if (!query.prepare("DELETE FROM TemplateFilters WHERE ItemID = ?"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot remove old template item filters from the DB, template "
+		qWarning() << ": Cannot remove old template item filters from the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", prep error: " << query.lastError();
@@ -908,7 +908,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.addBindValue(rowId);
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot remove old template item filters from the DB, template "
+		qWarning() << ": Cannot remove old template item filters from the DB, template "
 			<< a_Template.displayName()
 			<< ", item " << a_Item.displayName()
 			<< ", exec error: " << query.lastError();
@@ -939,7 +939,7 @@ void Database::saveTemplateFilters(
 			"VALUES (?, ?, ?, ?)"
 		))
 		{
-			qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
+			qWarning() << ": Cannot insert template item filter to the DB"
 				", prep error:" << query.lastError();
 			assert(!"DB error");
 			return;
@@ -956,7 +956,7 @@ void Database::saveTemplateFilters(
 			"VALUES (?, ?, ?, ?, ?, ?, ?)"
 		))
 		{
-			qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
+			qWarning() << ": Cannot insert template item filter to the DB"
 				", prep error:" << query.lastError();
 			assert(!"DB error");
 			return;
@@ -971,7 +971,7 @@ void Database::saveTemplateFilters(
 	}
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot insert template item filter to the DB"
+		qWarning() << ": Cannot insert template item filter to the DB"
 			", exec error:" << query.lastError();
 		assert(!"DB error");
 		return;
@@ -1012,7 +1012,7 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 	QSqlQuery query(m_Database);
 	if (!query.prepare("INSERT INTO PlaybackHistory (SongID, Timestamp) VALUES (?, ?)"))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -1020,7 +1020,7 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 	query.bindValue(1, now);
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		qWarning() << ": Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -1054,7 +1054,7 @@ void Database::saveSong(SongPtr a_Song)
 		"WHERE RowID = ?")
 	)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
@@ -1080,7 +1080,7 @@ void Database::saveSong(SongPtr a_Song)
 	query.addBindValue(a_Song->dbRowId());
 	if (!query.exec())
 	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		qWarning() << ": Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}

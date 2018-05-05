@@ -93,7 +93,7 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 	{
 		return;
 	}
-	qDebug() << __FUNCTION__ << ": Adding " << songs.size() << " song files";
+	qDebug() << ": Adding " << songs.size() << " song files";
 	m_DB.addSongFiles(songs);
 }
 
@@ -126,7 +126,7 @@ void DlgSongs::addFolder(const QString & a_Path)
 	{
 		return;
 	}
-	qDebug() << __FUNCTION__ << ": Adding " << songs.size() << " songs from folder " << a_Path;
+	qDebug() << ": Adding " << songs.size() << " songs from folder " << a_Path;
 	m_DB.addSongFiles(songs);
 }
 

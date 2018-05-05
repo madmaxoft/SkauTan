@@ -299,7 +299,7 @@ void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
 {
 	if (!m_Player.playlist().addFromTemplateItem(m_DB, *a_Item))
 	{
-		qDebug() << __FUNCTION__ << ": Failed to add a template item to playlist.";
+		qDebug() << ": Failed to add a template item to playlist.";
 		return;
 	}
 	m_Player.pause();

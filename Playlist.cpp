@@ -190,13 +190,13 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 			auto weight = getSongWeight(a_DB, *song);
 			songs.push_back(std::make_pair(song, weight));
 			totalWeight += weight;
-			// DEBUG: qDebug() << __FUNCTION__ << ": Candidate " << song->title().toString() << ": weight " << weight;
+			// DEBUG: qDebug() << ": Candidate " << song->title().toString() << ": weight " << weight;
 		}
 	}
 
 	if (songs.empty())
 	{
-		qDebug() << __FUNCTION__ << ": No song matches item " << a_Item.displayName();
+		qDebug() << ": No song matches item " << a_Item.displayName();
 		return false;
 	}
 
@@ -214,7 +214,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 	}
 	assert(chosen != nullptr);
 	addItem(std::make_shared<PlaylistItemSong>(chosen));
-	// DEBUG: qDebug() << __FUNCTION__ << ": Chosen " << chosen->title().toString();
+	// DEBUG: qDebug() << ": Chosen " << chosen->title().toString();
 	return true;
 }
 

@@ -37,7 +37,7 @@ void AudioFadeOut::fadeOut(int a_Msec)
 	m_FadeOutTotalSamples = format().channelCount() * a_Msec * format().sampleRate() / 1000;
 	m_FadeOutRemaining = m_FadeOutTotalSamples;
 	m_IsFadingOut = true;
-	qDebug() << __FUNCTION__ << ": Starting fadeout";
+	qDebug() << ": Starting fadeout";
 }
 
 
@@ -51,7 +51,7 @@ size_t AudioFadeOut::read(void * a_Dest, size_t a_MaxLen)
 	// If the Fade-out is completed, return end-of-stream:
 	if (m_IsFadingOut && (m_FadeOutRemaining <= 0))
 	{
-		qDebug() << __FUNCTION__ << ": Faded out completely, signaling end of stream.";
+		qDebug() << ": Faded out completely, signaling end of stream.";
 		abort();
 		return 0;
 	}
@@ -62,7 +62,7 @@ size_t AudioFadeOut::read(void * a_Dest, size_t a_MaxLen)
 	// If there's non-multiple of 4 at the end of the data, trim it off:
 	if ((numBytesRead & 0x03u) != 0)
 	{
-		qDebug() << __FUNCTION__ << ": Dropping non-aligned data at the end of the buffer";
+		qDebug() << ": Dropping non-aligned data at the end of the buffer";
 		numBytesRead = numBytesRead & ~0x03u;
 	}
 
@@ -90,12 +90,12 @@ void AudioFadeOut::applyFadeOut(void * a_Data, size_t a_NumBytes)
 	if (m_FadeOutRemaining <= 0)
 	{
 		// Reached the end of fadeout, just zero out all remaining data
-		qDebug() << __FUNCTION__ << ": Reached end of fadeout.";
+		qDebug() << ": Reached end of fadeout.";
 		memset(a_Data, 0, static_cast<size_t>(a_NumBytes));
 		abort();
 		return;
 	}
-	qDebug() << __FUNCTION__ << ": Fading out " << a_NumBytes << "bytes starting at " << 100 * m_FadeOutRemaining / m_FadeOutTotalSamples << "%";
+	qDebug() << ": Fading out " << a_NumBytes << "bytes starting at " << 100 * m_FadeOutRemaining / m_FadeOutTotalSamples << "%";
 	auto numSamples = a_NumBytes / 2;
 	auto samples = reinterpret_cast<int16_t *>(a_Data);
 	// Despite being technically incorrect, we can get away with processing the whole datastream as a single channel
@@ -106,7 +106,7 @@ void AudioFadeOut::applyFadeOut(void * a_Data, size_t a_NumBytes)
 		m_FadeOutRemaining -= 1;
 		if (m_FadeOutRemaining <= 0)
 		{
-			qDebug() << __FUNCTION__ << ": Reached end of fadeout, zeroing out the rest.";
+			qDebug() << ": Reached end of fadeout, zeroing out the rest.";
 			for (size_t s2 = s + 1; s2 < numSamples; ++s2)
 			{
 				samples[s2] = 0;
@@ -172,7 +172,7 @@ size_t AudioTempoChange::read(void * a_Dest, size_t a_MaxLen)
 		}
 		catch (const std::exception & exc)
 		{
-			qDebug() << __FUNCTION__ << ": Cannot reinitialize resampler: " << exc.what();
+			qDebug() << ": Cannot reinitialize resampler: " << exc.what();
 			return 0;
 		}
 	}

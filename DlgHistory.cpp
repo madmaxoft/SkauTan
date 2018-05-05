@@ -26,7 +26,7 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 	);
 	if (model->lastError().type() != QSqlError::NoError)
 	{
-		qWarning() << __FUNCTION__ << ": LastError: " << model->lastError();
+		qWarning() << ": LastError: " << model->lastError();
 	}
 	model->setHeaderData(0, Qt::Horizontal, tr("Last played"));
 	model->setHeaderData(1, Qt::Horizontal, tr("Genre"));

@@ -27,7 +27,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 			auto context = AVPP::Format::createContext(a_Song->fileName());
 			if (context == nullptr)
 			{
-				qWarning() << __FUNCTION__ << ": Cannot open song file for hash calculation: " << a_Song->fileName();
+				qWarning() << ": Cannot open song file for hash calculation: " << a_Song->fileName();
 				emit this->songHashFailed(a_Song);
 				return;
 			}
@@ -39,7 +39,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 				}
 			))
 			{
-				qWarning() << __FUNCTION__ << ": Cannot read song data for hash calculation: " << a_Song->fileName();
+				qWarning() << ": Cannot read song data for hash calculation: " << a_Song->fileName();
 				emit this->songHashFailed(a_Song);
 				return;
 			}

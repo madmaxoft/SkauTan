@@ -114,14 +114,14 @@ protected:
 		auto sm = dynamic_cast<SongModel *>(sourceModel());
 		if (sm == nullptr)
 		{
-			qWarning() << __FUNCTION__ << ": Expected a SongModel source";
+			qWarning() << ": Expected a SongModel source";
 			assert(!"Unexpected source model type");
 			return true;
 		}
 		auto song = sm->songFromRow(a_SourceRow);
 		if (song == nullptr)
 		{
-			qWarning() << __FUNCTION__ << ": Underlying model returned nullptr song for row " << a_SourceRow;
+			qWarning() << ": Underlying model returned nullptr song for row " << a_SourceRow;
 			assert(!"Unexpected nullptr song");
 			return false;
 		}

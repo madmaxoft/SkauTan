@@ -126,7 +126,7 @@ int FileIO::read(void * a_This, uint8_t * a_Dst, int a_Size)
 
 int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 {
-	qDebug() << __FUNCTION__ << ": Seek to offset " << a_Offset << " from " << a_Whence;
+	qDebug() << ": Seek to offset " << a_Offset << " from " << a_Whence;
 	auto This = reinterpret_cast<FileIO *>(a_This);
 	switch (a_Whence)
 	{
@@ -134,7 +134,7 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 		{
 			if (!This->m_File->seek(This->m_File->pos() + a_Offset))
 			{
-				qWarning() << __FUNCTION__ << ": Relative-Seek failed.";
+				qWarning() << ": Relative-Seek failed.";
 				return -1;
 			}
 			return This->m_File->pos();
@@ -143,7 +143,7 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 		{
 			if (!This->m_File->seek(a_Offset))
 			{
-				qWarning() << __FUNCTION__ << ": Absolute-Seek failed.";
+				qWarning() << ": Absolute-Seek failed.";
 				return -1;
 			}
 			return a_Offset;
@@ -152,13 +152,13 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 		{
 			if (!This->m_File->seek(This->m_File->size() - a_Offset))
 			{
-				qWarning() << __FUNCTION__ << ": End-Seek failed.";
+				qWarning() << ": End-Seek failed.";
 				return -1;
 			}
 			return This->m_File->pos();
 		}
 	}
-	qWarning() << __FUNCTION__ << ": Unexpected seek operation: " << a_Whence << ", offset " << a_Offset;
+	qWarning() << ": Unexpected seek operation: " << a_Whence << ", offset " << a_Offset;
 	return -1;
 }
 
@@ -201,10 +201,10 @@ bool CodecContext::open(AVCodec * a_Codec)
 	auto ret = avcodec_open2(m_Context, a_Codec, nullptr);
 	if (ret < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot open codec: " << ret;
+		qWarning() << ": Cannot open codec: " << ret;
 		return false;
 	}
-	qDebug() << __FUNCTION__ << ": Codec opened.";
+	qDebug() << ": Codec opened.";
 	return true;
 }
 
@@ -232,7 +232,7 @@ AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType a_
 		case QAudioFormat::Float:     return AV_SAMPLE_FMT_FLT;
 		default:
 		{
-			qWarning() << __FUNCTION__ << ": Unhandled sample type: " << a_SampleType;
+			qWarning() << ": Unhandled sample type: " << a_SampleType;
 			throw std::runtime_error("Unhandled sample type");;
 		}
 	}
@@ -253,7 +253,7 @@ uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
 		case 6: return AV_CH_LAYOUT_5POINT1;
 		default:
 		{
-			qWarning() << __FUNCTION__ << ": Unhandled ChannelCount:" << a_ChannelCount;
+			qWarning() << ": Unhandled ChannelCount:" << a_ChannelCount;
 			throw std::runtime_error("Unhandled ChannelCount");
 		}
 	}
@@ -360,7 +360,7 @@ bool Resampler::init(
 	}
 	catch (const std::exception & exc)
 	{
-		qDebug() << __FUNCTION__ << ": Cannot initialize SWR: " << exc.what();
+		qDebug() << ": Cannot initialize SWR: " << exc.what();
 		return false;
 	}
 }
@@ -391,13 +391,13 @@ bool Resampler::init(
 	);
 	if (m_Context == nullptr)
 	{
-		qWarning() << __FUNCTION__ << ": Failed to create SWResampler context.";
+		qWarning() << ": Failed to create SWResampler context.";
 		return false;
 	}
 	auto err = swr_init(m_Context);
 	if (err != 0)
 	{
-		qWarning() << __FUNCTION__ << ": Failed to initialize SWResampler context: " << err;
+		qWarning() << ": Failed to initialize SWResampler context: " << err;
 		return false;
 	}
 
@@ -409,7 +409,7 @@ bool Resampler::init(
 	);
 	if (err < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Could not allocate conversion buffer structure: " << err;
+		qWarning() << ": Could not allocate conversion buffer structure: " << err;
 		return false;
 	}
 
@@ -428,12 +428,12 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 	int outLen = swr_get_out_samples(m_Context, a_Len);
 	if (outLen < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot query conversion buffer size: " << outLen;
+		qWarning() << ": Cannot query conversion buffer size: " << outLen;
 		outLen = 64 * 1024;  // Take a wild guess
 	}
 	if (outLen > m_BufferMaxNumSamples)
 	{
-		qDebug() << __FUNCTION__ << ": Reallocating output sample buffer to " << outLen << " samples.";
+		qDebug() << ": Reallocating output sample buffer to " << outLen << " samples.";
 		m_BufferMaxNumSamples = outLen;
 		av_freep(&m_Buffer[0]);
 		auto err = av_samples_alloc(
@@ -442,14 +442,14 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 		);
 		if (err < 0)
 		{
-			qWarning() << __FUNCTION__ << ": Failed to realloc sample buffer: " << err;
+			qWarning() << ": Failed to realloc sample buffer: " << err;
 			return std::make_pair(nullptr, 0);
 		}
 	}
 	auto numOutputSamples = swr_convert(m_Context, m_Buffer, m_BufferMaxNumSamples, a_Buffers, a_Len);
 	if (numOutputSamples < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Sample conversion failed: " << numOutputSamples;
+		qWarning() << ": Sample conversion failed: " << numOutputSamples;
 		return std::make_pair(nullptr, 0);
 	}
 
@@ -472,7 +472,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	auto io = FileIO::createContext(a_FileName);
 	if (io == nullptr)
 	{
-		qWarning() << __FUNCTION__ << ": IO creation failed.";
+		qWarning() << ": IO creation failed.";
 		return nullptr;
 	}
 
@@ -480,7 +480,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	auto res = std::unique_ptr<Format>(new Format(io));
 	if ((res == nullptr) || (res->m_Context == nullptr))
 	{
-		qWarning() << __FUNCTION__ << ": Creation failed";
+		qWarning() << ": Creation failed";
 		return nullptr;
 	}
 
@@ -490,7 +490,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	{
 		// User-supplied AVFormatContext is freed upon failure, need to un-bind:
 		res->m_Context = nullptr;
-		qWarning() << __FUNCTION__ << ": Opening failed: " << ret;
+		qWarning() << ": Opening failed: " << ret;
 		return nullptr;
 	}
 
@@ -498,10 +498,10 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	ret = avformat_find_stream_info(res->m_Context, nullptr);
 	if (ret < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Cannot find stream info: " << ret;
+		qWarning() << ": Cannot find stream info: " << ret;
 	}
 
-	qDebug() << __FUNCTION__ << ": Format context initialized.";
+	qDebug() << ": Format context initialized.";
 	return res;
 }
 
@@ -553,7 +553,7 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 	m_AudioStreamIdx = av_find_best_stream(m_Context, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
 	if (m_AudioStreamIdx < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Failed to find an audio stream in the file: " << m_AudioStreamIdx;
+		qWarning() << ": Failed to find an audio stream in the file: " << m_AudioStreamIdx;
 		m_AudioStreamIdx = -1;
 		return false;
 	}
@@ -562,7 +562,7 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 	m_AudioDecoderContext = CodecContext::create(audioDecoder);
 	if (m_AudioDecoderContext == nullptr)
 	{
-		qWarning() << __FUNCTION__ << ": Failed to allocate decoder context.";
+		qWarning() << ": Failed to allocate decoder context.";
 		return false;
 	}
 	avcodec_parameters_to_context(m_AudioDecoderContext->m_Context, m_Context->streams[m_AudioStreamIdx]->codecpar);
@@ -571,12 +571,12 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 	// Open the audio decoder:
 	if (!m_AudioDecoderContext->open(audioDecoder))
 	{
-		qWarning() << __FUNCTION__ << ": Cannot open decoder context.";
+		qWarning() << ": Cannot open decoder context.";
 		m_AudioDecoderContext.reset();
 		return false;
 	}
 	m_AudioOutput = a_PlaybackBuffer;
-	qDebug() << __FUNCTION__ << ": Audio routing established, stream index is " << m_AudioStreamIdx;
+	qDebug() << ": Audio routing established, stream index is " << m_AudioStreamIdx;
 	return true;
 }
 
@@ -593,7 +593,7 @@ bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, i
 	m_AudioStreamIdx = av_find_best_stream(m_Context, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
 	if (m_AudioStreamIdx < 0)
 	{
-		qWarning() << __FUNCTION__ << ": Failed to find an audio stream in the file: " << m_AudioStreamIdx;
+		qWarning() << ": Failed to find an audio stream in the file: " << m_AudioStreamIdx;
 		m_AudioStreamIdx = -1;
 		return false;
 	}
@@ -616,12 +616,12 @@ bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, i
 			}
 			else
 			{
-				qDebug() << __FUNCTION__ << ": Negative packet size.";
+				qDebug() << ": Negative packet size.";
 			}
 		}
 		av_packet_unref(&packet);
 	}
-	qDebug() << __FUNCTION__ << ": Feeding done.";
+	qDebug() << ": Feeding done.";
 	return true;
 }
 
@@ -634,7 +634,7 @@ void Format::decode()
 	assert(m_AudioOutput != nullptr);
 	assert(m_AudioDecoderContext != nullptr);
 
-	qDebug() << __FUNCTION__ << ": Decoding...";
+	qDebug() << ": Decoding...";
 
 	AVPacket packet;
 	AVFrame * frame = av_frame_alloc();
@@ -650,7 +650,7 @@ void Format::decode()
 		auto ret = av_read_frame(m_Context, &packet);
 		if (ret < 0)
 		{
-			qWarning() << __FUNCTION__ << ": Failed to read frame: " << ret;
+			qWarning() << ": Failed to read frame: " << ret;
 			return;
 		}
 
@@ -659,7 +659,7 @@ void Format::decode()
 			ret = avcodec_send_packet(m_AudioDecoderContext->m_Context, &packet);
 			if (ret < 0)
 			{
-				qWarning() << __FUNCTION__ << ": Error while sending a packet to the decoder: " << ret;
+				qWarning() << ": Error while sending a packet to the decoder: " << ret;
 				return;
 			}
 
@@ -673,7 +673,7 @@ void Format::decode()
 				}
 				else if (ret < 0)
 				{
-					qWarning() << __FUNCTION__ << ": Error while receiving a frame from the decoder: " << ret;
+					qWarning() << ": Error while receiving a frame from the decoder: " << ret;
 					return;
 				}
 				outputAudioData(frame);
@@ -681,7 +681,7 @@ void Format::decode()
 		}
 		av_packet_unref(&packet);
 	}
-	qDebug() << __FUNCTION__ << ": Decoding done.";
+	qDebug() << ": Decoding done.";
 }
 
 
@@ -702,7 +702,7 @@ void Format::outputAudioData(AVFrame * a_Frame)
 {
 	if (m_Resampler == nullptr)
 	{
-		qDebug() << __FUNCTION__ << ": Creating audio resampler...";
+		qDebug() << ": Creating audio resampler...";
 		m_Resampler.reset(Resampler::create(
 			a_Frame->channel_layout,
 			a_Frame->sample_rate,
@@ -711,7 +711,7 @@ void Format::outputAudioData(AVFrame * a_Frame)
 		));
 		if (m_Resampler == nullptr)
 		{
-			qWarning() << __FUNCTION__ << ": Cannot create audio resampler.";
+			qWarning() << ": Cannot create audio resampler.";
 			m_ShouldTerminate = true;
 			return;
 		}

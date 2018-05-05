@@ -19,9 +19,9 @@ PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_OutputFormat):
 
 void PlaybackBuffer::abort()
 {
-	qDebug() << __FUNCTION__ << ": Aborting playback buffer processing.";
+	qDebug() << ": Aborting playback buffer processing.";
 	m_RingBuffer.abort();
-	qDebug() << __FUNCTION__ << ": Playback buffer abort signalled.";
+	qDebug() << ": Playback buffer abort signalled.";
 }
 
 
@@ -33,7 +33,7 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 	auto numBytesWritten = m_RingBuffer.writeData(reinterpret_cast<const char *>(a_Data), a_Len);
 	if (numBytesWritten != a_Len)
 	{
-		qDebug() << __FUNCTION__ << ": Aborted.";
+		qDebug() << ": Aborted.";
 		return false;
 	}
 	return true;
@@ -78,7 +78,7 @@ size_t PlaybackBuffer::read(void * a_Data, size_t a_MaxLen)
 	// If there's non-multiple of 4 at the end of the data, trim it off:
 	if ((numBytesRead & 0x03u) != 0)
 	{
-		qDebug() << __FUNCTION__ << ": Dropping non-aligned data at the end of the buffer";
+		qDebug() << ": Dropping non-aligned data at the end of the buffer";
 		numBytesRead = numBytesRead & ~0x03u;
 	}
 
