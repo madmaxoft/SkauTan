@@ -63,7 +63,46 @@ void BackgroundTasks::addTask(TaskPtr a_Task)
 {
 	QMutexLocker lock(&m_Mtx);
 	m_Tasks.push_back(std::move(a_Task));
-	m_WaitForTasks.notify_one();
+	m_WaitForTasks.wakeOne();
+}
+
+
+
+
+
+void BackgroundTasks::enqueue(std::function<void ()> a_Task, std::function<void ()> a_OnAbort)
+{
+	/** Adapter between a Task class and two functions. */
+	class FunctionTask: public BackgroundTasks::Task
+	{
+		using Super = BackgroundTasks::Task;
+
+	public:
+
+		FunctionTask(std::function<void ()> a_FnTask, std::function<void ()> a_FnOnAbort):
+			m_Task(a_FnTask),
+			m_OnAbort(a_FnOnAbort)
+		{
+		}
+
+		virtual void execute() override
+		{
+			m_Task();
+		}
+
+		virtual void abort() override
+		{
+			m_OnAbort();
+			Super::abort();
+		}
+
+	protected:
+		std::function<void ()> m_Task;
+		std::function<void ()> m_OnAbort;
+	};
+
+	// Enqueue the task adapter:
+	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_Task, a_OnAbort));
 }
 
 
