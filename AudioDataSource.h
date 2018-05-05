@@ -167,9 +167,20 @@ public:
 	virtual qint64 readData(char * a_Data, qint64 a_MaxLen) override
 	{
 		assert(a_MaxLen >= 0);
+
+		// Skip zero-length reads:
+		if (a_MaxLen <= 0)
+		{
+			return 0;
+		}
+
 		auto res = static_cast<qint64>(AudioDataSourceChain::read(a_Data, static_cast<size_t>(a_MaxLen)));
 		#ifdef _DEBUG
-			qDebug() << __FUNCTION__ << " @ " << TimeSinceStart::msecElapsed() << ": Requested " << a_MaxLen << " bytes, got " << res << " bytes.";
+			static auto lastMsec = TimeSinceStart::msecElapsed();
+			auto msecNow = TimeSinceStart::msecElapsed();
+			qDebug() << __FUNCTION__ << ": Requested " << a_MaxLen << " bytes, got " << res << " bytes; since last: "
+				<< msecNow - lastMsec << " msec";
+			lastMsec = msecNow;
 		#endif  // _DEBUG
 		return res;
 	}
