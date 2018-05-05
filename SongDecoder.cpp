@@ -66,4 +66,5 @@ void SongDecoder::decodeInternal()
 	m_FmtCtx->routeAudioTo(this);
 	m_FmtCtx->decode();
 	qDebug() << "Decoding has finished file " << m_Song->fileName();
+	decodedEOF();
 }

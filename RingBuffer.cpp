@@ -12,7 +12,8 @@ RingBuffer::RingBuffer(size_t a_Size):
 	m_BufferSize(a_Size),
 	m_CurrentReadPos(0),
 	m_CurrentWritePos(0),
-	m_ShouldAbort(false)
+	m_ShouldAbort(false),
+	m_IsEOF(false)
 {
 }
 
@@ -38,16 +39,19 @@ size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 	while (numBytesToRead > 0)
 	{
 		// Wait until there's some data in the buffer:
-		size_t numEmptyCycles = 0;
 		while (lockedAvailRead() == 0)
 		{
+			if (m_IsEOF.load())
+			{
+				qDebug() << ": Reached EOF while reading.";
+				return numBytesRead;
+			}
 			m_CVHasData.wait(&m_Mtx);
 			if (m_ShouldAbort.load())
 			{
 				qDebug() << ": Read aborted, returning " << numBytesRead << " bytes";
 				return numBytesRead;
 			}
-			numEmptyCycles += 1;
 		}
 
 		// Read as much data as possible:
@@ -105,6 +109,16 @@ size_t RingBuffer::writeData(const char * a_Data, size_t a_Len)
 		m_CVHasData.wakeAll();
 	}
 	return numWritten;
+}
+
+
+
+
+
+void RingBuffer::writeEOF()
+{
+	m_IsEOF = true;
+	m_CVHasData.wakeAll();
 }
 
 

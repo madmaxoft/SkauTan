@@ -43,6 +43,15 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 
 
 
+void PlaybackBuffer::decodedEOF()
+{
+	m_RingBuffer.writeEOF();
+}
+
+
+
+
+
 double PlaybackBuffer::currentSongPosition() const
 {
 	return static_cast<double>(m_CurrentSongPosition) / m_OutputFormat.sampleRate();
