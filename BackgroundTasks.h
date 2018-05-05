@@ -9,6 +9,8 @@
 #include <memory>
 #include <vector>
 #include <list>
+#include <atomic>
+#include <functional>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QThread>
@@ -20,7 +22,8 @@
 /** Provides the back-end for processing things in the background.
 To add a background task, create a new subclass of BackgroundTasks::Task, implements its execute() method
 and add an instance of it through addTask(). The BackgroundTasks instance will take care of scheduling
-the task when ready. */
+the task when ready.
+Alternatively, use the BackgroundTasks::enqueue() function to put a function into the queue. */
 class BackgroundTasks
 {
 public:
@@ -59,6 +62,10 @@ public:
 	/** Adds the specified task to the internal list of tasks to run.
 	The task is then run when an executor becomes free. */
 	void addTask(TaskPtr a_Task);
+
+	/** Adds a new task to the queue that executes the specified function.
+	a_OnAbort is called if the task is to be aborted (even before it starts). */
+	static void enqueue(std::function<void()> a_Task, std::function<void()> a_OnAbort = [](){});
 
 
 protected:
