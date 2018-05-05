@@ -17,6 +17,7 @@
 // fwd:
 class Song;
 class Database;
+class MetadataScanner;
 namespace Ui
 {
 	class DlgSongs;
@@ -41,6 +42,7 @@ public:
 	If a_ShowManipulators is true, the buttons for adding songs / adding to playlist are shown. */
 	explicit DlgSongs(
 		Database & a_DB,
+		MetadataScanner & a_Scanner,
 		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 		bool a_ShowManipulators,
 		QWidget * a_Parent
@@ -61,6 +63,9 @@ private:
 
 	/** The Song DB that is being displayed and manipulated. */
 	Database & m_DB;
+
+	/** The scanner that can be used to manually update the metadata. */
+	MetadataScanner & m_MetadataScanner;
 
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;
@@ -91,7 +96,7 @@ private slots:
 	void rescanMetadata();
 
 	/** Emitted by the model after the user edits a song. */
-	void modelSongEdited(Song * a_Song);
+	void modelSongEdited(SongPtr a_Song);
 
 signals:
 

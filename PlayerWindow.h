@@ -19,6 +19,7 @@ class QTimer;
 class Player;
 class Song;
 class Database;
+class MetadataScanner;
 namespace Ui
 {
 	class PlayerWindow;
@@ -38,7 +39,9 @@ class PlayerWindow:
 
 
 public:
-	explicit PlayerWindow(QWidget * a_Parent = nullptr);
+
+	explicit PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player & a_Player);
+
 	~PlayerWindow();
 
 
@@ -46,19 +49,20 @@ private:
 
 	std::unique_ptr<Ui::PlayerWindow> m_UI;
 
-	std::unique_ptr<Database> m_DB;
+	/** The DB of all the songs and templates. */
+	Database & m_DB;
 
-	/** The current playlist. */
-	std::shared_ptr<Playlist> m_Playlist;
+	/** The scanner for ID3 and other metadata. */
+	MetadataScanner & m_MetadataScanner;
+
+	/** The player that sends the audio data to the output and manages the playlist. */
+	Player & m_Player;
 
 	/** The model used to display the playlist. */
 	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
 
 	/** The shortcut for deleting playlist items using the Del key. */
 	std::unique_ptr<QShortcut> m_scDel;
-
-	/** The player that sends the audio data to the output. */
-	std::unique_ptr<Player> m_Player;
 
 	/** The timer that periodically updates the UI. */
 	std::unique_ptr<QTimer> m_UpdateUITimer;
@@ -111,9 +115,6 @@ private slots:
 
 	/** Emitted by the global volume control slider; updates the player volume. */
 	void volumeSliderMoved(int a_NewValue);
-
-	/** Emitted by m_Player before it starts playing the specified item. */
-	void startingItemPlayback(IPlaylistItem * a_Item);
 
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();

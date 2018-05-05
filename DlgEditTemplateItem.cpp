@@ -295,9 +295,15 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // DlgEditTemplateItem:
 
-DlgEditTemplateItem::DlgEditTemplateItem(Database & a_DB, Template::Item & a_Item, QWidget * a_Parent):
+DlgEditTemplateItem::DlgEditTemplateItem(
+	Database & a_DB,
+	MetadataScanner & a_Scanner,
+	Template::Item & a_Item,
+	QWidget * a_Parent
+):
 	Super(a_Parent),
 	m_DB(a_DB),
+	m_MetadataScanner(a_Scanner),
 	m_Item(a_Item),
 	m_UI(new Ui::DlgEditTemplateItem)
 {
@@ -623,7 +629,7 @@ void DlgEditTemplateItem::removeFilter()
 
 void DlgEditTemplateItem::previewFilter()
 {
-	DlgSongs dlg(m_DB, std::make_unique<FilterModel>(m_Item.filter()), false, this);
+	DlgSongs dlg(m_DB, m_MetadataScanner, std::make_unique<FilterModel>(m_Item.filter()), false, this);
 	dlg.exec();
 }
 

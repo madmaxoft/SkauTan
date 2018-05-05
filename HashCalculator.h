@@ -12,25 +12,37 @@
 
 
 /** Calculates the hash of a song file.
-The hash used is a SHA1 checksum of the entire file, except for its starting 128 KiB and ending 128 bytes, which are
-assumed to comprise the ID3 tags (which can change without affecting the song). */
-class HashCalculator
+The hash used is a SHA1 checksum of the raw audio data in the file's audio track. This is considered immune
+against changes in the ID3 tag.
+The actual hashing takes place in a background task. */
+class HashCalculator:
+	public QObject
 {
+	using Super = QObject;
+
+	Q_OBJECT
+
+
 public:
 
-	/** Calculates the hash for the specified song and updates the song object directly. */
-	static void calc(Song & a_Song);
-
-protected:
-
-	Song & m_Song;
+	HashCalculator();
 
 
-	/** Creates a new instance that is bound to the specified song. */
-	HashCalculator(Song & a_Song);
+public slots:
 
-	/** Calculates the hash and updates m_Song directly. */
-	void calc();
+	/** Queues the specified song for hashing in a background task.
+	After the hash has been calculated, either songHashCalculated() or songHashFailed() is emitted. */
+	void queueHashSong(SongPtr a_Song);
+
+
+signals:
+
+	/** Emitted after successfully hashing the song.
+	The song's hash is already stored in a_Song before emitting this signal. */
+	void songHashCalculated(SongPtr a_Song);
+
+	/** Emitted after encountering a problem while hashing a song. */
+	void songHashFailed(SongPtr a_Song);
 };
 
 #endif // HASHCALCULATOR_H

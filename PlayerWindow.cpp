@@ -17,19 +17,17 @@
 
 
 
-PlayerWindow::PlayerWindow(QWidget * a_Parent):
-	Super(a_Parent),
+PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player & a_Player):
+	Super(nullptr),
 	m_UI(new Ui::PlayerWindow),
-	m_DB(new Database),
-	m_Playlist(new Playlist),
+	m_DB(a_DB),
+	m_MetadataScanner(a_Scanner),
+	m_Player(a_Player),
 	m_UpdateUITimer(new QTimer),
 	m_IsInternalPositionUpdate(false)
 {
-	assert(m_Playlist != nullptr);
-	m_PlaylistModel.reset(new PlaylistItemModel(m_Playlist));
-	m_Player.reset(new Player(m_Playlist));
+	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
-	m_DB->open("SkauTan.sqlite");
 	m_UI->setupUi(this);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
@@ -55,8 +53,7 @@ PlayerWindow::PlayerWindow(QWidget * a_Parent):
 	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
 	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
 	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
-	connect(m_Player.get(),           &Player::startingPlayback,  this, &PlayerWindow::startingItemPlayback);
-	connect(m_Player.get(),           &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
+	connect(&m_Player,                &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
 	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
 	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
 	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
@@ -97,9 +94,9 @@ PlayerWindow::~PlayerWindow()
 
 void PlayerWindow::showQuickPlayer()
 {
-	DlgQuickPlayer dlg(*m_DB, *m_Playlist, *m_Player);
-	connect(&dlg, &DlgQuickPlayer::addAndPlayItem, this,           &PlayerWindow::addAndPlayTemplateItem);
-	connect(&dlg, &DlgQuickPlayer::pause,          m_Player.get(), &Player::pause);
+	DlgQuickPlayer dlg(m_DB, m_Player);
+	connect(&dlg, &DlgQuickPlayer::addAndPlayItem, this,      &PlayerWindow::addAndPlayTemplateItem);
+	connect(&dlg, &DlgQuickPlayer::pause,          &m_Player, &Player::pause);
 	dlg.exec();
 }
 
@@ -111,7 +108,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(*m_DB, nullptr, true, this);
+	DlgSongs dlg(m_DB, m_MetadataScanner, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
 	dlg.exec();
 }
@@ -124,7 +121,7 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgTemplatesList dlg(*m_DB, this);
+	DlgTemplatesList dlg(m_DB, m_MetadataScanner, this);
 	dlg.exec();
 }
 
@@ -136,7 +133,7 @@ void PlayerWindow::showHistory(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgHistory dlg(*m_DB, this);
+	DlgHistory dlg(m_DB, this);
 	dlg.exec();
 }
 
@@ -155,7 +152,7 @@ void PlayerWindow::addSong(std::shared_ptr<Song> a_Song)
 
 void PlayerWindow::addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item)
 {
-	m_Playlist->addItem(a_Item);
+	m_Player.playlist().addItem(a_Item);
 }
 
 
@@ -174,7 +171,7 @@ void PlayerWindow::deleteSelectedPlaylistItems()
 	int numErased = 0;
 	for (auto row: rows)
 	{
-		m_Playlist->deleteItem(row - numErased);
+		m_Player.playlist().deleteItem(row - numErased);
 		numErased += 1;  // Each erased row shifts indices upwards by one
 	}
 }
@@ -186,7 +183,7 @@ void PlayerWindow::prevTrack(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player->prevTrack();
+	m_Player.prevTrack();
 }
 
 
@@ -197,7 +194,7 @@ void PlayerWindow::playPause(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player->startPause();
+	m_Player.startPause();
 }
 
 
@@ -208,7 +205,7 @@ void PlayerWindow::nextTrack(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player->nextTrack();
+	m_Player.nextTrack();
 }
 
 
@@ -219,7 +216,7 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
 {
 	if (a_Track.isValid())
 	{
-		m_Player->jumpTo(a_Track.row());
+		m_Player.jumpTo(a_Track.row());
 	}
 }
 
@@ -229,21 +226,7 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
 
 void PlayerWindow::volumeSliderMoved(int a_NewValue)
 {
-	m_Player->setVolume(static_cast<double>(a_NewValue) / 100);
-}
-
-
-
-
-
-void PlayerWindow::startingItemPlayback(IPlaylistItem * a_Item)
-{
-	// Update the "last played" value in the DB:
-	auto spi = dynamic_cast<PlaylistItemSong *>(a_Item);
-	if (spi != nullptr)
-	{
-		m_DB->songPlaybackStarted(spi->song().get());
-	}
+	m_Player.setVolume(static_cast<double>(a_NewValue) / 100);
 }
 
 
@@ -252,7 +235,7 @@ void PlayerWindow::startingItemPlayback(IPlaylistItem * a_Item)
 
 void PlayerWindow::addFromTemplate()
 {
-	DlgPickTemplate dlg(*m_DB, this);
+	DlgPickTemplate dlg(m_DB, this);
 	if (dlg.exec() != QDialog::Accepted)
 	{
 		return;
@@ -262,7 +245,7 @@ void PlayerWindow::addFromTemplate()
 	{
 		return;
 	}
-	m_Playlist->addFromTemplate(*m_DB, *tmpl);
+	m_Player.playlist().addFromTemplate(m_DB, *tmpl);
 }
 
 
@@ -271,7 +254,7 @@ void PlayerWindow::addFromTemplate()
 
 void PlayerWindow::updatePositionRange()
 {
-	auto length = static_cast<int>(m_Playlist->currentItem()->displayLength() + 0.5);
+	auto length = static_cast<int>(m_Player.playlist().currentItem()->displayLength() + 0.5);
 	m_UI->hsPosition->setMaximum(length);
 	updateTimePos();
 }
@@ -283,8 +266,8 @@ void PlayerWindow::updatePositionRange()
 
 void PlayerWindow::updateTimePos()
 {
-	auto position  = static_cast<int>(m_Player->currentPosition() + 0.5);
-	auto curItem = m_Playlist->currentItem();
+	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
+	auto curItem = m_Player.playlist().currentItem();
 	auto length = (curItem == nullptr) ? 0 : static_cast<int>(curItem->displayLength() + 0.5);
 	auto remaining = length - position;
 	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));
@@ -305,7 +288,7 @@ void PlayerWindow::setTimePos(int a_NewValue)
 		// This is an update from the player,not from the user. Bail out
 		return;
 	}
-	m_Player->seekTo(a_NewValue);
+	m_Player.seekTo(a_NewValue);
 }
 
 
@@ -314,14 +297,14 @@ void PlayerWindow::setTimePos(int a_NewValue)
 
 void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
 {
-	if (!m_Playlist->addFromTemplateItem(*m_DB, *a_Item))
+	if (!m_Player.playlist().addFromTemplateItem(m_DB, *a_Item))
 	{
 		qDebug() << __FUNCTION__ << ": Failed to add a template item to playlist.";
 		return;
 	}
-	m_Player->pause();
-	m_Playlist->setCurrentItem(static_cast<int>(m_Playlist->items().size() - 1));
-	m_Player->start();
+	m_Player.pause();
+	m_Player.playlist().setCurrentItem(static_cast<int>(m_Player.playlist().items().size() - 1));
+	m_Player.start();
 }
 
 
@@ -339,7 +322,7 @@ void PlayerWindow::tempoValueChanged(int a_NewValue)
 	{
 		m_UI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
 	}
-	m_Player->setTempo(static_cast<double>(percent + 100) / 100);
+	m_Player.setTempo(static_cast<double>(percent + 100) / 100);
 }
 
 

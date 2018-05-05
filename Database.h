@@ -11,7 +11,6 @@
 #include <QSqlDatabase>
 #include "Song.h"
 #include "Playlist.h"
-#include "MetadataScanner.h"
 #include "Template.h"
 
 
@@ -57,10 +56,6 @@ public:
 
 	QSqlDatabase & database() { return m_Database; }
 
-	/** Saves the specified song into the DB.
-	Assumes (doesn't check) that the song is contained within this DB. */
-	void saveSong(const Song & a_Song);
-
 	/** Returns all templates stored in the DB. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
 
@@ -86,8 +81,6 @@ public:
 	/** Returns all template items from all templates that have been marked as "favorite". */
 	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
 
-	MetadataScanner & metadataScanner() { return m_MetadataScanner; }
-
 
 protected:
 
@@ -99,9 +92,6 @@ protected:
 
 	/** All the known songs. */
 	std::vector<SongPtr> m_Songs;
-
-	/** The worker thread that scans the songs' metadata in the background. */
-	MetadataScanner m_MetadataScanner;
 
 	/** All the templates that can be used for filling the playlist. */
 	std::vector<TemplatePtr> m_Templates;
@@ -150,26 +140,42 @@ signals:
 
 	/** Emitted after a new song file is added to the list of songs (addSongFile, addSongFiles).
 	NOT emitted when loading songs from the DB! */
-	void songFileAdded(Song * a_Song);
+	void songFileAdded(SongPtr a_Song);
 
 	/** Emitted just before a song is removed from the DB. */
-	void songRemoving(const Song * a_Song, size_t a_Index);
+	void songRemoving(SongPtr a_Song, size_t a_Index);
 
 	/** Emitted after a song is removed from the DB. */
-	void songRemoved(const Song * a_Song, size_t a_Index);
+	void songRemoved(SongPtr a_Song, size_t a_Index);
 
+	/** Emitted when a song is loaded that has no hash assigned to it. */
+	void needSongHash(SongPtr a_Song);
 
-protected slots:
+	/** Emitted when encountering a song with hash but without metadata in the DB.
+	This can happen either at DB load time (open()), or when adding new songs (songHashCalculated()). */
+	void needSongMetadata(SongPtr a_Song);
 
-	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
-	Writes the whole updated song to the DB. */
-	void songScanned(Song * a_Song);
+	/** Emitted after a song was saved, presumably because its data had changed.
+	Used by clients to update the song properties in the UI. */
+	void songSaved(SongPtr a_Song);
 
 
 public slots:
 
 	/** Indicates that the song has started playing and the DB should store that info. */
-	void songPlaybackStarted(Song * a_Song);
+	void songPlaybackStarted(SongPtr a_Song);
+
+	/** To be called when the song hash has been calculated and stored in a_Song.
+	The DB prepares a row for the song hash in the metadata table, or assigns an existing row to this song. */
+	void songHashCalculated(SongPtr a_Song);
+
+	/** Saves (updates) the specified song into the DB.
+	Assumes (doesn't check) that the song is contained within this DB. */
+	void saveSong(SongPtr a_Song);
+
+	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
+	Writes the whole updated song to the DB. */
+	void songScanned(SongPtr a_Song);
 };
 
 

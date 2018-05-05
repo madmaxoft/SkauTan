@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include "Database.h"
+#include "MetadataScanner.h"
 
 
 
@@ -71,8 +72,9 @@ static QString formatRating(const Song & a_Song)
 SongModel::SongModel(Database & a_DB):
 	m_DB(a_DB)
 {
-	connect(&m_DB,                   &Database::songFileAdded,      this, &SongModel::addSongFile);
-	connect(&m_DB.metadataScanner(), &MetadataScanner::songScanned, this, &SongModel::songMetadataScanned);
+	connect(&m_DB, &Database::songFileAdded, this, &SongModel::addSongFile);
+	connect(&m_DB, &Database::songSaved,     this, &SongModel::songChanged);
+	// TODO: Deleting songs from the DB should remove them from the model
 }
 
 
@@ -285,7 +287,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 		case colManualGenre: song->setGenre(a_Value.toString()); break;
 		case colManualMeasuresPerMinute: song->setMeasuresPerMinute(a_Value.toDouble()); break;
 	}
-	emit songEdited(song.get());
+	emit songEdited(song);
 	emit dataChanged(a_Index, a_Index, {a_Role});
 	return true;
 }
@@ -294,7 +296,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 
 
 
-void SongModel::addSongFile(Song * a_NewSong)
+void SongModel::addSongFile(SongPtr a_NewSong)
 {
 	Q_UNUSED(a_NewSong);
 
@@ -320,9 +322,9 @@ void SongModel::delSong(const Song * a_Song, size_t a_Index)
 
 
 
-void SongModel::songMetadataScanned(Song * a_Song)
+void SongModel::songChanged(SongPtr a_Song)
 {
-	auto idx = indexFromSong(a_Song);
+	auto idx = indexFromSong(a_Song.get());
 	if (!idx.isValid())
 	{
 		return;

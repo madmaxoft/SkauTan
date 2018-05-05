@@ -32,9 +32,12 @@ class Player:
 
 public:
 
-	explicit Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent = nullptr);
+	explicit Player(QObject * a_Parent = nullptr);
 
 	~Player();
+
+	/** Returns the playlist that this player follows. */
+	Playlist & playlist() { return *m_Playlist; }
 
 	/** Returns the current playback position in the current track, in seconds.
 	Returns 0 if not playing back anything. */

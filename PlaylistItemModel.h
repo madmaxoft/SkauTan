@@ -30,12 +30,12 @@ public:
 		colMax,
 	};
 
-	PlaylistItemModel(PlaylistPtr a_Playlist);
+	PlaylistItemModel(Playlist & a_Playlist);
 
 protected:
 
 	/** The playlist on which the model is based. */
-	PlaylistPtr m_Playlist;
+	Playlist & m_Playlist;
 
 
 	// QAbstractTableModel overrides:
