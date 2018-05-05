@@ -66,7 +66,6 @@ static Song::Tag tagFromFields(const QSqlRecord & a_Record, const std::array<int
 
 Database::Database()
 {
-	connect(&m_MetadataScanner, &MetadataScanner::songScanned, this, &Database::songScanned);
 }
 
 
@@ -86,7 +85,6 @@ void Database::open(const QString & a_DBFileName)
 	}
 	fixupTables();
 	loadSongs();
-	m_MetadataScanner.start();
 	loadTemplates();
 }
 
@@ -138,7 +136,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	// Insert into memory:
 	auto song = std::make_shared<Song>(a_FileName, a_FileSize, query.lastInsertId().toLongLong());
 	m_Songs.push_back(song);
-	emit songFileAdded(song.get());
+	emit songFileAdded(song);
 }
 
 
@@ -154,7 +152,8 @@ void Database::delSong(const Song & a_Song)
 		{
 			continue;
 		}
-		emit songRemoving(&a_Song, idx);
+		auto song = *itr;
+		emit songRemoving(song, idx);
 		m_Songs.erase(itr);
 
 		// Remove from the DB:
@@ -173,59 +172,10 @@ void Database::delSong(const Song & a_Song)
 			return;
 		}
 
-		emit songRemoved(&a_Song, idx);
+		emit songRemoved(song, idx);
 		return;
 	}
 	assert(!"Song not in the DB");
-}
-
-
-
-
-
-void Database::saveSong(const Song & a_Song)
-{
-	QSqlQuery query(m_Database);
-	if (!query.prepare("UPDATE Songs SET "
-		"FileName = ?, FileSize = ?, Hash = ?, "
-		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
-		"Author = ?, Title = ?, "
-		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
-		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
-		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
-		"WHERE RowID = ?")
-	)
-	{
-		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
-	query.addBindValue(a_Song.fileName());
-	query.addBindValue(a_Song.fileSize());
-	query.addBindValue(a_Song.hash());
-	query.addBindValue(a_Song.length());
-	query.addBindValue(a_Song.genre());
-	query.addBindValue(a_Song.measuresPerMinute());
-	query.addBindValue(a_Song.author());
-	query.addBindValue(a_Song.title());
-	query.addBindValue(a_Song.tagFileName().m_Author);
-	query.addBindValue(a_Song.tagFileName().m_Title);
-	query.addBindValue(a_Song.tagFileName().m_Genre);
-	query.addBindValue(a_Song.tagFileName().m_MeasuresPerMinute);
-	query.addBindValue(a_Song.tagId3().m_Author);
-	query.addBindValue(a_Song.tagId3().m_Title);
-	query.addBindValue(a_Song.tagId3().m_Genre);
-	query.addBindValue(a_Song.tagId3().m_MeasuresPerMinute);
-	query.addBindValue(a_Song.lastPlayed());
-	query.addBindValue(a_Song.rating());
-	query.addBindValue(a_Song.lastMetadataUpdated());
-	query.addBindValue(a_Song.dbRowId());
-	if (!query.exec())
-	{
-		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
 }
 
 
@@ -618,9 +568,16 @@ void Database::loadSongs()
 			fieldValue(rec.field(fiLastMetadataUpdated))
 		);
 		m_Songs.push_back(song);
-		if (song->needsMetadataRescan())
+		if (!song->hash().isValid())
 		{
-			m_MetadataScanner.queueScan(song);
+			emit needSongHash(song);
+		}
+		else
+		{
+			if (song->needsMetadataRescan())
+			{
+				emit needSongMetadata(song);
+			}
 		}
 	}
 }
@@ -1035,21 +992,21 @@ void Database::saveTemplateFilters(
 
 
 
-void Database::songScanned(Song * a_Song)
+void Database::songScanned(SongPtr a_Song)
 {
 	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
-	saveSong(*a_Song);
+	saveSong(a_Song);
 }
 
 
 
 
 
-void Database::songPlaybackStarted(Song * a_Song)
+void Database::songPlaybackStarted(SongPtr a_Song)
 {
 	auto now = QDateTime::currentDateTimeUtc();
 	a_Song->setLastPlayed(now);
-	saveSong(*a_Song);
+	saveSong(a_Song);
 
 	// Add a history playlist record:
 	QSqlQuery query(m_Database);
@@ -1067,6 +1024,68 @@ void Database::songPlaybackStarted(Song * a_Song)
 		assert(!"DB error");
 		return;
 	}
+}
+
+void Database::songHashCalculated(SongPtr a_Song)
+{
+	saveSong(a_Song);
+	if (a_Song->needsMetadataRescan())
+	{
+		emit needSongMetadata(a_Song);
+	}
+}
+
+
+
+
+
+void Database::saveSong(SongPtr a_Song)
+{
+	assert(a_Song != nullptr);
+
+	QSqlQuery query(m_Database);
+	if (!query.prepare("UPDATE Songs SET "
+		"FileName = ?, FileSize = ?, Hash = ?, "
+		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
+		"Author = ?, Title = ?, "
+		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
+		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
+		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
+		"WHERE RowID = ?")
+	)
+	{
+		qWarning() << __FUNCTION__ << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.addBindValue(a_Song->fileName());
+	query.addBindValue(a_Song->fileSize());
+	query.addBindValue(a_Song->hash());
+	query.addBindValue(a_Song->length());
+	query.addBindValue(a_Song->genre());
+	query.addBindValue(a_Song->measuresPerMinute());
+	query.addBindValue(a_Song->author());
+	query.addBindValue(a_Song->title());
+	query.addBindValue(a_Song->tagFileName().m_Author);
+	query.addBindValue(a_Song->tagFileName().m_Title);
+	query.addBindValue(a_Song->tagFileName().m_Genre);
+	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->tagId3().m_Author);
+	query.addBindValue(a_Song->tagId3().m_Title);
+	query.addBindValue(a_Song->tagId3().m_Genre);
+	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->lastPlayed());
+	query.addBindValue(a_Song->rating());
+	query.addBindValue(a_Song->lastMetadataUpdated());
+	query.addBindValue(a_Song->dbRowId());
+	if (!query.exec())
+	{
+		qWarning() << __FUNCTION__ << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+
+	emit songSaved(a_Song);
 }
 
 

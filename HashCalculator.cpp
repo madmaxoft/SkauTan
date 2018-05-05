@@ -5,52 +5,46 @@
 #include <QCryptographicHash>
 #include "Song.h"
 #include "AVPP.h"
+#include "BackgroundTasks.h"
 
 
 
 
 
-HashCalculator::HashCalculator(Song & a_Song):
-	m_Song(a_Song)
+HashCalculator::HashCalculator()
 {
-
+	// Nothing needed yet
 }
 
 
 
 
 
-void HashCalculator::calc(Song & a_Song)
+void HashCalculator::queueHashSong(SongPtr a_Song)
 {
-	HashCalculator hc(a_Song);
-	return hc.calc();
-}
-
-
-
-
-
-void HashCalculator::calc()
-{
-	auto context = AVPP::Format::createContext(m_Song.fileName());
-	if (context == nullptr)
-	{
-		qWarning() << __FUNCTION__ << ": Cannot open song file for hash calculation: " << m_Song.fileName();
-		// TODO: Emit an error signal
-		return;
-	}
-	QCryptographicHash ch(QCryptographicHash::Sha1);
-	if (!context->feedRawAudioDataTo([&](const void * a_Data, int a_Size)
+	BackgroundTasks::enqueue([this, a_Song]()
 		{
-			assert(a_Size >= 0);
-			ch.addData(reinterpret_cast<const char *>(a_Data), a_Size);
+			auto context = AVPP::Format::createContext(a_Song->fileName());
+			if (context == nullptr)
+			{
+				qWarning() << __FUNCTION__ << ": Cannot open song file for hash calculation: " << a_Song->fileName();
+				emit this->songHashFailed(a_Song);
+				return;
+			}
+			QCryptographicHash ch(QCryptographicHash::Sha1);
+			if (!context->feedRawAudioDataTo([&](const void * a_Data, int a_Size)
+				{
+					assert(a_Size >= 0);
+					ch.addData(reinterpret_cast<const char *>(a_Data), a_Size);
+				}
+			))
+			{
+				qWarning() << __FUNCTION__ << ": Cannot read song data for hash calculation: " << a_Song->fileName();
+				emit this->songHashFailed(a_Song);
+				return;
+			}
+			a_Song->setHash(ch.result());
+			emit this->songHashCalculated(a_Song);
 		}
-	))
-	{
-		qWarning() << __FUNCTION__ << ": Cannot read song data for hash calculation: " << m_Song.fileName();
-		// TODO: Emit an error signal
-		return;
-	}
-	m_Song.setHash(ch.result());
-	//TODO: Emit a success signal
+	);
 }

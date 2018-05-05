@@ -17,12 +17,14 @@
 
 DlgSongs::DlgSongs(
 	Database & a_DB,
+	MetadataScanner & a_Scanner,
 	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 	bool a_ShowManipulators,
 	QWidget * a_Parent
 ):
 	Super(a_Parent),
 	m_DB(a_DB),
+	m_MetadataScanner(a_Scanner),
 	m_UI(new Ui::DlgSongs),
 	m_FilterModel(std::move(a_FilterModel)),
 	m_SongModel(a_DB)
@@ -221,7 +223,7 @@ void DlgSongs::rescanMetadata()
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = m_SongModel.songFromIndex(idx);
-		m_DB.metadataScanner().queueScan(song);
+		m_MetadataScanner.queueScanSong(song);
 	}
 }
 
@@ -229,7 +231,7 @@ void DlgSongs::rescanMetadata()
 
 
 
-void DlgSongs::modelSongEdited(Song * a_Song)
+void DlgSongs::modelSongEdited(SongPtr a_Song)
 {
-	m_DB.saveSong(*a_Song);
+	m_DB.saveSong(a_Song);
 }

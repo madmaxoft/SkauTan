@@ -15,6 +15,7 @@
 
 // fwd:
 class Database;
+class MetadataScanner;
 namespace Ui
 {
 	class DlgEditTemplate;
@@ -33,7 +34,12 @@ class DlgEditTemplate:
 
 public:
 
-	explicit DlgEditTemplate(Database & a_DB, Template & a_Template, QWidget * a_Parent = nullptr);
+	explicit DlgEditTemplate(
+		Database & a_DB,
+		MetadataScanner & a_Scanner,
+		Template & a_Template,
+		QWidget * a_Parent = nullptr
+	);
 
 	virtual ~DlgEditTemplate() override;
 
@@ -42,6 +48,10 @@ private:
 
 	/** The database in which the edited template resides. */
 	Database & m_DB;
+
+	/** The scanner that can update the songs' metadata upon request.
+	Used when displaying songs matching a filter. */
+	MetadataScanner & m_MetadataScanner;
 
 	/** The template being edited. */
 	Template & m_Template;

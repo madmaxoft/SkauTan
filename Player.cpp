@@ -9,15 +9,13 @@
 
 
 
-Player::Player(std::shared_ptr<Playlist> a_Playlist, QObject * a_Parent):
+Player::Player(QObject * a_Parent):
 	Super(a_Parent),
-	m_Playlist(a_Playlist),
+	m_Playlist(new Playlist),
 	m_State(psStopped),
 	m_FadeoutProgress(0),
 	m_Tempo(1)
 {
-	assert(m_Playlist != nullptr);
-
 	// Pick an audio format:
 	m_Format.setSampleRate(48000);
 	m_Format.setChannelCount(2);

@@ -15,6 +15,7 @@
 
 // fwd:
 class QTreeWidgetItem;
+class MetadataScanner;
 namespace Ui
 {
 	class DlgEditTemplateItem;
@@ -35,7 +36,12 @@ class DlgEditTemplateItem:
 public:
 
 	/** Creates a new dialog instance for editing the specified item. */
-	explicit DlgEditTemplateItem(Database & a_DB, Template::Item & a_Item, QWidget * a_Parent = nullptr);
+	explicit DlgEditTemplateItem(
+		Database & a_DB,
+		MetadataScanner & a_Scanner,
+		Template::Item & a_Item,
+		QWidget * a_Parent = nullptr
+	);
 
 	virtual ~DlgEditTemplateItem() override;
 
@@ -44,6 +50,10 @@ private:
 
 	/** The DB on which the operations take place. */
 	Database & m_DB;
+
+	/** The scanner that can update the songs' metadata upon request.
+	Used when displaying songs matching a filter. */
+	MetadataScanner & m_MetadataScanner;
 
 	/** The item being edited. */
 	Template::Item & m_Item;

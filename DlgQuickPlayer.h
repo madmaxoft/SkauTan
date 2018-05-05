@@ -37,7 +37,7 @@ class DlgQuickPlayer:
 
 public:
 
-	explicit DlgQuickPlayer(Database & a_DB, Playlist & a_Playlist, Player & a_Player);
+	explicit DlgQuickPlayer(Database & a_DB, Player & a_Player);
 
 	virtual ~DlgQuickPlayer() override;
 
@@ -50,8 +50,7 @@ private:
 	/** The DB from which songs and template items are taken. */
 	Database & m_DB;
 
-	Playlist & m_Playlist;
-
+	/** The player that is used for playback and playlist management. */
 	Player & m_Player;
 
 	/** Set to true if the position update is coming from the player internals (rather than user input). */

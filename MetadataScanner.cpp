@@ -4,7 +4,7 @@
 #include <QRegularExpression>
 #include <taglib/fileref.h>
 #include "Song.h"
-#include "HashCalculator.h"
+#include "BackgroundTasks.h"
 
 
 
@@ -23,7 +23,6 @@ public:
 
 	void process()
 	{
-		HashCalculator::calc(*m_Song);
 		parseTagLibMetadata(m_Song->fileName());
 		parseFileNameIntoMetadata(m_Song->fileName());
 	}
@@ -245,91 +244,22 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // MetadataScanner:
 
-MetadataScanner::MetadataScanner():
-	m_ShouldTerminate(false)
+MetadataScanner::MetadataScanner()
 {
-
+	// Nothing needed yet
 }
 
 
 
 
 
-MetadataScanner::~MetadataScanner()
+void MetadataScanner::queueScanSong(SongPtr a_Song)
 {
-	// Notify the worker thread to terminate:
-	m_ShouldTerminate = true;
-	m_SongAvailable.wakeAll();
-
-	// Wait for the thread to finish:
-	wait();
-}
-
-
-
-
-
-void MetadataScanner::queueScan(SongPtr a_Song)
-{
-	qDebug() << __FUNCTION__ << ": Adding song " << a_Song->fileName() << " to metadata scan queue.";
-	{
-		QMutexLocker lock(&m_MtxQueue);
-		m_Queue.push_back(a_Song);
-	}
-	m_SongAvailable.wakeAll();
-}
-
-
-
-
-
-void MetadataScanner::run()
-{
-	while (true)
-	{
-		auto song = getSongToProcess();
-		if (song == nullptr)
+	BackgroundTasks::enqueue([this, a_Song]()
 		{
-			return;
+			SongProcessor proc(a_Song);
+			proc.process();
+			emit this->songScanned(a_Song);
 		}
-		qDebug() << __FUNCTION__ << ": Scanning metadata in " << song->fileName();
-		processSong(song);
-		qDebug() << __FUNCTION__ << ": Metadata scanned in " << song->fileName();
-	}
-}
-
-
-
-
-
-SongPtr MetadataScanner::getSongToProcess()
-{
-	if (m_ShouldTerminate.load())
-	{
-		return nullptr;
-	}
-	QMutexLocker lock(&m_MtxQueue);
-	while (m_Queue.empty())
-	{
-		m_SongAvailable.wait(&m_MtxQueue);
-		if (m_ShouldTerminate.load())
-		{
-			return nullptr;
-		}
-	}
-	assert(!m_Queue.empty());
-	auto res = m_Queue.back();
-	m_Queue.pop_back();
-	return res;
-}
-
-
-
-
-
-void MetadataScanner::processSong(SongPtr a_Song)
-{
-	SongProcessor proc(a_Song);
-	proc.process();
-	emit songScanned(a_Song.get());
+	);
 }

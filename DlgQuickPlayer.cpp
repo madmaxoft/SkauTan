@@ -10,11 +10,10 @@
 
 
 
-DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Playlist & a_Playlist, Player & a_Player):
+DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Player & a_Player):
 	Super(nullptr),
 	m_UI(new Ui::DlgQuickPlayer),
 	m_DB(a_DB),
-	m_Playlist(a_Playlist),
 	m_Player(a_Player),
 	m_UpdateUITimer(new QTimer)
 {
@@ -35,7 +34,7 @@ DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Playlist & a_Playlist, Player & 
 	connect(m_UI->lwFavorites,     &QListWidget::itemClicked,     this, &DlgQuickPlayer::playClickedItem);
 	connect(m_UI->btnClose,        &QPushButton::clicked,         this, &DlgQuickPlayer::close);
 	connect(m_UI->btnPause,        &QPushButton::clicked,         this, &DlgQuickPlayer::pause);
-	connect(&a_Playlist,           &Playlist::currentItemChanged, this, &DlgQuickPlayer::playlistCurrentItemChanged);
+	connect(&a_Player.playlist(),  &Playlist::currentItemChanged, this, &DlgQuickPlayer::playlistCurrentItemChanged);
 	connect(m_UpdateUITimer.get(), &QTimer::timeout,              this, &DlgQuickPlayer::updateTimePos);
 
 	// Update the UI every 200 msec:
@@ -80,7 +79,7 @@ void DlgQuickPlayer::pauseClicked()
 
 void DlgQuickPlayer::playlistCurrentItemChanged()
 {
-	auto item = m_Playlist.currentItem();
+	auto item = m_Player.playlist().currentItem();
 	if (item == nullptr)
 	{
 		m_UI->lblTrackInfo->clear();
@@ -98,7 +97,7 @@ void DlgQuickPlayer::playlistCurrentItemChanged()
 void DlgQuickPlayer::updateTimePos()
 {
 	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
-	auto curItem = m_Playlist.currentItem();
+	auto curItem = m_Player.playlist().currentItem();
 	auto length = (curItem == nullptr) ? 0 : static_cast<int>(curItem->displayLength() + 0.5);
 	auto remaining = length - position;
 	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));

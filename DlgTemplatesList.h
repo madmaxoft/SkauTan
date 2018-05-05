@@ -15,6 +15,7 @@
 
 // fwd:
 class Database;
+class MetadataScanner;
 namespace Ui
 {
 	class DlgTemplatesList;
@@ -33,7 +34,11 @@ class DlgTemplatesList:
 
 public:
 
-	explicit DlgTemplatesList(Database & a_DB, QWidget * a_Parent = nullptr);
+	explicit DlgTemplatesList(
+		Database & a_DB,
+		MetadataScanner & a_Scanner,
+		QWidget * a_Parent = nullptr
+	);
 
 	virtual ~DlgTemplatesList() override;
 
@@ -42,6 +47,10 @@ private:
 
 	/** The database where the templates are stored. */
 	Database & m_DB;
+
+	/** The scanner that can update the songs' metadata upon request.
+	Used when displaying songs matching a filter. */
+	MetadataScanner & m_MetadataScanner;
 
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgTemplatesList> m_UI;

@@ -12,9 +12,14 @@
 
 
 
-DlgTemplatesList::DlgTemplatesList(Database & a_DB, QWidget * a_Parent):
+DlgTemplatesList::DlgTemplatesList(
+	Database & a_DB,
+	MetadataScanner & a_Scanner,
+	QWidget * a_Parent
+):
 	Super(a_Parent),
 	m_DB(a_DB),
+	m_MetadataScanner(a_Scanner),
 	m_UI(new Ui::DlgTemplatesList)
 {
 	m_UI->setupUi(this);
@@ -187,7 +192,7 @@ void DlgTemplatesList::addTemplate()
 		);
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, *tmpl, this);
+	DlgEditTemplate dlg(m_DB, m_MetadataScanner, *tmpl, this);
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 
@@ -255,7 +260,7 @@ void DlgTemplatesList::editTemplateAt(const QModelIndex & a_Index)
 	{
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, *tmpl, this);
+	DlgEditTemplate dlg(m_DB, m_MetadataScanner, *tmpl, this);
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 

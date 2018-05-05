@@ -42,11 +42,11 @@ static QString formatTempo(double a_Tempo)
 ////////////////////////////////////////////////////////////////////////////////
 // PlaylistItemModel:
 
-PlaylistItemModel::PlaylistItemModel(PlaylistPtr a_Playlist):
+PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 	m_Playlist(a_Playlist)
 {
-	connect(m_Playlist.get(), &Playlist::itemAdded,    this, &PlaylistItemModel::playlistItemAdded);
-	connect(m_Playlist.get(), &Playlist::itemDeleting, this, &PlaylistItemModel::playlistItemDeleting);
+	connect(&m_Playlist, &Playlist::itemAdded,    this, &PlaylistItemModel::playlistItemAdded);
+	connect(&m_Playlist, &Playlist::itemDeleting, this, &PlaylistItemModel::playlistItemDeleting);
 }
 
 
@@ -110,7 +110,7 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 	while (!rows.empty())
 	{
 		auto row = rows.back();
-		m_Playlist->moveItem(static_cast<size_t>(row), static_cast<size_t>(a_Row));
+		m_Playlist.moveItem(static_cast<size_t>(row), static_cast<size_t>(a_Row));
 		if (minRow > row)
 		{
 			minRow = row;
@@ -167,7 +167,7 @@ int PlaylistItemModel::rowCount(const QModelIndex & a_Parent) const
 {
 	if (!a_Parent.isValid())
 	{
-		return static_cast<int>(m_Playlist->items().size());
+		return static_cast<int>(m_Playlist.items().size());
 	}
 	return 0;
 }
@@ -197,11 +197,11 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 	{
 		case Qt::DisplayRole:
 		{
-			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist->items().size())))
+			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
 			{
 				return QVariant();
 			}
-			const auto & item = m_Playlist->items()[static_cast<size_t>(a_Index.row())];
+			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
 			switch (a_Index.column())
 			{
 				case colGenre:             return item->displayGenre();
@@ -253,7 +253,7 @@ void PlaylistItemModel::playlistItemAdded(IPlaylistItem * a_Item)
 {
 	Q_UNUSED(a_Item);
 
-	auto idx = static_cast<int>(m_Playlist->items().size()) - 1;
+	auto idx = static_cast<int>(m_Playlist.items().size()) - 1;
 	beginInsertRows(QModelIndex(), idx, idx);
 	endInsertRows();
 }

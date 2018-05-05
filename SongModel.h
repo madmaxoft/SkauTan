@@ -83,19 +83,20 @@ protected:
 protected slots:
 
 	/** Emitted by m_DB when a new song is added to it. */
-	void addSongFile(Song * a_NewSong);
+	void addSongFile(SongPtr a_NewSong);
 
 	/** Emitted by m_DB just before a song is removed; remove it from the model. */
 	void delSong(const Song * a_Song, size_t a_Index);
 
-	/** Emitted by m_DB.metadataScanner after a song metadata is updated by a scan. */
-	void songMetadataScanned(Song * a_Song);
+	/** Emitted by m_DB after a song data has changed.
+	Updates the model entries for the specified song. */
+	void songChanged(SongPtr a_Song);
 
 
 signals:
 
 	/** Emitted after the specified song has been edited by the user. */
-	void songEdited(Song * a_Song);
+	void songEdited(SongPtr a_Song);
 };
 
 
