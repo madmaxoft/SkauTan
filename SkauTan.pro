@@ -132,3 +132,6 @@ FORMS += \
 
 RESOURCES += \
 	res/SkauTan.qrc
+
+TRANSLATIONS += \
+	translations/SkauTan_cs.ts

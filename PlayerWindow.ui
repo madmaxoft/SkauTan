@@ -128,7 +128,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="lblVolume">
           <property name="text">
-           <string>100 %</string>
+           <string notr="true">100 %</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -141,7 +141,7 @@
            <string>Reset tempo to +0 %</string>
           </property>
           <property name="text">
-           <string>+0 %</string>
+           <string notr="true">+0 %</string>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonTextOnly</enum>
@@ -206,7 +206,7 @@
             <item>
              <widget class="QLabel" name="lblPosition">
               <property name="text">
-               <string>0:01</string>
+               <string notr="true">0:01</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -216,7 +216,7 @@
             <item>
              <widget class="QLabel" name="lblRemaining">
               <property name="text">
-               <string>-0:02</string>
+               <string notr="true">-0:02</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -243,7 +243,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>|&lt;</string>
+           <string notr="true">|&lt;</string>
           </property>
          </widget>
         </item>
@@ -256,7 +256,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>|&gt;</string>
+           <string notr="true">|&gt;</string>
           </property>
          </widget>
         </item>
@@ -269,7 +269,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>&gt;|</string>
+           <string notr="true">&gt;|</string>
           </property>
          </widget>
         </item>
