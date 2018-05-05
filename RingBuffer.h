@@ -34,6 +34,10 @@ public:
 	Returns the number of bytes written. */
 	size_t writeData(const char * a_Data, size_t a_Len);
 
+	/** Sets a flag that no more data will be written into the buffer.
+	Subsequent reads will return existing data and then report EOF. */
+	void writeEOF();
+
 	/** Signals that the read / write / wait operations should abort, instead of waiting for async operations to finish.
 	Used mainly by destructors. */
 	void abort();
@@ -87,6 +91,10 @@ protected:
 
 	/** If set to true, operations on this instance abort without waiting. */
 	std::atomic<bool> m_ShouldAbort;
+
+	/** If true, there's no more incoming data
+	Subsequent reads should only return any remaining data in the buffer and then report EOF. */
+	std::atomic<bool> m_IsEOF;
 
 
 	/** Writes a single block of data that is guaranteed to fit into the current free space.

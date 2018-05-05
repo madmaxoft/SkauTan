@@ -51,6 +51,9 @@ protected:
 	/** The audio format of the output data. */
 	QAudioFormat m_OutputFormat;
 
+	/** Indicates that there is no more data coming in from the decoder.
+	Reads from m_RingBuffer should read all the remaining data and then return EOF. */
+	void decodedEOF();
 
 private:
 
