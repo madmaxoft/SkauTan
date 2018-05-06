@@ -137,6 +137,12 @@ private slots:
 
 	/** The user clicker the Reset tempo button, resets tempo to 100 %. */
 	void resetTempo();
+
+	/** Shows the Tools popup menu. */
+	void showToolsMenu();
+
+	/** Shows the BackgroundTasks dialog. */
+	void showBackgroundTasks();
 };
 
 

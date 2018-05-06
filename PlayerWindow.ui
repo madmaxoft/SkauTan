@@ -53,6 +53,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btnTools">
+        <property name="text">
+         <string>T&amp;ools</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -279,6 +286,11 @@
     </item>
    </layout>
   </widget>
+  <action name="actBackgroundTasks">
+   <property name="text">
+    <string>Background tasks</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
