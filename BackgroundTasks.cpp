@@ -1,4 +1,5 @@
 #include "BackgroundTasks.h"
+#include <QDebug>
 
 
 
@@ -7,8 +8,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 // BackgroundTasks:
 
+Q_DECLARE_METATYPE(BackgroundTasks::TaskPtr);
+
 BackgroundTasks::BackgroundTasks()
 {
+	qRegisterMetaType<BackgroundTasks::TaskPtr>();
 	for (int i = QThread::idealThreadCount(); i > 0; --i)
 	{
 		auto executor = std::make_unique<Executor>(*this);
@@ -42,6 +46,7 @@ BackgroundTasks::~BackgroundTasks()
 	for (auto & t: m_Tasks)
 	{
 		t->abort();
+		emit taskAborted(t);
 	}
 }
 
@@ -62,7 +67,8 @@ BackgroundTasks & BackgroundTasks::get()
 void BackgroundTasks::addTask(TaskPtr a_Task)
 {
 	QMutexLocker lock(&m_Mtx);
-	m_Tasks.push_back(std::move(a_Task));
+	m_Tasks.push_back(a_Task);
+	emit taskAdded(a_Task);
 	m_WaitForTasks.wakeOne();
 }
 
@@ -70,7 +76,11 @@ void BackgroundTasks::addTask(TaskPtr a_Task)
 
 
 
-void BackgroundTasks::enqueue(std::function<void ()> a_Task, std::function<void ()> a_OnAbort)
+void BackgroundTasks::enqueue(
+	const QString & a_TaskName,
+	std::function<void ()> a_Task,
+	std::function<void ()> a_OnAbort
+)
 {
 	/** Adapter between a Task class and two functions. */
 	class FunctionTask: public BackgroundTasks::Task
@@ -79,7 +89,8 @@ void BackgroundTasks::enqueue(std::function<void ()> a_Task, std::function<void 
 
 	public:
 
-		FunctionTask(std::function<void ()> a_FnTask, std::function<void ()> a_FnOnAbort):
+		FunctionTask(const QString & a_FnName, std::function<void ()> a_FnTask, std::function<void ()> a_FnOnAbort):
+			Super(a_FnName),
 			m_Task(a_FnTask),
 			m_OnAbort(a_FnOnAbort)
 		{
@@ -102,7 +113,18 @@ void BackgroundTasks::enqueue(std::function<void ()> a_Task, std::function<void 
 	};
 
 	// Enqueue the task adapter:
-	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_Task, a_OnAbort));
+	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_TaskName, a_Task, a_OnAbort));
+}
+
+
+
+
+
+const std::list<BackgroundTasks::TaskPtr> BackgroundTasks::tasks() const
+{
+	QMutexLocker lock(&m_Mtx);
+	std::list<TaskPtr> res(m_Tasks);
+	return res;
 }
 
 
@@ -129,6 +151,17 @@ BackgroundTasks::TaskPtr BackgroundTasks::getNextTask()
 
 
 
+void BackgroundTasks::emitTaskFinished(BackgroundTasks::TaskPtr a_Task)
+{
+	qDebug() << "Emitting a taskFinished signal for task " << a_Task->name();
+	emit taskFinished(a_Task);
+	qDebug() << "taskFinished signal emitted";
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // BackgroundTasks::Executor:
 
@@ -146,6 +179,14 @@ void BackgroundTasks::Executor::run()
 	while (task != nullptr)
 	{
 		task->execute();
+		qDebug() << "Invoking a taskFinished signal emission, parent = " << &m_Parent;
+		QMetaObject::invokeMethod(
+			&m_Parent,
+			"emitTaskFinished",
+			Qt::BlockingQueuedConnection,
+			Q_ARG(BackgroundTasks::TaskPtr, task)
+		);
+		qDebug() << "taskFinished signal emission invoked. Continuing with next task.";
 		task = m_Parent.getNextTask();
 	}
 }

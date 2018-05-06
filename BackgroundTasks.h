@@ -24,8 +24,14 @@ To add a background task, create a new subclass of BackgroundTasks::Task, implem
 and add an instance of it through addTask(). The BackgroundTasks instance will take care of scheduling
 the task when ready.
 Alternatively, use the BackgroundTasks::enqueue() function to put a function into the queue. */
-class BackgroundTasks
+class BackgroundTasks:
+	public QObject
 {
+	using Super = QObject;
+
+	Q_OBJECT
+
+
 public:
 
 	/** Base class for code that needs to be executed in the background.
@@ -33,7 +39,8 @@ public:
 	class Task
 	{
 	public:
-		Task() : m_ShouldTerminate(false) {}
+
+		Task(const QString & a_Name) : m_Name(a_Name), m_ShouldTerminate(false) {}
 
 		// Force a virtual destructor
 		virtual ~Task() {}
@@ -47,7 +54,13 @@ public:
 		The default implementation sets a flag that can be checked periodically. */
 		virtual void abort() { m_ShouldTerminate = true; }
 
+		/** Returns the user-visible task name. */
+		const QString & name() const { return m_Name; }
+
 	protected:
+
+		/** The name of the task, as shown to the user. */
+		const QString m_Name;
 
 		/** Flag that is set when the task should terminate as soon as possible. */
 		std::atomic<bool> m_ShouldTerminate;
@@ -65,7 +78,13 @@ public:
 
 	/** Adds a new task to the queue that executes the specified function.
 	a_OnAbort is called if the task is to be aborted (even before it starts). */
-	static void enqueue(std::function<void()> a_Task, std::function<void()> a_OnAbort = [](){});
+	static void enqueue(
+		const QString & a_TaskName,
+		std::function<void()> a_Task,
+		std::function<void()> a_OnAbort = [](){}
+	);
+
+	const std::list<TaskPtr> tasks() const;
 
 
 protected:
@@ -88,7 +107,7 @@ protected:
 
 
 	/** The mutex protecting m_Tasks against multithreaded access. */
-	QMutex m_Mtx;
+	mutable QMutex m_Mtx;
 
 	QWaitCondition m_WaitForTasks;
 
@@ -112,6 +131,24 @@ protected:
 	Waits for a task to become available (or the instance shutdown).
 	Returns nullptr if instance is shutting down before a task is ready. */
 	TaskPtr getNextTask();
+
+
+signals:
+
+	/** Emitted after the task is added. */
+	void taskAdded(BackgroundTasks::TaskPtr a_Task);
+
+	/** Emitted after the task is finished and removed from the task list. */
+	void taskFinished(BackgroundTasks::TaskPtr a_Task);
+
+	/** Emitted when a task is aborted. */
+	void taskAborted(BackgroundTasks::TaskPtr a_Task);
+
+
+private slots:
+
+	/** Received from the executors' threads, invokes the taskFinished() signal for the specified task. */
+	void emitTaskFinished(BackgroundTasks::TaskPtr a_Task);
 };
 
 
