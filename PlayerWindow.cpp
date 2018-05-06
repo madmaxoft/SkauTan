@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QShortcut>
 #include <QTimer>
+#include <QMenu>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
 #include "DlgSongs.h"
@@ -12,6 +13,7 @@
 #include "Player.h"
 #include "DlgPickTemplate.h"
 #include "DlgQuickPlayer.h"
+#include "DlgBackgroundTaskList.h"
 
 
 
@@ -58,6 +60,8 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
 	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
 	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
+	connect(m_UI->btnTools,           &QPushButton::clicked,      this, &PlayerWindow::showToolsMenu);
+	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
 
 	// Update the UI every 200 msec:
 	m_UpdateUITimer->start(200);
@@ -332,4 +336,26 @@ void PlayerWindow::tempoValueChanged(int a_NewValue)
 void PlayerWindow::resetTempo()
 {
 	m_UI->vsTempo->setValue(0);
+}
+
+
+
+
+
+void PlayerWindow::showToolsMenu()
+{
+	QMenu menu;
+	menu.addAction(m_UI->actBackgroundTasks);
+	menu.addSeparator();
+	menu.exec(m_UI->btnTools->mapToGlobal(QPoint(0, 0)));
+}
+
+
+
+
+
+void PlayerWindow::showBackgroundTasks()
+{
+	DlgBackgroundTaskList dlg(this);
+	dlg.exec();
 }

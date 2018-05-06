@@ -86,6 +86,7 @@ SOURCES += \
 	Stopwatch.cpp \
 	DlgChooseImportTemplates.cpp \
 	BackgroundTasks.cpp \
+	DlgBackgroundTaskList.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -117,6 +118,7 @@ HEADERS += \
 	AudioEffects.h \
 	DlgChooseImportTemplates.h \
 	BackgroundTasks.h \
+	DlgBackgroundTaskList.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -129,6 +131,7 @@ FORMS += \
 	DlgPickTemplate.ui \
 	DlgQuickPlayer.ui \
 	DlgChooseImportTemplates.ui \
+	DlgBackgroundTaskList.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc
