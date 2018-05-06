@@ -126,7 +126,7 @@ int FileIO::read(void * a_This, uint8_t * a_Dst, int a_Size)
 
 int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 {
-	qDebug() << ": Seek to offset " << a_Offset << " from " << a_Whence;
+	// qDebug() << ": Seek to offset " << a_Offset << " from " << a_Whence;
 	auto This = reinterpret_cast<FileIO *>(a_This);
 	switch (a_Whence)
 	{
@@ -501,7 +501,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 		qWarning() << ": Cannot find stream info: " << ret;
 	}
 
-	qDebug() << ": Format context initialized.";
+	// qDebug() << ": Format context initialized.";
 	return res;
 }
 
