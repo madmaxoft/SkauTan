@@ -255,7 +255,7 @@ MetadataScanner::MetadataScanner()
 
 void MetadataScanner::queueScanSong(SongPtr a_Song)
 {
-	BackgroundTasks::enqueue([this, a_Song]()
+	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
 		{
 			SongProcessor proc(a_Song);
 			proc.process();

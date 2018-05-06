@@ -22,7 +22,7 @@ HashCalculator::HashCalculator()
 
 void HashCalculator::queueHashSong(SongPtr a_Song)
 {
-	BackgroundTasks::enqueue([this, a_Song]()
+	BackgroundTasks::enqueue(tr("Calculate hash: %1").arg(a_Song->fileName()), [this, a_Song]()
 		{
 			auto context = AVPP::Format::createContext(a_Song->fileName());
 			if (context == nullptr)
