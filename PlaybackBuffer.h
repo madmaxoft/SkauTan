@@ -66,7 +66,9 @@ public:
 	Used by the WaveformDisplay to know how many samples to process in total. */
 	size_t bufferLimit() const { return m_BufferLimit; }
 
-	bool isDataComplete() const { return (m_WritePos.load() == m_BufferLimit.load()); }
+	/** Seeks to the specified audio frame.
+	Sets the read position for the next read operation to read the specified frame. */
+	void seekToFrame(int a_Frame);
 
 
 protected:

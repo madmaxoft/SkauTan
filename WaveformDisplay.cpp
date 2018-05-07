@@ -161,6 +161,42 @@ QSize WaveformDisplay::sizeHint() const
 
 
 
+void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
+{
+	if (m_PlaybackBuffer == nullptr)
+	{
+		return;
+	}
+
+	switch (a_Event->button())
+	{
+		case Qt::LeftButton:
+		{
+			qint64 x = std::max(std::min(a_Event->pos().x(), width()), 0);  // clamp x between 0 and width()
+			auto limit = static_cast<qint64>(m_PlaybackBuffer->bufferLimit());
+			auto bpf = static_cast<qint64>(m_PlaybackBuffer->format().bytesPerFrame());
+			int frame = static_cast<int>(x * limit / width() / bpf);
+			m_PlaybackBuffer->seekToFrame(frame);
+			break;
+		}
+
+		case Qt::RightButton:
+		{
+			// TODO: Show a context menu
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+}
+
+
+
+
+
 void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer)
 {
 	Q_UNUSED(a_Item);

@@ -36,7 +36,7 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 	assert(!m_AudioData.empty());  // Has duration been set?
 	auto numBytesLeft = m_AudioData.size() - m_WritePos;
 	auto numBytesToWrite = std::min(a_Len, numBytesLeft);
-	memcpy(m_AudioData.data() + m_WritePos, a_Data, numBytesToWrite);
+	memcpy(m_AudioData.data() + static_cast<int>(m_WritePos), a_Data, numBytesToWrite);
 	m_WritePos += numBytesToWrite;
 	m_CVHasData.wakeAll();
 	if (m_ShouldAbort.load())
@@ -56,6 +56,16 @@ void PlaybackBuffer::setDuration(double a_DurationSec)
 	assert(m_AudioData.empty());  // Can be called only once
 	m_BufferLimit = static_cast<size_t>(m_OutputFormat.bytesForDuration(static_cast<qint64>(a_DurationSec * 1000000)));
 	m_AudioData.resize(m_BufferLimit);
+}
+
+
+
+
+
+void PlaybackBuffer::seekToFrame(int a_Frame)
+{
+	assert(a_Frame >= 0);
+	m_ReadPos = std::min(static_cast<size_t>(a_Frame * m_OutputFormat.bytesPerFrame()), m_BufferLimit.load());
 }
 
 

@@ -82,6 +82,7 @@ protected:
 	virtual void paintEvent(QPaintEvent * a_Event) override;
 	virtual void resizeEvent(QResizeEvent * a_Event) override;
 	virtual QSize sizeHint() const override;
+	virtual void mouseReleaseEvent(QMouseEvent * a_Event) override;
 
 
 signals:
