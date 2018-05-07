@@ -1078,27 +1078,8 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 {
 	auto now = QDateTime::currentDateTimeUtc();
 	a_Song->setLastPlayed(now);
-	saveSong(a_Song);
-
-	// Add a history playlist record:
-	if (a_Song->hash().isValid())
-	{
-		QSqlQuery query(m_Database);
-		if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
-		{
-			qWarning() << ": Cannot prepare statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
-		query.bindValue(0, a_Song->hash());
-		query.bindValue(1, now);
-		if (!query.exec())
-		{
-			qWarning() << ": Cannot exec statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
-	}
+	QMetaObject::invokeMethod(this, "saveSong", Q_ARG(SongPtr, a_Song));
+	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, a_Song), Q_ARG(QDateTime, now));
 }
 
 
@@ -1177,4 +1158,31 @@ void Database::songScanned(SongPtr a_Song)
 {
 	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
 	saveSong(a_Song);
+}
+
+
+
+
+
+void Database::addPlaybackHistory(SongPtr a_Song, const QDateTime & a_Timestamp)
+{
+	// Add a history playlist record:
+	if (a_Song->hash().isValid())
+	{
+		QSqlQuery query(m_Database);
+		if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
+		{
+			qWarning() << ": Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.bindValue(0, a_Song->hash());
+		query.bindValue(1, a_Timestamp);
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+	}
 }

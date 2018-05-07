@@ -178,6 +178,13 @@ public slots:
 	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
 	Writes the whole updated song to the DB. */
 	void songScanned(SongPtr a_Song);
+
+
+protected slots:
+
+	/** Adds a new entry into the playback history in the DB. */
+	void addPlaybackHistory(SongPtr a_Song, const QDateTime & a_Timestamp);
+
 };
 
 
