@@ -9,14 +9,15 @@
 #include <QAudioOutput>
 #include <QThread>
 
+#include "IPlaylistItem.h"
+#include "PlaybackBuffer.h"
+
 
 
 
 
 // fwd:
-class PlaybackBuffer;
 class Playlist;
-class IPlaylistItem;
 class AudioDataSourceIO;
 
 
@@ -84,7 +85,7 @@ protected:
 	std::unique_ptr<OutputThread> m_OutputThread;
 
 	/** The source of the audio data, adapted into QIODevice interface. */
-	std::unique_ptr<AudioDataSourceIO> m_AudioDataSource;
+	std::shared_ptr<AudioDataSourceIO> m_AudioDataSource;
 
 	/** The format used by the audio output. */
 	QAudioFormat m_Format;
@@ -102,11 +103,11 @@ signals:
 
 	/** Emitted before starting to play the specified item.
 	The item is not yet set in the player, so values such as currentPosition() still give old values. */
-	void startingPlayback(IPlaylistItem * a_Item);
+	void startingPlayback(IPlaylistItemPtr a_Item);
 
 	/** Emitted just after starting to play the specified item.
 	The item is already set in the player, values such as currentPosition() give valid values. */
-	void startedPlayback(IPlaylistItem * a_Item);
+	void startedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer);
 
 	/** Emitted just after an item has finished playing. */
 	void finishedPlayback();
@@ -143,6 +144,7 @@ public slots:
 	Fades the current track first, if playing.
 	Ignored if the index is invalid. */
 	void jumpTo(int a_ItemIdx);
+
 
 protected slots:
 

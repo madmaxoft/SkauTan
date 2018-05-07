@@ -64,12 +64,6 @@ private:
 	/** The shortcut for deleting playlist items using the Del key. */
 	std::unique_ptr<QShortcut> m_scDel;
 
-	/** The timer that periodically updates the UI. */
-	std::unique_ptr<QTimer> m_UpdateUITimer;
-
-	/** Set to true if the position update is coming from the player internals (rather than user input). */
-	bool m_IsInternalPositionUpdate;
-
 
 private slots:
 
@@ -118,16 +112,6 @@ private slots:
 
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();
-
-	/** Updates the range on the position slider. */
-	void updatePositionRange();
-
-	/** Updates the time position indicators.
-	Called regularly from a timer, and when changing tracks. */
-	void updateTimePos();
-
-	/** Sets the playback position to the specified value (in seconds). */
-	void setTimePos(int a_NewValue);
 
 	/** The QuickPlay dialog wants us to enqueue and play this item. */
 	void addAndPlayTemplateItem(Template::Item * a_Item);

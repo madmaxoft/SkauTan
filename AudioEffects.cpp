@@ -8,19 +8,7 @@
 
 
 
-AudioFadeOut::AudioFadeOut(std::unique_ptr<AudioDataSource> && a_Lower):
-	Super(std::move(a_Lower)),
-	m_IsFadingOut(false),
-	m_FadeOutTotalSamples(0),
-	m_FadeOutRemaining(0)
-{
-}
-
-
-
-
-
-AudioFadeOut::AudioFadeOut(AudioDataSource * a_Lower):
+AudioFadeOut::AudioFadeOut(std::shared_ptr<AudioDataSource> a_Lower):
 	Super(a_Lower),
 	m_IsFadingOut(false),
 	m_FadeOutTotalSamples(0),
@@ -123,18 +111,7 @@ void AudioFadeOut::applyFadeOut(void * a_Data, size_t a_NumBytes)
 ////////////////////////////////////////////////////////////////////////////////
 // AudioTempoChange:
 
-AudioTempoChange::AudioTempoChange(std::unique_ptr<AudioDataSource> && a_Lower):
-	Super(std::move(a_Lower)),
-	m_DestSampleRate(a_Lower->format().sampleRate()),
-	m_CurrentSampleRate(-1)
-{
-}
-
-
-
-
-
-AudioTempoChange::AudioTempoChange(AudioDataSource * a_Lower):
+AudioTempoChange::AudioTempoChange(std::shared_ptr<AudioDataSource> a_Lower):
 	Super(a_Lower),
 	m_DestSampleRate(a_Lower->format().sampleRate()),
 	m_CurrentSampleRate(-1)

@@ -27,6 +27,7 @@ Descendants include audio decoder, effects etc. */
 class AudioDataSource
 {
 public:
+
 	// Force a virtual destructor in descendants
 	virtual ~AudioDataSource() {}
 
@@ -77,14 +78,7 @@ class AudioDataSourceChain:
 	public AudioDataSource
 {
 public:
-	AudioDataSourceChain(std::unique_ptr<AudioDataSource> && a_Lower):
-		m_Lower(std::move(a_Lower))
-	{
-	}
-
-
-	/** Creates a new chain object, takes ownership of the Lower source. */
-	AudioDataSourceChain(AudioDataSource * a_Lower):
+	AudioDataSourceChain(std::shared_ptr<AudioDataSource> a_Lower):
 		m_Lower(a_Lower)
 	{
 	}
@@ -144,7 +138,7 @@ public:
 protected:
 
 	/** The "lower" source to which the calls are redirected. */
-	std::unique_ptr<AudioDataSource> m_Lower;
+	std::shared_ptr<AudioDataSource> m_Lower;
 };
 
 
@@ -157,8 +151,8 @@ class AudioDataSourceIO:
 	public AudioDataSourceChain
 {
 public:
-	AudioDataSourceIO(std::unique_ptr<AudioDataSource> && a_Source):
-		AudioDataSourceChain(std::move(a_Source))
+	AudioDataSourceIO(std::shared_ptr<AudioDataSource> a_Source):
+		AudioDataSourceChain(a_Source)
 	{
 		QIODevice::open(QIODevice::ReadOnly);
 	}
@@ -175,6 +169,7 @@ public:
 		}
 
 		auto res = static_cast<qint64>(AudioDataSourceChain::read(a_Data, static_cast<size_t>(a_MaxLen)));
+		/*
 		#ifdef _DEBUG
 			static auto lastMsec = TimeSinceStart::msecElapsed();
 			auto msecNow = TimeSinceStart::msecElapsed();
@@ -182,6 +177,7 @@ public:
 				<< msecNow - lastMsec << " msec";
 			lastMsec = msecNow;
 		#endif  // _DEBUG
+		*/
 		return res;
 	}
 

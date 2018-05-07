@@ -14,6 +14,7 @@
 #include "DlgPickTemplate.h"
 #include "DlgQuickPlayer.h"
 #include "DlgBackgroundTaskList.h"
+#include "PlaybackBuffer.h"
 
 
 
@@ -24,9 +25,7 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	m_UI(new Ui::PlayerWindow),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_Player(a_Player),
-	m_UpdateUITimer(new QTimer),
-	m_IsInternalPositionUpdate(false)
+	m_Player(a_Player)
 {
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
@@ -34,6 +33,7 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
+	m_UI->waveform->setPlayer(m_Player);
 
 	#if 0
 	// DEBUG: Add all songs into the playlist, to ease debugging:
@@ -55,16 +55,10 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
 	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
 	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
-	connect(&m_Player,                &Player::startedPlayback,   this, &PlayerWindow::updatePositionRange);
-	connect(m_UpdateUITimer.get(),    &QTimer::timeout,           this, &PlayerWindow::updateTimePos);
-	connect(m_UI->hsPosition,         &QSlider::valueChanged,     this, &PlayerWindow::setTimePos);
 	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
 	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
 	connect(m_UI->btnTools,           &QPushButton::clicked,      this, &PlayerWindow::showToolsMenu);
 	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
-
-	// Update the UI every 200 msec:
-	m_UpdateUITimer->start(200);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -251,49 +245,6 @@ void PlayerWindow::addFromTemplate()
 		return;
 	}
 	m_Player.playlist().addFromTemplate(m_DB, *tmpl);
-}
-
-
-
-
-
-void PlayerWindow::updatePositionRange()
-{
-	auto length = static_cast<int>(m_Player.playlist().currentItem()->displayLength() + 0.5);
-	m_UI->hsPosition->setMaximum(length);
-	updateTimePos();
-}
-
-
-
-
-
-
-void PlayerWindow::updateTimePos()
-{
-	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
-	auto curItem = m_Player.playlist().currentItem();
-	auto length = (curItem == nullptr) ? 0 : static_cast<int>(curItem->displayLength() + 0.5);
-	auto remaining = length - position;
-	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));
-	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
-	m_IsInternalPositionUpdate = true;
-	m_UI->hsPosition->setValue(position);
-	m_IsInternalPositionUpdate = false;
-}
-
-
-
-
-
-void PlayerWindow::setTimePos(int a_NewValue)
-{
-	if (m_IsInternalPositionUpdate)
-	{
-		// This is an update from the player,not from the user. Bail out
-		return;
-	}
-	m_Player.seekTo(a_NewValue);
 }
 
 

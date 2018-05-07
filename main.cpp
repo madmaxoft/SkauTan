@@ -9,6 +9,7 @@
 #include "HashCalculator.h"
 #include "Player.h"
 #include "PlaylistItemSong.h"
+#include "PlaybackBuffer.h"
 
 
 
@@ -56,10 +57,10 @@ int main(int argc, char *argv[])
 	app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,  &Database::songHashCalculated);
 	app.connect(&mainDB,   &Database::needSongMetadata,         &scanner, &MetadataScanner::queueScanSong);
 	app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,  &Database::songScanned);
-	app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItem * a_Item)
+	app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 		{
 			// Update the "last played" value in the DB:
-			auto spi = dynamic_cast<PlaylistItemSong *>(a_Item);
+			auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
 			if (spi != nullptr)
 			{
 				mainDB.songPlaybackStarted(spi->song());
