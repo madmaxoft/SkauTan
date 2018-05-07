@@ -26,8 +26,7 @@ The player uses FFMPEG's LibAV libraries to decode audio files and play them usi
 QAudioOutput. This has been chosen because Qt's audio decoding doesn't support seeking.
 
 ## Object types
- - Database is the root object, it contains all the other objects' instances for the player (MetadataScanner etc.)
-and also provides DB linkage
+ - Database provides DB linkage and in-memory storage of all persistent data: songs, templates, history.
  - Song is an individual song in the DB, with its metadata
  - Template represents the "recipe" for choosing songs randomly, with the criteria matcher
  - IPlaylistItem is an interface for all playlist items. Multiple descendants are expected - Songs, Pauses, Chimes
