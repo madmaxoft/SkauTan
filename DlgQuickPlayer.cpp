@@ -5,6 +5,7 @@
 #include <QDebug>
 #include "Database.h"
 #include "Player.h"
+#include "Playlist.h"
 
 
 
