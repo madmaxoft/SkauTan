@@ -15,24 +15,18 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 {
 	m_UI->setupUi(this);
 	auto model = new QSqlQueryModel(this);
-	model->setQuery("SELECT "
-		"PlaybackHistory.Timestamp, "
-		"Songs.Genre, "
-		"Songs.Author, "
-		"Songs.Title, "
-		"Songs.FileName "
-		"FROM PlaybackHistory LEFT JOIN Songs ON Songs.RowID = PlaybackHistory.SongID",
-		a_DB.database()
-	);
+	model->setQuery(a_DB.playbackHistorySqlQuery());
 	if (model->lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << ": LastError: " << model->lastError();
 	}
+	/*
 	model->setHeaderData(0, Qt::Horizontal, tr("Last played"));
 	model->setHeaderData(1, Qt::Horizontal, tr("Genre"));
 	model->setHeaderData(2, Qt::Horizontal, tr("Author"));
 	model->setHeaderData(3, Qt::Horizontal, tr("Title"));
 	model->setHeaderData(4, Qt::Horizontal, tr("FileName"));
+	*/
 	m_UI->tblHistory->setModel(model);
 
 	// Stretch the columns to fit in the headers / data:

@@ -9,6 +9,7 @@
 #include <memory>
 #include <QObject>
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include "Song.h"
 #include "Template.h"
 
@@ -53,8 +54,6 @@ public:
 	Note that the SongMetadata entry is kept, in case there are duplicates or the song is re-added later on. */
 	void delSong(const Song & a_Song);
 
-	QSqlDatabase & database() { return m_Database; }
-
 	/** Returns all templates stored in the DB. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
 
@@ -79,6 +78,9 @@ public:
 
 	/** Returns all template items from all templates that have been marked as "favorite". */
 	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
+
+	/** Returns the SQL query that fetches the playback history data from the DB. */
+	QSqlQuery playbackHistorySqlQuery();
 
 
 protected:

@@ -359,6 +359,37 @@ std::vector<Template::ItemPtr> Database::getFavoriteTemplateItems() const
 
 
 
+QSqlQuery Database::playbackHistorySqlQuery()
+{
+	QSqlQuery res(m_Database);
+	if (!res.prepare("SELECT "
+		"PlaybackHistory.Timestamp, "
+		"SongMetadata.ID3Genre, "
+		"SongMetadata.ID3Author, "
+		"SongMetadata.ID3Title, "
+		"SongHashes.FileName "
+		"FROM PlaybackHistory "
+		"LEFT JOIN SongHashes ON PlaybackHistory.SongHash == SongHashes.Hash "
+		"LEFT JOIN SongMetadata ON PlaybackHistory.SongHash == SongMetadata.Hash"
+	))
+	{
+		qWarning() << "Cannot prep playback history query: " << res.lastError();
+		return QSqlQuery();
+	}
+
+	if (!res.exec())
+	{
+		qWarning() << "Cannot exec playback history query: " << res.lastError();
+		return QSqlQuery();
+	}
+
+	return res;
+}
+
+
+
+
+
 void Database::fixupTables()
 {
 	static const std::vector<std::pair<QString, QString>> cdSongHashes =
