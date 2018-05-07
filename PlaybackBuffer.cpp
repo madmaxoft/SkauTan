@@ -8,8 +8,11 @@
 
 PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_OutputFormat):
 	m_OutputFormat(a_OutputFormat),
-	m_RingBuffer(512 * 1024),
-	m_CurrentSongPosition(0)
+	m_WritePos(0),
+	m_ReadPos(0),
+	m_BufferLimit(0),
+	m_ShouldAbort(false),
+	m_HasError(false)
 {
 }
 
@@ -19,9 +22,8 @@ PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_OutputFormat):
 
 void PlaybackBuffer::abort()
 {
-	qDebug() << ": Aborting playback buffer processing.";
-	m_RingBuffer.abort();
-	qDebug() << ": Playback buffer abort signalled.";
+	m_ShouldAbort = true;
+	m_CVHasData.wakeAll();  // If anyone is stuck in waitForData(), wake them up
 }
 
 
@@ -30,10 +32,15 @@ void PlaybackBuffer::abort()
 
 bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 {
-	auto numBytesWritten = m_RingBuffer.writeData(reinterpret_cast<const char *>(a_Data), a_Len);
-	if (numBytesWritten != a_Len)
+	QMutexLocker lock(&m_Mtx);
+	assert(!m_AudioData.empty());  // Has duration been set?
+	auto numBytesLeft = m_AudioData.size() - m_WritePos;
+	auto numBytesToWrite = std::min(a_Len, numBytesLeft);
+	memcpy(m_AudioData.data() + m_WritePos, a_Data, numBytesToWrite);
+	m_WritePos += numBytesToWrite;
+	m_CVHasData.wakeAll();
+	if (m_ShouldAbort.load())
 	{
-		qDebug() << ": Aborted.";
 		return false;
 	}
 	return true;
@@ -43,9 +50,22 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 
 
 
+void PlaybackBuffer::setDuration(double a_DurationSec)
+{
+	QMutexLocker lock(&m_Mtx);
+	assert(m_AudioData.empty());  // Can be called only once
+	m_BufferLimit = static_cast<size_t>(m_OutputFormat.bytesForDuration(static_cast<qint64>(a_DurationSec * 1000000)));
+	m_AudioData.resize(m_BufferLimit);
+}
+
+
+
+
+
 void PlaybackBuffer::decodedEOF()
 {
-	m_RingBuffer.writeEOF();
+	QMutexLocker lock(&m_Mtx);
+	m_BufferLimit = m_WritePos;
 }
 
 
@@ -54,7 +74,7 @@ void PlaybackBuffer::decodedEOF()
 
 double PlaybackBuffer::currentSongPosition() const
 {
-	return static_cast<double>(m_CurrentSongPosition) / m_OutputFormat.sampleRate();
+	return static_cast<double>(m_OutputFormat.durationForBytes(static_cast<qint32>(m_ReadPos))) / 1000000;
 }
 
 
@@ -63,16 +83,21 @@ double PlaybackBuffer::currentSongPosition() const
 
 void PlaybackBuffer::seekTo(double a_Time)
 {
-	m_CurrentSongPosition = static_cast<size_t>(a_Time * m_OutputFormat.sampleRate());
+	m_ReadPos = static_cast<size_t>(m_OutputFormat.bytesForDuration(static_cast<qint64>(a_Time * 1000000)));
 }
 
 
 
 
 
-void PlaybackBuffer::clear()
+bool PlaybackBuffer::waitForData()
 {
-	m_RingBuffer.clear();
+	QMutexLocker lock(&m_Mtx);
+	while ((m_WritePos == 0) && !m_HasError && !m_ShouldAbort)
+	{
+		m_CVHasData.wait(&m_Mtx);
+	}
+	return !m_HasError;
 }
 
 
@@ -81,20 +106,14 @@ void PlaybackBuffer::clear()
 
 size_t PlaybackBuffer::read(void * a_Data, size_t a_MaxLen)
 {
+	QMutexLocker lock(&m_Mtx);
+	assert(m_ReadPos <= m_AudioData.size());
+	auto numBytesLeft = m_AudioData.size() - m_ReadPos;
 	auto numBytesToRead = a_MaxLen & ~0x03u;  // Only read in multiples of 4 bytes
-	auto numBytesRead = m_RingBuffer.readData(a_Data, numBytesToRead);
-
-	// If there's non-multiple of 4 at the end of the data, trim it off:
-	if ((numBytesRead & 0x03u) != 0)
-	{
-		qDebug() << ": Dropping non-aligned data at the end of the buffer";
-		numBytesRead = numBytesRead & ~0x03u;
-	}
-
-	// Advance the internal position:
-	m_CurrentSongPosition += numBytesRead / 4;
-
-	return numBytesRead;
+	numBytesToRead = std::min(numBytesLeft, numBytesToRead);
+	memcpy(a_Data, m_AudioData.data() + m_ReadPos.load(), numBytesToRead);
+	m_ReadPos += numBytesToRead;
+	return numBytesToRead;
 }
 
 

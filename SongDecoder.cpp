@@ -30,19 +30,6 @@ SongDecoder::~SongDecoder()
 
 
 
-void SongDecoder::seekTo(double a_Time)
-{
-	// Seek in the decoder:
-	m_FmtCtx->seekTo(a_Time);
-
-	// Seek in the PlaybackBuffer:
-	Super::seekTo(a_Time);
-}
-
-
-
-
-
 void SongDecoder::decode()
 {
 	decodeInternal();

@@ -513,10 +513,7 @@ Format::Format(std::shared_ptr<FileIO> a_IO):
 	m_Context(avformat_alloc_context()),
 	m_IO(a_IO),
 	m_AudioOutput(nullptr),
-	m_AudioStreamIdx(-1),
-	m_Buffer(nullptr),
-	m_BufferSize(0),
-	m_ShouldSeek(false)
+	m_AudioStreamIdx(-1)
 {
 	if (m_Context != nullptr)
 	{
@@ -534,10 +531,6 @@ Format::~Format()
 	{
 		av_freep(m_Context->pb);
 		avformat_close_input(&m_Context);
-	}
-	if (m_Buffer != nullptr)
-	{
-		free(m_Buffer);
 	}
 }
 
@@ -576,6 +569,7 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 		return false;
 	}
 	m_AudioOutput = a_PlaybackBuffer;
+	a_PlaybackBuffer->setDuration(static_cast<double>(m_Context->duration) / 1000000);
 	qDebug() << ": Audio routing established, stream index is " << m_AudioStreamIdx;
 	return true;
 }
@@ -641,12 +635,6 @@ void Format::decode()
 	m_ShouldTerminate = false;
 	while (!m_ShouldTerminate)
 	{
-		if (m_ShouldSeek)
-		{
-			av_seek_frame(m_Context, -1, m_SeekTo, 0);
-			m_AudioOutput->clear();
-			m_ShouldSeek = false;
-		}
 		auto ret = av_read_frame(m_Context, &packet);
 		if (ret < 0)
 		{
@@ -682,16 +670,6 @@ void Format::decode()
 		av_packet_unref(&packet);
 	}
 	qDebug() << ": Decoding done.";
-}
-
-
-
-
-
-void Format::seekTo(double a_Time)
-{
-	m_SeekTo = static_cast<int64_t>(a_Time * AV_TIME_BASE);
-	m_ShouldSeek = true;
 }
 
 

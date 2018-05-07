@@ -221,9 +221,6 @@ namespace AVPP
 		Blocks until the entire input is decoded (or seeked out of, using seekTo() from another thread). */
 		void decode();
 
-		/** Seeks to the specified timestamp, in fractional seconds. */
-		void seekTo(double a_Time);
-
 	protected:
 
 		/** The context itself. */
@@ -245,21 +242,8 @@ namespace AVPP
 		/** When set to true, the decoding loop will terminate. */
 		bool m_ShouldTerminate;
 
-		/** The buffer used for transforming data sample formats. */
-		int16_t * m_Buffer;
-
-		/** The allocated size of m_Buffer, in bytes. */
-		size_t m_BufferSize;
-
 		/** The resampler used to conver audio data from LibAV output to m_AudioOutput. */
 		std::unique_ptr<Resampler> m_Resampler;
-
-		/** Set to true when there's a seek request (with a valid m_SeekTo).
-		The decoding thread checks this periodically and seeks, if needed. */
-		std::atomic<bool> m_ShouldSeek;
-
-		/** The timestamp to seek to, in units for av_seek_frame(). */
-		std::atomic<int64_t> m_SeekTo;
 
 
 		/** Creates a new instance and binds it to the specified IO. */
