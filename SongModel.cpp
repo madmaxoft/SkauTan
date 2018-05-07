@@ -171,10 +171,10 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colLength:                    return formatLength(*song);
 				case colLastPlayed:                return formatLastPlayed(*song);
 				case colRating:                    return formatRating(*song);
-				case colManualAuthor:              return song->author();
-				case colManualTitle:               return song->title();
-				case colManualGenre:               return song->genre();
-				case colManualMeasuresPerMinute:   return formatMPM(song->measuresPerMinute());
+				case colManualAuthor:              return song->tagManual().m_Author;
+				case colManualTitle:               return song->tagManual().m_Title;
+				case colManualGenre:               return song->tagManual().m_Genre;
+				case colManualMeasuresPerMinute:   return formatMPM(song->tagManual().m_MeasuresPerMinute);
 				case colFileNameAuthor:            return song->tagFileName().m_Author;
 				case colFileNameTitle:             return song->tagFileName().m_Title;
 				case colFileNameGenre:             return song->tagFileName().m_Genre;
