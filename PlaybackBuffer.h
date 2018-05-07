@@ -52,7 +52,21 @@ public:
 
 	/** Returns the whole internal buffer for audio data from the decoder.
 	Note that this may be accessed from other threads only after the duration has been set. */
-	const std::vector<char> & audioData();
+	const std::vector<char> & audioData() const { return m_AudioData; }
+
+	/** Returns the current read position within the buffer.
+	Used by WaveformDisplay to draw the current position indicator. */
+	size_t readPos() const { return m_ReadPos; }
+
+	/** Returns the current write position within the buffer.
+	Used by the WaveformDisplay to know where to finish rendering. */
+	size_t writePos() const { return m_WritePos; }
+
+	/** Returns the total size of the audio data buffer.
+	Used by the WaveformDisplay to know how many samples to process in total. */
+	size_t bufferLimit() const { return m_BufferLimit; }
+
+	bool isDataComplete() const { return (m_WritePos.load() == m_BufferLimit.load()); }
 
 
 protected:
@@ -61,7 +75,7 @@ protected:
 	QAudioFormat m_OutputFormat;
 
 	/** Indicates that there is no more data coming in from the decoder.
-	Reads from m_RingBuffer should read all the remaining data and then return EOF. */
+	Marks the audio data as complete. */
 	void decodedEOF();
 
 
@@ -77,7 +91,7 @@ private:
 	std::vector<char> m_AudioData;
 
 	/** Position in m_AudioData where the next write operation should start. */
-	size_t m_WritePos;
+	std::atomic<size_t> m_WritePos;
 
 	/** Position in m_AudioData where the next read operation should start. */
 	std::atomic<size_t> m_ReadPos;
@@ -85,7 +99,7 @@ private:
 	/** The maximum data position in m_AudioData.
 	Normally set to m_AudioData size, but if the decoder encounters an early EOF, it will lower the limit
 	to the current write position. */
-	size_t m_BufferLimit;
+	std::atomic<size_t> m_BufferLimit;
 
 	/** A flag specifying if the object should abort its work. */
 	std::atomic<bool> m_ShouldAbort;
@@ -93,6 +107,10 @@ private:
 	/** A flag that specifies that an error has occured while decoding. */
 	bool m_HasError;
 };
+
+using PlaybackBufferPtr = std::shared_ptr<PlaybackBuffer>;
+
+Q_DECLARE_METATYPE(PlaybackBufferPtr);
 
 
 

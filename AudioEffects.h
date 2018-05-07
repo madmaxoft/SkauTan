@@ -29,8 +29,7 @@ class AudioFadeOut:
 	using Super = AudioDataSourceChain;
 
 public:
-	AudioFadeOut(std::unique_ptr<AudioDataSource> && a_Lower);
-	AudioFadeOut(AudioDataSource * a_Lower);
+	AudioFadeOut(std::shared_ptr<AudioDataSource> a_Lower);
 
 	// AudioDataSource overrides:
 	virtual void fadeOut(int a_Msec) override;
@@ -72,9 +71,7 @@ class AudioTempoChange:
 	using Super = AudioDataSourceChain;
 
 public:
-
-	AudioTempoChange(std::unique_ptr<AudioDataSource> && a_Lower);
-	AudioTempoChange(AudioDataSource * a_Lower);
+	AudioTempoChange(std::shared_ptr<AudioDataSource> a_Lower);
 
 	virtual ~AudioTempoChange() override;
 

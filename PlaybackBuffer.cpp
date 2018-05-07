@@ -64,8 +64,7 @@ void PlaybackBuffer::setDuration(double a_DurationSec)
 
 void PlaybackBuffer::decodedEOF()
 {
-	QMutexLocker lock(&m_Mtx);
-	m_BufferLimit = m_WritePos;
+	m_BufferLimit = m_WritePos.load();
 }
 
 

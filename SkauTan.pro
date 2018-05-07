@@ -87,6 +87,7 @@ SOURCES += \
 	DlgChooseImportTemplates.cpp \
 	BackgroundTasks.cpp \
 	DlgBackgroundTaskList.cpp \
+	WaveformDisplay.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -119,6 +120,7 @@ HEADERS += \
 	DlgChooseImportTemplates.h \
 	BackgroundTasks.h \
 	DlgBackgroundTaskList.h \
+	WaveformDisplay.h \
 
 FORMS += \
 	PlayerWindow.ui \

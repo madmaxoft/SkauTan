@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <QString>
+#include <QObject>
 
 
 
@@ -54,6 +55,8 @@ public:
 };
 
 using IPlaylistItemPtr = std::shared_ptr<IPlaylistItem>;
+
+Q_DECLARE_METATYPE(IPlaylistItemPtr);
 
 
 

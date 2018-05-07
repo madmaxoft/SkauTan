@@ -23,7 +23,7 @@ protected slots:
 
 	/** Starts playing the specified track.
 	Connects self to Player's startingPlayback() in the class constructor. */
-	void startPlaying(IPlaylistItem * a_Track);
+	void startPlaying(IPlaylistItemPtr a_Track);
 
 
 protected:
@@ -300,7 +300,7 @@ void Player::start()
 		{
 			// We're stopped, start the playback:
 			qDebug() << "Player: Starting playback of track " << track->displayName();
-			emit startingPlayback(track.get());
+			emit startingPlayback(track);
 		}
 	}
 }
@@ -434,9 +434,9 @@ void Player::OutputThread::run()
 
 
 
-void Player::OutputThread::startPlaying(IPlaylistItem * a_Track)
+void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 {
-	auto decoder = a_Track->startDecoding(m_Format);
+	PlaybackBufferPtr decoder(a_Track->startDecoding(m_Format));
 	if (decoder == nullptr)
 	{
 		qDebug() << "Cannot start playback, decoder returned failure";
@@ -449,16 +449,19 @@ void Player::OutputThread::startPlaying(IPlaylistItem * a_Track)
 		return;
 	}
 	auto audioDataSource =
-		std::make_unique<AudioFadeOut>(
-		std::make_unique<AudioTempoChange>(
-		std::move(decoder)
+		std::make_shared<AudioFadeOut>(
+		std::make_shared<AudioTempoChange>(
+		decoder
 	));
 	audioDataSource->setTempo(m_Player.m_Tempo);
-	m_Player.m_AudioDataSource = std::make_unique<AudioDataSourceIO>(std::move(audioDataSource));
+	m_Player.m_AudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
 	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;
 	m_Output->setBufferSize(bufSize);
 	m_Output->start(m_Player.m_AudioDataSource.get());
 	m_Player.m_State = psPlaying;
-	emit m_Player.startedPlayback(a_Track);
+	QMetaObject::invokeMethod(
+		&m_Player, "startedPlayback",
+		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, decoder)
+	);
 }
