@@ -114,6 +114,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 
 	DlgSongs dlg(m_DB, m_MetadataScanner, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
+	dlg.showMaximized();
 	dlg.exec();
 }
 
