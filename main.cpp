@@ -1,5 +1,8 @@
 #include "PlayerWindow.h"
 #include <QApplication>
+#include <QTranslator>
+#include <QLocale>
+#include <QDebug>
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -11,12 +14,36 @@
 
 
 
+void initTranslations(QApplication & a_App)
+{
+	auto translator = std::make_unique<QTranslator>();
+	auto locale = QLocale::system();
+	if (!translator->load("SkauTan_" + locale.name(), "translations"))
+	{
+		qWarning() << "Could not load translations for locale " << locale.name() << ", trying all UI languages " << locale.uiLanguages();
+		if (!translator->load(locale, "SkauTan", "_", "translations"))
+		{
+			qWarning() << "Could not load translations for " << locale;
+			return;
+		}
+	}
+	a_App.installTranslator(translator.release());
+}
+
+
+
+
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 
+	// Initialize translations:
+	initTranslations(app);
+
 	// Initialize singletons / subsystems:
 	BackgroundTasks::get();
+	qRegisterMetaType<SongPtr>();
 
 	// Create the main app objects:
 	Database mainDB;

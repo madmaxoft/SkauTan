@@ -127,6 +127,8 @@ protected:
 
 using SongPtr = std::shared_ptr<Song>;
 
+Q_DECLARE_METATYPE(SongPtr);
+
 
 
 
