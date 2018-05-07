@@ -7,6 +7,7 @@
 #include "Database.h"
 #include "MetadataScanner.h"
 #include "AVPP.h"
+#include "Stopwatch.h"
 
 
 
@@ -53,7 +54,11 @@ DlgSongs::DlgSongs(
 	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,  this, &DlgSongs::rescanMetadata);
 	connect(&m_SongModel,            &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
 
-	m_UI->tblSongs->resizeColumnsToContents();
+	// Resize the table columns to fit the song data:
+	{
+		STOPWATCH("Resize song columns");
+		m_UI->tblSongs->resizeColumnsToContents();
+	}
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
