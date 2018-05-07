@@ -7,6 +7,8 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlField>
+#include <QThread>
+#include <QApplication>
 
 
 
@@ -118,7 +120,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 
 	// Insert into DB:
 	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT INTO Songs (FileName, FileSize) VALUES(?, ?)"))
+	if (!query.prepare("INSERT INTO SongHashes (FileName, FileSize) VALUES(?, ?)"))
 	{
 		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
@@ -134,7 +136,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	}
 
 	// Insert into memory:
-	auto song = std::make_shared<Song>(a_FileName, a_FileSize, query.lastInsertId().toLongLong());
+	auto song = std::make_shared<Song>(a_FileName, a_FileSize);
 	m_Songs.push_back(song);
 	emit songFileAdded(song);
 }
@@ -158,13 +160,13 @@ void Database::delSong(const Song & a_Song)
 
 		// Remove from the DB:
 		QSqlQuery query(m_Database);
-		if (!query.prepare("DELETE FROM Songs WHERE RowID = ?"))
+		if (!query.prepare("DELETE FROM SongHashes WHERE FileName = ?"))
 		{
 			qWarning() << ": Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_Song.dbRowId());
+		query.addBindValue(a_Song.fileName());
 		if (!query.exec())
 		{
 			qWarning() << ": Cannot exec statement: " << query.lastError();
@@ -359,37 +361,37 @@ std::vector<Template::ItemPtr> Database::getFavoriteTemplateItems() const
 
 void Database::fixupTables()
 {
-	/* For songs, we want unique RowID keys even after deletion, so that bound data doesn't get re-assigned
-	to newly added songs.
-	See the SQLite docs for details: https://sqlite.org/autoinc.html
-	*/
-	static const std::vector<std::pair<QString, QString>> cdSongs =
+	static const std::vector<std::pair<QString, QString>> cdSongHashes =
 	{
-		{"RowID",                     "INTEGER PRIMARY KEY AUTOINCREMENT"},
 		{"FileName",                  "TEXT"},
 		{"FileSize",                  "NUMBER"},
 		{"Hash",                      "BLOB"},
-		{"Length",                    "NUMBER"},
-		{"Author",                    "TEXT"},
-		{"Title",                     "TEXT"},
-		{"Genre",                     "TEXT"},
-		{"MeasuresPerMinute",         "NUMBER"},
+	};
+
+	static const std::vector<std::pair<QString, QString>> cdSongMetadata =
+	{
+		{"Hash",                      "BLOB PRIMARY KEY"},
+		{"Length",                    "NUMERIC"},
+		{"ManualAuthor",              "TEXT"},
+		{"ManualTitle",               "TEXT"},
+		{"ManualGenre",               "TEXT"},
+		{"ManualMeasuresPerMinute",   "NUMERIC"},
 		{"FileNameAuthor",            "TEXT"},
 		{"FileNameTitle",             "TEXT"},
 		{"FileNameGenre",             "TEXT"},
-		{"FileNameMeasuresPerMinute", "NUMBER"},
+		{"FileNameMeasuresPerMinute", "NUMERIC"},
 		{"ID3Author",                 "TEXT"},
 		{"ID3Title",                  "TEXT"},
 		{"ID3Genre",                  "TEXT"},
-		{"ID3MeasuresPerMinute",      "NUMBER"},
+		{"ID3MeasuresPerMinute",      "NUMERIC"},
 		{"LastPlayed",                "DATETIME"},
-		{"Rating",                    "NUMBER"},
+		{"Rating",                    "NUMERIC"},
 		{"LastMetadataUpdated",       "DATETIME"},
 	};
 
 	static const std::vector<std::pair<QString, QString>> cdPlaybackHistory =
 	{
-		{"SongID",    "NUMBER"},
+		{"SongHash",  "BLOB"},
 		{"Timestamp", "DATETIME"},
 	};
 
@@ -424,7 +426,8 @@ void Database::fixupTables()
 		{"Value",        "TEXT"},     // The value against which to compare
 	};
 
-	fixupTable("Songs",           cdSongs);
+	fixupTable("SongHashes",      cdSongHashes);
+	fixupTable("SongMetadata",    cdSongMetadata);
 	fixupTable("PlaybackHistory", cdPlaybackHistory);
 	fixupTable("Templates",       cdTemplates);
 	fixupTable("TemplateItems",   cdTemplateItems);
@@ -502,7 +505,7 @@ void Database::loadSongs()
 	// Initialize the query:
 	QSqlQuery query(m_Database);
 	query.setForwardOnly(true);
-	if (!query.exec("SELECT RowID, * FROM Songs"))
+	if (!query.exec("SELECT * FROM SongHashes LEFT JOIN SongMetadata ON SongHashes.Hash == SongMetadata.Hash"))
 	{
 		qWarning() << ": Cannot query songs from the DB: " << query.lastError();
 		assert(!"DB error");
@@ -510,7 +513,6 @@ void Database::loadSongs()
 	}
 	auto fiFileName            = query.record().indexOf("FileName");
 	auto fiFileSize            = query.record().indexOf("FileSize");
-	auto fiRowId               = query.record().indexOf("RowID");
 	auto fiHash                = query.record().indexOf("Hash");
 	auto fiLength              = query.record().indexOf("Length");
 	auto fiLastPlayed          = query.record().indexOf("LastPlayed");
@@ -518,10 +520,10 @@ void Database::loadSongs()
 	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
 	std::array<int, 4> fisManual
 	{{
-		query.record().indexOf("Author"),
-		query.record().indexOf("Title"),
-		query.record().indexOf("Genre"),
-		query.record().indexOf("MeasuresPerMinute"),
+		query.record().indexOf("ManualAuthor"),
+		query.record().indexOf("ManualTitle"),
+		query.record().indexOf("ManualGenre"),
+		query.record().indexOf("ManualMeasuresPerMinute"),
 	}};
 	std::array<int, 4> fisFileName
 	{{
@@ -557,7 +559,6 @@ void Database::loadSongs()
 		auto song = std::make_shared<Song>(
 			query.value(fiFileName).toString(),
 			query.value(fiFileSize).toULongLong(),
-			query.value(fiRowId).toLongLong(),
 			fieldValue(rec.field(fiHash)),
 			fieldValue(rec.field(fiLength)),
 			tagFromFields(rec, fisManual),
@@ -992,10 +993,81 @@ void Database::saveTemplateFilters(
 
 
 
-void Database::songScanned(SongPtr a_Song)
+void Database::saveSongHash(SongPtr a_Song)
 {
-	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
-	saveSong(a_Song);
+	QSqlQuery query(m_Database);
+	if (!query.prepare("UPDATE SongHashes SET "
+		"FileSize = ?, Hash = ? "
+		"WHERE FileName = ?")
+	)
+	{
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.addBindValue(a_Song->fileSize());
+	query.addBindValue(a_Song->hash());
+	query.addBindValue(a_Song->fileName());
+	if (!query.exec())
+	{
+		qWarning() << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+}
+
+
+
+
+
+void Database::saveSongMetadata(SongPtr a_Song)
+{
+	assert(a_Song->hash().isValid());
+
+	QSqlQuery query(m_Database);
+	if (!query.prepare("UPDATE SongMetadata SET "
+		"Length = ?, "
+		"ManualAuthor = ?, ManualTitle = ?, ManualGenre = ?, ManualMeasuresPerMinute = ?, "
+		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
+		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
+		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
+		"WHERE Hash = ?")
+	)
+	{
+		qWarning() << "Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.addBindValue(a_Song->length());
+	query.addBindValue(a_Song->tagManual().m_Author);
+	query.addBindValue(a_Song->tagManual().m_Title);
+	query.addBindValue(a_Song->tagManual().m_Genre);
+	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->tagFileName().m_Author);
+	query.addBindValue(a_Song->tagFileName().m_Title);
+	query.addBindValue(a_Song->tagFileName().m_Genre);
+	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->tagId3().m_Author);
+	query.addBindValue(a_Song->tagId3().m_Title);
+	query.addBindValue(a_Song->tagId3().m_Genre);
+	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->lastPlayed());
+	query.addBindValue(a_Song->rating());
+	query.addBindValue(a_Song->lastMetadataUpdated());
+	query.addBindValue(a_Song->hash());
+	if (!query.exec())
+	{
+		qWarning() << "Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	if (query.numRowsAffected() != 1)
+	{
+		qWarning() << "Statement didn't modify one row: " << query.numRowsAffected()
+			<< ", Song " << a_Song->fileName() << ", hash " << a_Song->hash();
+		assert(!"DB error");
+		return;
+	}
 }
 
 
@@ -1009,29 +1081,72 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 	saveSong(a_Song);
 
 	// Add a history playlist record:
-	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT INTO PlaybackHistory (SongID, Timestamp) VALUES (?, ?)"))
+	if (a_Song->hash().isValid())
 	{
-		qWarning() << ": Cannot prepare statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
-	query.bindValue(0, a_Song->dbRowId());
-	query.bindValue(1, now);
-	if (!query.exec())
-	{
-		qWarning() << ": Cannot exec statement: " << query.lastError();
-		assert(!"DB error");
-		return;
+		QSqlQuery query(m_Database);
+		if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
+		{
+			qWarning() << ": Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.bindValue(0, a_Song->hash());
+		query.bindValue(1, now);
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
 	}
 }
 
+
+
+
+
 void Database::songHashCalculated(SongPtr a_Song)
 {
-	saveSong(a_Song);
-	if (a_Song->needsMetadataRescan())
+	// Insert the metadata record, now that we know the song hash:
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT OR IGNORE INTO SongMetadata (Hash) VALUES (?)"))
 	{
-		emit needSongMetadata(a_Song);
+		qWarning() << "Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.bindValue(0, a_Song->hash());
+	if (!query.exec())
+	{
+		qWarning() << "Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+
+	// If the hash was already in the DB, copy the metadata from the duplicate song:
+	auto isDuplicate = (query.numRowsAffected() == 0);
+	if (isDuplicate)
+	{
+		for (const auto & s: m_Songs)
+		{
+			if ((s != a_Song) && (s->hash() == a_Song->hash()))
+			{
+				a_Song->copyMetadataFrom(*s);
+				break;
+			}
+		}
+	}
+
+	// Save into the DB:
+	saveSong(a_Song);
+
+	// Rescan metadata, if needed:
+	if (!isDuplicate)
+	{
+		if (a_Song->needsMetadataRescan())
+		{
+			emit needSongMetadata(a_Song);
+		}
 	}
 }
 
@@ -1042,52 +1157,24 @@ void Database::songHashCalculated(SongPtr a_Song)
 void Database::saveSong(SongPtr a_Song)
 {
 	assert(a_Song != nullptr);
+	assert(QThread::currentThread() == QApplication::instance()->thread());
 
-	QSqlQuery query(m_Database);
-	if (!query.prepare("UPDATE Songs SET "
-		"FileName = ?, FileSize = ?, Hash = ?, "
-		"Length = ?, Genre = ?, MeasuresPerMinute = ?, "
-		"Author = ?, Title = ?, "
-		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
-		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
-		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
-		"WHERE RowID = ?")
-	)
-	{
-		qWarning() << ": Cannot prepare statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
-	query.addBindValue(a_Song->fileName());
-	query.addBindValue(a_Song->fileSize());
-	query.addBindValue(a_Song->hash());
-	query.addBindValue(a_Song->length());
-	query.addBindValue(a_Song->genre());
-	query.addBindValue(a_Song->measuresPerMinute());
-	query.addBindValue(a_Song->author());
-	query.addBindValue(a_Song->title());
-	query.addBindValue(a_Song->tagFileName().m_Author);
-	query.addBindValue(a_Song->tagFileName().m_Title);
-	query.addBindValue(a_Song->tagFileName().m_Genre);
-	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute);
-	query.addBindValue(a_Song->tagId3().m_Author);
-	query.addBindValue(a_Song->tagId3().m_Title);
-	query.addBindValue(a_Song->tagId3().m_Genre);
-	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute);
-	query.addBindValue(a_Song->lastPlayed());
-	query.addBindValue(a_Song->rating());
-	query.addBindValue(a_Song->lastMetadataUpdated());
-	query.addBindValue(a_Song->dbRowId());
-	if (!query.exec())
-	{
-		qWarning() << ": Cannot exec statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
+	qDebug() << "Saving song " << a_Song->fileName();
 
+	saveSongHash(a_Song);
+	if (a_Song->hash().isValid())
+	{
+		saveSongMetadata(a_Song);
+	}
 	emit songSaved(a_Song);
 }
 
 
 
 
+
+void Database::songScanned(SongPtr a_Song)
+{
+	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
+	saveSong(a_Song);
+}

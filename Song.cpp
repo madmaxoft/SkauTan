@@ -8,12 +8,10 @@
 
 Song::Song(
 	const QString & a_FileName,
-	qulonglong a_FileSize,
-	qlonglong a_DbRowId
+	qulonglong a_FileSize
 ):
 	m_FileName(a_FileName),
-	m_FileSize(a_FileSize),
-	m_DbRowId(a_DbRowId)
+	m_FileSize(a_FileSize)
 {
 }
 
@@ -24,7 +22,6 @@ Song::Song(
 Song::Song(
 	QString && a_FileName,
 	qulonglong a_FileSize,
-	qlonglong a_DbRowId,
 	QVariant && a_Hash,
 	QVariant && a_Length,
 	Tag && a_TagManual,
@@ -36,7 +33,6 @@ Song::Song(
 ):
 	m_FileName(std::move(a_FileName)),
 	m_FileSize(a_FileSize),
-	m_DbRowId(a_DbRowId),
 	m_Hash(std::move(a_Hash)),
 	m_Length(std::move(a_Length)),
 	m_TagManual(std::move(a_TagManual)),
@@ -46,7 +42,6 @@ Song::Song(
 	m_Rating(std::move(a_Rating)),
 	m_LastMetadataUpdated(std::move(a_LastMetadataUpdated))
 {
-	// Nothing needed
 }
 
 
@@ -158,6 +153,21 @@ bool Song::needsMetadataRescan() const
 		return (m_LastMetadataUpdated.toDateTime() < QDateTime::currentDateTimeUtc().addDays(-14));
 	}
 	return false;
+}
+
+
+
+
+
+void Song::copyMetadataFrom(const Song & a_Src)
+{
+	m_Length              = a_Src.m_Length;
+	m_TagManual           = a_Src.m_TagManual;
+	m_TagFileName         = a_Src.m_TagFileName;
+	m_TagId3              = a_Src.m_TagId3;
+	m_LastPlayed          = a_Src.m_LastPlayed;
+	m_Rating              = a_Src.m_Rating;
+	m_LastMetadataUpdated = a_Src.m_LastMetadataUpdated;
 }
 
 

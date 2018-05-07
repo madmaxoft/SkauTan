@@ -10,14 +10,15 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include "Song.h"
-#include "Playlist.h"
 #include "Template.h"
 
 
 
 
 
-/** The central object that binds everything together and provides DB serialization. */
+/** The storage for all data that is persisted across sessions.
+Stores the song library, the templates and playback history.
+Note that all DB-access functions are not thread-safe. */
 class Database:
 	public QObject
 {
@@ -33,9 +34,6 @@ public:
 	Only one DB can ever be open. */
 	void open(const QString & a_DBFileName);
 
-	/** Returns the names of all the historical playlists. */
-	std::vector<QString> playlistNames();
-
 	/** Returns all songs currently known in the DB. */
 	const std::vector<SongPtr> & songs() const { return m_Songs; }
 
@@ -50,8 +48,9 @@ public:
 	Skips duplicate entries. */
 	void addSongFile(const QString & a_FileName, qulonglong a_FileSize);
 
-	/** Removes the specified song entry from the DB.
-	Assumes (doesn't check) that the song is contained within this DB. */
+	/** Removes the specified song from the song list, and from DB's SongHashes table.
+	Assumes (asserts) that the song is contained within this DB.
+	Note that the SongMetadata entry is kept, in case there are duplicates or the song is re-added later on. */
 	void delSong(const Song & a_Song);
 
 	QSqlDatabase & database() { return m_Database; }
@@ -86,9 +85,6 @@ protected:
 
 	/** The DB connection .*/
 	QSqlDatabase m_Database;
-
-	/** The current playlist. */
-	std::shared_ptr<Playlist> m_Playlist;
 
 	/** All the known songs. */
 	std::vector<SongPtr> m_Songs;
@@ -134,6 +130,12 @@ protected:
 		const Template::Filter & a_Filter,
 		qlonglong a_ParentFilterRowId
 	);
+
+	/** Updates the song hash in the SongHashes DB table. */
+	void saveSongHash(SongPtr a_Song);
+
+	/** Updates the song metadata in the SongMetadata DB table. */
+	void saveSongMetadata(SongPtr a_Song);
 
 
 signals:

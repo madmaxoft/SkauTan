@@ -40,15 +40,13 @@ public:
 	/** Creates a new instance that has only the file name and size set, all the other metadata are empty.
 	Used when adding new files. */
 	explicit Song(const QString & a_FileName,
-		qulonglong a_FileSize,
-		qlonglong a_DbRowId
+		qulonglong a_FileSize
 	);
 
 	/** Creates a new instance with all fields set.
 	Used when loading songs from the DB. */
 	explicit Song(QString && a_FileName,
 		qulonglong a_FileSize,
-		qlonglong a_DbRowId,
 		QVariant && a_Hash,
 		QVariant && a_Length,
 		Tag && a_TagManual,
@@ -61,7 +59,6 @@ public:
 
 	const QString & fileName() const { return m_FileName; }
 	qulonglong fileSize() const { return m_FileSize; }
-	qlonglong dbRowId() const { return m_DbRowId; }
 	const QVariant & hash() const { return m_Hash; }
 	const QVariant & length() const { return m_Length; }
 	const Tag & tagManual() const { return m_TagManual; }
@@ -110,11 +107,15 @@ public:
 	SongDatabase uses this to decide whether to queue the song for re-scan upon loading the DB. */
 	bool needsMetadataRescan() const;
 
+	/** Copies all metadata from the specified source song.
+	This is used when a hash duplicate is detected. */
+	void copyMetadataFrom(const Song & a_Src);
+
+
 protected:
 
 	QString m_FileName;
 	qulonglong m_FileSize;
-	qlonglong m_DbRowId;
 	QVariant m_Hash;
 	QVariant m_Length;
 	Tag m_TagManual;
