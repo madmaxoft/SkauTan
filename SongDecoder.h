@@ -24,8 +24,6 @@ public:
 
 	virtual ~SongDecoder() override;
 
-	virtual void seekTo(double a_Time) override;
-
 
 protected:
 
