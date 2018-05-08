@@ -2,11 +2,12 @@
 #include <assert.h>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QDomDocument>
+#include <QDebug>
 #include "ui_DlgTemplatesList.h"
 #include "DlgEditTemplate.h"
 #include "DlgChooseImportTemplates.h"
 #include "Database.h"
+#include "DlgEditTemplateItem.h"
 
 
 
@@ -20,7 +21,8 @@ DlgTemplatesList::DlgTemplatesList(
 	Super(a_Parent),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_UI(new Ui::DlgTemplatesList)
+	m_UI(new Ui::DlgTemplatesList),
+	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
 
@@ -32,6 +34,9 @@ DlgTemplatesList::DlgTemplatesList(
 	connect(m_UI->tblTemplates,      &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateAt);
 	connect(m_UI->tblTemplates,      &QTableWidget::currentCellChanged,   this, &DlgTemplatesList::templateSelected);
 	connect(m_UI->tblTemplates,      &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
+	connect(m_UI->tblTemplates,      &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
+	connect(m_UI->tblItems,          &QTableWidget::itemChanged,          this, &DlgTemplatesList::itemChanged);
+	connect(m_UI->tblItems,          &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateItemAt);
 	connect(m_UI->btnExport,         &QPushButton::clicked,               this, &DlgTemplatesList::exportTemplates);
 	connect(m_UI->btnImport,         &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
 
@@ -87,17 +92,75 @@ TemplatePtr DlgTemplatesList::templateFromRow(int a_Row)
 
 
 
+Template::ItemPtr DlgTemplatesList::templateItemFromRow(TemplatePtr a_Template, int a_ItemRow)
+{
+	assert(a_Template != nullptr);
+	if (a_ItemRow < 0)
+	{
+		assert(!"Invalid row");
+		return nullptr;
+	}
+	auto row = static_cast<size_t>(a_ItemRow);
+	if (row >= a_Template->items().size())
+	{
+		assert(!"Invalid row");
+		return nullptr;
+	}
+	return a_Template->items()[row];
+}
+
+
+
+
+
 void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 {
+	m_IsInternalChange = true;
+	auto item = new QTableWidgetItem(a_Template.displayName());
+	item->setFlags(item->flags() | Qt::ItemIsEditable);
+	item->setBackgroundColor(a_Template.bgColor());
+	m_UI->tblTemplates->setItem(a_Row, 0, item);
+
 	auto numItems = QString::number(a_Template.items().size());
-	m_UI->tblTemplates->setItem(a_Row, 0, new QTableWidgetItem(a_Template.displayName()));
-	m_UI->tblTemplates->setItem(a_Row, 1, new QTableWidgetItem(numItems));
-	m_UI->tblTemplates->setItem(a_Row, 2, new QTableWidgetItem(a_Template.notes()));
-	auto colCount = m_UI->tblTemplates->columnCount();
-	for (int col = 0; col < colCount; ++col)
-	{
-		m_UI->tblTemplates->item(a_Row, col)->setBackgroundColor(a_Template.bgColor());
-	}
+	item = new QTableWidgetItem(numItems);
+	item->setBackgroundColor(a_Template.bgColor());
+	m_UI->tblTemplates->setItem(a_Row, 1, item);
+
+	item = new QTableWidgetItem(a_Template.notes());
+	item->setFlags(item->flags() | Qt::ItemIsEditable);
+	item->setBackgroundColor(a_Template.bgColor());
+	m_UI->tblTemplates->setItem(a_Row, 2, item);
+	m_IsInternalChange = false;
+}
+
+
+
+
+
+void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Template::Item & a_Item)
+{
+	m_IsInternalChange = true;
+	auto wi = new QTableWidgetItem(a_Item.displayName());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 0, wi);
+
+	wi = new QTableWidgetItem(a_Item.notes());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 1, wi);
+
+	wi = new QTableWidgetItem();
+	wi->setFlags(wi->flags() | Qt::ItemIsUserCheckable);
+	wi->setCheckState(a_Item.isFavorite() ? Qt::Checked : Qt::Unchecked);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 2, wi);
+
+	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
+	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_IsInternalChange = false;
 }
 
 
@@ -291,6 +354,7 @@ void DlgTemplatesList::templateSelected(int a_CurrentRow, int a_CurrentColumn)
 
 void DlgTemplatesList::templateSelectionChanged()
 {
+	m_IsInternalChange = true;
 	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
 	m_UI->btnEditTemplate->setEnabled(selection.size() == 1);
 	m_UI->btnRemoveTemplate->setEnabled(!selection.isEmpty());
@@ -302,19 +366,9 @@ void DlgTemplatesList::templateSelectionChanged()
 		const auto & tmpl = templateFromRow(selection[0].row());
 		m_UI->tblItems->setRowCount(static_cast<int>(tmpl->items().size()));
 		int idx = 0;
-		auto colCount = m_UI->tblItems->columnCount();
 		for (const auto & item: tmpl->items())
 		{
-			auto favDesc = item->isFavorite() ? tr("Y", "IsFavorite") : QString();
-			auto filterDesc = item->filter()->getDescription();
-			m_UI->tblItems->setItem(idx, 0, new QTableWidgetItem(item->displayName()));
-			m_UI->tblItems->setItem(idx, 1, new QTableWidgetItem(item->notes()));
-			m_UI->tblItems->setItem(idx, 2, new QTableWidgetItem(favDesc));
-			m_UI->tblItems->setItem(idx, 3, new QTableWidgetItem(filterDesc));
-			for (int col = 0; col < colCount; ++col)
-			{
-				m_UI->tblItems->item(idx, col)->setBackgroundColor(item->bgColor());
-			}
+			updateTemplateItemRow(idx, *item);
 			idx += 1;
 		}
 		m_UI->tblItems->resizeColumnsToContents();
@@ -323,6 +377,109 @@ void DlgTemplatesList::templateSelectionChanged()
 	{
 		m_UI->tblItems->setRowCount(0);
 	}
+	m_IsInternalChange = false;
+}
+
+
+
+
+
+void DlgTemplatesList::templateChanged(QTableWidgetItem * a_Item)
+{
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	auto tmpl = templateFromRow(a_Item->row());
+	if (tmpl == nullptr)
+	{
+		qWarning() << "Bad template pointer in item " << a_Item->text();
+		return;
+	}
+	switch (a_Item->column())
+	{
+		case 0:
+		{
+			tmpl->setDisplayName(a_Item->text());
+			break;
+		}
+		case 2:
+		{
+			tmpl->setNotes(a_Item->text());
+			break;
+		}
+	}
+	m_DB.saveTemplate(*tmpl);
+}
+
+
+
+
+
+void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
+{
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	auto tmpl = templateFromRow(m_UI->tblTemplates->currentRow());
+	if (tmpl == nullptr)
+	{
+		qWarning() << "Bad template pointer.";
+		return;
+	}
+	auto item = templateItemFromRow(tmpl, a_Item->row());
+	if (item == nullptr)
+	{
+		qWarning() << "Bad template item pointer in item " << a_Item->text();
+		return;
+	}
+	switch (a_Item->column())
+	{
+		case 0:
+		{
+			item->setDisplayName(a_Item->text());
+			break;
+		}
+		case 1:
+		{
+			item->setNotes(a_Item->text());
+			break;
+		}
+		case 2:
+		{
+			item->setIsFavorite(a_Item->checkState() == Qt::Checked);
+			break;
+		}
+	}
+	m_DB.saveTemplate(*tmpl);
+	m_UI->tblItems->resizeColumnsToContents();
+}
+
+
+
+
+
+void DlgTemplatesList::editTemplateItemAt(const QModelIndex & a_Index)
+{
+	auto tmpl = templateFromRow(m_UI->tblTemplates->currentRow());
+	if (tmpl == nullptr)
+	{
+		qWarning() << "Bad template pointer.";
+		return;
+	}
+	auto item = templateItemFromRow(tmpl, a_Index.row());
+	if (item == nullptr)
+	{
+		qWarning() << "Bad template item pointer in item " << a_Index;
+		return;
+	}
+
+	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, *item, this);
+	dlg.exec();
+	m_DB.saveTemplate(*tmpl);
+	updateTemplateItemRow(a_Index.row(), *item);
+	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
