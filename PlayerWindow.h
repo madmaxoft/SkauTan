@@ -5,8 +5,11 @@
 
 
 
-#include <QMainWindow>
 #include <memory>
+
+#include <QMainWindow>
+#include <QTimer>
+
 #include "PlaylistItemModel.h"
 
 
@@ -15,7 +18,6 @@
 
 // fwd:
 class QShortcut;
-class QTimer;
 class Player;
 class Song;
 class Database;
@@ -63,6 +65,9 @@ private:
 
 	/** The shortcut for deleting playlist items using the Del key. */
 	std::unique_ptr<QShortcut> m_scDel;
+
+	/** The timer used for periodic UI updates. */
+	QTimer m_UpdateTimer;
 
 
 private slots:
@@ -127,6 +132,10 @@ private slots:
 
 	/** Shows the BackgroundTasks dialog. */
 	void showBackgroundTasks();
+
+	/** Called periodically by a timer.
+	Updates the player-related UI. */
+	void periodicUIUpdate();
 };
 
 

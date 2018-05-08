@@ -63,6 +63,9 @@ public:
 	/** Returns the position in the playback, as fractional seconds. */
 	virtual double currentSongPosition() const = 0;
 
+	/** Returns the number of seconds remaining till the end of playback. */
+	virtual double remainingTime() const = 0;
+
 	/** Sets the relative tempo of the playback.
 	Tempo == 1 for normal, 0.5 for 2x slowed down and 2 for 2x sped up. */
 	virtual void setTempo(double a_Tempo) = 0;
@@ -127,6 +130,11 @@ public:
 	virtual double currentSongPosition() const override
 	{
 		return m_Lower->currentSongPosition();
+	}
+
+	virtual double remainingTime() const override
+	{
+		return m_Lower->remainingTime();
 	}
 
 	virtual void setTempo(double a_Tempo) override

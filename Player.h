@@ -6,8 +6,10 @@
 
 
 #include <memory>
+
 #include <QAudioOutput>
 #include <QThread>
+#include <QElapsedTimer>
 
 #include "IPlaylistItem.h"
 #include "PlaybackBuffer.h"
@@ -43,6 +45,15 @@ public:
 	/** Returns the current playback position in the current track, in seconds.
 	Returns 0 if not playing back anything. */
 	double currentPosition() const;
+
+	/** Returns the number of seconds remaining of playback for the current item, using its current settings.
+	Returns 0 if not playing back anything.
+	Takes playback tempo into account. */
+	double remainingTime() const;
+
+	/** Returns the total number of seconds that has elapsed since the current item started playing.
+	Returns 0 if not playing back anything. */
+	double totalTime() const;
 
 	/** Sets the volume for playback. */
 	void setVolume(qreal a_NewVolume);
@@ -92,6 +103,9 @@ protected:
 
 	/** The tempo to be used for playback. */
 	qreal m_Tempo;
+
+	/** Measures the time since the playback for the current item was started. */
+	QElapsedTimer m_Elapsed;
 
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.

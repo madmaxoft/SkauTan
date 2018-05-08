@@ -90,6 +90,16 @@ double PlaybackBuffer::currentSongPosition() const
 
 
 
+double PlaybackBuffer::remainingTime() const
+{
+	auto numBytesLeft = static_cast<qint32>(m_BufferLimit - m_ReadPos);
+	return static_cast<double>(m_OutputFormat.durationForBytes(numBytesLeft)) / 1000000;
+}
+
+
+
+
+
 void PlaybackBuffer::seekTo(double a_Time)
 {
 	m_ReadPos = static_cast<size_t>(m_OutputFormat.bytesForDuration(static_cast<qint64>(a_Time * 1000000)));

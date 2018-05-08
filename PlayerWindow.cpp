@@ -2,7 +2,6 @@
 #include "assert.h"
 #include <QDebug>
 #include <QShortcut>
-#include <QTimer>
 #include <QMenu>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
@@ -34,14 +33,19 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 	m_UI->waveform->setPlayer(m_Player);
-
-	#if 0
-	// DEBUG: Add all songs into the playlist, to ease debugging:
-	for (const auto & song: m_DB->songs())
+	QFont fnt(m_UI->lblPosition->font());
+	if (fnt.pixelSize() > 0)
 	{
-		addSong(song);
+		fnt.setPixelSize(fnt.pixelSize() * 2);
 	}
-	#endif
+	else
+	{
+		fnt.setPointSize(fnt.pointSize() * 2);
+	}
+	m_UI->lblTotalTime->setFont(fnt);
+	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("000:00"));
+	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("000:00"));
+	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
 
 	// Connect the signals:
 	connect(m_UI->btnQuickPlayer,     &QPushButton::clicked,      this, &PlayerWindow::showQuickPlayer);
@@ -59,6 +63,7 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
 	connect(m_UI->btnTools,           &QPushButton::clicked,      this, &PlayerWindow::showToolsMenu);
 	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
+	connect(&m_UpdateTimer,           &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -75,6 +80,8 @@ PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player 
 	m_UI->btnTempoReset->setMinimumWidth(
 		m_UI->btnTempoReset->sizeHint().width() - fm.width(m_UI->btnTempoReset->text()) + fm.width("+99.9 %")
 	);
+
+	m_UpdateTimer.start(200);
 }
 
 
@@ -310,4 +317,18 @@ void PlayerWindow::showBackgroundTasks()
 {
 	DlgBackgroundTaskList dlg(this);
 	dlg.exec();
+}
+
+
+
+
+
+void PlayerWindow::periodicUIUpdate()
+{
+	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
+	auto remaining = static_cast<int>(m_Player.remainingTime() + 0.5);
+	auto total     = static_cast<int>(m_Player.totalTime() + 0.5);
+	m_UI->lblPosition->setText( QString( "%1:%2").arg(position  / 60).arg(QString::number(position  % 60), 2, '0'));
+	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
+	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 }

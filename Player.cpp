@@ -111,6 +111,32 @@ double Player::currentPosition() const
 
 
 
+double Player::remainingTime() const
+{
+	if (m_AudioDataSource == nullptr)
+	{
+		return 0;
+	}
+	return m_AudioDataSource->remainingTime();
+}
+
+
+
+
+
+double Player::totalTime() const
+{
+	if (m_AudioDataSource == nullptr)
+	{
+		return 0;
+	}
+	return static_cast<double>(m_Elapsed.elapsed()) / 1000;
+}
+
+
+
+
+
 void Player::fadeOut(Player::State a_FadeOutState)
 {
 	assert((a_FadeOutState == psFadeOutToStop) || (a_FadeOutState == psFadeOutToTrack));  // Requested a fadeout
@@ -300,6 +326,7 @@ void Player::start()
 		{
 			// We're stopped, start the playback:
 			qDebug() << "Player: Starting playback of track " << track->displayName();
+			m_Elapsed.start();
 			emit startingPlayback(track);
 		}
 	}
