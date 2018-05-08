@@ -399,6 +399,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				// Play the next song in the playlist, if any:
 				m_State = psStopped;
 				emit finishedPlayback();
+				m_AudioDataSource.reset();
 				if (m_Playlist->nextItem())
 				{
 					start();
@@ -410,6 +411,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				// Stop playing completely:
 				m_State = psStopped;
 				emit finishedPlayback();
+				m_AudioDataSource.reset();
 				return;
 			}
 			case psFadeOutToTrack:
