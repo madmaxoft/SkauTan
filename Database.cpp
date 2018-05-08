@@ -9,6 +9,7 @@
 #include <QSqlField>
 #include <QThread>
 #include <QApplication>
+#include "Stopwatch.h"
 
 
 
@@ -533,6 +534,8 @@ void Database::fixupTable(const QString & a_TableName, const std::vector<std::pa
 
 void Database::loadSongs()
 {
+	STOPWATCH("Loading songs from the DB");
+
 	// Initialize the query:
 	QSqlQuery query(m_Database);
 	query.setForwardOnly(true);

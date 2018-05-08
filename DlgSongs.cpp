@@ -56,7 +56,7 @@ DlgSongs::DlgSongs(
 
 	// Resize the table columns to fit the song data:
 	{
-		STOPWATCH("Resize song columns");
+		STOPWATCH("Resize DlgSongs columns");
 		m_UI->tblSongs->resizeColumnsToContents();
 	}
 

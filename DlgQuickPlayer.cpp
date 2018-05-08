@@ -18,6 +18,8 @@ DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Player & a_Player):
 	m_Player(a_Player),
 	m_UpdateUITimer(new QTimer)
 {
+	STOPWATCH("DlgQuickPlayer constructor");
+
 	m_UI->setupUi(this);
 	m_UI->waveform->setPlayer(a_Player);
 
