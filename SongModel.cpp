@@ -372,7 +372,8 @@ QWidget * SongModelEditorDelegate::createEditor(
 			// Special editor:
 			auto res = new QComboBox(a_Parent);
 			res->setFrame(false);
-			res->addItems({"SW", "TG", "VW", "SF", "QS", "SB", "CH", "RU", "PD", "JI", "PO", "BL"});
+			res->addItems({"SW", "TG", "VW", "SF", "QS", "SB", "CH", "RU", "PD", "JI", "PO", "BL", "SL", "RO"});
+			res->setMaxVisibleItems(res->count());
 			return res;
 		}
 		case SongModel::colManualMeasuresPerMinute:
