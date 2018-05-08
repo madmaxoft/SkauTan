@@ -19,6 +19,7 @@ DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Player & a_Player):
 	m_UpdateUITimer(new QTimer)
 {
 	m_UI->setupUi(this);
+	m_UI->waveform->setPlayer(a_Player);
 
 	// Insert all favorite template items into the list:
 	auto favorites = m_DB.getFavoriteTemplateItems();
@@ -98,12 +99,9 @@ void DlgQuickPlayer::playlistCurrentItemChanged()
 void DlgQuickPlayer::updateTimePos()
 {
 	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
-	auto curItem = m_Player.playlist().currentItem();
-	auto length = (curItem == nullptr) ? 0 : static_cast<int>(curItem->displayLength() + 0.5);
-	auto remaining = length - position;
-	m_UI->lblPosition->setText(QString("%1:%2").arg(position / 60).arg(QString::number(position % 60), 2, '0'));
+	auto remaining = static_cast<int>(m_Player.remainingTime() + 0.5);
+	auto total     = static_cast<int>(m_Player.totalTime() + 0.5);
+	m_UI->lblPosition->setText( QString( "%1:%2").arg(position  / 60).arg(QString::number(position  % 60), 2, '0'));
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
-	m_IsInternalPositionUpdate = true;
-	m_UI->hsPosition->setValue(position);
-	m_IsInternalPositionUpdate = false;
+	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 }
