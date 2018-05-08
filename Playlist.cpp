@@ -1,6 +1,8 @@
 #include "Playlist.h"
 #include <limits>
 #include <assert.h>
+#include <fstream>
+#include <random>
 #include <QDebug>
 #include "Database.h"
 #include "PlaylistItemSong.h"
@@ -190,7 +192,6 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 			auto weight = getSongWeight(a_DB, *song);
 			songs.push_back(std::make_pair(song, weight));
 			totalWeight += weight;
-			// DEBUG: qDebug() << ": Candidate " << song->title().toString() << ": weight " << weight;
 		}
 	}
 
@@ -202,7 +203,9 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 
 	auto chosen = songs[0].first;
 	totalWeight = std::max(totalWeight, 1);
-	auto threshold = std::rand() % totalWeight;
+	static std::mt19937_64 mt(0);
+	auto rnd = std::uniform_int_distribution<>(0, totalWeight)(mt);
+	auto threshold = rnd;
 	for (const auto & song: songs)
 	{
 		threshold -= song.second;
@@ -212,9 +215,29 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 			break;
 		}
 	}
+
+	#if 0
+	// DEBUG: Output the choices made into a file:
+	static int counter = 0;
+	auto fnam = QString("debug_template_%1.log").arg(QString::number(counter++), 3, '0');
+	std::ofstream f(fnam.toStdString().c_str());
+	f << "Choices for template item " << a_Item.displayName().toStdString() << std::endl;
+	f << "------" << std::endl << std::endl;
+	f << "Candidates:" << std::endl;
+	for (const auto & song: songs)
+	{
+		f << song.second << '\t';
+		f << song.first->lastPlayed().toString().toStdString() << '\t';
+		f << song.first->fileName().toStdString() << std::endl;
+	}
+	f << std::endl;
+	f << "totalWeight: " << totalWeight << std::endl;
+	f << "threshold: " << rnd << std::endl;
+	f << "chosen: " << chosen->fileName().toStdString() << std::endl;
+	#endif
+
 	assert(chosen != nullptr);
 	addItem(std::make_shared<PlaylistItemSong>(chosen));
-	// DEBUG: qDebug() << ": Chosen " << chosen->title().toString();
 	return true;
 }
 
