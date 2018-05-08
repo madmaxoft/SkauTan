@@ -1,6 +1,7 @@
 #include "DlgEditTemplate.h"
 #include <QMessageBox>
 #include <QColorDialog>
+#include <QDebug>
 #include "ui_DlgEditTemplate.h"
 #include "DlgEditTemplateItem.h"
 #include "DlgPickTemplateFavoriteItem.h"
@@ -25,13 +26,14 @@ DlgEditTemplate::DlgEditTemplate(
 	m_UI->setupUi(this);
 
 	// Connect the slots:
-	connect(m_UI->btnClose,           &QPushButton::clicked,   this, &DlgEditTemplate::saveAndClose);
-	connect(m_UI->btnAddItem,         &QPushButton::clicked,   this, &DlgEditTemplate::addItem);
-	connect(m_UI->btnAddFavoriteItem, &QPushButton::clicked,   this, &DlgEditTemplate::addFavoriteItem);
-	connect(m_UI->btnEditItem,        &QPushButton::clicked,   this, &DlgEditTemplate::editSelectedItem);
-	connect(m_UI->btnRemoveItem,      &QPushButton::clicked,   this, &DlgEditTemplate::removeSelectedItems);
-	connect(m_UI->leBgColor,          &QLineEdit::textChanged, this, &DlgEditTemplate::bgColorTextChanged);
-	connect(m_UI->btnBgColor,         &QPushButton::clicked,   this, &DlgEditTemplate::chooseBgColor);
+	connect(m_UI->btnClose,           &QPushButton::clicked,      this, &DlgEditTemplate::saveAndClose);
+	connect(m_UI->btnAddItem,         &QPushButton::clicked,      this, &DlgEditTemplate::addItem);
+	connect(m_UI->btnAddFavoriteItem, &QPushButton::clicked,      this, &DlgEditTemplate::addFavoriteItem);
+	connect(m_UI->btnEditItem,        &QPushButton::clicked,      this, &DlgEditTemplate::editSelectedItem);
+	connect(m_UI->btnRemoveItem,      &QPushButton::clicked,      this, &DlgEditTemplate::removeSelectedItems);
+	connect(m_UI->leBgColor,          &QLineEdit::textChanged,    this, &DlgEditTemplate::bgColorTextChanged);
+	connect(m_UI->btnBgColor,         &QPushButton::clicked,      this, &DlgEditTemplate::chooseBgColor);
+	connect(m_UI->tblItems,           &QTableWidget::itemChanged, this, &DlgEditTemplate::itemChanged);
 	connect(
 		m_UI->tblItems, &QTableWidget::cellDoubleClicked,
 		this, &DlgEditTemplate::cellDoubleClicked
@@ -48,11 +50,11 @@ DlgEditTemplate::DlgEditTemplate(
 	m_UI->tblItems->setColumnCount(4);
 	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
 	m_UI->leBgColor->setText(a_Template.bgColor().name());
-	int idx = 0;
+	int row = 0;
 	for (const auto & itm: a_Template.items())
 	{
-		setItem(idx, *itm);
-		idx += 1;
+		updateTemplateItemRow(row, *itm);
+		row += 1;
 	}
 	m_UI->tblItems->resizeColumnsToContents();
 
@@ -99,18 +101,30 @@ void DlgEditTemplate::save()
 
 
 
-void DlgEditTemplate::setItem(int a_Idx, const Template::Item & a_Item)
+void DlgEditTemplate::updateTemplateItemRow(int a_Row, const Template::Item & a_Item)
 {
-	auto favDesc = a_Item.isFavorite() ? tr("Y", "IsFavorite") : QString();
-	auto filterDesc = a_Item.filter()->getDescription();
-	m_UI->tblItems->setItem(a_Idx, 0, new QTableWidgetItem(a_Item.displayName()));
-	m_UI->tblItems->setItem(a_Idx, 1, new QTableWidgetItem(a_Item.notes()));
-	m_UI->tblItems->setItem(a_Idx, 2, new QTableWidgetItem(favDesc));
-	m_UI->tblItems->setItem(a_Idx, 3, new QTableWidgetItem(filterDesc));
-	for (int i = 0; i < 4; ++i)
-	{
-		m_UI->tblItems->item(a_Idx, i)->setBackgroundColor(a_Item.bgColor());
-	}
+	m_IsInternalChange = true;
+	auto wi = new QTableWidgetItem(a_Item.displayName());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 0, wi);
+
+	wi = new QTableWidgetItem(a_Item.notes());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 1, wi);
+
+	wi = new QTableWidgetItem();
+	wi->setFlags(wi->flags() | Qt::ItemIsUserCheckable);
+	wi->setCheckState(a_Item.isFavorite() ? Qt::Checked : Qt::Unchecked);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 2, wi);
+
+	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
+	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_IsInternalChange = false;
 }
 
 
@@ -137,7 +151,7 @@ void DlgEditTemplate::addItem()
 	// Add the item in the UI:
 	auto idx = m_UI->tblItems->rowCount();
 	m_UI->tblItems->setRowCount(idx + 1);
-	setItem(idx, *item);
+	updateTemplateItemRow(idx, *item);
 	m_UI->tblItems->resizeColumnsToContents();
 }
 
@@ -157,7 +171,7 @@ void DlgEditTemplate::editSelectedItem()
 	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
-	setItem(row, *item);
+	updateTemplateItemRow(row, *item);
 	m_UI->tblItems->resizeColumnsToContents();
 }
 
@@ -193,7 +207,7 @@ void DlgEditTemplate::addFavoriteItem()
 	// Add the item in the UI:
 	auto idx = m_UI->tblItems->rowCount();
 	m_UI->tblItems->setRowCount(idx + 1);
-	setItem(idx, *item);
+	updateTemplateItemRow(idx, *item);
 	m_UI->tblItems->resizeColumnsToContents();
 }
 
@@ -250,7 +264,7 @@ void DlgEditTemplate::cellDoubleClicked(int a_Row, int a_Column)
 	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
-	setItem(a_Row, *item);
+	updateTemplateItemRow(a_Row, *item);
 	m_UI->tblItems->resizeColumnsToContents();
 }
 
@@ -295,4 +309,42 @@ void DlgEditTemplate::chooseBgColor()
 	{
 		m_UI->leBgColor->setText(c.name());
 	}
+}
+
+
+
+
+
+void DlgEditTemplate::itemChanged(QTableWidgetItem * a_Item)
+{
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	auto item = m_Template.items()[static_cast<size_t>(a_Item->row())];
+	if (item == nullptr)
+	{
+		qWarning() << "Bad template item pointer in item " << a_Item->text();
+		return;
+	}
+	switch (a_Item->column())
+	{
+		case 0:
+		{
+			item->setDisplayName(a_Item->text());
+			break;
+		}
+		case 1:
+		{
+			item->setNotes(a_Item->text());
+			break;
+		}
+		case 2:
+		{
+			item->setIsFavorite(a_Item->checkState() == Qt::Checked);
+			break;
+		}
+	}
+	m_DB.saveTemplate(m_Template);
+	m_UI->tblItems->resizeColumnsToContents();
 }
