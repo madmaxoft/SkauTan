@@ -186,3 +186,21 @@ void AudioTempoChange::setTempo(double a_Tempo)
 	m_DestSampleRate = static_cast<int>(m_Lower->format().sampleRate() / a_Tempo);
 	// The resampler will be reinitialized in the read() function to avoid threading issues
 }
+
+
+
+
+
+double AudioTempoChange::currentSongPosition() const
+{
+	return m_Lower->currentSongPosition() * m_DestSampleRate / m_Lower->format().sampleRate();
+}
+
+
+
+
+
+double AudioTempoChange::remainingTime() const
+{
+	return m_Lower->remainingTime() * m_DestSampleRate / m_Lower->format().sampleRate();
+}

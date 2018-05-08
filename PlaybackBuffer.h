@@ -34,6 +34,7 @@ public:
 	virtual void fadeOut(int a_Msec) override { Q_UNUSED(a_Msec); }
 	virtual const QAudioFormat & format() const override { return m_OutputFormat; }
 	virtual double currentSongPosition() const override;
+	virtual double remainingTime() const override;
 	virtual void seekTo(double a_Time) override;
 	virtual void clear() override {}  // Ignored
 	virtual bool waitForData() override;

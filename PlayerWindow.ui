@@ -207,25 +207,36 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="lblTime">
+         <widget class="QLabel" name="lblTotalTime">
+          <property name="font">
+           <font>
+            <pointsize>16</pointsize>
+           </font>
+          </property>
           <property name="text">
-           <string>TextLabel</string>
+           <string notr="true">0:00</string>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QLabel" name="lblPos">
+           <widget class="QLabel" name="lblPosition">
             <property name="text">
-             <string>TextLabel</string>
+             <string notr="true">0:00</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="lblRemaining">
             <property name="text">
-             <string>TextLabel</string>
+             <string notr="true">-0:00</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>

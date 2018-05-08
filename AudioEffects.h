@@ -78,6 +78,8 @@ public:
 	// AudioDataSource overrides:
 	virtual size_t read(void * a_Dest, size_t a_MaxLen) override;
 	virtual void setTempo(double a_Tempo) override;
+	virtual double currentSongPosition() const override;
+	virtual double remainingTime() const override;
 
 
 protected:
