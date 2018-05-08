@@ -334,6 +334,9 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 	m_UI->twFilters->setHeaderLabels({tr("Filter", "FilterTree")});
 	rebuildFilterModel();
 	m_UI->twFilters->expandAll();
+
+	// Update the UI state based on selection:
+	filterSelectionChanged();
 }
 
 
@@ -524,11 +527,12 @@ void DlgEditTemplateItem::addFilterSibling()
 
 void DlgEditTemplateItem::insertFilterCombinator()
 {
-	auto curFilter = selectedFilter()->shared_from_this();
-	if (curFilter == nullptr)
+	auto selFilter = selectedFilter();
+	if (selFilter == nullptr)
 	{
 		return;
 	}
+	auto curFilter = selFilter->shared_from_this();
 	auto combinator = std::make_shared<Template::Filter>(Template::Filter::fkOr);
 	auto parent = curFilter->parent();
 	if (parent == nullptr)
@@ -641,7 +645,8 @@ void DlgEditTemplateItem::filterSelectionChanged()
 {
 	auto curFilter = selectedFilter();
 	m_UI->btnAddSibling->setEnabled(curFilter != nullptr);
-	m_UI->btnRemoveFilter->setEnabled(curFilter != nullptr);
+	m_UI->btnInsertCombinator->setEnabled(curFilter != nullptr);
+	m_UI->btnRemoveFilter->setEnabled((curFilter != nullptr) && m_Item.filter()->canHaveChildren());  // The top level filter cannot be removed
 }
 
 
