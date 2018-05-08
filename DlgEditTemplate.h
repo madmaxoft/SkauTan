@@ -16,6 +16,7 @@
 // fwd:
 class Database;
 class MetadataScanner;
+class QTableWidgetItem;
 namespace Ui
 {
 	class DlgEditTemplate;
@@ -59,6 +60,9 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgEditTemplate> m_UI;
 
+	/** Set to true if the UI is updating internally; false when the changes come from the user. */
+	bool m_IsInternalChange;
+
 
 protected:
 
@@ -69,7 +73,7 @@ protected:
 	void save();
 
 	/** Updates the UI at the specified item index with the data from the specified item. */
-	void setItem(int a_Idx, const Template::Item & a_Item);
+	void updateTemplateItemRow(int a_Row, const Template::Item & a_Item);
 
 
 protected slots:
@@ -105,6 +109,10 @@ protected slots:
 
 	/** Opens the color chooser, sets the selected color to leBgColor. */
 	void chooseBgColor();
+
+	/** The template item in the table has changed, either by us (m_IsInternalChange) or by the user.
+	If the change was by the user, save the new contents to the template item. */
+	void itemChanged(QTableWidgetItem * a_Item);
 };
 
 
