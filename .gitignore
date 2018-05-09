@@ -4,8 +4,7 @@
 leaks.xml
 
 # Runtime files:
-SkauTan.sqlite
-SkauTan.bak.sqlite
+*.sqlite
 *.mp3
 *.SkauTanTemplates
 
