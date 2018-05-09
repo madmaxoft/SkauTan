@@ -65,6 +65,7 @@ public:
 	Asserts and returns an invalid QModelIndex if song not found. */
 	QModelIndex indexFromSong(const Song * a_Song, int a_Column = 0);
 
+
 protected:
 
 	/** The DB on which the model is based. */

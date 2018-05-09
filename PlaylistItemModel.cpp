@@ -1,6 +1,9 @@
 #include "PlaylistItemModel.h"
 #include <QMimeData>
 #include <QDebug>
+#include <QIcon>
+#include <QFont>
+#include <QApplication>
 
 
 
@@ -19,7 +22,7 @@ static QString formatLength(double a_Length)
 		return PlaylistItemModel::tr("<unknown>", "Length");
 	}
 	auto len = static_cast<int>(floor(a_Length + 0.5));
-	return QString("%1:%2").arg(len / 60).arg(len % 60);
+	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, '0');
 }
 
 
@@ -45,8 +48,9 @@ static QString formatTempo(double a_Tempo)
 PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 	m_Playlist(a_Playlist)
 {
-	connect(&m_Playlist, &Playlist::itemAdded,    this, &PlaylistItemModel::playlistItemAdded);
-	connect(&m_Playlist, &Playlist::itemDeleting, this, &PlaylistItemModel::playlistItemDeleting);
+	connect(&m_Playlist, &Playlist::itemAdded,          this, &PlaylistItemModel::playlistItemAdded);
+	connect(&m_Playlist, &Playlist::itemDeleting,       this, &PlaylistItemModel::playlistItemDeleting);
+	connect(&m_Playlist, &Playlist::currentItemChanged, this, &PlaylistItemModel::playlistCurrentChanged);
 }
 
 
@@ -214,9 +218,27 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			return QVariant();
 		}  // case Qt::DisplayRole
 
+		case Qt::FontRole:
+		{
+			if (a_Index.row() != m_CurrentItemIdx)
+			{
+				return QVariant();
+			}
+			auto font = QApplication::font("QTableWidget");
+			font.setBold(true);
+			return font;
+		}
+
 		case Qt::DecorationRole:
 		{
-			// TODO: Currently-playing item decoration
+			if (
+				(a_Index.row() == m_CurrentItemIdx) &&
+				(a_Index.column() == colLength)
+			)
+			{
+				return QIcon(":/img/play.png");
+			}
+			return QVariant();
 		}
 	}
 	// TODO
@@ -267,4 +289,32 @@ void PlaylistItemModel::playlistItemDeleting(IPlaylistItem * a_Item, int a_Index
 	Q_UNUSED(a_Item);
 	beginRemoveRows(QModelIndex(), a_Index, a_Index);
 	endRemoveRows();
+}
+
+
+
+
+
+void PlaylistItemModel::playlistCurrentChanged(int a_CurrentItemIdx)
+{
+	if (a_CurrentItemIdx == m_CurrentItemIdx)
+	{
+		return;
+	}
+
+	// Emit a change in both the old and new items:
+	auto oldItemIdx = m_CurrentItemIdx;
+	m_CurrentItemIdx = a_CurrentItemIdx;
+	if (m_CurrentItemIdx >= 0)
+	{
+		auto topLeft = createIndex(m_CurrentItemIdx, 0);
+		auto bottomRight = createIndex(m_CurrentItemIdx, colMax);
+		emit dataChanged(topLeft, bottomRight);
+	}
+	if (oldItemIdx >= 0)
+	{
+		auto topLeft = createIndex(oldItemIdx, 0);
+		auto bottomRight = createIndex(oldItemIdx, colMax);
+		emit dataChanged(topLeft, bottomRight);
+	}
 }
