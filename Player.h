@@ -65,6 +65,17 @@ public:
 	Ignored if not playing. */
 	void seekTo(double a_Time);
 
+	/** Returns the track that is currently being played.
+	Returns nullptr if no track. */
+	IPlaylistItemPtr currentTrack();
+
+	/** Returns the buffer for the audio data decoded from the source track, before effect processing.
+	Mainly used for visualisation. */
+	PlaybackBufferPtr playbackBuffer() const { return m_PlaybackBuffer; }
+
+	/** Returns true iff the player is currently playing back a track. */
+	bool isPlaying() const;
+
 
 protected:
 
@@ -94,6 +105,10 @@ protected:
 
 	/** The thread that does the audio output processing. */
 	std::unique_ptr<OutputThread> m_OutputThread;
+
+	/** The audio data decoded from the source file, before effect processing.
+	Used mainly for visualisation. */
+	std::shared_ptr<PlaybackBuffer> m_PlaybackBuffer;
 
 	/** The source of the audio data, adapted into QIODevice interface. */
 	std::shared_ptr<AudioDataSourceIO> m_AudioDataSource;

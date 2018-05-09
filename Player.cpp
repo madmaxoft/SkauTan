@@ -171,6 +171,52 @@ void Player::seekTo(double a_Time)
 
 
 
+IPlaylistItemPtr Player::currentTrack()
+{
+	switch (m_State)
+	{
+		case psPlaying:
+		case psFadeOutToStop:
+		case psFadeOutToTrack:
+		{
+			return m_Playlist->currentItem();
+		}
+		case psStopped:
+		{
+			return nullptr;
+		}
+	}
+	assert(!"Invalid state");
+	return nullptr;
+}
+
+
+
+
+
+bool Player::isPlaying() const
+{
+	switch (m_State)
+	{
+		case psPlaying:
+		case psFadeOutToStop:
+		case psFadeOutToTrack:
+		{
+			return true;
+		}
+		case psStopped:
+		{
+			return false;
+		}
+	}
+	assert(!"Invalid state");
+	return false;
+}
+
+
+
+
+
 void Player::setVolume(qreal a_NewVolume)
 {
 	m_OutputThread->m_Output->setVolume(a_NewVolume);
@@ -465,14 +511,14 @@ void Player::OutputThread::run()
 
 void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 {
-	PlaybackBufferPtr decoder(a_Track->startDecoding(m_Format));
-	if (decoder == nullptr)
+	m_Player.m_PlaybackBuffer.reset(a_Track->startDecoding(m_Format));
+	if (m_Player.m_PlaybackBuffer == nullptr)
 	{
 		qDebug() << "Cannot start playback, decoder returned failure";
 		// TODO: Next song?
 		return;
 	}
-	if (!decoder->waitForData())
+	if (!m_Player.m_PlaybackBuffer->waitForData())
 	{
 		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
 		return;
@@ -480,7 +526,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 	auto audioDataSource =
 		std::make_shared<AudioFadeOut>(
 		std::make_shared<AudioTempoChange>(
-		decoder
+		m_Player.m_PlaybackBuffer
 	));
 	audioDataSource->setTempo(m_Player.m_Tempo);
 	m_Player.m_AudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
@@ -491,6 +537,6 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 	m_Player.m_State = psPlaying;
 	QMetaObject::invokeMethod(
 		&m_Player, "startedPlayback",
-		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, decoder)
+		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, m_Player.m_PlaybackBuffer)
 	);
 }
