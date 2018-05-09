@@ -37,6 +37,9 @@ protected:
 	/** The playlist on which the model is based. */
 	Playlist & m_Playlist;
 
+	/** The item that is highlighted as the current one. */
+	int m_CurrentItemIdx;
+
 
 	// QAbstractTableModel overrides:
 	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
@@ -54,6 +57,9 @@ protected slots:
 
 	void playlistItemAdded(IPlaylistItem * a_Item);
 	void playlistItemDeleting(IPlaylistItem * a_Item, int a_Index);
+
+	/** Emitted by m_Playlist when its index of the current item changes. */
+	void playlistCurrentChanged(int a_CurrentItemIdx);
 };
 
 
