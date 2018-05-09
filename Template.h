@@ -212,7 +212,7 @@ public:
 
 		/** Returns true if the comparison in this filter is satisfied by the specified value.
 		Asserts if this filter is not a fkComparison. */
-		bool isNumberComparisonSatisfiedBy(double a_Value) const;
+		bool isNumberComparisonSatisfiedBy(const QVariant & a_Value) const;
 
 		/** Returns true if the comparison in this filter is satisfied by the specified value.
 		Asserts if this filter is not a fkComparison. */
