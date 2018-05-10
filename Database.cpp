@@ -86,6 +86,11 @@ void Database::open(const QString & a_DBFileName)
 		qWarning() << ": Cannot open DB " << a_DBFileName << ": " << m_Database.lastError();
 		return;
 	}
+
+	// Turn off synchronous queries (they slow up DB inserts by orders of magnitude):
+	auto query = m_Database.exec("PRAGMA synchronous = off");
+	qDebug() << "Turn off synchronous: " << query.lastError();
+
 	fixupTables();
 	loadSongs();
 	loadTemplates();
