@@ -95,9 +95,6 @@ protected slots:
 	/** Opens the template editor for the template at the specified index. */
 	void editTemplateAt(const QModelIndex & a_Index);
 
-	/** A template in the table has been selected, display its items in the details table. */
-	void templateSelected(int a_CurrentRow, int a_CurrentColumn);
-
 	/** The selection in the template list has changed. */
 	void templateSelectionChanged();
 

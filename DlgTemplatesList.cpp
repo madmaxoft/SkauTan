@@ -32,7 +32,6 @@ DlgTemplatesList::DlgTemplatesList(
 	connect(m_UI->btnEditTemplate,   &QPushButton::clicked,               this, &DlgTemplatesList::editTemplate);
 	connect(m_UI->btnRemoveTemplate, &QPushButton::clicked,               this, &DlgTemplatesList::removeTemplates);
 	connect(m_UI->tblTemplates,      &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateAt);
-	connect(m_UI->tblTemplates,      &QTableWidget::currentCellChanged,   this, &DlgTemplatesList::templateSelected);
 	connect(m_UI->tblTemplates,      &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
 	connect(m_UI->tblTemplates,      &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
 	connect(m_UI->tblItems,          &QTableWidget::itemChanged,          this, &DlgTemplatesList::itemChanged);
@@ -303,8 +302,14 @@ void DlgTemplatesList::removeTemplates()
 		return;
 	}
 
-	// Delete both from the UI and from the DB:
-	for (const auto & row: selection)
+	// Delete both from the UI and from the DB (starting from the last row):
+	auto rowsToRemove = selection;
+	std::sort(rowsToRemove.begin(), rowsToRemove.end(), [](const QModelIndex & a_Row1, const QModelIndex & a_Row2)
+		{
+			return (a_Row1.row() > a_Row2.row());
+		}
+	);
+	for (const auto & row: rowsToRemove)
 	{
 		m_DB.delTemplate(templateFromRow(row.row()).get());
 		m_UI->tblTemplates->removeRow(row.row());
@@ -330,22 +335,6 @@ void DlgTemplatesList::editTemplateAt(const QModelIndex & a_Index)
 	// Update the UI after the changes:
 	updateTemplateRow(a_Index.row(), *tmpl);
 	templateSelectionChanged();
-}
-
-
-
-
-
-void DlgTemplatesList::templateSelected(int a_CurrentRow, int a_CurrentColumn)
-{
-	Q_UNUSED(a_CurrentColumn);
-	auto tmpl = templateFromRow(a_CurrentRow);
-	m_UI->tblItems->clearContents();
-	if (tmpl == nullptr)
-	{
-		return;
-	}
-	// The template items are filled in the templateSelectionChanged handler
 }
 
 
