@@ -158,7 +158,8 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 			return This->m_File->pos();
 		}
 	}
-	qWarning() << ": Unexpected seek operation: " << a_Whence << ", offset " << a_Offset;
+	// _X 2018-05-11: This seems to happen way too often upon opening a new file, disabling.
+	// qWarning() << ": Unexpected seek operation: " << a_Whence << ", offset " << a_Offset;
 	return -1;
 }
 
