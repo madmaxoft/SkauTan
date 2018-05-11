@@ -77,6 +77,10 @@ private:
 	SongModel m_SongModel;
 
 
+	/** Updates the UI related to song stats (count, filter) */
+	void updateSongStats();
+
+
 private slots:
 
 	/** Opens up a file picker, then adds the selected song files into the DB. */

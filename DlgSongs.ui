@@ -61,6 +61,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="lblStats">
+     <property name="text">
+      <string notr="true">Total: 3456 songs (filtered out of 4567)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QPushButton" name="btnAddFile">
