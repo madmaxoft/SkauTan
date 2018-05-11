@@ -46,13 +46,16 @@ DlgSongs::DlgSongs(
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
-	connect(m_UI->btnAddFile,        &QPushButton::clicked,  this, &DlgSongs::chooseAddFile);
-	connect(m_UI->btnAddFolder,      &QPushButton::clicked,  this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnRemove,         &QPushButton::clicked,  this, &DlgSongs::removeSelected);
-	connect(m_UI->btnClose,          &QPushButton::clicked,  this, &DlgSongs::close);
-	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,  this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,  this, &DlgSongs::rescanMetadata);
-	connect(&m_SongModel,            &SongModel::songEdited, this, &DlgSongs::modelSongEdited);
+	connect(m_UI->btnAddFile,        &QPushButton::clicked,    this, &DlgSongs::chooseAddFile);
+	connect(m_UI->btnAddFolder,      &QPushButton::clicked,    this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnRemove,         &QPushButton::clicked,    this, &DlgSongs::removeSelected);
+	connect(m_UI->btnClose,          &QPushButton::clicked,    this, &DlgSongs::close);
+	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,    this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,    this, &DlgSongs::rescanMetadata);
+	connect(&m_SongModel,            &SongModel::songEdited,   this, &DlgSongs::modelSongEdited);
+	connect(&m_SongModel,            &SongModel::rowsInserted, this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                   &Database::songFileAdded, this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                   &Database::songRemoved,   this, &DlgSongs::updateSongStats);
 
 	// Resize the table columns to fit the song data:
 	{
@@ -62,6 +65,8 @@ DlgSongs::DlgSongs(
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
+
+	updateSongStats();
 }
 
 
@@ -133,6 +138,24 @@ void DlgSongs::addFolder(const QString & a_Path)
 	}
 	qDebug() << ": Adding " << songs.size() << " songs from folder " << a_Path;
 	m_DB.addSongFiles(songs);
+}
+
+
+
+
+
+void DlgSongs::updateSongStats()
+{
+	auto numFiltered = static_cast<size_t>(m_FilterModel->rowCount());
+	auto numTotal = m_DB.songs().size();
+	if (numFiltered == numTotal)
+	{
+		m_UI->lblStats->setText(tr("Total songs: %1").arg(numTotal));
+	}
+	else
+	{
+		m_UI->lblStats->setText(tr("Total songs: %1 (filtered out of %2)").arg(numFiltered).arg(numTotal));
+	}
 }
 
 
