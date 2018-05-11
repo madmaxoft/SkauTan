@@ -30,6 +30,7 @@ BackgroundTasks::BackgroundTasks()
 BackgroundTasks::~BackgroundTasks()
 {
 	// Tell all executors to terminate:
+	qDebug() << "Terminating all executors...";
 	m_ShouldTerminate = true;
 	for (auto & e: m_Executors)
 	{
@@ -37,12 +38,14 @@ BackgroundTasks::~BackgroundTasks()
 	}
 
 	// Wait for all executors to terminate:
+	qDebug() << "Waiting for all executors...";
 	for (auto & e: m_Executors)
 	{
 		e->wait();
 	}
 
 	// Abort all tasks left over in the queue:
+	qDebug() << "Aborting non-executed tasks.";
 	for (auto & t: m_Tasks)
 	{
 		t->abort();
@@ -153,9 +156,7 @@ BackgroundTasks::TaskPtr BackgroundTasks::getNextTask()
 
 void BackgroundTasks::emitTaskFinished(BackgroundTasks::TaskPtr a_Task)
 {
-	qDebug() << "Emitting a taskFinished signal for task " << a_Task->name();
 	emit taskFinished(a_Task);
-	qDebug() << "taskFinished signal emitted";
 }
 
 
@@ -179,14 +180,12 @@ void BackgroundTasks::Executor::run()
 	while (task != nullptr)
 	{
 		task->execute();
-		qDebug() << "Invoking a taskFinished signal emission, parent = " << &m_Parent;
 		QMetaObject::invokeMethod(
 			&m_Parent,
 			"emitTaskFinished",
 			Qt::BlockingQueuedConnection,
 			Q_ARG(BackgroundTasks::TaskPtr, task)
 		);
-		qDebug() << "taskFinished signal emission invoked. Continuing with next task.";
 		task = m_Parent.getNextTask();
 	}
 }
