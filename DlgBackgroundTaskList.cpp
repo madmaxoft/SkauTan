@@ -27,6 +27,7 @@ DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
 	{
 		addTask(task);
 	}
+	updateCountLabel();
 
 	// Start the UI updater, update UI every half second:
 	m_UpdateTimer.start(500);
