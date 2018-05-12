@@ -10,6 +10,7 @@
 #include <QThread>
 #include <QApplication>
 #include "Stopwatch.h"
+#include "DatabaseUpgrade.h"
 
 
 
@@ -94,7 +95,9 @@ void Database::open(const QString & a_DBFileName)
 		qWarning() << "Turning off synchronous failed: " << query.lastError();
 	}
 
-	fixupTables();
+	// Upgrade the DB to the latest version:
+	DatabaseUpgrade::upgrade(*this);
+
 	loadSongs();
 	loadTemplates();
 }
@@ -393,147 +396,6 @@ QSqlQuery Database::playbackHistorySqlQuery()
 	}
 
 	return res;
-}
-
-
-
-
-
-void Database::fixupTables()
-{
-	static const std::vector<std::pair<QString, QString>> cdSongHashes =
-	{
-		{"FileName",                  "TEXT"},
-		{"FileSize",                  "NUMBER"},
-		{"Hash",                      "BLOB"},
-	};
-
-	static const std::vector<std::pair<QString, QString>> cdSongMetadata =
-	{
-		{"Hash",                      "BLOB PRIMARY KEY"},
-		{"Length",                    "NUMERIC"},
-		{"ManualAuthor",              "TEXT"},
-		{"ManualTitle",               "TEXT"},
-		{"ManualGenre",               "TEXT"},
-		{"ManualMeasuresPerMinute",   "NUMERIC"},
-		{"FileNameAuthor",            "TEXT"},
-		{"FileNameTitle",             "TEXT"},
-		{"FileNameGenre",             "TEXT"},
-		{"FileNameMeasuresPerMinute", "NUMERIC"},
-		{"ID3Author",                 "TEXT"},
-		{"ID3Title",                  "TEXT"},
-		{"ID3Genre",                  "TEXT"},
-		{"ID3MeasuresPerMinute",      "NUMERIC"},
-		{"LastPlayed",                "DATETIME"},
-		{"Rating",                    "NUMERIC"},
-		{"LastMetadataUpdated",       "DATETIME"},
-	};
-
-	static const std::vector<std::pair<QString, QString>> cdPlaybackHistory =
-	{
-		{"SongHash",  "BLOB"},
-		{"Timestamp", "DATETIME"},
-	};
-
-	static const std::vector<std::pair<QString, QString>> cdTemplates =
-	{
-		{"RowID",       "INTEGER PRIMARY KEY"},
-		{"DisplayName", "TEXT"},
-		{"Notes",       "TEXT"},
-		{"BgColor",     "TEXT"},  // "#rrggbb"
-	};
-
-	static const std::vector<std::pair<QString, QString>> cdTemplateItems =
-	{
-		{"RowID",         "INTEGER PRIMARY KEY"},
-		{"TemplateID",    "INTEGER"},
-		{"IndexInParent", "INTEGER"},  // The index of the Item within its Template
-		{"DisplayName",   "TEXT"},
-		{"Notes",         "TEXT"},
-		{"IsFavorite",    "INTEGER"},
-		{"BgColor",       "TEXT"},  // "#rrggbb"
-	};
-
-	static const std::vector<std::pair<QString, QString>> cdTemplateFilters =
-	{
-		{"RowID",        "INTEGER PRIMARY KEY"},
-		{"ItemID",       "INTEGER"},  // RowID of the TemplateItem that owns this filter
-		{"TemplateID",   "INTEGER"},  // RowID of the Template that owns this filter's item
-		{"ParentID",     "INTEGER"},  // RowID of this filter's parent, or -1 if root
-		{"Kind",         "INTEGER"},  // Numeric representation of the Template::Filter::Kind enum
-		{"SongProperty", "INTEGER"},  // Numeric representation of the Template::Filter::SongProperty enum
-		{"Comparison",   "INTEGER"},  // Numeric representation of the Template::Filter::Comparison enum
-		{"Value",        "TEXT"},     // The value against which to compare
-	};
-
-	fixupTable("SongHashes",      cdSongHashes);
-	fixupTable("SongMetadata",    cdSongMetadata);
-	fixupTable("PlaybackHistory", cdPlaybackHistory);
-	fixupTable("Templates",       cdTemplates);
-	fixupTable("TemplateItems",   cdTemplateItems);
-	fixupTable("TemplateFilters", cdTemplateFilters);
-}
-
-
-
-
-
-void Database::fixupTable(const QString & a_TableName, const std::vector<std::pair<QString, QString> > & a_ColumnDefs)
-{
-	// Create the table, if it doesn't exist:
-	QString colDefs;
-	for (const auto & col: a_ColumnDefs)
-	{
-		if (!colDefs.isEmpty())
-		{
-			colDefs.push_back(',');
-		}
-		colDefs.append(QString("%1 %2").arg(col.first, col.second));
-	}
-	QString createQuery("CREATE TABLE IF NOT EXISTS %1 (%2)");
-	createQuery = createQuery.arg(a_TableName, colDefs);
-	QSqlQuery query(m_Database);
-	if (!query.exec(createQuery))
-	{
-		qWarning()
-			<< ": Failed to fixup table " << a_TableName
-			<< ", query CreateTable: " << createQuery
-			<< ": " << query.lastError();
-	}
-
-	// Check for existing columns:
-	std::set<QString> columns;
-	if (!query.exec(QString("PRAGMA table_info(%1)").arg(a_TableName)))
-	{
-		qWarning()
-			<< ": Failed to query columns for table " << a_TableName
-			<< ": " << query.lastError();
-		return;
-	}
-	while (query.next())
-	{
-		columns.insert(query.value(1).toString());
-	}
-
-	// Add missing columns:
-	for (const auto & col: a_ColumnDefs)
-	{
-		if (columns.find(col.first) != columns.end())
-		{
-			// Column already exists
-			continue;
-		}
-		qDebug() << ": Adding column " << a_TableName << "." << col.first << " " << col.second;
-		if (!query.exec(QString("ALTER TABLE %1 ADD COLUMN %2 %3")
-			.arg(a_TableName, col.first, col.second))
-		)
-		{
-			qWarning()
-				<< ": Failed to add column " << col.first
-				<< " to table " << a_TableName
-				<< ": " << query.lastError();
-		}
-	}
 }
 
 

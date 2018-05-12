@@ -85,6 +85,9 @@ public:
 
 protected:
 
+	friend class DatabaseUpgrade;
+
+
 	/** The DB connection .*/
 	QSqlDatabase m_Database;
 
@@ -138,6 +141,10 @@ protected:
 
 	/** Updates the song metadata in the SongMetadata DB table. */
 	void saveSongMetadata(SongPtr a_Song);
+
+	/** Returns the internal Qt DB object.
+	Only used in the DatabaseUpgrade class. */
+	QSqlDatabase & database() { return m_Database; }
 
 
 signals:
