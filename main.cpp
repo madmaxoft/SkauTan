@@ -3,6 +3,7 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QDebug>
+#include <QMessageBox>
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -39,41 +40,53 @@ int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 
-	// Initialize translations:
-	initTranslations(app);
+	try
+	{
+		// Initialize translations:
+		initTranslations(app);
 
-	// Initialize singletons / subsystems:
-	BackgroundTasks::get();
-	qRegisterMetaType<SongPtr>();
+		// Initialize singletons / subsystems:
+		BackgroundTasks::get();
+		qRegisterMetaType<SongPtr>();
 
-	// Create the main app objects:
-	Database mainDB;
-	MetadataScanner scanner;
-	HashCalculator hashCalc;
-	Player player;
+		// Create the main app objects:
+		Database mainDB;
+		MetadataScanner scanner;
+		HashCalculator hashCalc;
+		Player player;
 
-	// Connect the main objects together:
-	app.connect(&mainDB,   &Database::needSongHash,             &hashCalc, &HashCalculator::queueHashSong);
-	app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,  &Database::songHashCalculated);
-	app.connect(&mainDB,   &Database::needSongMetadata,         &scanner, &MetadataScanner::queueScanSong);
-	app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,  &Database::songScanned);
-	app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
-		{
-			// Update the "last played" value in the DB:
-			auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
-			if (spi != nullptr)
+		// Connect the main objects together:
+		app.connect(&mainDB,   &Database::needSongHash,             &hashCalc, &HashCalculator::queueHashSong);
+		app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,  &Database::songHashCalculated);
+		app.connect(&mainDB,   &Database::needSongMetadata,         &scanner, &MetadataScanner::queueScanSong);
+		app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,  &Database::songScanned);
+		app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
-				mainDB.songPlaybackStarted(spi->song());
+				// Update the "last played" value in the DB:
+				auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
+				if (spi != nullptr)
+				{
+					mainDB.songPlaybackStarted(spi->song());
+				}
 			}
-		}
-	);
+		);
 
-	// Load the DB:
-	mainDB.open("SkauTan.sqlite");
+		// Load the DB:
+		mainDB.open("SkauTan.sqlite");
 
-	// Show the UI:
-	PlayerWindow w(mainDB, scanner, player);
-	w.showMaximized();
+		// Show the UI:
+		PlayerWindow w(mainDB, scanner, player);
+		w.showMaximized();
+	}
+	catch (const std::runtime_error & exc)
+	{
+		QMessageBox::warning(
+			nullptr,
+			app.tr("SkauTan: Fatal error"),
+			app.tr("Cannot start SkauTan, a fatal error has occurred: %1").arg(exc.what())
+		);
+		return -1;
+	}
 
 	return app.exec();
 }
