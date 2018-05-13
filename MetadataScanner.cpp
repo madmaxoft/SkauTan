@@ -34,6 +34,24 @@ protected:
 	SongPtr m_Song;
 
 
+	/** Any textual invalid variant in the specified tag gets replaced with an empty string. */
+	void validateSongTag(Song::Tag & a_Tag)
+	{
+		if (!a_Tag.m_Author.isValid() || a_Tag.m_Author.isNull())
+		{
+			a_Tag.m_Author = QString("");
+		}
+		if (!a_Tag.m_Title.isValid() || a_Tag.m_Title.isNull())
+		{
+			a_Tag.m_Title = QString("");
+		}
+		if (!a_Tag.m_Genre.isValid() || a_Tag.m_Genre.isNull())
+		{
+			a_Tag.m_Genre = QString("");
+		}
+	}
+
+
 	/** Parses any tags within the song using TagLib. */
 	void parseTagLibMetadata(const QString & a_FileName)
 	{
@@ -72,6 +90,7 @@ protected:
 		Q_UNUSED(comment);
 		auto genre = QString::fromStdString(tag->genre().to8Bit(true));
 		genre = tryMatchGenreMPM(genre, songTag);
+		validateSongTag(songTag);
 		m_Song->setId3Tag(songTag);
 		Q_UNUSED(genre);
 	}
@@ -121,6 +140,7 @@ protected:
 			songTag.m_Author = fileBareName.mid(0, idxSeparator).trimmed();
 			songTag.m_Title = fileBareName.mid(idxSeparator + 3).trimmed();
 		}
+		validateSongTag(songTag);
 		m_Song->setFileNameTag(songTag);
 	}
 
