@@ -280,7 +280,7 @@ int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 	auto rating = a_Song.rating();
 	if (rating.isValid())
 	{
-		res = res * (rating.toInt() + 1) / 5;  // Even zero-rating songs need *some* chance
+		res = res * (rating.toDouble() + 1) / 5;  // Even zero-rating songs need *some* chance
 	}
 	else
 	{

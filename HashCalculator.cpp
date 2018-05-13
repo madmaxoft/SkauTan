@@ -44,7 +44,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 				return;
 			}
 			a_Song->setHash(ch.result());
-			emit this->songHashCalculated(a_Song);
+			emit songHashCalculated(a_Song);
 		}
 	);
 }

@@ -21,7 +21,10 @@ class QSqlQuery;
 
 
 
-/** Binds an on-disk file with its metadata stored in our DB. */
+/** Binds an on-disk file with its metadata stored in our DB.
+Each disk file has one Song instance; multiple instances may have the same audio data (matched using Hash), these all
+have their SharedData pointing to the same object. This way the data that is common for the audio is stored shared,
+while data pertaining to the file itself is stored separately for duplicates. */
 class Song
 {
 public:
@@ -37,36 +40,60 @@ public:
 	};
 
 
+	/** Data that can be shared among multiple files that represent the same song (same hash). */
+	struct SharedData
+	{
+		QByteArray m_Hash;
+		QVariant m_Length;
+		QVariant m_LastPlayed;
+		QVariant m_Rating;
+
+		SharedData(const QByteArray & a_Hash, QVariant && a_Length, QVariant && a_LastPlayed, QVariant && a_Rating):
+			m_Hash(a_Hash),
+			m_Length(std::move(a_Length)),
+			m_LastPlayed(std::move(a_LastPlayed)),
+			m_Rating(std::move(a_Rating))
+		{
+		}
+
+		SharedData(const QByteArray & a_Hash):
+			m_Hash(a_Hash)
+		{
+		}
+	};
+
+	using SharedDataPtr = std::shared_ptr<SharedData>;
+
+
 	/** Creates a new instance that has only the file name and size set, all the other metadata are empty.
 	Used when adding new files. */
-	explicit Song(const QString & a_FileName,
+	explicit Song(
+		const QString & a_FileName,
 		qulonglong a_FileSize
 	);
 
 	/** Creates a new instance with all fields set.
 	Used when loading songs from the DB. */
-	explicit Song(QString && a_FileName,
+	explicit Song(
+		QString && a_FileName,
 		qulonglong a_FileSize,
 		QVariant && a_Hash,
-		QVariant && a_Length,
 		Tag && a_TagManual,
 		Tag && a_TagFileName,
 		Tag && a_TagId3,
-		QVariant && a_LastPlayed,
-		QVariant && a_Rating,
-		QVariant && a_LastMetadataUpdated
+		QVariant && a_LastTagRescanned,
+		QVariant && a_NumTagRescanAttempts
 	);
 
 	const QString & fileName() const { return m_FileName; }
 	qulonglong fileSize() const { return m_FileSize; }
 	const QVariant & hash() const { return m_Hash; }
-	const QVariant & length() const { return m_Length; }
 	const Tag & tagManual() const { return m_TagManual; }
 	const Tag & tagFileName() const { return m_TagFileName; }
 	const Tag & tagId3() const { return m_TagId3; }
-	const QVariant & lastPlayed() const { return m_LastPlayed; }
-	const QVariant & rating() const { return m_Rating; }
-	const QVariant & lastMetadataUpdated() const { return m_LastMetadataUpdated; }
+	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
+	const QVariant & numTagRescanAttempts() const { return m_NumTagRescanAttempts; }
+	const SharedDataPtr & sharedData() const { return m_SharedData; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
 	const QVariant & author() const;
@@ -74,16 +101,25 @@ public:
 	const QVariant & genre() const;
 	const QVariant & measuresPerMinute() const;
 
+	// These return values from the shared data, if available:
+	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
+	const QVariant & lastPlayed() const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_LastPlayed; }
+	const QVariant & rating()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Rating; }
+
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;
 
 	/** Updates the length of the song, in seconds. */
 	void setLength(double a_Length);
 
-	// Basic setters:
-	void setHash(QByteArray a_Hash) { m_Hash = a_Hash; }
-	void setLastPlayed(const QDateTime & a_LastPlayed) { m_LastPlayed = a_LastPlayed; }
-	void setLastMetadataUpdated(QDateTime a_LastMetadataUpdated) { m_LastMetadataUpdated = a_LastMetadataUpdated; }
+	/** Sets the hash to the specified value.
+	Raises an assert if there is already a hash for this song, or valid SharedData.
+	Does NOT set SharedData based on the hash! */
+	void setHash(QByteArray && a_Hash);
+
+	// void setLastPlayed(const QDateTime & a_LastPlayed);
+
+	void setSharedData(SharedDataPtr a_SharedData);
 
 	// Setters that redirect into the Manual tag:
 	void setAuthor(QVariant a_Author) { m_TagManual.m_Author = a_Author; }
@@ -92,6 +128,11 @@ public:
 	void setMeasuresPerMinute(double a_MeasuresPerMinute) { m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
 
 	// Setters for specific tags:
+	void setManualAuthor(QVariant a_Author) { m_TagManual.m_Author = a_Author; }
+	void setManualTitle(QVariant a_Title) { m_TagManual.m_Title = a_Title; }
+	void setManualGenre(const QString & a_Genre) { m_TagManual.m_Genre = a_Genre; }
+	void setManualMeasuresPerMinute(double a_MeasuresPerMinute) { m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
+	void setManualTag(const Tag & a_Tag) { m_TagManual = a_Tag; }
 	void setId3Author(const QString & a_Author) { m_TagId3.m_Author = a_Author; }
 	void setId3Title(const QString & a_Title)   { m_TagId3.m_Title  = a_Title; }
 	void setId3Genre(const QString & a_Genre)   { m_TagId3.m_Genre  = a_Genre; }
@@ -102,33 +143,36 @@ public:
 	void setFileNameGenre(const QString & a_Genre)   { m_TagFileName.m_Genre  = a_Genre; }
 	void setFileNameMeasuresPerMinute(double a_MPM)  { m_TagFileName.m_MeasuresPerMinute = a_MPM; }
 	void setFileNameTag(const Tag & a_Tag) { m_TagFileName = a_Tag; }
+	void setLastTagRescanned(const QDateTime & a_LastTagRescanned) { m_LastTagRescanned = a_LastTagRescanned; }
+	void setNumTagRescanAttempts(int a_NumTagRescanAttempts) { m_NumTagRescanAttempts = a_NumTagRescanAttempts; }
 
-	/** Returns true if any of the metadata is invalid or the song hasn't been scanned for a long time.
-	SongDatabase uses this to decide whether to queue the song for re-scan upon loading the DB. */
-	bool needsMetadataRescan() const;
+	/** Returns true if a tag rescan is needed for the song
+	(the tags are empty and the scan hasn't been performed already). */
+	bool needsTagRescan() const;
 
-	/** Copies all metadata from the specified source song.
-	This is used when a hash duplicate is detected. */
-	void copyMetadataFrom(const Song & a_Src);
-
+	/** Copies the Tags from the specified src song. */
+	void copyTagsFrom(const Song & a_Src);
 
 protected:
 
 	QString m_FileName;
 	qulonglong m_FileSize;
 	QVariant m_Hash;
-	QVariant m_Length;
 	Tag m_TagManual;
 	Tag m_TagFileName;
 	Tag m_TagId3;
-	QVariant m_LastPlayed;
-	QVariant m_Rating;
-	QVariant m_LastMetadataUpdated;
+	QVariant m_LastTagRescanned;
+	QVariant m_NumTagRescanAttempts;
+	SharedDataPtr m_SharedData;
+
+	/** An empty variant returned when there's no shared data for a query */
+	static QVariant m_Empty;
 };
 
 using SongPtr = std::shared_ptr<Song>;
 
 Q_DECLARE_METATYPE(SongPtr);
+Q_DECLARE_METATYPE(Song::SharedDataPtr);
 
 
 

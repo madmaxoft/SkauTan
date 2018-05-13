@@ -1,6 +1,13 @@
 #include "Song.h"
+#include <assert.h>
 #include <QSqlQuery>
 #include <QVariant>
+
+
+
+
+
+QVariant Song::m_Empty;
 
 
 
@@ -23,24 +30,20 @@ Song::Song(
 	QString && a_FileName,
 	qulonglong a_FileSize,
 	QVariant && a_Hash,
-	QVariant && a_Length,
 	Tag && a_TagManual,
 	Tag && a_TagFileName,
 	Tag && a_TagId3,
-	QVariant && a_LastPlayed,
-	QVariant && a_Rating,
-	QVariant && a_LastMetadataUpdated
+	QVariant && a_LastTagRescanned,
+	QVariant && a_NumTagRescanAttempts
 ):
 	m_FileName(std::move(a_FileName)),
 	m_FileSize(a_FileSize),
 	m_Hash(std::move(a_Hash)),
-	m_Length(std::move(a_Length)),
 	m_TagManual(std::move(a_TagManual)),
 	m_TagFileName(std::move(a_TagFileName)),
 	m_TagId3(std::move(a_TagId3)),
-	m_LastPlayed(std::move(a_LastPlayed)),
-	m_Rating(std::move(a_Rating)),
-	m_LastMetadataUpdated(std::move(a_LastMetadataUpdated))
+	m_LastTagRescanned(std::move(a_LastTagRescanned)),
+	m_NumTagRescanAttempts(std::move(a_NumTagRescanAttempts))
 {
 }
 
@@ -118,56 +121,60 @@ const QVariant & Song::measuresPerMinute() const
 
 void Song::setLength(double a_Length)
 {
-	m_Length = a_Length;
+	assert(m_SharedData != nullptr);
+
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->m_Length = a_Length;
+	}
 }
 
 
 
 
 
-bool Song::needsMetadataRescan() const
+void Song::setHash(QByteArray && a_Hash)
 {
-	// Invalid hash always needs a rescan
-	if (!m_Hash.isValid())
-	{
-		return true;
-	}
+	assert(m_SharedData == nullptr);
+	assert(!m_Hash.isValid());
 
-	// Length is needed, update it if invalid:
-	if (!m_Length.isValid() || (m_Length.toDouble() < 0))
-	{
-		return true;
-	}
-
-	// Invalid metadata trigger a rescan only if it has been enough time since the last metadata update:
-	if (!m_LastMetadataUpdated.isValid())
-	{
-		return true;
-	}
-	if (
-		(m_TagId3.m_MeasuresPerMinute < 0) ||
-		!m_TagId3.m_Author.isValid() ||
-		!m_TagId3.m_Title.isValid()
-	)
-	{
-		return (m_LastMetadataUpdated.toDateTime() < QDateTime::currentDateTimeUtc().addDays(-14));
-	}
-	return false;
+	m_Hash = std::move(a_Hash);
 }
 
 
 
 
 
-void Song::copyMetadataFrom(const Song & a_Src)
+void Song::setSharedData(Song::SharedDataPtr a_SharedData)
 {
-	m_Length              = a_Src.m_Length;
+	assert(m_Hash.toByteArray() == a_SharedData->m_Hash);
+	m_SharedData = a_SharedData;
+}
+
+
+
+
+
+bool Song::needsTagRescan() const
+{
+	// Any invalid metadata signals that the rescan hasn't been done
+	// A rescan would have set the values (to empty strings if it failed)
+	// TODO: Rescan if the file's last changed time grows over the last metadata updated value
+	return (
+		!m_TagFileName.m_Author.isValid() ||
+		!m_TagId3.m_Author.isValid()
+	);
+}
+
+
+
+
+
+void Song::copyTagsFrom(const Song & a_Src)
+{
 	m_TagManual           = a_Src.m_TagManual;
 	m_TagFileName         = a_Src.m_TagFileName;
 	m_TagId3              = a_Src.m_TagId3;
-	m_LastPlayed          = a_Src.m_LastPlayed;
-	m_Rating              = a_Src.m_Rating;
-	m_LastMetadataUpdated = a_Src.m_LastMetadataUpdated;
 }
 
 

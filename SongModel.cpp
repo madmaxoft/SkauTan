@@ -55,11 +55,12 @@ static QString formatLastPlayed(const Song & a_Song)
 
 static QString formatRating(const Song & a_Song)
 {
-	if (!a_Song.rating().isValid())
+	const auto & rating = a_Song.rating();
+	if (!rating.isValid())
 	{
 		return SongModel::tr("<none>", "Rating");
 	}
-	return QString::number(a_Song.rating().toDouble(), 'f', 1);
+	return QString::number(rating.toDouble(), 'f', 1);
 }
 
 

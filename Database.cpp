@@ -132,7 +132,7 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 
 	// Insert into DB:
 	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT INTO SongHashes (FileName, FileSize) VALUES(?, ?)"))
+	if (!query.prepare("INSERT INTO SongFiles (FileName, FileSize, NumTagRescanAttempts) VALUES(?, ?, 0)"))
 	{
 		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
@@ -404,24 +404,25 @@ QSqlQuery Database::playbackHistorySqlQuery()
 
 void Database::loadSongs()
 {
+	// First load the shared data:
+	loadSongSharedData();
+
 	STOPWATCH("Loading songs from the DB");
 
 	// Initialize the query:
 	QSqlQuery query(m_Database);
 	query.setForwardOnly(true);
-	if (!query.exec("SELECT * FROM SongHashes LEFT JOIN SongMetadata ON SongHashes.Hash == SongMetadata.Hash"))
+	if (!query.exec("SELECT * FROM SongFiles"))
 	{
-		qWarning() << ": Cannot query songs from the DB: " << query.lastError();
+		qWarning() << ": Cannot query song files from the DB: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	auto fiFileName            = query.record().indexOf("FileName");
-	auto fiFileSize            = query.record().indexOf("FileSize");
-	auto fiHash                = query.record().indexOf("Hash");
-	auto fiLength              = query.record().indexOf("Length");
-	auto fiLastPlayed          = query.record().indexOf("LastPlayed");
-	auto fiRating              = query.record().indexOf("Rating");
-	auto fiLastMetadataUpdated = query.record().indexOf("LastMetadataUpdated");
+	auto fiFileName             = query.record().indexOf("FileName");
+	auto fiFileSize             = query.record().indexOf("FileSize");
+	auto fiHash                 = query.record().indexOf("Hash");
+	auto fiLastTagRescanned     = query.record().indexOf("LastTagRescanned");
+	auto fiNumTagRescanAttempts = query.record().indexOf("NumTagRescanAttempts");
 	std::array<int, 4> fisManual
 	{{
 		query.record().indexOf("ManualAuthor"),
@@ -445,18 +446,6 @@ void Database::loadSongs()
 	}};
 
 	// Load each song:
-	if (!query.isActive())
-	{
-		qWarning() << ": Query not active";
-		assert(!"DB error");
-		return;
-	}
-	if (!query.isSelect())
-	{
-		qWarning() << ": Not a select";
-		assert(!"DB error");
-		return;
-	}
 	while (query.next())
 	{
 		const auto & rec = query.record();
@@ -464,13 +453,11 @@ void Database::loadSongs()
 			query.value(fiFileName).toString(),
 			query.value(fiFileSize).toULongLong(),
 			fieldValue(rec.field(fiHash)),
-			fieldValue(rec.field(fiLength)),
 			tagFromFields(rec, fisManual),
 			tagFromFields(rec, fisFileName),
 			tagFromFields(rec, fisId3),
-			fieldValue(rec.field(fiLastPlayed)),
-			fieldValue(rec.field(fiRating)),
-			fieldValue(rec.field(fiLastMetadataUpdated))
+			fieldValue(rec.field(fiLastTagRescanned)),
+			fieldValue(rec.field(fiNumTagRescanAttempts))
 		);
 		m_Songs.push_back(song);
 		if (!song->hash().isValid())
@@ -479,11 +466,50 @@ void Database::loadSongs()
 		}
 		else
 		{
-			if (song->needsMetadataRescan())
+			auto shared = m_SongSharedData.find(song->hash().toByteArray());
+			song->setSharedData(shared->second);
+			if (song->needsTagRescan())
 			{
-				emit needSongMetadata(song);
+				emit needSongTagRescan(song);
 			}
 		}
+	}
+}
+
+
+
+
+
+void Database::loadSongSharedData()
+{
+	STOPWATCH("Loading song shared data from the DB");
+
+	// Initialize the query:
+	QSqlQuery query(m_Database);
+	query.setForwardOnly(true);
+	if (!query.exec("SELECT * FROM SongSharedData"))
+	{
+		qWarning() << ": Cannot query song shared data from the DB: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	auto fiHash       = query.record().indexOf("Hash");
+	auto fiLength     = query.record().indexOf("Length");
+	auto fiLastPlayed = query.record().indexOf("LastPlayed");
+	auto fiRating     = query.record().indexOf("Rating");
+
+	// Load each record:
+	while (query.next())
+	{
+		const auto & rec = query.record();
+		auto hash = query.value(fiHash).toByteArray();
+		auto data = std::make_shared<Song::SharedData>(
+			hash,
+			fieldValue(rec.field(fiLength)),
+			fieldValue(rec.field(fiLastPlayed)),
+			fieldValue(rec.field(fiRating))
+		);
+		m_SongSharedData[hash] = data;
 	}
 }
 
@@ -897,11 +923,16 @@ void Database::saveTemplateFilters(
 
 
 
-void Database::saveSongHash(SongPtr a_Song)
+void Database::saveSongFileData(SongPtr a_Song)
 {
 	QSqlQuery query(m_Database);
-	if (!query.prepare("UPDATE SongHashes SET "
-		"FileSize = ?, Hash = ? "
+	if (!query.prepare("UPDATE SongFiles SET "
+		"FileSize = ?, Hash = ?, "
+		"ManualAuthor = ?, ManualTitle = ?, ManualGenre = ?, ManualMeasuresPerMinute = ?,"
+		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
+		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?,"
+		"LastTagRescanned = ?,"
+		"NumTagRescanAttempts = ? "
 		"WHERE FileName = ?")
 	)
 	{
@@ -911,6 +942,20 @@ void Database::saveSongHash(SongPtr a_Song)
 	}
 	query.addBindValue(a_Song->fileSize());
 	query.addBindValue(a_Song->hash());
+	query.addBindValue(a_Song->tagManual().m_Author);
+	query.addBindValue(a_Song->tagManual().m_Title);
+	query.addBindValue(a_Song->tagManual().m_Genre);
+	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->tagFileName().m_Author);
+	query.addBindValue(a_Song->tagFileName().m_Title);
+	query.addBindValue(a_Song->tagFileName().m_Genre);
+	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->tagId3().m_Author);
+	query.addBindValue(a_Song->tagId3().m_Title);
+	query.addBindValue(a_Song->tagId3().m_Genre);
+	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute);
+	query.addBindValue(a_Song->lastTagRescanned());
+	query.addBindValue(a_Song->numTagRescanAttempts());
 	query.addBindValue(a_Song->fileName());
 	if (!query.exec())
 	{
@@ -924,41 +969,22 @@ void Database::saveSongHash(SongPtr a_Song)
 
 
 
-void Database::saveSongMetadata(SongPtr a_Song)
+void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 {
-	assert(a_Song->hash().isValid());
-
 	QSqlQuery query(m_Database);
-	if (!query.prepare("UPDATE SongMetadata SET "
-		"Length = ?, "
-		"ManualAuthor = ?, ManualTitle = ?, ManualGenre = ?, ManualMeasuresPerMinute = ?, "
-		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?, "
-		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?, "
-		"LastPlayed = ?, Rating = ?, LastMetadataUpdated = ? "
+	if (!query.prepare("UPDATE SongSharedData SET "
+		"Length = ?, LastPlayed = ?, Rating = ? "
 		"WHERE Hash = ?")
 	)
 	{
-		qWarning() << "Cannot prepare statement: " << query.lastError();
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Song->length());
-	query.addBindValue(a_Song->tagManual().m_Author);
-	query.addBindValue(a_Song->tagManual().m_Title);
-	query.addBindValue(a_Song->tagManual().m_Genre);
-	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute);
-	query.addBindValue(a_Song->tagFileName().m_Author);
-	query.addBindValue(a_Song->tagFileName().m_Title);
-	query.addBindValue(a_Song->tagFileName().m_Genre);
-	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute);
-	query.addBindValue(a_Song->tagId3().m_Author);
-	query.addBindValue(a_Song->tagId3().m_Title);
-	query.addBindValue(a_Song->tagId3().m_Genre);
-	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute);
-	query.addBindValue(a_Song->lastPlayed());
-	query.addBindValue(a_Song->rating());
-	query.addBindValue(a_Song->lastMetadataUpdated());
-	query.addBindValue(a_Song->hash());
+	query.addBindValue(a_SharedData->m_Length);
+	query.addBindValue(a_SharedData->m_LastPlayed);
+	query.addBindValue(a_SharedData->m_Rating);
+	query.addBindValue(a_SharedData->m_Hash);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -967,9 +993,8 @@ void Database::saveSongMetadata(SongPtr a_Song)
 	}
 	if (query.numRowsAffected() != 1)
 	{
-		qWarning() << "Statement didn't modify one row: " << query.numRowsAffected()
-			<< ", Song " << a_Song->fileName() << ", hash " << a_Song->hash();
-		assert(!"DB error");
+		qWarning() << "SongSharedData update failed, no such hash row";
+		assert(!"DB_error");
 		return;
 	}
 }
@@ -981,8 +1006,12 @@ void Database::saveSongMetadata(SongPtr a_Song)
 void Database::songPlaybackStarted(SongPtr a_Song)
 {
 	auto now = QDateTime::currentDateTimeUtc();
-	a_Song->setLastPlayed(now);
-	QMetaObject::invokeMethod(this, "saveSong", Q_ARG(SongPtr, a_Song));
+	auto shared = a_Song->sharedData();
+	if (shared != nullptr)
+	{
+		shared->m_LastPlayed = now;
+		QMetaObject::invokeMethod(this, "saveSongSharedData", Q_ARG(Song::SharedDataPtr, shared));
+	}
 	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, a_Song), Q_ARG(QDateTime, now));
 }
 
@@ -992,15 +1021,20 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 
 void Database::songHashCalculated(SongPtr a_Song)
 {
-	// Insert the metadata record, now that we know the song hash:
+	assert(a_Song != nullptr);
+	assert(a_Song->hash().isValid());
+
+	// Insert the SharedData record, now that we know the song hash:
+	const auto hash = a_Song->hash().toByteArray();
+	assert(!hash.isEmpty());
 	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT OR IGNORE INTO SongMetadata (Hash) VALUES (?)"))
+	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash) VALUES (?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Song->hash());
+	query.bindValue(0, hash);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -1008,30 +1042,28 @@ void Database::songHashCalculated(SongPtr a_Song)
 		return;
 	}
 
-	// If the hash was already in the DB, copy the metadata from the duplicate song:
-	auto isDuplicate = (query.numRowsAffected() == 0);
-	if (isDuplicate)
+	// Create the SharedData, if not already created:
+	auto itr = m_SongSharedData.find(hash);
+	if (itr == m_SongSharedData.end())
 	{
-		for (const auto & s: m_Songs)
-		{
-			if ((s != a_Song) && (s->hash() == a_Song->hash()))
-			{
-				a_Song->copyMetadataFrom(*s);
-				break;
-			}
-		}
+		// Create new SharedData:
+		auto shared = std::make_shared<Song::SharedData>(hash);
+		m_SongSharedData[hash] = shared;
+		a_Song->setSharedData(shared);
+		saveSongSharedData(shared);  // Hash has been inserted above, so now can be updated
+	}
+	else
+	{
+		a_Song->setSharedData(itr->second);
 	}
 
 	// Save into the DB:
-	saveSong(a_Song);
+	saveSongFileData(a_Song);
 
-	// Rescan metadata, if needed:
-	if (!isDuplicate)
+	// We finally have the hash, we can scan for tags and other metadata (some stored in SharedData):
+	if (a_Song->needsTagRescan())
 	{
-		if (a_Song->needsMetadataRescan())
-		{
-			emit needSongMetadata(a_Song);
-		}
+		emit needSongTagRescan(a_Song);
 	}
 }
 
@@ -1044,12 +1076,10 @@ void Database::saveSong(SongPtr a_Song)
 	assert(a_Song != nullptr);
 	assert(QThread::currentThread() == QApplication::instance()->thread());
 
-	qDebug() << "Saving song " << a_Song->fileName();
-
-	saveSongHash(a_Song);
-	if (a_Song->hash().isValid())
+	saveSongFileData(a_Song);
+	if (a_Song->sharedData())
 	{
-		saveSongMetadata(a_Song);
+		saveSongSharedData(a_Song->sharedData());
 	}
 	emit songSaved(a_Song);
 }
@@ -1060,8 +1090,8 @@ void Database::saveSong(SongPtr a_Song)
 
 void Database::songScanned(SongPtr a_Song)
 {
-	a_Song->setLastMetadataUpdated(QDateTime::currentDateTimeUtc());
-	saveSong(a_Song);
+	a_Song->setLastTagRescanned(QDateTime::currentDateTimeUtc());
+	saveSongFileData(a_Song);
 }
 
 
