@@ -128,26 +128,30 @@ protected:
 	/** Attempts to find the genre and MPM in the specified string.
 	Detects strings such as "SW" and "SW30". Any found matches are set into a_OutputTag.
 	Returns the string excluding the genre / MPM substring. */
-	QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag)
+	static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag)
 	{
 		// Pairs of regexp -> genre
 		static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
 		{
 			// Shortcut-based genre + optional MPM:
 			{ QRegularExpression("(^|[\\W])SW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+			{ QRegularExpression("(^|[\\W])LW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
 			{ QRegularExpression("(^|[\\W])TG(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
 			{ QRegularExpression("(^|[\\W])TA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
 			{ QRegularExpression("(^|[\\W])VW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+			{ QRegularExpression("(^|[\\W])WW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
 			{ QRegularExpression("(^|[\\W])SF(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
 			{ QRegularExpression("(^|[\\W])QS(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
 			{ QRegularExpression("(^|[\\W])SB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
 			{ QRegularExpression("(^|[\\W])SA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+			{ QRegularExpression("(^|[\\W])SL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SL" },
 			{ QRegularExpression("(^|[\\W])CH(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
 			{ QRegularExpression("(^|[\\W])CC(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
 			{ QRegularExpression("(^|[\\W])RU(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
 			{ QRegularExpression("(^|[\\W])RB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
 			{ QRegularExpression("(^|[\\W])PD(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
 			{ QRegularExpression("(^|[\\W])JI(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
+			{ QRegularExpression("(^|[\\W])JV(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
 			{ QRegularExpression("(^|[\\W])BL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
 			{ QRegularExpression("(^|[\\W])PO(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
 
@@ -160,7 +164,7 @@ protected:
 			{ QRegularExpression("(^|[\\W])slow\\-?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",        QRegularExpression::CaseInsensitiveOption), "SF" },
 			{ QRegularExpression("(^|[\\W])quick\\-?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",             QRegularExpression::CaseInsensitiveOption), "QS" },
 			{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SB" },
-			{ QRegularExpression("(^|[\\W])cha\\-?cha(\\-?cha)\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "CH" },
+			{ QRegularExpression("(^|[\\W])cha[-\\s]?cha(\\-?cha)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",   QRegularExpression::CaseInsensitiveOption), "CH" },
 			{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   QRegularExpression::CaseInsensitiveOption), "RU" },
 			{ QRegularExpression("(^|[\\W])paso[-\\s]?doble\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          QRegularExpression::CaseInsensitiveOption), "PD" },
 			{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      QRegularExpression::CaseInsensitiveOption), "JI" },
@@ -201,7 +205,7 @@ protected:
 	If the substring is found and song has no MPM set, it is set into the song.
 	Returns the input string after removing the potential match.
 	Assumes that the match is not in the middle of "author - title", but rather at either end. */
-	QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
+	static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 	{
 		static const QRegularExpression re("(.*?)(\\d+) bpm(.*)", QRegularExpression::CaseInsensitiveOption);
 		auto match = re.match(a_Input);
