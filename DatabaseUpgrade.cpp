@@ -142,25 +142,75 @@ static const std::vector<VersionScript> g_VersionScripts =
 	}),  // Version 0
 
 
-	#if 0  // This is a preparation for #94 DB reorganization
 	// Version 1 to Version 2:
+	// Reorganize the data so that file-related data is with the filename, and song-related data is with the hash (#94)
 	VersionScript({
-		"CREATE TABLE SongFiles AS SELECT "
-		"SongHashes.FileName AS FileName, SongHashes.FileSize AS FileSize, SongHashes.Hash AS Hash,"
-		"SongMetadata.ManualAuthor AS ManualAuthor, SongMetadata.ManualTitle AS ManualTitle, SongMetadata.ManualGenre AS ManualGenre, SongMetadata.ManualMeasuresPerMinute AS ManualMeasuresPerMinute,"
-		"SongMetadata.FileNameAuthor AS FileNameAuthor, SongMetadata.FileNameTitle AS FileNameTitle, SongMetadata.FileNameGenre AS FileNameGenre, SongMetadata.FileNameMeasuresPerMinute AS FileNameMeasuresPerMinute,"
-		"SongMetadata.ID3Author AS ID3Author, SongMetadata.ID3Title AS ID3Title, SongMetadata.ID3Genre AS ID3Genre, SongMetadata.ID3MeasuresPerMinute AS ID3MeasuresPerMinute "
+		"CREATE TABLE SongFiles ("
+			"FileName                  TEXT PRIMARY KEY,"
+			"FileSize                  NUMERIC,"
+			"Hash                      BLOB,"
+			"ManualAuthor              TEXT,"
+			"ManualTitle               TEXT,"
+			"ManualGenre               TEXT,"
+			"ManualMeasuresPerMinute   NUMERIC,"
+			"FileNameAuthor            TEXT,"
+			"FileNameTitle             TEXT,"
+			"FileNameGenre             TEXT,"
+			"FileNameMeasuresPerMinute NUMERIC,"
+			"ID3Author                 TEXT,"
+			"ID3Title                  TEXT,"
+			"ID3Genre                  TEXT,"
+			"ID3MeasuresPerMinute      NUMERIC,"
+			"LastTagRescanned          DATETIME DEFAULT NULL,"
+			"NumTagRescanAttempts      NUMERIC DEFAULT 0"
+		")",
+
+		"INSERT INTO SongFiles ("
+			"FileName, FileSize, Hash,"
+			"ManualAuthor, ManualTitle, ManualGenre, ManualMeasuresPerMinute,"
+			"FileNameAuthor, FileNameTitle, FileNameGenre, FileNameMeasuresPerMinute,"
+			"ID3Author, ID3Title, ID3Genre, ID3MeasuresPerMinute"
+			") SELECT "
+		"SongHashes.FileName AS FileName,"
+		"SongHashes.FileSize AS FileSize,"
+		"SongHashes.Hash AS Hash,"
+		"SongMetadata.ManualAuthor AS ManualAuthor,"
+		"SongMetadata.ManualTitle AS ManualTitle,"
+		"SongMetadata.ManualGenre AS ManualGenre,"
+		"SongMetadata.ManualMeasuresPerMinute AS ManualMeasuresPerMinute,"
+		"SongMetadata.FileNameAuthor AS FileNameAuthor,"
+		"SongMetadata.FileNameTitle AS FileNameTitle,"
+		"SongMetadata.FileNameGenre AS FileNameGenre,"
+		"SongMetadata.FileNameMeasuresPerMinute AS FileNameMeasuresPerMinute,"
+		"SongMetadata.ID3Author AS ID3Author,"
+		"SongMetadata.ID3Title AS ID3Title,"
+		"SongMetadata.ID3Genre AS ID3Genre,"
+		"SongMetadata.ID3MeasuresPerMinute AS ID3MeasuresPerMinute "
 		"FROM SongHashes LEFT JOIN SongMetadata ON SongHashes.Hash == SongMetadata.Hash",
 
-		"CREATE TABLE NewSongMetadata AS SELECT "
-		"Hash, Length, LastPlayed, Rating, LastMetadataUpdated "
+		"CREATE TABLE SongSharedData ("
+			"Hash       BLOB PRIMARY KEY,"
+			"Length     NUMERIC,"
+			"LastPlayed DATETIME,"
+			"Rating     NUMERIC"
+		")",
+
+		"INSERT INTO SongSharedData("
+			"Hash,"
+			"Length,"
+			"LastPlayed,"
+			"Rating"
+		") SELECT "
+			"Hash,"
+			"Length,"
+			"LastPlayed,"
+			"Rating "
 		"FROM SongMetadata",
 
 		"DROP TABLE SongMetadata",
 
-		"ALTER TABLE NewSongMetadata RENAME TO SongMetadata",
+		"DROP TABLE SongHashes",
 	}),
-	#endif
 };
 
 
@@ -193,10 +243,22 @@ void DatabaseUpgrade::execute()
 {
 	auto version = getVersion();
 	qDebug() << "DB is at version " << version;
+	bool hasUpgraded = false;
 	for (auto i = version; i < g_VersionScripts.size(); ++i)
 	{
 		qWarning() << "Upgrading DB to version" << i + 1;
 		g_VersionScripts[i].apply(m_DB, i + 1);
+		hasUpgraded = true;
+	}
+
+	// After upgrading, vacuum the leftover space:
+	if (hasUpgraded)
+	{
+		auto query = m_DB.exec("VACUUM");
+		if (query.lastError().type() != QSqlError::NoError)
+		{
+			throw SqlError(query.lastError(), "VACUUM");
+		}
 	}
 }
 

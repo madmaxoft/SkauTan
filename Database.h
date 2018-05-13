@@ -18,7 +18,7 @@
 
 
 /** The storage for all data that is persisted across sessions.
-Stores the song library, the templates and playback history.
+Stores the song library, the shared song data, the templates and playback history.
 Note that all DB-access functions are not thread-safe. */
 class Database:
 	public QObject
@@ -94,22 +94,20 @@ protected:
 	/** All the known songs. */
 	std::vector<SongPtr> m_Songs;
 
+	/** The data shared among songs with equal hash. */
+	std::map<QByteArray, Song::SharedDataPtr> m_SongSharedData;
+
 	/** All the templates that can be used for filling the playlist. */
 	std::vector<TemplatePtr> m_Templates;
 
-
-	/** Updates all tables to the current format.
-	Adds any missing tables and rows. */
-	void fixupTables();
-
-	/** Updates the specified table to contain at least the specified columns.
-	a_ColumnDefs is a vector of string tuples, each tuple is column name and its type. */
-	void fixupTable(const QString & a_TableName, const std::vector<std::pair<QString, QString>> & a_ColumnDefs);
 
 	/** Loads all the songs in the DB into m_Songs.
 	Note that songs are not checked whether they exists on the disk or if their hash still fits.
 	Use Song::isStillValid() for checking before adding the song to playlist / before starting playback. */
 	void loadSongs();
+
+	/** Loads the data shared between songs with the same hash (m_SongSharedData). */
+	void loadSongSharedData();
 
 	/** Loads all the templates in the DB into m_Templates. */
 	void loadTemplates();
@@ -136,15 +134,18 @@ protected:
 		qlonglong a_ParentFilterRowId
 	);
 
-	/** Updates the song hash in the SongHashes DB table. */
-	void saveSongHash(SongPtr a_Song);
-
-	/** Updates the song metadata in the SongMetadata DB table. */
-	void saveSongMetadata(SongPtr a_Song);
-
 	/** Returns the internal Qt DB object.
 	Only used in the DatabaseUpgrade class. */
 	QSqlDatabase & database() { return m_Database; }
+
+
+protected slots:
+
+	/** Updates the song's file-related data in the DB. */
+	void saveSongFileData(SongPtr a_Song);
+
+	/** Updates the song's shared data in the SongSharedData DB table. */
+	void saveSongSharedData(Song::SharedDataPtr a_SharedData);
 
 
 signals:
@@ -162,9 +163,9 @@ signals:
 	/** Emitted when a song is loaded that has no hash assigned to it. */
 	void needSongHash(SongPtr a_Song);
 
-	/** Emitted when encountering a song with hash but without metadata in the DB.
+	/** Emitted when encountering a song with hash but without tag in the DB.
 	This can happen either at DB load time (open()), or when adding new songs (songHashCalculated()). */
-	void needSongMetadata(SongPtr a_Song);
+	void needSongTagRescan(SongPtr a_Song);
 
 	/** Emitted after a song was saved, presumably because its data had changed.
 	Used by clients to update the song properties in the UI. */

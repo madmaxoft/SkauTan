@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		// Connect the main objects together:
 		app.connect(&mainDB,   &Database::needSongHash,             &hashCalc, &HashCalculator::queueHashSong);
 		app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,  &Database::songHashCalculated);
-		app.connect(&mainDB,   &Database::needSongMetadata,         &scanner, &MetadataScanner::queueScanSong);
+		app.connect(&mainDB,   &Database::needSongTagRescan,        &scanner, &MetadataScanner::queueScanSong);
 		app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,  &Database::songScanned);
 		app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
@@ -77,16 +77,16 @@ int main(int argc, char *argv[])
 		// Show the UI:
 		PlayerWindow w(mainDB, scanner, player);
 		w.showMaximized();
+
+		return app.exec();
 	}
 	catch (const std::runtime_error & exc)
 	{
 		QMessageBox::warning(
 			nullptr,
 			app.tr("SkauTan: Fatal error"),
-			app.tr("Cannot start SkauTan, a fatal error has occurred: %1").arg(exc.what())
+			app.tr("SkauTan has detected a fatal error:\n\n%1").arg(exc.what())
 		);
 		return -1;
 	}
-
-	return app.exec();
 }
