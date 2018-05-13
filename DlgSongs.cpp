@@ -251,7 +251,10 @@ void DlgSongs::rescanMetadata()
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = m_SongModel.songFromIndex(m_FilterModel->mapToSource(idx));
-		m_MetadataScanner.queueScanSong(song);
+		if (song->hash().isValid())
+		{
+			m_MetadataScanner.queueScanSong(song);
+		}
 	}
 }
 
