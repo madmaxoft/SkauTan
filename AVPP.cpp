@@ -473,7 +473,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	auto io = FileIO::createContext(a_FileName);
 	if (io == nullptr)
 	{
-		qWarning() << ": IO creation failed.";
+		qWarning() << ": IO creation failed (" << a_FileName << ")";
 		return nullptr;
 	}
 
@@ -481,7 +481,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	auto res = std::unique_ptr<Format>(new Format(io));
 	if ((res == nullptr) || (res->m_Context == nullptr))
 	{
-		qWarning() << ": Creation failed";
+		qWarning() << ": Creation failed (" << a_FileName << ")";
 		return nullptr;
 	}
 
@@ -491,7 +491,7 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	{
 		// User-supplied AVFormatContext is freed upon failure, need to un-bind:
 		res->m_Context = nullptr;
-		qWarning() << ": Opening failed: " << ret;
+		qWarning() << ": Opening failed: " << ret << " (" << a_FileName << ")";
 		return nullptr;
 	}
 
@@ -499,10 +499,9 @@ FormatPtr Format::createContext(const QString & a_FileName)
 	ret = avformat_find_stream_info(res->m_Context, nullptr);
 	if (ret < 0)
 	{
-		qWarning() << ": Cannot find stream info: " << ret;
+		qWarning() << ": Cannot find stream info: " << ret << " (" << a_FileName << ")";
 	}
 
-	// qDebug() << ": Format context initialized.";
 	return res;
 }
 
