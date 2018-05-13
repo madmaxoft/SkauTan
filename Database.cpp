@@ -151,6 +151,14 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 	auto song = std::make_shared<Song>(a_FileName, a_FileSize);
 	m_Songs.push_back(song);
 	emit songFileAdded(song);
+	if (!song->hash().isValid())
+	{
+		emit needSongHash(song);
+	}
+	else if (song->needsTagRescan())
+	{
+		emit needSongTagRescan(song);
+	}
 }
 
 
