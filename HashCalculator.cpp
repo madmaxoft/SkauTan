@@ -11,9 +11,9 @@
 
 
 
-HashCalculator::HashCalculator()
+HashCalculator::HashCalculator():
+	m_QueueLength(0)
 {
-	// Nothing needed yet
 }
 
 
@@ -22,6 +22,7 @@ HashCalculator::HashCalculator()
 
 void HashCalculator::queueHashSong(SongPtr a_Song)
 {
+	m_QueueLength += 1;
 	BackgroundTasks::enqueue(tr("Calculate hash: %1").arg(a_Song->fileName()), [this, a_Song]()
 		{
 			auto context = AVPP::Format::createContext(a_Song->fileName());
@@ -44,6 +45,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 				return;
 			}
 			a_Song->setHash(ch.result());
+			m_QueueLength -= 1;
 			emit songHashCalculated(a_Song);
 		}
 	);

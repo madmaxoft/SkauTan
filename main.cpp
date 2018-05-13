@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		mainDB.open("SkauTan.sqlite");
 
 		// Show the UI:
-		PlayerWindow w(mainDB, scanner, player);
+		PlayerWindow w(mainDB, scanner, hashCalc, player);
 		w.showMaximized();
 
 		return app.exec();

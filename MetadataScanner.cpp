@@ -253,9 +253,9 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // MetadataScanner:
 
-MetadataScanner::MetadataScanner()
+MetadataScanner::MetadataScanner():
+	m_QueueLength(0)
 {
-	// Nothing needed yet
 }
 
 
@@ -264,10 +264,12 @@ MetadataScanner::MetadataScanner()
 
 void MetadataScanner::queueScanSong(SongPtr a_Song)
 {
+	m_QueueLength += 1;
 	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
 		{
 			SongProcessor proc(a_Song);
 			proc.process();
+			m_QueueLength -= 1;
 			emit this->songScanned(a_Song);
 		}
 	);
