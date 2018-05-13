@@ -32,10 +32,7 @@ BackgroundTasks::~BackgroundTasks()
 	// Tell all executors to terminate:
 	qDebug() << "Terminating all executors...";
 	m_ShouldTerminate = true;
-	for (auto & e: m_Executors)
-	{
-		e->terminate();
-	}
+	m_WaitForTasks.wakeAll();
 
 	// Wait for all executors to terminate:
 	qDebug() << "Waiting for all executors...";
