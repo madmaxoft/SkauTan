@@ -79,6 +79,17 @@ private:
 	/** The timer used for periodic UI updates. */
 	QTimer m_UpdateTimer;
 
+	/** Stores whether the SongScan progress is shown or not; updated periodically. */
+	bool m_IsSongScanShown;
+
+	/** The total number of songs that were in the SongScan UI on the last update.
+	Used for detecting whether to change the UI. */
+	int m_LastSongScanTotal;
+
+	/** The queue length in the SongScan UI on the last update.
+	Used for detecting whether to change the UI. */
+	int m_LastSongScanQueue;
+
 
 private slots:
 

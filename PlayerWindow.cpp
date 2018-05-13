@@ -32,7 +32,10 @@ PlayerWindow::PlayerWindow(
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
 	m_HashCalculator(a_Hasher),
-	m_Player(a_Player)
+	m_Player(a_Player),
+	m_IsSongScanShown(true),
+	m_LastSongScanTotal(0),
+	m_LastSongScanQueue(-1)
 {
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
@@ -342,16 +345,33 @@ void PlayerWindow::periodicUIUpdate()
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 
 	// Update the SongScan UI:
-	auto queueLength = m_HashCalculator.queueLength() + m_MetadataScanner.queueLength();
-	if (queueLength == 0)
+	auto queueLength = m_HashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	if (m_LastSongScanQueue != queueLength)
 	{
-		m_UI->pSongScans->hide();
-	}
-	else
-	{
-		auto numSongs = static_cast<int>(m_DB.songs().size()) * 2;
-		m_UI->pbSongScans->setMaximum(numSongs);
-		m_UI->pbSongScans->setValue(numSongs - queueLength);
-		m_UI->pSongScans->show();
+		m_LastSongScanQueue = queueLength;
+		if (queueLength == 0)
+		{
+			if (m_IsSongScanShown)
+			{
+				m_UI->pSongScans->hide();
+				m_IsSongScanShown = false;
+			}
+		}
+		else
+		{
+			auto numSongs = static_cast<int>(m_DB.songs().size() * 2);
+			if (numSongs != m_LastSongScanTotal)
+			{
+				m_UI->pbSongScans->setMaximum(numSongs);
+				m_LastSongScanTotal = numSongs;
+			}
+			m_UI->pbSongScans->setValue(std::max(numSongs - queueLength, 0));
+			m_UI->pbSongScans->update();  // For some reason setting the value is not enough to redraw
+			if (!m_IsSongScanShown)
+			{
+				m_UI->pSongScans->show();
+				m_IsSongScanShown = true;
+			}
+		}
 	}
 }
