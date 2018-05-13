@@ -27,6 +27,15 @@ public:
 
 	HashCalculator();
 
+	/** Returns the number of songs that are queued for hashing. */
+	int queueLength() { return m_QueueLength.load(); }
+
+
+protected:
+
+	/** The number of songs that are queued for hashing. */
+	std::atomic<int> m_QueueLength;
+
 
 public slots:
 

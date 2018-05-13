@@ -33,6 +33,15 @@ public:
 
 	MetadataScanner();
 
+	/** Returns the number of songs that are queued for scanning. */
+	int queueLength() { return m_QueueLength.load(); }
+
+
+protected:
+
+	/** The number of songs that are queued for scanning. */
+	std::atomic<int> m_QueueLength;
+
 
 signals:
 

@@ -14,16 +14,24 @@
 #include "DlgQuickPlayer.h"
 #include "DlgBackgroundTaskList.h"
 #include "PlaybackBuffer.h"
+#include "MetadataScanner.h"
+#include "HashCalculator.h"
 
 
 
 
 
-PlayerWindow::PlayerWindow(Database & a_DB, MetadataScanner & a_Scanner, Player & a_Player):
+PlayerWindow::PlayerWindow(
+	Database & a_DB,
+	MetadataScanner & a_Scanner,
+	HashCalculator & a_Hasher,
+	Player & a_Player
+):
 	Super(nullptr),
 	m_UI(new Ui::PlayerWindow),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
+	m_HashCalculator(a_Hasher),
 	m_Player(a_Player)
 {
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
@@ -325,10 +333,25 @@ void PlayerWindow::showBackgroundTasks()
 
 void PlayerWindow::periodicUIUpdate()
 {
+	// Update the player UI:
 	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
 	auto remaining = static_cast<int>(m_Player.remainingTime() + 0.5);
 	auto total     = static_cast<int>(m_Player.totalTime() + 0.5);
 	m_UI->lblPosition->setText( QString( "%1:%2").arg(position  / 60).arg(QString::number(position  % 60), 2, '0'));
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
+
+	// Update the SongScan UI:
+	auto queueLength = m_HashCalculator.queueLength() + m_MetadataScanner.queueLength();
+	if (queueLength == 0)
+	{
+		m_UI->pSongScans->hide();
+	}
+	else
+	{
+		auto numSongs = static_cast<int>(m_DB.songs().size()) * 2;
+		m_UI->pbSongScans->setMaximum(numSongs);
+		m_UI->pbSongScans->setValue(numSongs - queueLength);
+		m_UI->pSongScans->show();
+	}
 }
