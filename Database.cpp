@@ -180,7 +180,7 @@ void Database::delSong(const Song & a_Song)
 
 		// Remove from the DB:
 		QSqlQuery query(m_Database);
-		if (!query.prepare("DELETE FROM SongHashes WHERE FileName = ?"))
+		if (!query.prepare("DELETE FROM SongFiles WHERE FileName = ?"))
 		{
 			qWarning() << ": Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
