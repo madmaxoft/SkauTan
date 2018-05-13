@@ -29,6 +29,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 			if (context == nullptr)
 			{
 				qWarning() << ": Cannot open song file for hash calculation: " << a_Song->fileName();
+				m_QueueLength -= 1;
 				emit this->songHashFailed(a_Song);
 				return;
 			}
@@ -41,6 +42,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 			))
 			{
 				qWarning() << ": Cannot read song data for hash calculation: " << a_Song->fileName();
+				m_QueueLength -= 1;
 				emit this->songHashFailed(a_Song);
 				return;
 			}
