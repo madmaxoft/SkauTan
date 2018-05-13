@@ -384,13 +384,12 @@ QSqlQuery Database::playbackHistorySqlQuery()
 	QSqlQuery res(m_Database);
 	if (!res.prepare("SELECT "
 		"PlaybackHistory.Timestamp, "
-		"SongMetadata.ID3Genre, "
-		"SongMetadata.ID3Author, "
-		"SongMetadata.ID3Title, "
-		"SongHashes.FileName "
+		"SongFiles.ID3Genre, "
+		"SongFiles.ID3Author, "
+		"SongFiles.ID3Title, "
+		"SongFiles.FileName "
 		"FROM PlaybackHistory "
-		"LEFT JOIN SongHashes ON PlaybackHistory.SongHash == SongHashes.Hash "
-		"LEFT JOIN SongMetadata ON PlaybackHistory.SongHash == SongMetadata.Hash"
+		"LEFT JOIN SongFiles ON PlaybackHistory.SongHash == SongFiles.Hash"
 	))
 	{
 		qWarning() << "Cannot prep playback history query: " << res.lastError();
