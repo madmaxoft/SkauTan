@@ -56,6 +56,7 @@ void importDefaultTemplates(QApplication & app, Database & a_DB)
 	for (const auto & tmpl: templates)
 	{
 		a_DB.addTemplate(tmpl);
+		a_DB.saveTemplate(*tmpl);
 	}
 }
 
