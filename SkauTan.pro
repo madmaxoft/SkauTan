@@ -48,6 +48,7 @@ gcc | clang {
 	QMAKE_CXXFLAGS += -Wdisabled-optimization
 	QMAKE_CXXFLAGS += -Winit-self -Wpointer-arith
 	QMAKE_CXXFLAGS += -Wlogical-op
+	QMAKE_CXXFLAGS += -Wswitch
 
 	# Override the C and C++ targets to selectively replace -I with -isystem for include paths
 	QMAKE_RUN_CC      = $(CC) -o $obj -c $(CFLAGS) $(subst -I/usr/include,-isystem /usr/include,$(INCPATH)) $src
