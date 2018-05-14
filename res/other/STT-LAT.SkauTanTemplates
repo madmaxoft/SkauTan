@@ -1,0 +1,101 @@
+<!--These are templates exported from SkauTan. https://github.com/madmaxoft/SkauTan-->
+<SkauTanTemplates>
+ <SkauTanTemplate bgColor="#cfffff" name="STT" notes="">
+  <items>
+   <item bgColor="#cfffff" isFavorite="1" name="SW 28 - 31" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="SW"/>
+      <comparison songProperty="22" comparison="5" value="28"/>
+      <comparison songProperty="22" comparison="7" value="31"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#cfffff" isFavorite="1" name="TG 30 - 34" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="TG"/>
+      <comparison songProperty="22" comparison="5" value="30"/>
+      <comparison songProperty="22" comparison="7" value="34"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#cfffff" isFavorite="1" name="VW 50 - 60" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="VW"/>
+      <comparison songProperty="22" comparison="5" value="50"/>
+      <comparison songProperty="22" comparison="7" value="60"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#cfffff" isFavorite="1" name="SF 28 - 30" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="SF"/>
+      <comparison songProperty="22" comparison="5" value="28"/>
+      <comparison songProperty="22" comparison="7" value="30"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#cfffff" isFavorite="1" name="QS 48 - 52" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="QS"/>
+      <comparison songProperty="22" comparison="5" value="48"/>
+      <comparison songProperty="22" comparison="7" value="52"/>
+     </and>
+    </filter>
+   </item>
+  </items>
+ </SkauTanTemplate>
+ <SkauTanTemplate bgColor="#ffffcf" name="LAT" notes="">
+  <items>
+   <item bgColor="#ffffcf" isFavorite="1" name="SB 48 - 52" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="SB"/>
+      <comparison songProperty="22" comparison="5" value="48"/>
+      <comparison songProperty="22" comparison="7" value="52"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#ffffcf" isFavorite="1" name="CH 28 - 33" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="CH"/>
+      <comparison songProperty="22" comparison="5" value="28"/>
+      <comparison songProperty="22" comparison="7" value="33"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#ffffcf" isFavorite="1" name="RU 24 - 29" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="RU"/>
+      <comparison songProperty="22" comparison="5" value="24"/>
+      <comparison songProperty="22" comparison="7" value="29"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#ffffcf" isFavorite="1" name="PD 56 - 62" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="PD"/>
+      <comparison songProperty="22" comparison="5" value="56"/>
+      <comparison songProperty="22" comparison="7" value="62"/>
+     </and>
+    </filter>
+   </item>
+   <item bgColor="#ffffcf" isFavorite="1" name="JI 38 - 44" notes="">
+    <filter>
+     <and>
+      <comparison songProperty="21" comparison="0" value="JI"/>
+      <comparison songProperty="22" comparison="5" value="38"/>
+      <comparison songProperty="22" comparison="7" value="44"/>
+     </and>
+    </filter>
+   </item>
+  </items>
+ </SkauTanTemplate>
+</SkauTanTemplates>
