@@ -74,7 +74,7 @@ public:
 		};
 
 		/** The property of the Song object which is used for the comparison (fkComparison only)
-		Stored in the DB as a number, must keep numeric values across DB versions. */
+		Stored in the DB and XML as a number, must keep numeric values across DB versions. */
 		enum SongProperty
 		{
 			fspAuthor                    = 0,  // ANY author tag
@@ -96,6 +96,10 @@ public:
 			fspId3Title                  = 16,
 			fspId3Genre                  = 17,
 			fspId3MeasuresPerMinute      = 18,
+			fspPrimaryAuthor             = 19,  // The first of Manual-, Id3-, FileName-Author that is non-null
+			fspPrimaryTitle              = 20,  // The first of Manual-, Id3-, FileName-Title that is non-null
+			fspPrimaryGenre              = 21,  // The first of Manual-, Id3-, FileName-Genre that is non-null
+			fspPrimaryMeasuresPerMinute  = 22,  // The first of Manual-, Id3-, FileName-MPM that is non-null
 		};
 
 

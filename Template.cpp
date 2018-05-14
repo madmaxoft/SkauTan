@@ -15,6 +15,29 @@ static const double EPS = 0.000001;
 
 
 
+/** Returns the first of the three variants that is non-null.
+Returns the third if all are null.*/
+static const QVariant & primaryValue(
+	const QVariant & a_First,
+	const QVariant & a_Second,
+	const QVariant & a_Third
+)
+{
+	if (!a_First.isNull())
+	{
+		return a_First;
+	}
+	if (!a_Second.isNull())
+	{
+		return a_Second;
+	}
+	return a_Third;
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Template::Filter:
 
@@ -354,13 +377,29 @@ Template::Filter::SongProperty Template::Filter::intToSongProperty(int a_SongPro
 {
 	switch (a_SongProperty)
 	{
-		case fspAuthor:            return fspAuthor;
-		case fspTitle:             return fspTitle;
-		case fspGenre:             return fspGenre;
-		case fspLength:            return fspLength;
-		case fspMeasuresPerMinute: return fspMeasuresPerMinute;
-		case fspRating:            return fspRating;
-		case fspLastPlayed:        return fspLastPlayed;
+		case fspAuthor:                    return fspAuthor;
+		case fspTitle:                     return fspTitle;
+		case fspGenre:                     return fspGenre;
+		case fspLength:                    return fspLength;
+		case fspMeasuresPerMinute:         return fspMeasuresPerMinute;
+		case fspRating:                    return fspRating;
+		case fspLastPlayed:                return fspLastPlayed;
+		case fspManualAuthor:              return fspManualAuthor;
+		case fspManualTitle:               return fspManualTitle;
+		case fspManualGenre:               return fspManualGenre;
+		case fspManualMeasuresPerMinute:   return fspManualMeasuresPerMinute;
+		case fspFileNameAuthor:            return fspFileNameAuthor;
+		case fspFileNameTitle:             return fspFileNameTitle;
+		case fspFileNameGenre:             return fspFileNameGenre;
+		case fspFileNameMeasuresPerMinute: return fspFileNameMeasuresPerMinute;
+		case fspId3Author:                 return fspId3Author;
+		case fspId3Title:                  return fspId3Title;
+		case fspId3Genre:                  return fspId3Genre;
+		case fspId3MeasuresPerMinute:      return fspId3MeasuresPerMinute;
+		case fspPrimaryAuthor:             return fspPrimaryAuthor;
+		case fspPrimaryTitle:              return fspPrimaryTitle;
+		case fspPrimaryGenre:              return fspPrimaryGenre;
+		case fspPrimaryMeasuresPerMinute:  return fspPrimaryMeasuresPerMinute;
 	}
 	throw std::runtime_error(QString("Unknown filter SongProperty: %1").arg(a_SongProperty).toUtf8().constData());
 }
@@ -373,25 +412,29 @@ QString Template::Filter::songPropertyCaption(Template::Filter::SongProperty a_P
 {
 	switch (a_Prop)
 	{
-		case fspAuthor:                    return Template::tr("Author (any)", "SongPropertyCaption");
-		case fspTitle:                     return Template::tr("Title (any)",  "SongPropertyCaption");
-		case fspGenre:                     return Template::tr("Genre (any)",  "SongPropertyCaption");
-		case fspLength:                    return Template::tr("Length",       "SongPropertyCaption");
-		case fspMeasuresPerMinute:         return Template::tr("MPM (any)",    "SongPropertyCaption");
-		case fspRating:                    return Template::tr("Rating",       "SongPropertyCaption");
-		case fspLastPlayed:                return Template::tr("LastPlayed",   "SongPropertyCaption");
-		case fspManualAuthor:              return Template::tr("Author (M)",   "SongPropertyCaption");
-		case fspManualTitle:               return Template::tr("Title (M)",    "SongPropertyCaption");
-		case fspManualGenre:               return Template::tr("Genre (M)",    "SongPropertyCaption");
-		case fspManualMeasuresPerMinute:   return Template::tr("MPM (M)",      "SongPropertyCaption");
-		case fspFileNameAuthor:            return Template::tr("Author (F)",   "SongPropertyCaption");
-		case fspFileNameTitle:             return Template::tr("Title (F)",    "SongPropertyCaption");
-		case fspFileNameGenre:             return Template::tr("Genre (F)",    "SongPropertyCaption");
-		case fspFileNameMeasuresPerMinute: return Template::tr("MPM (F)",      "SongPropertyCaption");
-		case fspId3Author:                 return Template::tr("Author (T)",   "SongPropertyCaption");
-		case fspId3Title:                  return Template::tr("Title (T)",    "SongPropertyCaption");
-		case fspId3Genre:                  return Template::tr("Genre (T)",    "SongPropertyCaption");
-		case fspId3MeasuresPerMinute:      return Template::tr("MPM (T)",      "SongPropertyCaption");
+		case fspAuthor:                    return Template::tr("Author [any]",     "SongPropertyCaption");
+		case fspTitle:                     return Template::tr("Title [any]",      "SongPropertyCaption");
+		case fspGenre:                     return Template::tr("Genre [any]",      "SongPropertyCaption");
+		case fspLength:                    return Template::tr("Length",           "SongPropertyCaption");
+		case fspMeasuresPerMinute:         return Template::tr("MPM [any]",        "SongPropertyCaption");
+		case fspRating:                    return Template::tr("Rating",           "SongPropertyCaption");
+		case fspLastPlayed:                return Template::tr("LastPlayed",       "SongPropertyCaption");
+		case fspManualAuthor:              return Template::tr("Author [M]",       "SongPropertyCaption");
+		case fspManualTitle:               return Template::tr("Title [M]",        "SongPropertyCaption");
+		case fspManualGenre:               return Template::tr("Genre [M]",        "SongPropertyCaption");
+		case fspManualMeasuresPerMinute:   return Template::tr("MPM [M]",          "SongPropertyCaption");
+		case fspFileNameAuthor:            return Template::tr("Author [F]",       "SongPropertyCaption");
+		case fspFileNameTitle:             return Template::tr("Title [F]",        "SongPropertyCaption");
+		case fspFileNameGenre:             return Template::tr("Genre [F]",        "SongPropertyCaption");
+		case fspFileNameMeasuresPerMinute: return Template::tr("MPM [F]",          "SongPropertyCaption");
+		case fspId3Author:                 return Template::tr("Author [T]",       "SongPropertyCaption");
+		case fspId3Title:                  return Template::tr("Title [T]",        "SongPropertyCaption");
+		case fspId3Genre:                  return Template::tr("Genre [T]",        "SongPropertyCaption");
+		case fspId3MeasuresPerMinute:      return Template::tr("MPM [T]",          "SongPropertyCaption");
+		case fspPrimaryAuthor:             return Template::tr("Author [Primary]", "SongPropertyCaption");
+		case fspPrimaryTitle:              return Template::tr("Title [Primary]",  "SongPropertyCaption");
+		case fspPrimaryGenre:              return Template::tr("Genre [Primary]",  "SongPropertyCaption");
+		case fspPrimaryMeasuresPerMinute:  return Template::tr("MPM [Primary]",    "SongPropertyCaption");
 	}
 	assert(!"Unknown filter SongProperty");
 	return QString();
@@ -502,6 +545,42 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 		case fspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().toDateTime());
 		case fspLength:                    return isNumberComparisonSatisfiedBy(a_Song.length());
 		case fspRating:                    return isNumberComparisonSatisfiedBy(a_Song.rating());
+		case fspPrimaryAuthor:
+		{
+			auto v = primaryValue(
+				a_Song.tagManual().m_Author,
+				a_Song.tagId3().m_Author,
+				a_Song.tagFileName().m_Author
+			);
+			return isStringComparisonSatisfiedBy(v.toString());
+		}
+		case fspPrimaryTitle:
+		{
+			auto v = primaryValue(
+				a_Song.tagManual().m_Title,
+				a_Song.tagId3().m_Title,
+				a_Song.tagFileName().m_Title
+			);
+			return isStringComparisonSatisfiedBy(v.toString());
+		}
+		case fspPrimaryGenre:
+		{
+			auto v = primaryValue(
+				a_Song.tagManual().m_Genre,
+				a_Song.tagId3().m_Genre,
+				a_Song.tagFileName().m_Genre
+			);
+			return isStringComparisonSatisfiedBy(v.toString());
+		}
+		case fspPrimaryMeasuresPerMinute:
+		{
+			auto v = primaryValue(
+				a_Song.tagManual().m_MeasuresPerMinute,
+				a_Song.tagId3().m_MeasuresPerMinute,
+				a_Song.tagFileName().m_MeasuresPerMinute
+			);
+			return isNumberComparisonSatisfiedBy(v);
+		}
 	}
 	assert(!"Unknown song property in comparison");
 	return false;
