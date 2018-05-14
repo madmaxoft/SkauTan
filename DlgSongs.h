@@ -8,6 +8,7 @@
 #include <memory>
 #include <QDialog>
 #include <QSortFilterProxyModel>
+#include <QTimer>
 #include "SongModel.h"
 
 
@@ -18,6 +19,7 @@
 class Song;
 class Database;
 class MetadataScanner;
+class HashCalculator;
 namespace Ui
 {
 	class DlgSongs;
@@ -43,6 +45,7 @@ public:
 	explicit DlgSongs(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
+		HashCalculator & a_Hasher,
 		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 		bool a_ShowManipulators,
 		QWidget * a_Parent
@@ -67,6 +70,10 @@ private:
 	/** The scanner that can be used to manually update the metadata. */
 	MetadataScanner & m_MetadataScanner;
 
+	/** Calculates hashes for song files.
+	Used to query queue length. */
+	HashCalculator & m_HashCalculator;
+
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;
 
@@ -75,6 +82,20 @@ private:
 
 	/** The songs, displayed in the UI. */
 	SongModel m_SongModel;
+
+	/** Timer for updating the UI periodically with background-generated information. */
+	QTimer m_PeriodicUiUpdate;
+
+	/** Stores whether the LibraryRescan progress is shown or not; updated periodically. */
+	bool m_IsLibraryRescanShown;
+
+	/** The total number of songs that were in the LibraryRescan UI on the last update.
+	Used for detecting whether to change the UI. */
+	int m_LastLibraryRescanTotal;
+
+	/** The queue length in the LibraryRescan UI on the last update.
+	Used for detecting whether to change the UI. */
+	int m_LastLibraryRescanQueue;
 
 
 	/** Updates the UI related to song stats (count, filter) */
@@ -101,6 +122,9 @@ private slots:
 
 	/** Emitted by the model after the user edits a song. */
 	void modelSongEdited(SongPtr a_Song);
+
+	/** Called periodically to update the UI with background-generated information. */
+	void periodicUiUpdate();
 
 signals:
 

@@ -8,6 +8,7 @@
 #include "MetadataScanner.h"
 #include "AVPP.h"
 #include "Stopwatch.h"
+#include "HashCalculator.h"
 
 
 
@@ -19,6 +20,7 @@
 DlgSongs::DlgSongs(
 	Database & a_DB,
 	MetadataScanner & a_Scanner,
+	HashCalculator & a_Hasher,
 	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 	bool a_ShowManipulators,
 	QWidget * a_Parent
@@ -26,9 +28,13 @@ DlgSongs::DlgSongs(
 	Super(a_Parent),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
+	m_HashCalculator(a_Hasher),
 	m_UI(new Ui::DlgSongs),
 	m_FilterModel(std::move(a_FilterModel)),
-	m_SongModel(a_DB)
+	m_SongModel(a_DB),
+	m_IsLibraryRescanShown(true),
+	m_LastLibraryRescanTotal(0),
+	m_LastLibraryRescanQueue(-1)
 {
 	m_UI->setupUi(this);
 	if (m_FilterModel == nullptr)
@@ -56,6 +62,7 @@ DlgSongs::DlgSongs(
 	connect(&m_SongModel,            &SongModel::rowsInserted, this, &DlgSongs::updateSongStats);
 	connect(&m_DB,                   &Database::songFileAdded, this, &DlgSongs::updateSongStats);
 	connect(&m_DB,                   &Database::songRemoved,   this, &DlgSongs::updateSongStats);
+	connect(&m_PeriodicUiUpdate,     &QTimer::timeout,         this, &DlgSongs::periodicUiUpdate);
 
 	// Resize the table columns to fit the song data:
 	{
@@ -67,6 +74,8 @@ DlgSongs::DlgSongs(
 	setWindowFlags(Qt::Window);
 
 	updateSongStats();
+
+	m_PeriodicUiUpdate.start(200);
 }
 
 
@@ -265,4 +274,42 @@ void DlgSongs::rescanMetadata()
 void DlgSongs::modelSongEdited(SongPtr a_Song)
 {
 	m_DB.saveSong(a_Song);
+}
+
+
+
+
+
+void DlgSongs::periodicUiUpdate()
+{
+	// Update the LibraryRescan UI:
+	auto queueLength = m_HashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	if (m_LastLibraryRescanQueue != queueLength)
+	{
+		m_LastLibraryRescanQueue = queueLength;
+		if (queueLength == 0)
+		{
+			if (m_IsLibraryRescanShown)
+			{
+				m_UI->wLibraryRescan->hide();
+				m_IsLibraryRescanShown = false;
+			}
+		}
+		else
+		{
+			auto numSongs = static_cast<int>(m_DB.songs().size() * 2);
+			if (numSongs != m_LastLibraryRescanTotal)
+			{
+				m_UI->pbLibraryRescan->setMaximum(numSongs);
+				m_LastLibraryRescanTotal = numSongs;
+			}
+			m_UI->pbLibraryRescan->setValue(std::max(numSongs - queueLength, 0));
+			m_UI->pbLibraryRescan->update();  // For some reason setting the value is not enough to redraw
+			if (!m_IsLibraryRescanShown)
+			{
+				m_UI->wLibraryRescan->show();
+				m_IsLibraryRescanShown = true;
+			}
+		}
+	}
 }

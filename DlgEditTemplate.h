@@ -16,6 +16,7 @@
 // fwd:
 class Database;
 class MetadataScanner;
+class HashCalculator;
 class QTableWidgetItem;
 namespace Ui
 {
@@ -38,6 +39,7 @@ public:
 	explicit DlgEditTemplate(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
+		HashCalculator & a_Hasher,
 		Template & a_Template,
 		QWidget * a_Parent = nullptr
 	);
@@ -53,6 +55,8 @@ private:
 	/** The scanner that can update the songs' metadata upon request.
 	Used when displaying songs matching a filter. */
 	MetadataScanner & m_MetadataScanner;
+
+	HashCalculator & m_HashCalculator;
 
 	/** The template being edited. */
 	Template & m_Template;

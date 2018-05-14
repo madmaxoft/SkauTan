@@ -16,6 +16,7 @@
 // fwd:
 class Database;
 class MetadataScanner;
+class HashCalculator;
 class QTableWidgetItem;
 namespace Ui
 {
@@ -38,6 +39,7 @@ public:
 	explicit DlgTemplatesList(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
+		HashCalculator & a_Hasher,
 		QWidget * a_Parent = nullptr
 	);
 
@@ -52,6 +54,8 @@ private:
 	/** The scanner that can update the songs' metadata upon request.
 	Used when displaying songs matching a filter. */
 	MetadataScanner & m_MetadataScanner;
+
+	HashCalculator & m_HashCalculator;
 
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgTemplatesList> m_UI;

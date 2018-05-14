@@ -16,6 +16,7 @@
 // fwd:
 class QTreeWidgetItem;
 class MetadataScanner;
+class HashCalculator;
 namespace Ui
 {
 	class DlgEditTemplateItem;
@@ -39,6 +40,7 @@ public:
 	explicit DlgEditTemplateItem(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
+		HashCalculator & a_Hasher,
 		Template::Item & a_Item,
 		QWidget * a_Parent = nullptr
 	);
@@ -54,6 +56,8 @@ private:
 	/** The scanner that can update the songs' metadata upon request.
 	Used when displaying songs matching a filter. */
 	MetadataScanner & m_MetadataScanner;
+
+	HashCalculator & m_HashCalculator;
 
 	/** The item being edited. */
 	Template::Item & m_Item;

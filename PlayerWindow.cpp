@@ -33,9 +33,9 @@ PlayerWindow::PlayerWindow(
 	m_MetadataScanner(a_Scanner),
 	m_HashCalculator(a_Hasher),
 	m_Player(a_Player),
-	m_IsSongScanShown(true),
-	m_LastSongScanTotal(0),
-	m_LastSongScanQueue(-1)
+	m_IsLibraryRescanShown(true),
+	m_LastLibraryRescanTotal(0),
+	m_LastLibraryRescanQueue(-1)
 {
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
@@ -124,7 +124,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(m_DB, m_MetadataScanner, nullptr, true, this);
+	DlgSongs dlg(m_DB, m_MetadataScanner, m_HashCalculator, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
 	dlg.showMaximized();
 	dlg.exec();
@@ -138,7 +138,7 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgTemplatesList dlg(m_DB, m_MetadataScanner, this);
+	DlgTemplatesList dlg(m_DB, m_MetadataScanner, m_HashCalculator, this);
 	dlg.exec();
 }
 
@@ -346,31 +346,31 @@ void PlayerWindow::periodicUIUpdate()
 
 	// Update the SongScan UI:
 	auto queueLength = m_HashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
-	if (m_LastSongScanQueue != queueLength)
+	if (m_LastLibraryRescanQueue != queueLength)
 	{
-		m_LastSongScanQueue = queueLength;
+		m_LastLibraryRescanQueue = queueLength;
 		if (queueLength == 0)
 		{
-			if (m_IsSongScanShown)
+			if (m_IsLibraryRescanShown)
 			{
-				m_UI->pSongScans->hide();
-				m_IsSongScanShown = false;
+				m_UI->wLibraryRescan->hide();
+				m_IsLibraryRescanShown = false;
 			}
 		}
 		else
 		{
 			auto numSongs = static_cast<int>(m_DB.songs().size() * 2);
-			if (numSongs != m_LastSongScanTotal)
+			if (numSongs != m_LastLibraryRescanTotal)
 			{
-				m_UI->pbSongScans->setMaximum(numSongs);
-				m_LastSongScanTotal = numSongs;
+				m_UI->pbLibraryRescan->setMaximum(numSongs);
+				m_LastLibraryRescanTotal = numSongs;
 			}
-			m_UI->pbSongScans->setValue(std::max(numSongs - queueLength, 0));
-			m_UI->pbSongScans->update();  // For some reason setting the value is not enough to redraw
-			if (!m_IsSongScanShown)
+			m_UI->pbLibraryRescan->setValue(std::max(numSongs - queueLength, 0));
+			m_UI->pbLibraryRescan->update();  // For some reason setting the value is not enough to redraw
+			if (!m_IsLibraryRescanShown)
 			{
-				m_UI->pSongScans->show();
-				m_IsSongScanShown = true;
+				m_UI->wLibraryRescan->show();
+				m_IsLibraryRescanShown = true;
 			}
 		}
 	}
