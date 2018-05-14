@@ -29,6 +29,22 @@ static Template::Filter::SongProperty g_SongProperties[] =
 	Template::Filter::fspMeasuresPerMinute,
 	Template::Filter::fspRating,
 	Template::Filter::fspLastPlayed,
+	Template::Filter::fspManualAuthor,
+	Template::Filter::fspManualTitle,
+	Template::Filter::fspManualGenre,
+	Template::Filter::fspManualMeasuresPerMinute,
+	Template::Filter::fspFileNameAuthor,
+	Template::Filter::fspFileNameTitle,
+	Template::Filter::fspFileNameGenre,
+	Template::Filter::fspFileNameMeasuresPerMinute,
+	Template::Filter::fspId3Author,
+	Template::Filter::fspId3Title,
+	Template::Filter::fspId3Genre,
+	Template::Filter::fspId3MeasuresPerMinute,
+	Template::Filter::fspPrimaryAuthor,
+	Template::Filter::fspPrimaryTitle,
+	Template::Filter::fspPrimaryGenre,
+	Template::Filter::fspPrimaryMeasuresPerMinute,
 };
 
 static Template::Filter::Comparison g_Comparisons[] =
@@ -203,10 +219,12 @@ public:
 			{
 				cbProp->addItem(Template::Filter::songPropertyCaption(sp));
 			}
+			cbProp->setMaxVisibleItems(static_cast<int>(sizeof(g_SongProperties) / sizeof(*g_SongProperties)));
 			for (const auto cmp: g_Comparisons)
 			{
 				cbComparison->addItem(Template::Filter::comparisonCaption(cmp));
 			}
+			cbComparison->setMaxVisibleItems(static_cast<int>(sizeof(g_Comparisons) / sizeof(*g_Comparisons)));
 			layout->addWidget(cbProp);
 			layout->addWidget(cbComparison);
 			layout->addWidget(leValue);
