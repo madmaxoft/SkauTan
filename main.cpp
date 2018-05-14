@@ -38,7 +38,7 @@ void initTranslations(QApplication & a_App)
 
 
 
-void importDefaultTemplates(QApplication & app, Database & a_DB)
+void importDefaultTemplates(Database & a_DB)
 {
 	qDebug() << "No templates in the DB, inserting defaults...";
 	QFile f(":/other/STT-LAT.SkauTanTemplates");
@@ -46,8 +46,8 @@ void importDefaultTemplates(QApplication & app, Database & a_DB)
 	{
 		QMessageBox::warning(
 			nullptr,
-			app.tr("SkauTan: Error"),
-			app.tr("Cannot import default templates, the definition file is inaccessible.\n%1").arg(f.errorString())
+			QApplication::tr("SkauTan: Error"),
+			QApplication::tr("Cannot import default templates, the definition file is inaccessible.\n%1").arg(f.errorString())
 		);
 		return;
 	}
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 		// Add default templates, if none in the DB:
 		if (mainDB.templates().empty())
 		{
-			importDefaultTemplates(app, mainDB);
+			importDefaultTemplates(mainDB);
 		}
 
 		// Show the UI:
@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
 	{
 		QMessageBox::warning(
 			nullptr,
-			app.tr("SkauTan: Fatal error"),
-			app.tr("SkauTan has detected a fatal error:\n\n%1").arg(exc.what())
+			QApplication::tr("SkauTan: Fatal error"),
+			QApplication::tr("SkauTan has detected a fatal error:\n\n%1").arg(exc.what())
 		);
 		return -1;
 	}
