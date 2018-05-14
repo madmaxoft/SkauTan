@@ -1,5 +1,6 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-	<file>img/play.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>img/play.png</file>
+        <file>other/STT-LAT.SkauTanTemplates</file>
+    </qresource>
 </RCC>

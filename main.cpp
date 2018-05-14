@@ -4,6 +4,7 @@
 #include <QLocale>
 #include <QDebug>
 #include <QMessageBox>
+#include <QFile>
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -11,6 +12,7 @@
 #include "Player.h"
 #include "PlaylistItemSong.h"
 #include "PlaybackBuffer.h"
+#include "Template.h"
 
 
 
@@ -30,6 +32,31 @@ void initTranslations(QApplication & a_App)
 		}
 	}
 	a_App.installTranslator(translator.release());
+}
+
+
+
+
+
+void importDefaultTemplates(QApplication & app, Database & a_DB)
+{
+	qDebug() << "No templates in the DB, inserting defaults...";
+	QFile f(":/other/STT-LAT.SkauTanTemplates");
+	if (!f.open(QFile::ReadOnly))
+	{
+		QMessageBox::warning(
+			nullptr,
+			app.tr("SkauTan: Error"),
+			app.tr("Cannot import default templates, the definition file is inaccessible.\n%1").arg(f.errorString())
+		);
+		return;
+	}
+	auto templates = TemplateXmlImport::run(f.readAll());
+	f.close();
+	for (const auto & tmpl: templates)
+	{
+		a_DB.addTemplate(tmpl);
+	}
 }
 
 
@@ -73,6 +100,12 @@ int main(int argc, char *argv[])
 
 		// Load the DB:
 		mainDB.open("SkauTan.sqlite");
+
+		// Add default templates, if none in the DB:
+		if (mainDB.templates().empty())
+		{
+			importDefaultTemplates(app, mainDB);
+		}
 
 		// Show the UI:
 		PlayerWindow w(mainDB, scanner, hashCalc, player);
