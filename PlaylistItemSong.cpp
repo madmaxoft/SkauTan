@@ -27,7 +27,7 @@ QString PlaylistItemSong::displayName() const
 
 QString PlaylistItemSong::displayAuthor() const
 {
-	return m_Song->author().toString();
+	return m_Song->primaryAuthor().toString();
 }
 
 
@@ -36,7 +36,7 @@ QString PlaylistItemSong::displayAuthor() const
 
 QString PlaylistItemSong::displayTitle() const
 {
-	return m_Song->title().toString();
+	return m_Song->primaryTitle().toString();
 }
 
 
@@ -58,9 +58,9 @@ double PlaylistItemSong::displayLength() const
 
 QString PlaylistItemSong::displayGenre() const
 {
-	if (m_Song->genre().isValid())
+	if (m_Song->primaryGenre().isValid())
 	{
-		return m_Song->genre().toString();
+		return m_Song->primaryGenre().toString();
 	}
 	return QString();
 }
@@ -71,9 +71,9 @@ QString PlaylistItemSong::displayGenre() const
 
 double PlaylistItemSong::displayTempo() const
 {
-	if (m_Song->measuresPerMinute().isValid())
+	if (m_Song->primaryMeasuresPerMinute().isValid())
 	{
-		return m_Song->measuresPerMinute().toDouble();
+		return m_Song->primaryMeasuresPerMinute().toDouble();
 	}
 	return -1;
 }

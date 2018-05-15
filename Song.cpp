@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <QSqlQuery>
 #include <QVariant>
+#include <QDebug>
 
 
 
@@ -51,68 +52,52 @@ Song::Song(
 
 
 
-const QVariant & Song::author() const
+const QVariant & Song::primaryAuthor() const
 {
-	if (m_TagManual.m_Author.isValid())
-	{
-		return m_TagManual.m_Author;
-	}
-	else if (m_TagId3.m_Author.isValid())
-	{
-		return m_TagId3.m_Author;
-	}
-	return m_TagFileName.m_Author;
+	return primaryValue(
+		m_TagManual.m_Author,
+		m_TagId3.m_Author,
+		m_TagFileName.m_Author
+	);
 }
 
 
 
 
 
-const QVariant & Song::title() const
+const QVariant & Song::primaryTitle() const
 {
-	if (m_TagManual.m_Title.isValid())
-	{
-		return m_TagManual.m_Title;
-	}
-	else if (m_TagId3.m_Title.isValid())
-	{
-		return m_TagId3.m_Title;
-	}
-	return m_TagFileName.m_Title;
+	return primaryValue(
+		m_TagManual.m_Title,
+		m_TagId3.m_Title,
+		m_TagFileName.m_Title
+	);
 }
 
 
 
 
 
-const QVariant & Song::genre() const
+const QVariant & Song::primaryGenre() const
 {
-	if (m_TagManual.m_Genre.isValid())
-	{
-		return m_TagManual.m_Genre;
-	}
-	else if (m_TagId3.m_Genre.isValid())
-	{
-		return m_TagId3.m_Genre;
-	}
-	return m_TagFileName.m_Genre;
+	return primaryValue(
+		m_TagManual.m_Genre,
+		m_TagId3.m_Genre,
+		m_TagFileName.m_Genre
+	);
 }
 
 
 
 
 
-const QVariant & Song::measuresPerMinute() const
+const QVariant & Song::primaryMeasuresPerMinute() const
 {
-	if (m_TagManual.m_MeasuresPerMinute.isValid())
-	{
-		return m_TagManual.m_MeasuresPerMinute;
-	}
-	else if (m_TagId3.m_MeasuresPerMinute.isValid())
-	{
-		return m_TagId3.m_MeasuresPerMinute;
-	}
-	return m_TagFileName.m_MeasuresPerMinute;
+	return primaryValue(
+		m_TagManual.m_MeasuresPerMinute,
+		m_TagId3.m_MeasuresPerMinute,
+		m_TagFileName.m_MeasuresPerMinute
+	);
 }
 
 
@@ -163,18 +148,106 @@ bool Song::needsTagRescan() const
 	return (
 		!m_TagFileName.m_Author.isValid() ||
 		!m_TagId3.m_Author.isValid()
-	);
+				);
 }
 
 
 
 
 
-void Song::copyTagsFrom(const Song & a_Src)
+QStringList Song::getWarnings() const
 {
-	m_TagManual           = a_Src.m_TagManual;
-	m_TagFileName         = a_Src.m_TagFileName;
-	m_TagId3              = a_Src.m_TagId3;
+	QStringList res;
+
+	// If auto-detected genres are different and there's no override, report:
+	if (
+		m_TagManual.m_Genre.isNull() &&  // Manual override not set
+		!m_TagId3.m_Genre.toString().isEmpty() &&
+		!m_TagFileName.m_Genre.toString().isEmpty() &&
+		(m_TagId3.m_Genre.toString() != m_TagFileName.m_Genre.toString())   // ID3 genre not equal to FileName genre
+	)
+	{
+		res.append(tr("Genre detection is confused, please provide a manual override."));
+	}
+
+	// If the detected MPM is way outside the primary genre's competition range, report:
+	if (!m_TagManual.m_MeasuresPerMinute.isValid())  // Allow the user to override the warning
+	{
+		auto primaryMPM = m_TagId3.m_MeasuresPerMinute.isValid() ? m_TagId3.m_MeasuresPerMinute : m_TagFileName.m_MeasuresPerMinute;
+		bool isOK;
+		auto mpm = primaryMPM.toDouble(&isOK);
+		if (isOK)
+		{
+			auto range = competitionTempoRangeForGenre(primaryGenre().toString());
+			if (mpm < range.first * 0.7)
+			{
+				res.append(tr("The detected tempo is suspiciously low: Lowest competition tempo: %1; detected tempo: %2")
+					.arg(QString::number(range.first, 'f', 1))
+					.arg(QString::number(mpm, 'f', 1))
+				);
+			}
+			else if (mpm > range.second * 1.05)
+			{
+				res.append(tr("The detected tempo is suspiciously high: Highest competition tempo: %1; detected tempo: %2")
+					.arg(QString::number(range.second, 'f', 1))
+					.arg(QString::number(mpm, 'f', 1))
+				);
+			}
+		}
+	}
+	return res;
+}
+
+
+
+
+
+const QVariant & Song::primaryValue(
+	const QVariant & a_First,
+	const QVariant & a_Second,
+	const QVariant & a_Third
+)
+{
+	if (!a_First.isNull() && !a_First.toString().isEmpty())
+	{
+		return a_First;
+	}
+	if (!a_Second.isNull() && !a_Second.toString().isEmpty())
+	{
+		return a_Second;
+	}
+	return a_Third;
+}
+
+
+
+
+
+std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_Genre)
+{
+	// Map of genre -> tempo range (Source: http://www.sut.cz/soutezni-rad-hobby-dance/#par14 )
+	static const std::map<QString, std::pair<double, double>> competitionTempoRanges =
+	{
+		{"SW", {27, 30}},
+		{"TG", {30, 32}},
+		{"VW", {58, 60}},
+		{"SF", {27, 30}},
+		{"QS", {48, 52}},
+		{"SB", {48, 52}},
+		{"CH", {27, 32}},
+		{"RU", {23, 26}},
+		{"PD", {58, 60}},
+		{"JI", {40, 44}},
+		{"PO", {56, 60}},
+	};
+
+	// Find the genre:
+	auto itr = competitionTempoRanges.find(a_Genre.toUpper());
+	if (itr == competitionTempoRanges.end())
+	{
+		return std::make_pair(0, std::numeric_limits<unsigned short>::max());
+	}
+	return itr->second;
 }
 
 
