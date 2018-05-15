@@ -15,29 +15,6 @@ static const double EPS = 0.000001;
 
 
 
-/** Returns the first of the three variants that is non-null.
-Returns the third if all are null.*/
-static const QVariant & primaryValue(
-	const QVariant & a_First,
-	const QVariant & a_Second,
-	const QVariant & a_Third
-)
-{
-	if (!a_First.isNull())
-	{
-		return a_First;
-	}
-	if (!a_Second.isNull())
-	{
-		return a_Second;
-	}
-	return a_Third;
-}
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Template::Filter:
 
@@ -545,42 +522,10 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 		case fspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().toDateTime());
 		case fspLength:                    return isNumberComparisonSatisfiedBy(a_Song.length());
 		case fspRating:                    return isNumberComparisonSatisfiedBy(a_Song.rating());
-		case fspPrimaryAuthor:
-		{
-			auto v = primaryValue(
-				a_Song.tagManual().m_Author,
-				a_Song.tagId3().m_Author,
-				a_Song.tagFileName().m_Author
-			);
-			return isStringComparisonSatisfiedBy(v.toString());
-		}
-		case fspPrimaryTitle:
-		{
-			auto v = primaryValue(
-				a_Song.tagManual().m_Title,
-				a_Song.tagId3().m_Title,
-				a_Song.tagFileName().m_Title
-			);
-			return isStringComparisonSatisfiedBy(v.toString());
-		}
-		case fspPrimaryGenre:
-		{
-			auto v = primaryValue(
-				a_Song.tagManual().m_Genre,
-				a_Song.tagId3().m_Genre,
-				a_Song.tagFileName().m_Genre
-			);
-			return isStringComparisonSatisfiedBy(v.toString());
-		}
-		case fspPrimaryMeasuresPerMinute:
-		{
-			auto v = primaryValue(
-				a_Song.tagManual().m_MeasuresPerMinute,
-				a_Song.tagId3().m_MeasuresPerMinute,
-				a_Song.tagFileName().m_MeasuresPerMinute
-			);
-			return isNumberComparisonSatisfiedBy(v);
-		}
+		case fspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor().toString());
+		case fspPrimaryTitle:              return isStringComparisonSatisfiedBy(a_Song.primaryTitle().toString());
+		case fspPrimaryGenre:              return isStringComparisonSatisfiedBy(a_Song.primaryGenre().toString());
+		case fspPrimaryMeasuresPerMinute:  return isNumberComparisonSatisfiedBy(a_Song.primaryMeasuresPerMinute());
 	}
 	assert(!"Unknown song property in comparison");
 	return false;

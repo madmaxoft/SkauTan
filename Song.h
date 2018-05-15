@@ -10,6 +10,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QVariant>
+#include <QCoreApplication>
 
 
 
@@ -27,6 +28,8 @@ have their SharedData pointing to the same object. This way the data that is com
 while data pertaining to the file itself is stored separately for duplicates. */
 class Song
 {
+	Q_DECLARE_TR_FUNCTIONS(Song)
+
 public:
 	/** A simple structure for a set of tags, extracted from a single source.
 	Since there are three tag sources with common metadata (ID3, FileName, Manual), this stores
@@ -96,10 +99,10 @@ public:
 	const SharedDataPtr & sharedData() const { return m_SharedData; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
-	const QVariant & author() const;
-	const QVariant & title() const;
-	const QVariant & genre() const;
-	const QVariant & measuresPerMinute() const;
+	const QVariant & primaryAuthor() const;
+	const QVariant & primaryTitle() const;
+	const QVariant & primaryGenre() const;
+	const QVariant & primaryMeasuresPerMinute() const;
 
 	// These return values from the shared data, if available:
 	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
@@ -150,8 +153,21 @@ public:
 	(the tags are empty and the scan hasn't been performed already). */
 	bool needsTagRescan() const;
 
-	/** Copies the Tags from the specified src song. */
-	void copyTagsFrom(const Song & a_Src);
+	/** Returns all the warnings that this song has, each as a separate string.
+	Returns an empty string list if the song has no warnings. */
+	QStringList getWarnings() const;
+
+	/** Returns the first of the three variants that is non-empty.
+	Returns the third if all are null.*/
+	static const QVariant & primaryValue(
+		const QVariant & a_First,
+		const QVariant & a_Second,
+		const QVariant & a_Third
+	);
+
+	/** Returns the competition tempo range for the specified genre.
+	If the genre is not known, returns 0 .. MAX_USHORT */
+	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
 
 protected:
 

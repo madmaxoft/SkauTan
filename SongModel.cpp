@@ -160,7 +160,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 	{
 		return QVariant();
 	}
-	const auto & song = m_DB.songs()[static_cast<size_t>(a_Index.row())];
+	const auto & song = songFromRow(a_Index.row());
 	switch (a_Role)
 	{
 		case Qt::DisplayRole:
@@ -186,6 +186,18 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
 			}
 			break;
+		}
+		case Qt::BackgroundColorRole:
+		{
+			if (!song->getWarnings().isEmpty())
+			{
+				return QColor(255, 192, 192);
+			}
+			return QVariant();
+		}
+		case Qt::ToolTipRole:
+		{
+			return song->getWarnings().join("\n");
 		}
 	}
 	return QVariant();
@@ -276,7 +288,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 	{
 		return false;
 	}
-	const auto & song = m_DB.songs()[static_cast<size_t>(a_Index.row())];
+	const auto & song = songFromRow(a_Index.row());
 	switch (a_Index.column())
 	{
 		case colFileName: return false;
