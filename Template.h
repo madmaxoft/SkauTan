@@ -100,6 +100,7 @@ public:
 			fspPrimaryTitle              = 20,  // The first of Manual-, Id3-, FileName-Title that is non-null
 			fspPrimaryGenre              = 21,  // The first of Manual-, Id3-, FileName-Genre that is non-null
 			fspPrimaryMeasuresPerMinute  = 22,  // The first of Manual-, Id3-, FileName-MPM that is non-null
+			fspWarningCount              = 23,
 		};
 
 
