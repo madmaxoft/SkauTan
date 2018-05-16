@@ -45,6 +45,7 @@ static Template::Filter::SongProperty g_SongProperties[] =
 	Template::Filter::fspPrimaryTitle,
 	Template::Filter::fspPrimaryGenre,
 	Template::Filter::fspPrimaryMeasuresPerMinute,
+	Template::Filter::fspWarningCount,
 };
 
 static Template::Filter::Comparison g_Comparisons[] =
