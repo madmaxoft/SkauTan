@@ -47,6 +47,7 @@ public:
 		colFileNameTitle,
 		colFileNameGenre,
 		colFileNameMeasuresPerMinute,
+		colNumMatchingFilters,
 		colFileName,
 
 		colMax,
@@ -79,6 +80,9 @@ protected:
 	virtual QVariant headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const override;
 	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
 	virtual bool setData(const QModelIndex & a_Index, const QVariant & a_Value, int a_Role) override;
+
+	/** Returns the number of filters that the specified song matches. */
+	qulonglong numMatchingFilters(SongPtr a_Song) const;
 
 
 protected slots:
