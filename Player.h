@@ -138,8 +138,9 @@ signals:
 	The item is already set in the player, values such as currentPosition() give valid values. */
 	void startedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer);
 
-	/** Emitted just after an item has finished playing. */
-	void finishedPlayback();
+	/** Emitted just after an item has finished playing.
+	a_Source is the AudioDataSource chain that was playing. Used for proper termination (#118). */
+	void finishedPlayback(AudioDataSourcePtr a_Source);
 
 
 public slots:

@@ -25,6 +25,10 @@ protected slots:
 	Connects self to Player's startingPlayback() in the class constructor. */
 	void startPlaying(IPlaylistItemPtr a_Track);
 
+	/** Emitted by the player when the AudioOutput signals that it is idle.
+	Used to finalize the AudioDataSource (#118). */
+	void finishedPlayback(AudioDataSourcePtr a_Src);
+
 
 protected:
 
@@ -444,7 +448,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 			{
 				// Play the next song in the playlist, if any:
 				m_State = psStopped;
-				emit finishedPlayback();
+				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
 				if (m_Playlist->nextItem())
 				{
@@ -456,7 +460,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 			{
 				// Stop playing completely:
 				m_State = psStopped;
-				emit finishedPlayback();
+				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
 				return;
 			}
@@ -464,7 +468,8 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 			{
 				// Start playing the next scheduled track:
 				m_State = psStopped;
-				emit finishedPlayback();
+				emit finishedPlayback(m_AudioDataSource);
+				m_AudioDataSource.reset();
 				start();
 				return;
 			}
@@ -492,6 +497,7 @@ Player::OutputThread::OutputThread(Player & a_Player, QAudioFormat & a_Format):
 	setObjectName("Player::OutputThread");
 	moveToThread(this);
 	connect(&m_Player, &Player::startingPlayback, this, &Player::OutputThread::startPlaying, Qt::QueuedConnection);
+	connect(&m_Player, &Player::finishedPlayback, this, &Player::OutputThread::finishedPlayback, Qt::QueuedConnection);
 }
 
 
@@ -501,7 +507,7 @@ Player::OutputThread::OutputThread(Player & a_Player, QAudioFormat & a_Format):
 void Player::OutputThread::run()
 {
 	m_Output.reset(new QAudioOutput(m_Format));
-	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged);
+	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged, Qt::BlockingQueuedConnection);
 	exec();
 }
 
@@ -539,4 +545,13 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 		&m_Player, "startedPlayback",
 		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, m_Player.m_PlaybackBuffer)
 	);
+}
+
+
+
+
+
+void Player::OutputThread::finishedPlayback(AudioDataSourcePtr a_Src)
+{
+	a_Src.reset();  // Remove the last reference to the AudioDataSource here in the output thread.
 }

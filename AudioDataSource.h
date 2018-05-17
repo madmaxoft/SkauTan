@@ -71,6 +71,10 @@ public:
 	virtual void setTempo(double a_Tempo) = 0;
 };
 
+using AudioDataSourcePtr = std::shared_ptr<AudioDataSource>;
+
+Q_DECLARE_METATYPE(AudioDataSourcePtr)
+
 
 
 
