@@ -65,10 +65,12 @@ DlgSongs::DlgSongs(
 	connect(&m_PeriodicUiUpdate,     &QTimer::timeout,         this, &DlgSongs::periodicUiUpdate);
 
 	// Resize the table columns to fit the song data:
+	#if 0
 	{
 		STOPWATCH("Resize DlgSongs columns");
 		m_UI->tblSongs->resizeColumnsToContents();
 	}
+	#endif
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
