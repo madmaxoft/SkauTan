@@ -184,6 +184,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colId3Title:                  return song->tagId3().m_Title;
 				case colId3Genre:                  return song->tagId3().m_Genre;
 				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
+				case colNumMatchingFilters:        return numMatchingFilters(song);
 			}
 			break;
 		}
@@ -198,6 +199,21 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		case Qt::ToolTipRole:
 		{
 			return song->getWarnings().join("\n");
+		}
+		case Qt::TextAlignmentRole:
+		{
+			switch (a_Index.column())
+			{
+				case colNumMatchingFilters:
+				case colLength:
+				case colManualMeasuresPerMinute:
+				case colId3MeasuresPerMinute:
+				case colFileNameMeasuresPerMinute:
+				{
+					return Qt::AlignRight;
+				}
+			}
+			return Qt::AlignLeft;
 		}
 	}
 	return QVariant();
@@ -235,6 +251,7 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colId3Title:                  return tr("Title (T)", "ID3 Tag");
 		case colId3Genre:                  return tr("Genre (T)", "ID3 Tag");
 		case colId3MeasuresPerMinute:      return tr("MPM (T)", "ID3 Tag");
+		case colNumMatchingFilters:        return tr("# flt", "Num matching favorite filters");
 	}
 	return QVariant();
 }
@@ -303,6 +320,23 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 	emit songEdited(song);
 	emit dataChanged(a_Index, a_Index, {a_Role});
 	return true;
+}
+
+
+
+
+
+qulonglong SongModel::numMatchingFilters(SongPtr a_Song) const
+{
+	qulonglong res = 0;
+	for (const auto & item: m_DB.getFavoriteTemplateItems())
+	{
+		if (item->filter()->isSatisfiedBy(*a_Song))
+		{
+			res += 1;
+		}
+	}
+	return res;
 }
 
 
