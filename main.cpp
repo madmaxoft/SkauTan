@@ -13,6 +13,7 @@
 #include "PlaylistItemSong.h"
 #include "PlaybackBuffer.h"
 #include "Template.h"
+#include "Settings.h"
 
 
 
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
 		// Initialize singletons / subsystems:
 		BackgroundTasks::get();
 		qRegisterMetaType<SongPtr>();
+		Settings::init("SkauTan.ini");
 
 		// Create the main app objects:
 		Database mainDB;

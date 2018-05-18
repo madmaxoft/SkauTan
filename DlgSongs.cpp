@@ -10,6 +10,7 @@
 #include "AVPP.h"
 #include "Stopwatch.h"
 #include "HashCalculator.h"
+#include "Settings.h"
 
 
 
@@ -77,13 +78,7 @@ DlgSongs::DlgSongs(
 
 	initFilterSearch();
 
-	// Resize the table columns to fit the song data:
-	#if 0
-	{
-		STOPWATCH("Resize DlgSongs columns");
-		m_UI->tblSongs->resizeColumnsToContents();
-	}
-	#endif
+	Settings::loadHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
@@ -99,7 +94,7 @@ DlgSongs::DlgSongs(
 
 DlgSongs::~DlgSongs()
 {
-	// Nothing explicit needed, but the destructor needs to be defined in the CPP file due to m_UI.
+	Settings::saveHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
 }
 
 

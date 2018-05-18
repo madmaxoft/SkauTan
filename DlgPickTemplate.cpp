@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <QKeyEvent>
 #include "Database.h"
+#include "Settings.h"
 
 
 
@@ -35,7 +36,7 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 		}
 		idx += 1;
 	}
-	m_UI->tblTemplates->resizeColumnsToContents();
+	Settings::loadHeaderView("DlgPickTemplate", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
 	m_UI->tblTemplates->setCurrentItem(m_UI->tblTemplates->item(0, 0));
 }
 
@@ -45,7 +46,7 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 
 DlgPickTemplate::~DlgPickTemplate()
 {
-	// Nothing explicit needed yet
+	Settings::saveHeaderView("DlgPickTemplate", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
 }
 
 

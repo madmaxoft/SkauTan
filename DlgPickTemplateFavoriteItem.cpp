@@ -1,6 +1,7 @@
 #include "DlgPickTemplateFavoriteItem.h"
 #include "ui_DlgPickTemplateFavoriteItem.h"
 #include <QKeyEvent>
+#include "Settings.h"
 
 
 
@@ -39,7 +40,7 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 		}
 		row += 1;
 	}
-	m_UI->tblItems->resizeColumnsToContents();
+	Settings::loadHeaderView("DlgPickTemplateFavoriteItem", "tblItems", *m_UI->tblItems->horizontalHeader());
 	m_UI->tblItems->setCurrentItem(m_UI->tblItems->item(0, 0));
 }
 
@@ -49,7 +50,7 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 
 DlgPickTemplateFavoriteItem::~DlgPickTemplateFavoriteItem()
 {
-	// Nothing explicit needed yet
+	Settings::saveHeaderView("DlgPickTemplateFavoriteItem", "tblItems", *m_UI->tblItems->horizontalHeader());
 }
 
 

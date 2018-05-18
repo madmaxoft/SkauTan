@@ -7,6 +7,8 @@ leaks.xml
 *.sqlite
 *.mp3
 *.SkauTanTemplates
+*.ini
+*.log
 
 # Compiled translations
 translations/*.qm

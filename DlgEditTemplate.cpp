@@ -6,6 +6,7 @@
 #include "DlgEditTemplateItem.h"
 #include "DlgPickTemplateFavoriteItem.h"
 #include "Database.h"
+#include "Settings.h"
 
 
 
@@ -58,7 +59,8 @@ DlgEditTemplate::DlgEditTemplate(
 		updateTemplateItemRow(row, *itm);
 		row += 1;
 	}
-	m_UI->tblItems->resizeColumnsToContents();
+
+	Settings::loadHeaderView("DlgEditTemplate", "tblItems", *m_UI->tblItems->horizontalHeader());
 
 	itemSelectionChanged();
 }
@@ -69,7 +71,7 @@ DlgEditTemplate::DlgEditTemplate(
 
 DlgEditTemplate::~DlgEditTemplate()
 {
-	// Nothing explicit needed
+	Settings::saveHeaderView("DlgEditTemplate", "tblItems", *m_UI->tblItems->horizontalHeader());
 }
 
 
@@ -154,7 +156,6 @@ void DlgEditTemplate::addItem()
 	auto idx = m_UI->tblItems->rowCount();
 	m_UI->tblItems->setRowCount(idx + 1);
 	updateTemplateItemRow(idx, *item);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
@@ -174,7 +175,6 @@ void DlgEditTemplate::editSelectedItem()
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	updateTemplateItemRow(row, *item);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
@@ -210,7 +210,6 @@ void DlgEditTemplate::addFavoriteItem()
 	auto idx = m_UI->tblItems->rowCount();
 	m_UI->tblItems->setRowCount(idx + 1);
 	updateTemplateItemRow(idx, *item);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
@@ -228,7 +227,7 @@ void DlgEditTemplate::removeSelectedItems()
 	// Ask the user:
 	if (QMessageBox::question(
 		this,
-		tr("SkauTan - Remove items"),
+		tr("SkauTan: Remove items"),
 		tr("Are you sure you want to remove the selected items?"),
 		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
 	) != QMessageBox::Yes)
@@ -267,7 +266,6 @@ void DlgEditTemplate::cellDoubleClicked(int a_Row, int a_Column)
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	updateTemplateItemRow(a_Row, *item);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
@@ -348,5 +346,4 @@ void DlgEditTemplate::itemChanged(QTableWidgetItem * a_Item)
 		}
 	}
 	m_DB.saveTemplate(m_Template);
-	m_UI->tblItems->resizeColumnsToContents();
 }

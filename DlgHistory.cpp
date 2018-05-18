@@ -4,6 +4,7 @@
 #include <QSqlError>
 #include <QDebug>
 #include "Database.h"
+#include "Settings.h"
 
 
 
@@ -34,6 +35,7 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 	QFontMetrics fmItems(m_UI->tblHistory->font());
 	m_UI->tblHistory->setColumnWidth(0, fmItems.width("W2088-08-08T00:00:00.000W"));
 	m_UI->tblHistory->setColumnWidth(1, fmHdr.width("WGenreW"));
+	Settings::loadHeaderView("DlgHistory", "tblHistory", *m_UI->tblHistory->horizontalHeader());
 
 	connect(m_UI->btnClose, &QPushButton::clicked, this, &DlgHistory::closeClicked);
 
@@ -46,7 +48,7 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 
 DlgHistory::~DlgHistory()
 {
-	// Nothing explicit needed, but the destructor needs to be defined in the CPP file due to m_UI.
+	Settings::saveHeaderView("DlgHistory", "tblHistory", *m_UI->tblHistory->horizontalHeader());
 }
 
 
