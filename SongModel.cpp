@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include "Database.h"
 #include "MetadataScanner.h"
+#include "Stopwatch.h"
 
 
 
@@ -579,3 +580,149 @@ void SongModelEditorDelegate::commitAndCloseEditor()
 	emit closeEditor(editor);
 }
 
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// SongModelFilter:
+
+SongModelFilter::SongModelFilter(SongModel & a_ParentModel):
+	m_ParentModel(a_ParentModel),
+	m_Filter(fltNone),
+	m_SearchString("")
+{
+	setSourceModel(&m_ParentModel);
+}
+
+
+
+
+
+void SongModelFilter::setFilter(SongModelFilter::EFilter a_Filter)
+{
+	if (m_Filter == a_Filter)
+	{
+		return;
+	}
+	m_Filter = a_Filter;
+	STOPWATCH("setFilter");
+	invalidateFilter();
+}
+
+
+
+
+
+void SongModelFilter::setSearchString(const QString & a_SearchString)
+{
+	m_SearchString.setPattern(a_SearchString);
+	STOPWATCH("setSearchString");
+	invalidateFilter();
+}
+
+
+
+
+
+void SongModelFilter::setFavoriteTemplateItems(const std::vector<Template::ItemPtr> & a_FavoriteTemplateItems)
+{
+	m_FavoriteTemplateItems = a_FavoriteTemplateItems;
+	STOPWATCH("setFavoriteTemplateItems");
+	invalidateFilter();
+}
+
+
+
+
+
+bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcParent) const
+{
+	assert(!a_SrcParent.isValid());
+	Q_UNUSED(a_SrcParent);  // For release builds
+
+	auto song = m_ParentModel.songFromRow(a_SrcRow);
+	switch (m_Filter)
+	{
+		case fltNone: break;
+		case fltNoId3:
+		{
+			const auto & id3Tag = song->tagId3();
+			if (
+				(id3Tag.m_Author.isNull() || id3Tag.m_Author.toString().isEmpty()) &&
+				(id3Tag.m_Title.isNull()  || id3Tag.m_Title.toString().isEmpty()) &&
+				(id3Tag.m_Genre.isNull()  || id3Tag.m_Genre.toString().isEmpty()) &&
+				(id3Tag.m_MeasuresPerMinute.isNull())
+			)
+			{
+				break;
+			}
+			return false;  // Don't want songs with valid ID3 tag
+		}  // case fltNoId3
+
+		case fltNoGenre:
+		{
+			const auto & genre = song->primaryGenre();
+			if (genre.isNull() || genre.toString().isEmpty())
+			{
+				break;
+			}
+			return false;  // Don't want songs with valid genre
+		}  // case fltNoGenre
+
+		case fltNoMeasuresPerMinute:
+		{
+			if (song->primaryMeasuresPerMinute().isNull())
+			{
+				break;
+			}
+			return false;
+		}  // case fltNoMeasuresPerMinute
+
+		case fltWarnings:
+		{
+			if (song->getWarnings().isEmpty())
+			{
+				return false;
+			}
+			break;
+		}  // case fltWarnings
+
+		case fltNoTemplateFilterMatch:
+		{
+			for (const auto & item: m_FavoriteTemplateItems)
+			{
+				if (item->filter()->isSatisfiedBy(*song))
+				{
+					return false;  // Don't want songs matching a template filter
+				}
+			}
+			break;
+		}
+	}
+	return songMatchesSearchString(song);
+}
+
+
+
+
+
+bool SongModelFilter::songMatchesSearchString(SongPtr a_Song) const
+{
+	if (
+		m_SearchString.match(a_Song->tagManual().m_Author.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagManual().m_Title.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagManual().m_Genre.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Author.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Title.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Genre.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Author.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Title.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Genre.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->fileName()).hasMatch()
+	)
+	{
+		return true;
+	}
+	return false;
+}

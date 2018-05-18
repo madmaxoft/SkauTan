@@ -83,6 +83,9 @@ private:
 	/** The songs, displayed in the UI. */
 	SongModel m_SongModel;
 
+	/** The advanced filter for the song model. */
+	SongModelFilter m_SongModelFilter;
+
 	/** Timer for updating the UI periodically with background-generated information. */
 	QTimer m_PeriodicUiUpdate;
 
@@ -97,9 +100,22 @@ private:
 	Used for detecting whether to change the UI. */
 	int m_LastLibraryRescanQueue;
 
+	/** The new search text to be set into m_SongModelFilter in periodic UI update.
+	The text isn't set immediately to avoid slowdowns while still typing the string. */
+	QString m_NewSearchText;
+
+	/** Number of ticks until m_NewSearchText is set into m_SongModelFilter in the periodic UI update.
+	The text isn't set immediately to avoid slowdowns while still typing the string,
+	this counter goes from a fixed value down to zero on each periodic UI update and only when reaching zero
+	is the search text applied. */
+	int m_TicksUntilSetSearchText;
+
 
 	/** Updates the UI related to song stats (count, filter) */
 	void updateSongStats();
+
+	/** Adds the filter items into the cbFilter UI, and sets up connections for the search and filter. */
+	void initFilterSearch();
 
 
 private slots:
@@ -125,6 +141,14 @@ private slots:
 
 	/** Called periodically to update the UI with background-generated information. */
 	void periodicUiUpdate();
+
+	/** The user has chosen a filter from cbFilter.
+	Applies the filter to m_SongModelFilter. */
+	void filterChosen(int a_Index);
+
+	/** The user has edited the search text in leSearch.
+	Applies the search text to m_SongModelFilter. */
+	void searchTextEdited(const QString & a_NewText);
 
 signals:
 
