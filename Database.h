@@ -82,6 +82,9 @@ public:
 	/** Returns the SQL query that fetches the playback history data from the DB. */
 	QSqlQuery playbackHistorySqlQuery();
 
+	/** Returns the number of songs that match the specified filter. */
+	int numSongsMatchingFilter(Template::Filter & a_Filter) const;
+
 
 protected:
 

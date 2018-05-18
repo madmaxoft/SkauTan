@@ -409,6 +409,23 @@ QSqlQuery Database::playbackHistorySqlQuery()
 
 
 
+int Database::numSongsMatchingFilter(Template::Filter & a_Filter) const
+{
+	int res = 0;
+	for (const auto & s: m_Songs)
+	{
+		if (a_Filter.isSatisfiedBy(*s))
+		{
+			res += 1;
+		}
+	}
+	return res;
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:

@@ -125,6 +125,9 @@ protected slots:
 	/** Called when the selection in the Filters tree changes. */
 	void filterSelectionChanged();
 
+	/** Updates the display of matching songs count display. */
+	void updateFilterStats();
+
 	/** The text in the BgColor LineEdit has changed.
 	Applies the new color to the LineEdit's background. */
 	void bgColorTextChanged(const QString & a_NewText);
