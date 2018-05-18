@@ -48,8 +48,8 @@ DlgTemplatesList::DlgTemplatesList(
 	m_UI->tblTemplates->setColumnCount(3);
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
 	m_UI->tblItems->setRowCount(0);
-	m_UI->tblItems->setColumnCount(4);
-	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
+	m_UI->tblItems->setColumnCount(5);
+	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("# Songs"), tr("Filter")});
 	templateSelectionChanged();
 
 	// Insert all the templates into the table view:
@@ -161,10 +161,17 @@ void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Template::Item & a
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 2, wi);
 
+	auto numMatching = m_DB.numSongsMatchingFilter(*a_Item.filter());
+	wi = new QTableWidgetItem(QString::number(numMatching));
+	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
+	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
+	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+	m_UI->tblItems->setItem(a_Row, 3, wi);
+
 	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_UI->tblItems->setItem(a_Row, 4, wi);
 	m_IsInternalChange = false;
 }
 

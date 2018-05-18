@@ -85,6 +85,13 @@
           </spacer>
          </item>
          <item>
+          <widget class="QLabel" name="lblMatchingSongCount">
+           <property name="text">
+            <string notr="true">Matching songs: 0</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="btnPreview">
            <property name="text">
             <string>&amp;Preview...</string>

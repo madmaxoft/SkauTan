@@ -6,7 +6,9 @@
 #include <QMessageBox>
 #include <QComboBox>
 #include <QColorDialog>
+#include <QAbstractItemModel>
 #include "DlgSongs.h"
+#include "Database.h"
 
 
 
@@ -344,6 +346,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 		m_UI->twFilters->selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &DlgEditTemplateItem::filterSelectionChanged
 	);
+	connect(m_UI->twFilters->model(), &QAbstractItemModel::dataChanged, this, &DlgEditTemplateItem::updateFilterStats);
 
 	// Set the data into the UI:
 	m_UI->leDisplayName->setText(m_Item.displayName());
@@ -356,8 +359,9 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 	rebuildFilterModel();
 	m_UI->twFilters->expandAll();
 
-	// Update the UI state based on selection:
+	// Update the UI state:
 	filterSelectionChanged();
+	updateFilterStats();
 }
 
 
@@ -668,6 +672,16 @@ void DlgEditTemplateItem::filterSelectionChanged()
 	m_UI->btnAddSibling->setEnabled(curFilter != nullptr);
 	m_UI->btnInsertCombinator->setEnabled(curFilter != nullptr);
 	m_UI->btnRemoveFilter->setEnabled((curFilter != nullptr) && m_Item.filter()->canHaveChildren());  // The top level filter cannot be removed
+}
+
+
+
+
+
+void DlgEditTemplateItem::updateFilterStats()
+{
+	auto numMatching = m_DB.numSongsMatchingFilter(*m_Item.filter());
+	m_UI->lblMatchingSongCount->setText(tr("Matching songs: %n", "",numMatching));
 }
 
 

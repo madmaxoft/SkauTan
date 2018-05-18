@@ -50,8 +50,8 @@ DlgEditTemplate::DlgEditTemplate(
 	m_UI->leDisplayName->setText(a_Template.displayName());
 	m_UI->pteNotes->setPlainText(a_Template.notes());
 	m_UI->tblItems->setRowCount(static_cast<int>(a_Template.items().size()));
-	m_UI->tblItems->setColumnCount(4);
-	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
+	m_UI->tblItems->setColumnCount(5);
+	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("# Songs"), tr("Filter")});
 	m_UI->leBgColor->setText(a_Template.bgColor().name());
 	int row = 0;
 	for (const auto & itm: a_Template.items())
@@ -124,10 +124,17 @@ void DlgEditTemplate::updateTemplateItemRow(int a_Row, const Template::Item & a_
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 2, wi);
 
+	auto numMatching = m_DB.numSongsMatchingFilter(*a_Item.filter());
+	wi = new QTableWidgetItem(QString::number(numMatching));
+	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
+	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
+	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+	m_UI->tblItems->setItem(a_Row, 3, wi);
+
 	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_UI->tblItems->setItem(a_Row, 4, wi);
 	m_IsInternalChange = false;
 }
 
