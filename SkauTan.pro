@@ -90,6 +90,7 @@ SOURCES += \
 	DlgBackgroundTaskList.cpp \
 	WaveformDisplay.cpp \
 	DatabaseUpgrade.cpp \
+	Settings.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -124,6 +125,7 @@ HEADERS += \
 	DlgBackgroundTaskList.h \
 	WaveformDisplay.h \
 	DatabaseUpgrade.h \
+	Settings.h \
 
 FORMS += \
 	PlayerWindow.ui \

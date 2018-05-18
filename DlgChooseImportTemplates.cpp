@@ -1,5 +1,6 @@
 #include "DlgChooseImportTemplates.h"
 #include "ui_DlgChooseImportTemplates.h"
+#include "Settings.h"
 
 
 
@@ -33,7 +34,9 @@ DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && a
 		const auto & tmpl = m_Templates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
-	m_UI->tblTemplates->resizeColumnsToContents();
+
+	Settings::loadHeaderView("DlgChooseImportTemplates", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::loadHeaderView("DlgChooseImportTemplates", "tblItems",     *m_UI->tblItems->horizontalHeader());
 }
 
 
@@ -42,7 +45,8 @@ DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && a
 
 DlgChooseImportTemplates::~DlgChooseImportTemplates()
 {
-	// Nothing explicit needed
+	Settings::saveHeaderView("DlgChooseImportTemplates", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::saveHeaderView("DlgChooseImportTemplates", "tblItems",     *m_UI->tblItems->horizontalHeader());
 }
 
 
@@ -113,7 +117,6 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 			}
 			idx += 1;
 		}
-		m_UI->tblItems->resizeColumnsToContents();
 	}
 	else
 	{

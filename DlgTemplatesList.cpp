@@ -8,6 +8,7 @@
 #include "DlgChooseImportTemplates.h"
 #include "Database.h"
 #include "DlgEditTemplateItem.h"
+#include "Settings.h"
 
 
 
@@ -57,7 +58,9 @@ DlgTemplatesList::DlgTemplatesList(
 		const auto & tmpl = templates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
-	m_UI->tblTemplates->resizeColumnsToContents();
+
+	Settings::loadHeaderView("DlgTemplatesList", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::loadHeaderView("DlgTemplatesList", "tblItems",     *m_UI->tblItems->horizontalHeader());
 }
 
 
@@ -66,7 +69,8 @@ DlgTemplatesList::DlgTemplatesList(
 
 DlgTemplatesList::~DlgTemplatesList()
 {
-	// Nothing explicit needed
+	Settings::saveHeaderView("DlgTemplatesList", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::saveHeaderView("DlgTemplatesList", "tblItems",     *m_UI->tblItems->horizontalHeader());
 }
 
 
@@ -362,7 +366,6 @@ void DlgTemplatesList::templateSelectionChanged()
 			updateTemplateItemRow(idx, *item);
 			idx += 1;
 		}
-		m_UI->tblItems->resizeColumnsToContents();
 	}
 	else
 	{
@@ -444,7 +447,6 @@ void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
 		}
 	}
 	m_DB.saveTemplate(*tmpl);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 
@@ -470,7 +472,6 @@ void DlgTemplatesList::editTemplateItemAt(const QModelIndex & a_Index)
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 	updateTemplateItemRow(a_Index.row(), *item);
-	m_UI->tblItems->resizeColumnsToContents();
 }
 
 

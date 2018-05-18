@@ -16,6 +16,7 @@
 #include "PlaybackBuffer.h"
 #include "MetadataScanner.h"
 #include "HashCalculator.h"
+#include "Settings.h"
 
 
 
@@ -85,6 +86,7 @@ PlayerWindow::PlayerWindow(
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colAuthor,      defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
+	Settings::loadHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = m_UI->btnTempoReset->fontMetrics();
@@ -101,7 +103,7 @@ PlayerWindow::PlayerWindow(
 
 PlayerWindow::~PlayerWindow()
 {
-	// Nothing explicit needed, but the destructor still needs to be defined in the CPP file due to m_UI
+	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 }
 
 
