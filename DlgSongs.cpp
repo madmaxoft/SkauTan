@@ -207,6 +207,19 @@ void DlgSongs::initFilterSearch()
 
 
 
+SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
+{
+	return m_SongModel.songFromIndex(
+		m_SongModelFilter.mapToSource(
+			m_FilterModel->mapToSource(a_Index)
+		)
+	);
+}
+
+
+
+
+
 void DlgSongs::chooseAddFile()
 {
 	auto files = QFileDialog::getOpenFileNames(
@@ -249,7 +262,7 @@ void DlgSongs::removeSelected()
 	std::vector<SongPtr> songs;
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
-		songs.push_back(m_SongModel.songFromIndex(m_FilterModel->mapToSource(idx)));
+		songs.push_back(songFromIndex(idx));
 	}
 	if (songs.empty())
 	{
@@ -282,7 +295,7 @@ void DlgSongs::addSelectedToPlaylist()
 {
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
-		auto song = m_SongModel.songFromIndex(m_FilterModel->mapToSource(idx));
+		auto song = songFromIndex(idx);
 		emit addSongToPlaylist(song);
 	}
 }
@@ -295,7 +308,7 @@ void DlgSongs::rescanMetadata()
 {
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
-		auto song = m_SongModel.songFromIndex(m_FilterModel->mapToSource(idx));
+		auto song = songFromIndex(idx);
 		if (song->hash().isValid())
 		{
 			m_MetadataScanner.queueScanSong(song);

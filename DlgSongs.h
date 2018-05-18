@@ -117,6 +117,10 @@ private:
 	/** Adds the filter items into the cbFilter UI, and sets up connections for the search and filter. */
 	void initFilterSearch();
 
+	/** Returns the song represented by the specified index in tblSongs.
+	Translates the index through m_FilterModel and m_SongModelFilter. */
+	SongPtr songFromIndex(const QModelIndex & a_Index);
+
 
 private slots:
 
