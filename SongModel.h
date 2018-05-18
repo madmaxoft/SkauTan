@@ -5,8 +5,10 @@
 
 
 #include <QAbstractTableModel>
+#include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
 #include "Song.h"
+#include "Template.h"
 
 
 
@@ -145,6 +147,64 @@ public:
 private slots:
 
 	void commitAndCloseEditor();
+};
+
+
+
+
+
+class SongModelFilter:
+	public QSortFilterProxyModel
+{
+	using Super = QSortFilterProxyModel;
+
+
+public:
+
+	/** Special filters that can be applied to songs. */
+	enum EFilter
+	{
+		fltNone,                   //< No filtering
+		fltNoId3,                  //< Songs with an empty / missing ID3 tag
+		fltNoGenre,                //< Songs with an empty / missing primary genre
+		fltNoMeasuresPerMinute,    //< Songs missing their MPM
+		fltWarnings,               //< Songs with warnings
+		fltNoTemplateFilterMatch,  //< Songs matching no Template filter
+	};
+
+
+	SongModelFilter(SongModel & a_ParentModel);
+
+	/** Sets the filter to apply on the songs. */
+	void setFilter(EFilter a_Filter);
+
+	/** Sets the search string to be used for filtering. */
+	void setSearchString(const QString & a_SearchString);
+
+	/** Sets the template items that are considered for fltNoTemplateFilter filtering. */
+	void setFavoriteTemplateItems(const std::vector<Template::ItemPtr> & a_FavoriteTemplateItems);
+
+
+protected:
+
+	/** The model that provides all songs. */
+	SongModel & m_ParentModel;
+
+	/** The special filter to apply. */
+	EFilter m_Filter;
+
+	/** The string to search for when filtering. */
+	QRegularExpression m_SearchString;
+
+	/** The template items that are considered for fltNoTemplateFilter. */
+	std::vector<Template::ItemPtr> m_FavoriteTemplateItems;
+
+
+	// QSortFilterProxyModel overrides:
+	virtual bool filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcParent) const override;
+
+	/** Returns true if the specified row matches the currently set search string. */
+	bool songMatchesSearchString(SongPtr a_Song) const;
 };
 
 
