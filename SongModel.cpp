@@ -191,6 +191,10 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		}
 		case Qt::BackgroundColorRole:
 		{
+			if (a_Index.column() == colNumMatchingFilters)
+			{
+				return (numMatchingFilters(song) > 0) ? QVariant() : QColor(255, 192, 192);
+			}
 			if (!song->getWarnings().isEmpty())
 			{
 				return QColor(255, 192, 192);
