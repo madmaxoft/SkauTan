@@ -363,6 +363,7 @@ void DlgSongs::periodicUiUpdate()
 		if (m_TicksUntilSetSearchText == 0)
 		{
 			m_SongModelFilter.setSearchString(m_NewSearchText);
+			updateSongStats();
 		}
 	}
 }
@@ -375,6 +376,7 @@ void DlgSongs::filterChosen(int a_Index)
 {
 	auto filter = static_cast<SongModelFilter::EFilter>(m_UI->cbFilter->itemData(a_Index).toInt());
 	m_SongModelFilter.setFilter(filter);
+	updateSongStats();
 }
 
 
