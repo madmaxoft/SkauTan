@@ -46,6 +46,7 @@ DlgSongProperties::DlgSongProperties(
 	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged, this, &DlgSongProperties::genreSelected);
 	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,         this, &DlgSongProperties::measuresPerMinuteTextEdited);
 	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,   this, &DlgSongProperties::notesChanged);
+	connect(m_UI->tblDuplicates,             &QTableWidget::currentCellChanged, this, &DlgSongProperties::switchDuplicate);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -92,6 +93,7 @@ void DlgSongProperties::fillDuplicates()
 		row += 1;
 	}
 	m_UI->tblDuplicates->resizeColumnsToContents();
+	m_UI->tblDuplicates->resizeRowsToContents();
 }
 
 
@@ -209,10 +211,12 @@ void DlgSongProperties::applyAndClose()
 
 
 
+
 void DlgSongProperties::authorTextEdited(const QString & a_NewText)
 {
 	m_ChangeSets[m_Song.get()].m_ManualAuthor = a_NewText;
 }
+
 
 
 
@@ -252,4 +256,19 @@ void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
 void DlgSongProperties::notesChanged()
 {
 	m_ChangeSets[m_Song.get()].m_Notes = m_UI->pteNotes->toPlainText();
+}
+
+
+
+
+
+void DlgSongProperties::switchDuplicate(int a_Row)
+{
+	if ((a_Row < 0) || (a_Row >= static_cast<int>(m_Duplicates.size())))
+	{
+		qWarning() << "Invalid row: " << a_Row << " out of " << m_Duplicates.size();
+		return;
+	}
+	auto song = m_Duplicates[static_cast<size_t>(a_Row)];
+	selectSong(*song);
 }

@@ -111,6 +111,9 @@ private slots:
 
 	/** The user has edited the notes, update the current changeset. */
 	void notesChanged();
+
+	/** The user has selected the duplicate at the specified row, switch data to that duplicate. */
+	void switchDuplicate(int a_Row);
 };
 
 
