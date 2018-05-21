@@ -154,6 +154,13 @@ private slots:
 	/** Called periodically by a timer.
 	Updates the player-related UI. */
 	void periodicUIUpdate();
+
+	/** Emitted by Qt when the user r-clicks in tblPlaylist.
+	Shows the playlist context menu. */
+	void showPlaylistContextMenu(const QPoint & a_Pos);
+
+	/** The user wants to see the properties of the selected playlist item. */
+	void showSongProperties();
 };
 
 

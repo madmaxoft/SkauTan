@@ -52,6 +52,18 @@ Song::Song(
 
 
 
+Song::~Song()
+{
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->delDuplicate(shared_from_this());
+	}
+}
+
+
+
+
+
 const QVariant & Song::primaryAuthor() const
 {
 	return primaryValue(
@@ -134,6 +146,7 @@ void Song::setSharedData(Song::SharedDataPtr a_SharedData)
 {
 	assert(m_Hash.toByteArray() == a_SharedData->m_Hash);
 	m_SharedData = a_SharedData;
+	m_SharedData->addDuplicate(shared_from_this());
 }
 
 
@@ -254,3 +267,68 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 
 
 
+std::vector<SongPtr> Song::duplicates()
+{
+	if (m_SharedData == nullptr)
+	{
+		return {shared_from_this()};
+	}
+	return m_SharedData->m_Duplicates;
+}
+
+
+
+
+
+QStringList Song::recognizedGenres()
+{
+	return
+	{
+		"SW",
+		"TG",
+		"VW",
+		"SF",
+		"QS",
+		"SB",
+		"CH",
+		"RU",
+		"PD",
+		"JI",
+		"PO",
+		"BL",
+		"MA",
+		"SL",
+		"RO",
+	};
+}
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Song::SharedData:
+
+void Song::SharedData::addDuplicate(SongPtr a_Duplicate)
+{
+	QMutexLocker lock(&m_Mtx);
+	m_Duplicates.push_back(a_Duplicate);
+}
+
+
+
+
+
+void Song::SharedData::delDuplicate(SongPtr a_Duplicate)
+{
+	QMutexLocker lock(&m_Mtx);
+	for (auto itr = m_Duplicates.begin(), end = m_Duplicates.end(); itr != end; ++itr)
+	{
+		if (*itr == a_Duplicate)
+		{
+			m_Duplicates.erase(itr);
+			break;
+		}
+	}
+}
