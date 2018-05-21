@@ -73,7 +73,6 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
 	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
 	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
-	connect(m_UI->btnTools,           &QPushButton::clicked,      this, &PlayerWindow::showToolsMenu);
 	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
 	connect(&m_UpdateTimer,           &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
 
@@ -93,6 +92,12 @@ PlayerWindow::PlayerWindow(
 	m_UI->btnTempoReset->setMinimumWidth(
 		m_UI->btnTempoReset->sizeHint().width() - fm.width(m_UI->btnTempoReset->text()) + fm.width("+99.9 %")
 	);
+
+	// Set up the Tools button:
+	auto menu = new QMenu(this);
+	menu->addAction(m_UI->actBackgroundTasks);
+	menu->addSeparator();
+	m_UI->btnTools->setMenu(menu);
 
 	m_UpdateTimer.start(200);
 }
@@ -308,18 +313,6 @@ void PlayerWindow::tempoValueChanged(int a_NewValue)
 void PlayerWindow::resetTempo()
 {
 	m_UI->vsTempo->setValue(0);
-}
-
-
-
-
-
-void PlayerWindow::showToolsMenu()
-{
-	QMenu menu;
-	menu.addAction(m_UI->actBackgroundTasks);
-	menu.addSeparator();
-	menu.exec(m_UI->btnTools->mapToGlobal(QPoint(0, 0)));
 }
 
 
