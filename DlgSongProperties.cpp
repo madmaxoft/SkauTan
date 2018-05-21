@@ -1,17 +1,21 @@
 #include "DlgSongProperties.h"
 #include <assert.h>
+#include <QDebug>
 #include "ui_DlgSongProperties.h"
+#include "Database.h"
 
 
 
 
 
 DlgSongProperties::DlgSongProperties(
+	Database & a_DB,
 	SongPtr a_Song,
 	QWidget * a_Parent
 ) :
 	Super(a_Parent),
 	m_UI(new Ui::DlgSongProperties),
+	m_DB(a_DB),
 	m_Song(a_Song),
 	m_Duplicates(a_Song->duplicates())
 {
@@ -33,6 +37,32 @@ DlgSongProperties::DlgSongProperties(
 	genres.insert(0, "");
 	m_UI->cbManualGenre->addItems(genres);
 	m_UI->cbManualGenre->setMaxVisibleItems(genres.count());
+
+	// Connect the signals:
+	connect(m_UI->btnCancel,                 &QPushButton::clicked,          this, &DlgSongProperties::reject);
+	connect(m_UI->btnOK,                     &QPushButton::clicked,          this, &DlgSongProperties::applyAndClose);
+	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,         this, &DlgSongProperties::authorTextEdited);
+	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,         this, &DlgSongProperties::titleTextEdited);
+	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged, this, &DlgSongProperties::genreSelected);
+	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,         this, &DlgSongProperties::measuresPerMinuteTextEdited);
+	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,   this, &DlgSongProperties::notesChanged);
+
+	// Set the read-only edit boxes' palette to greyed-out:
+	auto p = palette();
+	p.setColor(QPalette::Active,   QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
+	p.setColor(QPalette::Inactive, QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
+	m_UI->leFileName->setPalette(p);
+	m_UI->leHash->setPalette(p);
+	m_UI->leLength->setPalette(p);
+	m_UI->leId3Author->setPalette(p);
+	m_UI->leId3Title->setPalette(p);
+	m_UI->leId3Genre->setPalette(p);
+	m_UI->leId3MeasuresPerMinute->setPalette(p);
+	m_UI->leFilenameAuthor->setPalette(p);
+	m_UI->leFilenameTitle->setPalette(p);
+	m_UI->leFilenameGenre->setPalette(p);
+	m_UI->leFilenameMeasuresPerMinute->setPalette(p);
+
 	fillDuplicates();
 	selectSong(*m_Song);
 }
@@ -137,4 +167,89 @@ SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
 		}
 	}
 	return nullptr;
+}
+
+
+
+
+
+void DlgSongProperties::applyAndClose()
+{
+	for (const auto & song: m_Duplicates)
+	{
+		const auto & cs = m_ChangeSets[song.get()];
+		if (cs.m_ManualAuthor.isValid())
+		{
+			song->setManualAuthor(cs.m_ManualAuthor);
+		}
+		if (cs.m_ManualTitle.isValid())
+		{
+			song->setManualTitle(cs.m_ManualTitle);
+		}
+		if (cs.m_ManualGenre.isValid())
+		{
+			song->setManualGenre(cs.m_ManualGenre.toString());
+		}
+		if (cs.m_ManualMeasuresPerMinute.isValid())
+		{
+			bool isOK;
+			song->setManualMeasuresPerMinute(cs.m_ManualMeasuresPerMinute.toDouble(&isOK));
+			assert(isOK);
+			Q_UNUSED(isOK);  // For release builds
+		}
+		if (cs.m_Notes.isValid())
+		{
+			song->setNotes(cs.m_Notes.toString());
+		}
+		m_DB.saveSong(song);
+	}
+	accept();
+}
+
+
+
+
+void DlgSongProperties::authorTextEdited(const QString & a_NewText)
+{
+	m_ChangeSets[m_Song.get()].m_ManualAuthor = a_NewText;
+}
+
+
+
+
+void DlgSongProperties::titleTextEdited(const QString & a_NewText)
+{
+	m_ChangeSets[m_Song.get()].m_ManualTitle = a_NewText;
+}
+
+
+
+
+
+void DlgSongProperties::genreSelected(const QString & a_NewGenre)
+{
+	m_ChangeSets[m_Song.get()].m_ManualGenre = a_NewGenre;
+}
+
+
+
+
+
+void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
+{
+	bool isOK;
+	auto mpm = QLocale::system().toDouble(a_NewText, &isOK);
+	if (isOK)
+	{
+		m_ChangeSets[m_Song.get()].m_ManualMeasuresPerMinute = mpm;
+	}
+}
+
+
+
+
+
+void DlgSongProperties::notesChanged()
+{
+	m_ChangeSets[m_Song.get()].m_Notes = m_UI->pteNotes->toPlainText();
 }

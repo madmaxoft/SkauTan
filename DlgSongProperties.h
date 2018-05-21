@@ -13,6 +13,8 @@
 
 
 
+// fwd:
+class Database;
 namespace Ui
 {
 	class DlgSongProperties;
@@ -35,6 +37,7 @@ public:
 	/** Creates a new instance of the dialog.
 	a_Song is the song that the user requested to edit. */
 	explicit DlgSongProperties(
+		Database & a_DB,
 		SongPtr a_Song,
 		QWidget * a_Parent = nullptr
 	);
@@ -60,6 +63,9 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgSongProperties> m_UI;
 
+	/** The database containing the songs. */
+	Database & m_DB;
+
 	/** The song being currently displayed. */
 	SongPtr m_Song;
 
@@ -84,6 +90,27 @@ private:
 
 	/** Returns the SongPtr out of m_Duplicates representing the specified song. */
 	SongPtr songPtrFromRef(const Song & a_Song);
+
+
+private slots:
+
+	/** Applies all changesets in m_ChageSets and closes the dialog. */
+	void applyAndClose();
+
+	/** The user has edited the manual author entry, update the current changeset. */
+	void authorTextEdited(const QString & a_NewText);
+
+	/** The user has edited the manual title entry, update the current changeset. */
+	void titleTextEdited(const QString & a_NewText);
+
+	/** The user has selected a manual genre, update the current changeset. */
+	void genreSelected(const QString & a_NewGenre);
+
+	/** The user has edited the manual MPM entry, update the current changeset. */
+	void measuresPerMinuteTextEdited(const QString & a_NewText);
+
+	/** The user has edited the notes, update the current changeset. */
+	void notesChanged();
 };
 
 

@@ -405,13 +405,14 @@ void PlayerWindow::showSongProperties()
 {
 	assert(m_UI->tblPlaylist->selectionModel()->selectedRows().count() == 1);
 
-	auto item = m_Player.playlist().items()[m_UI->tblPlaylist->selectionModel()->selectedRows()[0].row()];
+	auto row = m_UI->tblPlaylist->selectionModel()->selectedRows()[0].row();
+	auto item = m_Player.playlist().items()[static_cast<size_t>(row)];
 	auto songItem = std::dynamic_pointer_cast<PlaylistItemSong>(item);
 	if (songItem == nullptr)
 	{
 		return;
 	}
 	auto song = songItem->song();
-	DlgSongProperties dlg(song, this);
+	DlgSongProperties dlg(m_DB, song, this);
 	dlg.exec();
 }
