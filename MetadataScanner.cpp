@@ -190,8 +190,9 @@ protected:
 			{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      QRegularExpression::CaseInsensitiveOption), "JI" },
 			{ QRegularExpression("(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "BL" },
 			{ QRegularExpression("(^|[\\W])polka\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "PO" },
+			{ QRegularExpression("(^|[\\W])mazurk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                QRegularExpression::CaseInsensitiveOption), "MA" },
 			{ QRegularExpression("(^|[\\W])salsa\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SL" },
-			{ QRegularExpression("(^|[\\W])rozcvičky\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                 QRegularExpression::CaseInsensitiveOption), "RO" },
+			{ QRegularExpression("(^|[\\W])rozcvičk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",              QRegularExpression::CaseInsensitiveOption), "RO" },
 		};
 
 		for (const auto & p: genreMap)
