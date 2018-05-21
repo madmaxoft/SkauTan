@@ -17,6 +17,7 @@
 #include "MetadataScanner.h"
 #include "HashCalculator.h"
 #include "Settings.h"
+#include "DlgSongProperties.h"
 
 
 
@@ -75,7 +76,9 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
 	connect(m_UI->btnTools,           &QPushButton::clicked,      this, &PlayerWindow::showToolsMenu);
 	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
+	connect(m_UI->actSongProperties,  &QAction::triggered,        this, &PlayerWindow::showSongProperties);
 	connect(&m_UpdateTimer,           &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
+	connect(m_UI->tblPlaylist,        &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -376,4 +379,39 @@ void PlayerWindow::periodicUIUpdate()
 			}
 		}
 	}
+}
+
+
+
+
+
+void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
+{
+	QList<QAction *> actions =
+	{
+		m_UI->actSongProperties,
+	};
+	m_UI->actSongProperties->setEnabled(m_UI->tblPlaylist->selectionModel()->selectedRows().count() == 1);
+	auto widget = dynamic_cast<QWidget *>(sender());
+	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
+	QMenu::exec(actions, pos, nullptr, widget);
+}
+
+
+
+
+
+void PlayerWindow::showSongProperties()
+{
+	assert(m_UI->tblPlaylist->selectionModel()->selectedRows().count() == 1);
+
+	auto item = m_Player.playlist().items()[m_UI->tblPlaylist->selectionModel()->selectedRows()[0].row()];
+	auto songItem = std::dynamic_pointer_cast<PlaylistItemSong>(item);
+	if (songItem == nullptr)
+	{
+		return;
+	}
+	auto song = songItem->song();
+	DlgSongProperties dlg(song, this);
+	dlg.exec();
 }

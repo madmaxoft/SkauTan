@@ -11,12 +11,16 @@
 #include <QDateTime>
 #include <QVariant>
 #include <QCoreApplication>
+#include <QMutex>
 
 
 
 
 
+// fwd:
 class QSqlQuery;
+class Song;
+using SongPtr = std::shared_ptr<Song>;
 
 
 
@@ -26,7 +30,8 @@ class QSqlQuery;
 Each disk file has one Song instance; multiple instances may have the same audio data (matched using Hash), these all
 have their SharedData pointing to the same object. This way the data that is common for the audio is stored shared,
 while data pertaining to the file itself is stored separately for duplicates. */
-class Song
+class Song:
+	public std::enable_shared_from_this<Song>
 {
 	Q_DECLARE_TR_FUNCTIONS(Song)
 
@@ -50,6 +55,8 @@ public:
 		QVariant m_Length;
 		QVariant m_LastPlayed;
 		QVariant m_Rating;
+		QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
+		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
 
 		SharedData(const QByteArray & a_Hash, QVariant && a_Length, QVariant && a_LastPlayed, QVariant && a_Rating):
 			m_Hash(a_Hash),
@@ -63,6 +70,9 @@ public:
 			m_Hash(a_Hash)
 		{
 		}
+
+		void addDuplicate(SongPtr a_Duplicate);
+		void delDuplicate(SongPtr a_Duplicate);
 	};
 
 	using SharedDataPtr = std::shared_ptr<SharedData>;
@@ -88,6 +98,8 @@ public:
 		QVariant && a_NumTagRescanAttempts
 	);
 
+	~Song();
+
 	const QString & fileName() const { return m_FileName; }
 	qulonglong fileSize() const { return m_FileSize; }
 	const QVariant & hash() const { return m_Hash; }
@@ -97,6 +109,7 @@ public:
 	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
 	const QVariant & numTagRescanAttempts() const { return m_NumTagRescanAttempts; }
 	const SharedDataPtr & sharedData() const { return m_SharedData; }
+	const QVariant & notes() const { return m_Notes; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
 	const QVariant & primaryAuthor() const;
@@ -148,6 +161,7 @@ public:
 	void setFileNameTag(const Tag & a_Tag) { m_TagFileName = a_Tag; }
 	void setLastTagRescanned(const QDateTime & a_LastTagRescanned) { m_LastTagRescanned = a_LastTagRescanned; }
 	void setNumTagRescanAttempts(int a_NumTagRescanAttempts) { m_NumTagRescanAttempts = a_NumTagRescanAttempts; }
+	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
 
 	/** Returns true if a tag rescan is needed for the song
 	(the tags are empty and the scan hasn't been performed already). */
@@ -169,6 +183,13 @@ public:
 	If the genre is not known, returns 0 .. MAX_USHORT */
 	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
 
+	/** Returns all the songs that have the same hash as this song, including this.
+	If this song has no hash assigned yet, returns only self in the vector. */
+	std::vector<SongPtr> duplicates();
+
+	/** Returns all recognized genres, in a format suitable for QComboBox items. */
+	static QStringList recognizedGenres();
+
 protected:
 
 	QString m_FileName;
@@ -180,12 +201,11 @@ protected:
 	QVariant m_LastTagRescanned;
 	QVariant m_NumTagRescanAttempts;
 	SharedDataPtr m_SharedData;
+	QVariant m_Notes;
 
 	/** An empty variant returned when there's no shared data for a query */
 	static QVariant m_Empty;
 };
-
-using SongPtr = std::shared_ptr<Song>;
 
 Q_DECLARE_METATYPE(SongPtr);
 Q_DECLARE_METATYPE(Song::SharedDataPtr);

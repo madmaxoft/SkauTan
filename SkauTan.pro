@@ -91,6 +91,7 @@ SOURCES += \
 	WaveformDisplay.cpp \
 	DatabaseUpgrade.cpp \
 	Settings.cpp \
+	DlgSongProperties.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -126,6 +127,7 @@ HEADERS += \
 	WaveformDisplay.h \
 	DatabaseUpgrade.h \
 	Settings.h \
+	DlgSongProperties.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -139,6 +141,7 @@ FORMS += \
 	DlgQuickPlayer.ui \
 	DlgChooseImportTemplates.ui \
 	DlgBackgroundTaskList.ui \
+	DlgSongProperties.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

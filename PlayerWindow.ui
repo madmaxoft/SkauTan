@@ -204,6 +204,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QTableView" name="tblPlaylist">
+        <property name="contextMenuPolicy">
+         <enum>Qt::CustomContextMenu</enum>
+        </property>
         <property name="dragDropOverwriteMode">
          <bool>false</bool>
         </property>
@@ -341,6 +344,11 @@
   <action name="actBackgroundTasks">
    <property name="text">
     <string>Background tasks</string>
+   </property>
+  </action>
+  <action name="actSongProperties">
+   <property name="text">
+    <string>Song properties...</string>
    </property>
   </action>
  </widget>
