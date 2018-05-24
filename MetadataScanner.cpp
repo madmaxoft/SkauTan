@@ -37,15 +37,15 @@ protected:
 	/** Any textual invalid variant in the specified tag gets replaced with an empty string. */
 	void validateSongTag(Song::Tag & a_Tag)
 	{
-		if (!a_Tag.m_Author.isValid() || a_Tag.m_Author.isNull())
+		if (a_Tag.m_Author.isEmpty())
 		{
 			a_Tag.m_Author = QString("");
 		}
-		if (!a_Tag.m_Title.isValid() || a_Tag.m_Title.isNull())
+		if (a_Tag.m_Title.isEmpty())
 		{
 			a_Tag.m_Title = QString("");
 		}
-		if (!a_Tag.m_Genre.isValid() || a_Tag.m_Genre.isNull())
+		if (a_Tag.m_Genre.isEmpty())
 		{
 			a_Tag.m_Genre = QString("");
 		}
@@ -112,7 +112,7 @@ protected:
 		for (const auto & p: parents)
 		{
 			tryMatchGenreMPM(p, songTag);
-			if (songTag.m_Genre.isValid())  // Did we assign a genre?
+			if (!songTag.m_Genre.isEmpty())  // Did we assign a genre?
 			{
 				break;
 			}
@@ -202,10 +202,10 @@ protected:
 			{
 				continue;
 			}
-			if (a_OutputTag.m_Genre.isValid() && (a_OutputTag.m_Genre.toString() != p.second))
+			if (!a_OutputTag.m_Genre.isEmpty() && (a_OutputTag.m_Genre.value() != p.second))
 			{
 				qDebug() << "String \"" << a_Input << "\" has matched genre " << p.second
-					<< ", but already has genre " << a_OutputTag.m_Genre.toString() << ", ignoring the match";
+					<< ", but already has genre " << a_OutputTag.m_Genre.value() << ", ignoring the match";
 				continue;
 			}
 			bool isOK = false;

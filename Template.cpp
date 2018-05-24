@@ -480,25 +480,25 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 		case fspAuthor:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author.toString())
+				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author) ||
+				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author) ||
+				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author)
 			);
 		}
 		case fspTitle:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title.toString())
+				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title) ||
+				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title) ||
+				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title)
 			);
 		}
 		case fspGenre:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre.toString()) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre.toString())
+				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre) ||
+				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre) ||
+				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre)
 			);
 		}
 		case fspMeasuresPerMinute:
@@ -509,26 +509,26 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 				isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute)
 			);
 		}
-		case fspManualAuthor:              return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author.toString());
-		case fspManualTitle:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title.toString());
-		case fspManualGenre:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre.toString());
+		case fspManualAuthor:              return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author);
+		case fspManualTitle:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title);
+		case fspManualGenre:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre);
 		case fspManualMeasuresPerMinute:   return isNumberComparisonSatisfiedBy(a_Song.tagManual().m_MeasuresPerMinute);
-		case fspFileNameAuthor:            return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author.toString());
-		case fspFileNameTitle:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title.toString());
-		case fspFileNameGenre:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre.toString());
+		case fspFileNameAuthor:            return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author);
+		case fspFileNameTitle:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title);
+		case fspFileNameGenre:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre);
 		case fspFileNameMeasuresPerMinute: return isNumberComparisonSatisfiedBy(a_Song.tagFileName().m_MeasuresPerMinute);
-		case fspId3Author:                 return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author.toString());
-		case fspId3Title:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title.toString());
-		case fspId3Genre:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre.toString());
+		case fspId3Author:                 return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author);
+		case fspId3Title:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title);
+		case fspId3Genre:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre);
 		case fspId3MeasuresPerMinute:      return isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute);
 		case fspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().toDateTime());
 		case fspLength:                    return isNumberComparisonSatisfiedBy(a_Song.length());
 		case fspRating:                    return isNumberComparisonSatisfiedBy(a_Song.rating());
-		case fspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor().toString());
-		case fspPrimaryTitle:              return isStringComparisonSatisfiedBy(a_Song.primaryTitle().toString());
-		case fspPrimaryGenre:              return isStringComparisonSatisfiedBy(a_Song.primaryGenre().toString());
+		case fspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor());
+		case fspPrimaryTitle:              return isStringComparisonSatisfiedBy(a_Song.primaryTitle());
+		case fspPrimaryGenre:              return isStringComparisonSatisfiedBy(a_Song.primaryGenre());
 		case fspPrimaryMeasuresPerMinute:  return isNumberComparisonSatisfiedBy(a_Song.primaryMeasuresPerMinute());
-		case fspWarningCount:              return isNumberComparisonSatisfiedBy(a_Song.getWarnings().count());
+		case fspWarningCount:              return isValidNumberComparisonSatisfiedBy(a_Song.getWarnings().count());
 	}
 	assert(!"Unknown song property in comparison");
 	return false;
@@ -538,22 +538,49 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 
 
 
-bool Template::Filter::isStringComparisonSatisfiedBy(const QString & a_Value) const
+bool Template::Filter::isStringComparisonSatisfiedBy(const DatedOptional<QString> & a_Value) const
 {
 	assert(m_Kind == fkComparison);
+
+	// Empty strings satisfy only the fcNotContains criterion:
+	if (a_Value.isEmpty())
+	{
+		return (m_Comparison == fcNotContains);
+	}
+
+	// String is valid, compare:
 	switch (m_Comparison)
 	{
-		case fcContains:           return  a_Value.contains(m_Value.toString(), Qt::CaseInsensitive);
-		case fcNotContains:        return !a_Value.contains(m_Value.toString(), Qt::CaseInsensitive);
-		case fcEqual:              return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) == 0);
-		case fcNotEqual:           return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) != 0);
-		case fcGreaterThan:        return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) >  0);
-		case fcGreaterThanOrEqual: return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) >= 0);
-		case fcLowerThan:          return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) <  0);
-		case fcLowerThanOrEqual:   return  (a_Value.compare(m_Value.toString(), Qt::CaseInsensitive) <= 0);
+		case fcContains:           return  a_Value.value().contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcNotContains:        return !a_Value.value().contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcEqual:              return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) == 0);
+		case fcNotEqual:           return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) != 0);
+		case fcGreaterThan:        return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) >  0);
+		case fcGreaterThanOrEqual: return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) >= 0);
+		case fcLowerThan:          return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) <  0);
+		case fcLowerThanOrEqual:   return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) <= 0);
 	}
 	assert(!"Unknown comparison");
 	return false;
+}
+
+
+
+
+
+bool Template::Filter::isNumberComparisonSatisfiedBy(const DatedOptional<double> & a_Value) const
+{
+	assert(m_Kind == fkComparison);
+
+	// Check if the passed value is a valid number:
+	if (!a_Value.isPresent())
+	{
+		return false;
+	}
+
+	// Check with the regular valid number logic:
+	auto value = a_Value.value();
+	return isValidNumberComparisonSatisfiedBy(value);
 }
 
 
@@ -565,22 +592,34 @@ bool Template::Filter::isNumberComparisonSatisfiedBy(const QVariant & a_Value) c
 	assert(m_Kind == fkComparison);
 
 	// Check if the passed value is a valid number:
-	bool isOk = false;
-	auto value = a_Value.toDouble(&isOk);
-	if (!isOk)
+	bool isOK;
+	auto value = a_Value.toDouble(&isOK);
+	if (!isOK)
 	{
 		return false;
 	}
 
-	// For string based comparison, use the filter value as a string:
+	// Check with the regular valid number logic:
+	return isValidNumberComparisonSatisfiedBy(value);
+}
+
+
+
+
+bool Template::Filter::isValidNumberComparisonSatisfiedBy(double a_Value) const
+{
+	assert(m_Kind == fkComparison);
+
+	// For string-based comparison, use the filter value as a string:
 	switch (m_Comparison)
 	{
-		case fcContains:           return  QString::number(value).contains(m_Value.toString(), Qt::CaseInsensitive);
-		case fcNotContains:        return !QString::number(value).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcContains:           return  QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case fcNotContains:        return !QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
 		default: break;
 	}
 
 	// For number-based comparisons, compare to a number; fail if NaN:
+	bool isOk;
 	auto cmpVal = m_Value.toDouble(&isOk);
 	if (!isOk)
 	{
@@ -588,12 +627,12 @@ bool Template::Filter::isNumberComparisonSatisfiedBy(const QVariant & a_Value) c
 	}
 	switch (m_Comparison)
 	{
-		case fcEqual:              return (std::abs(value - cmpVal) < EPS);
-		case fcNotEqual:           return (std::abs(value - cmpVal) >= EPS);
-		case fcGreaterThan:        return (value >  cmpVal);
-		case fcGreaterThanOrEqual: return (value >= cmpVal);
-		case fcLowerThan:          return (value <  cmpVal);
-		case fcLowerThanOrEqual:   return (value <= cmpVal);
+		case fcEqual:              return (std::abs(a_Value - cmpVal) < EPS);
+		case fcNotEqual:           return (std::abs(a_Value - cmpVal) >= EPS);
+		case fcGreaterThan:        return (a_Value >  cmpVal);
+		case fcGreaterThanOrEqual: return (a_Value >= cmpVal);
+		case fcLowerThan:          return (a_Value <  cmpVal);
+		case fcLowerThanOrEqual:   return (a_Value <= cmpVal);
 		default: break;
 	}
 	assert(!"Unknown comparison");

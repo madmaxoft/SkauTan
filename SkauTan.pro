@@ -128,6 +128,7 @@ HEADERS += \
 	DatabaseUpgrade.h \
 	Settings.h \
 	DlgSongProperties.h \
+	DatedOptional.h \
 
 FORMS += \
 	PlayerWindow.ui \

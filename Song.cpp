@@ -64,7 +64,7 @@ Song::~Song()
 
 
 
-const QVariant & Song::primaryAuthor() const
+const DatedOptional<QString> & Song::primaryAuthor() const
 {
 	return primaryValue(
 		m_TagManual.m_Author,
@@ -77,7 +77,7 @@ const QVariant & Song::primaryAuthor() const
 
 
 
-const QVariant & Song::primaryTitle() const
+const DatedOptional<QString> & Song::primaryTitle() const
 {
 	return primaryValue(
 		m_TagManual.m_Title,
@@ -90,7 +90,7 @@ const QVariant & Song::primaryTitle() const
 
 
 
-const QVariant & Song::primaryGenre() const
+const DatedOptional<QString> & Song::primaryGenre() const
 {
 	return primaryValue(
 		m_TagManual.m_Genre,
@@ -103,7 +103,7 @@ const QVariant & Song::primaryGenre() const
 
 
 
-const QVariant & Song::primaryMeasuresPerMinute() const
+const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 {
 	return primaryValue(
 		m_TagManual.m_MeasuresPerMinute,
@@ -159,9 +159,9 @@ bool Song::needsTagRescan() const
 	// A rescan would have set the values (to empty strings if it failed)
 	// TODO: Rescan if the file's last changed time grows over the last metadata updated value
 	return (
-		!m_TagFileName.m_Author.isValid() ||
-		!m_TagId3.m_Author.isValid()
-				);
+		!m_TagFileName.m_Author.isPresent() ||
+		!m_TagId3.m_Author.isPresent()
+	);
 }
 
 
@@ -174,24 +174,23 @@ QStringList Song::getWarnings() const
 
 	// If auto-detected genres are different and there's no override, report:
 	if (
-		m_TagManual.m_Genre.isNull() &&  // Manual override not set
-		!m_TagId3.m_Genre.toString().isEmpty() &&
-		!m_TagFileName.m_Genre.toString().isEmpty() &&
-		(m_TagId3.m_Genre.toString() != m_TagFileName.m_Genre.toString())   // ID3 genre not equal to FileName genre
+		!m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
+		m_TagFileName.m_Genre.isPresent() &&
+		m_TagId3.m_Genre.isPresent() &&
+		(m_TagId3.m_Genre.value() != m_TagFileName.m_Genre.value())   // ID3 genre not equal to FileName genre
 	)
 	{
 		res.append(tr("Genre detection is confused, please provide a manual override."));
 	}
 
 	// If the detected MPM is way outside the primary genre's competition range, report:
-	if (!m_TagManual.m_MeasuresPerMinute.isValid())  // Allow the user to override the warning
+	if (!m_TagManual.m_MeasuresPerMinute.isPresent())  // Allow the user to override the warning
 	{
-		auto primaryMPM = m_TagId3.m_MeasuresPerMinute.isValid() ? m_TagId3.m_MeasuresPerMinute : m_TagFileName.m_MeasuresPerMinute;
-		bool isOK;
-		auto mpm = primaryMPM.toDouble(&isOK);
-		if (isOK)
+		auto primaryMPM = m_TagId3.m_MeasuresPerMinute.isPresent() ? m_TagId3.m_MeasuresPerMinute : m_TagFileName.m_MeasuresPerMinute;
+		if (primaryMPM.isPresent())
 		{
-			auto range = competitionTempoRangeForGenre(primaryGenre().toString());
+			auto mpm = primaryMPM.value();
+			auto range = competitionTempoRangeForGenre(primaryGenre().value());
 			if (mpm < range.first * 0.7)
 			{
 				res.append(tr("The detected tempo is suspiciously low: Lowest competition tempo: %1; detected tempo: %2")
@@ -209,27 +208,6 @@ QStringList Song::getWarnings() const
 		}
 	}
 	return res;
-}
-
-
-
-
-
-const QVariant & Song::primaryValue(
-	const QVariant & a_First,
-	const QVariant & a_Second,
-	const QVariant & a_Third
-)
-{
-	if (!a_First.isNull() && !a_First.toString().isEmpty())
-	{
-		return a_First;
-	}
-	if (!a_Second.isNull() && !a_Second.toString().isEmpty())
-	{
-		return a_Second;
-	}
-	return a_Third;
 }
 
 

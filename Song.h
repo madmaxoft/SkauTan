@@ -12,6 +12,7 @@
 #include <QVariant>
 #include <QCoreApplication>
 #include <QMutex>
+#include <DatedOptional.h>
 
 
 
@@ -41,10 +42,10 @@ public:
 	the metadata for each source. */
 	struct Tag
 	{
-		QVariant m_Title;
-		QVariant m_Author;
-		QVariant m_Genre;
-		QVariant m_MeasuresPerMinute;
+		DatedOptional<QString> m_Title;
+		DatedOptional<QString> m_Author;
+		DatedOptional<QString> m_Genre;
+		DatedOptional<double>  m_MeasuresPerMinute;
 	};
 
 
@@ -109,13 +110,13 @@ public:
 	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
 	const QVariant & numTagRescanAttempts() const { return m_NumTagRescanAttempts; }
 	const SharedDataPtr & sharedData() const { return m_SharedData; }
-	const QVariant & notes() const { return m_Notes; }
+	const DatedOptional<QString> & notes() const { return m_Notes; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
-	const QVariant & primaryAuthor() const;
-	const QVariant & primaryTitle() const;
-	const QVariant & primaryGenre() const;
-	const QVariant & primaryMeasuresPerMinute() const;
+	const DatedOptional<QString> & primaryAuthor() const;
+	const DatedOptional<QString> & primaryTitle() const;
+	const DatedOptional<QString> & primaryGenre() const;
+	const DatedOptional<double>  & primaryMeasuresPerMinute() const;
 
 	// These return values from the shared data, if available:
 	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
@@ -159,9 +160,17 @@ public:
 	void setFileNameGenre(const QString & a_Genre)   { m_TagFileName.m_Genre  = a_Genre; }
 	void setFileNameMeasuresPerMinute(double a_MPM)  { m_TagFileName.m_MeasuresPerMinute = a_MPM; }
 	void setFileNameTag(const Tag & a_Tag) { m_TagFileName = a_Tag; }
+
+	// Basic setters:
 	void setLastTagRescanned(const QDateTime & a_LastTagRescanned) { m_LastTagRescanned = a_LastTagRescanned; }
 	void setNumTagRescanAttempts(int a_NumTagRescanAttempts) { m_NumTagRescanAttempts = a_NumTagRescanAttempts; }
 	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
+
+	// Setters that preserve the date information:
+	void setNotes(const DatedOptional<QString> & a_Notes) { m_Notes = a_Notes; }
+
+	// Setters that move-preserve the date information:
+	void setNotes(DatedOptional<QString> && a_Notes) { m_Notes = std::move(a_Notes); }
 
 	/** Returns true if a tag rescan is needed for the song
 	(the tags are empty and the scan hasn't been performed already). */
@@ -173,11 +182,22 @@ public:
 
 	/** Returns the first of the three variants that is non-empty.
 	Returns the third if all are null.*/
-	static const QVariant & primaryValue(
-		const QVariant & a_First,
-		const QVariant & a_Second,
-		const QVariant & a_Third
-	);
+	template <typename T> static const DatedOptional<T> & primaryValue(
+		const DatedOptional<T> & a_First,
+		const DatedOptional<T> & a_Second,
+		const DatedOptional<T> & a_Third
+	)
+	{
+		if (!a_First.isEmpty())
+		{
+			return a_First;
+		}
+		if (!a_Second.isEmpty())
+		{
+			return a_Second;
+		}
+		return a_Third;
+	}
 
 	/** Returns the competition tempo range for the specified genre.
 	If the genre is not known, returns 0 .. MAX_USHORT */
@@ -201,7 +221,7 @@ protected:
 	QVariant m_LastTagRescanned;
 	QVariant m_NumTagRescanAttempts;
 	SharedDataPtr m_SharedData;
-	QVariant m_Notes;
+	DatedOptional<QString> m_Notes;
 
 	/** An empty variant returned when there's no shared data for a query */
 	static QVariant m_Empty;
