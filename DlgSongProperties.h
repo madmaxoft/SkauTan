@@ -52,11 +52,8 @@ private:
 	Each song out of m_Duplicates has a separate ChangeSet instance. */
 	struct ChangeSet
 	{
-		QVariant m_ManualAuthor;
-		QVariant m_ManualTitle;
-		QVariant m_ManualGenre;
-		QVariant m_ManualMeasuresPerMinute;
-		QVariant m_Notes;
+		Song::Tag m_ManualTag;
+		DatedOptional<QString> m_Notes;
 	};
 
 

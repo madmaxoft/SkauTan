@@ -28,13 +28,13 @@ static QString formatLength(const Song & a_Song)
 
 
 
-static QString formatMPM(const QVariant & a_SongMPM)
+static QString formatMPM(const DatedOptional<double> & a_SongMPM)
 {
-	if (!a_SongMPM.isValid())
+	if (!a_SongMPM.isPresent())
 	{
 		return SongModel::tr("<unknown>", "MPM");
 	}
-	return QLocale().toString(a_SongMPM.toDouble(), 'f', 1);
+	return QLocale().toString(a_SongMPM.value(), 'f', 1);
 }
 
 
@@ -173,17 +173,17 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colLength:                    return formatLength(*song);
 				case colLastPlayed:                return formatLastPlayed(*song);
 				case colRating:                    return formatRating(*song);
-				case colManualAuthor:              return song->tagManual().m_Author;
-				case colManualTitle:               return song->tagManual().m_Title;
-				case colManualGenre:               return song->tagManual().m_Genre;
+				case colManualAuthor:              return song->tagManual().m_Author.valueOrDefault();
+				case colManualTitle:               return song->tagManual().m_Title.valueOrDefault();
+				case colManualGenre:               return song->tagManual().m_Genre.valueOrDefault();
 				case colManualMeasuresPerMinute:   return formatMPM(song->tagManual().m_MeasuresPerMinute);
-				case colFileNameAuthor:            return song->tagFileName().m_Author;
-				case colFileNameTitle:             return song->tagFileName().m_Title;
-				case colFileNameGenre:             return song->tagFileName().m_Genre;
+				case colFileNameAuthor:            return song->tagFileName().m_Author.valueOrDefault();
+				case colFileNameTitle:             return song->tagFileName().m_Title.valueOrDefault();
+				case colFileNameGenre:             return song->tagFileName().m_Genre.valueOrDefault();
 				case colFileNameMeasuresPerMinute: return formatMPM(song->tagFileName().m_MeasuresPerMinute);
-				case colId3Author:                 return song->tagId3().m_Author;
-				case colId3Title:                  return song->tagId3().m_Title;
-				case colId3Genre:                  return song->tagId3().m_Genre;
+				case colId3Author:                 return song->tagId3().m_Author.valueOrDefault();
+				case colId3Title:                  return song->tagId3().m_Title.valueOrDefault();
+				case colId3Genre:                  return song->tagId3().m_Genre.valueOrDefault();
 				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
 				case colNumMatchingFilters:        return numMatchingFilters(song);
 			}
@@ -653,10 +653,10 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 		{
 			const auto & id3Tag = song->tagId3();
 			if (
-				(id3Tag.m_Author.isNull() || id3Tag.m_Author.toString().isEmpty()) &&
-				(id3Tag.m_Title.isNull()  || id3Tag.m_Title.toString().isEmpty()) &&
-				(id3Tag.m_Genre.isNull()  || id3Tag.m_Genre.toString().isEmpty()) &&
-				(id3Tag.m_MeasuresPerMinute.isNull())
+				(id3Tag.m_Author.isEmpty()) &&
+				(id3Tag.m_Title.isEmpty()) &&
+				(id3Tag.m_Genre.isEmpty()) &&
+				!id3Tag.m_MeasuresPerMinute.isPresent()
 			)
 			{
 				break;
@@ -667,7 +667,7 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 		case fltNoGenre:
 		{
 			const auto & genre = song->primaryGenre();
-			if (genre.isNull() || genre.toString().isEmpty())
+			if (genre.isEmpty())
 			{
 				break;
 			}
@@ -676,7 +676,7 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 
 		case fltNoMeasuresPerMinute:
 		{
-			if (song->primaryMeasuresPerMinute().isNull())
+			if (!song->primaryMeasuresPerMinute().isPresent())
 			{
 				break;
 			}
@@ -714,15 +714,15 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 bool SongModelFilter::songMatchesSearchString(SongPtr a_Song) const
 {
 	if (
-		m_SearchString.match(a_Song->tagManual().m_Author.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagManual().m_Title.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagManual().m_Genre.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Author.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Title.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Genre.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Author.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Title.toString()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Genre.toString()).hasMatch() ||
+		m_SearchString.match(a_Song->tagManual().m_Author.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagManual().m_Title.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagManual().m_Genre.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Author.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Title.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagId3().m_Genre.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Author.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Title.valueOrDefault()).hasMatch() ||
+		m_SearchString.match(a_Song->tagFileName().m_Genre.valueOrDefault()).hasMatch() ||
 		m_SearchString.match(a_Song->fileName()).hasMatch()
 	)
 	{
