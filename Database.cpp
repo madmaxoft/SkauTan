@@ -39,24 +39,28 @@ Index 1: title column
 Index 2: genre column
 Index 3: MPM column
 If any index is negative, the value in the resulting tag is an uninitialized variant. */
-static Song::Tag tagFromFields(const QSqlRecord & a_Record, const std::array<int, 4> & a_Indices)
+static Song::Tag tagFromFields(
+	const QSqlRecord & a_Record,
+	const std::array<int, 4> & a_Indices,
+	const std::array<int, 4> & a_IndicesLM
+)
 {
 	Song::Tag res;
 	if (a_Indices[0] >= 0)
 	{
-		res.m_Author = fieldValue(a_Record.field(a_Indices[0]));
+		res.m_Author = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[0])), a_Record.value(a_IndicesLM[0]).toDateTime());
 	}
 	if (a_Indices[1] >= 0)
 	{
-		res.m_Title = fieldValue(a_Record.field(a_Indices[1]));
+		res.m_Title = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[1])), a_Record.value(a_IndicesLM[1]).toDateTime());
 	}
 	if (a_Indices[2] >= 0)
 	{
-		res.m_Genre = fieldValue(a_Record.field(a_Indices[2]));
+		res.m_Genre = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[2])), a_Record.value(a_IndicesLM[2]).toDateTime());
 	}
 	if (a_Indices[3] >= 0)
 	{
-		res.m_MeasuresPerMinute = fieldValue(a_Record.field(a_Indices[3]));
+		res.m_MeasuresPerMinute = DatedOptional<double>(fieldValue(a_Record.field(a_Indices[3])), a_Record.value(a_IndicesLM[3]).toDateTime());
 	}
 	return res;
 }
@@ -454,6 +458,13 @@ void Database::loadSongs()
 		query.record().indexOf("ManualGenre"),
 		query.record().indexOf("ManualMeasuresPerMinute"),
 	}};
+	std::array<int, 4> fisManualLM
+	{{
+		query.record().indexOf("ManualAuthorLM"),
+		query.record().indexOf("ManualTitleLM"),
+		query.record().indexOf("ManualGenreLM"),
+		query.record().indexOf("ManualMeasuresPerMinuteLM"),
+	}};
 	std::array<int, 4> fisFileName
 	{{
 		query.record().indexOf("FileNameAuthor"),
@@ -468,6 +479,10 @@ void Database::loadSongs()
 		query.record().indexOf("Id3Genre"),
 		query.record().indexOf("Id3MeasuresPerMinute"),
 	}};
+	std::array<int, 4> fisInvalidLM
+	{{
+		-1, -1, -1, -1
+	}};
 
 	// Load each song:
 	while (query.next())
@@ -477,9 +492,9 @@ void Database::loadSongs()
 			query.value(fiFileName).toString(),
 			query.value(fiFileSize).toULongLong(),
 			fieldValue(rec.field(fiHash)),
-			tagFromFields(rec, fisManual),
-			tagFromFields(rec, fisFileName),
-			tagFromFields(rec, fisId3),
+			tagFromFields(rec, fisManual,   fisManualLM),
+			tagFromFields(rec, fisFileName, fisInvalidLM),
+			tagFromFields(rec, fisId3,      fisInvalidLM),
 			fieldValue(rec.field(fiLastTagRescanned)),
 			fieldValue(rec.field(fiNumTagRescanAttempts))
 		);
@@ -952,7 +967,10 @@ void Database::saveSongFileData(SongPtr a_Song)
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE SongFiles SET "
 		"FileSize = ?, Hash = ?, "
-		"ManualAuthor = ?, ManualTitle = ?, ManualGenre = ?, ManualMeasuresPerMinute = ?,"
+		"ManualAuthor = ?, ManualAuthorLM = ?,"
+		"ManualTitle = ?, ManualTitleLM = ?,"
+		"ManualGenre = ?, ManualGenreLM = ?,"
+		"ManualMeasuresPerMinute = ?, ManualMeasuresPerMinuteLM = ?,"
 		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
 		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?,"
 		"LastTagRescanned = ?,"
@@ -967,9 +985,13 @@ void Database::saveSongFileData(SongPtr a_Song)
 	query.addBindValue(a_Song->fileSize());
 	query.addBindValue(a_Song->hash());
 	query.addBindValue(a_Song->tagManual().m_Author.toVariant());
+	query.addBindValue(a_Song->tagManual().m_Author.lastModification());
 	query.addBindValue(a_Song->tagManual().m_Title.toVariant());
+	query.addBindValue(a_Song->tagManual().m_Title.lastModification());
 	query.addBindValue(a_Song->tagManual().m_Genre.toVariant());
+	query.addBindValue(a_Song->tagManual().m_Genre.lastModification());
 	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute.toVariant());
+	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute.lastModification());
 	query.addBindValue(a_Song->tagFileName().m_Author.toVariant());
 	query.addBindValue(a_Song->tagFileName().m_Title.toVariant());
 	query.addBindValue(a_Song->tagFileName().m_Genre.toVariant());
