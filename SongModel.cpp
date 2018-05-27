@@ -68,6 +68,24 @@ static QString formatRating(const Song & a_Song)
 
 
 
+template <typename T> static QString formatLastModTooltip(const DatedOptional<T> & a_Value)
+{
+	if (!a_Value.lastModification().isValid())
+	{
+		return QString("%1").arg(a_Value.valueOrDefault());  // Convert from non-strings to QString
+	}
+	else
+	{
+		return SongModel::tr("%1\nLast modified: %2")
+			.arg(a_Value.valueOrDefault())
+			.arg(a_Value.lastModification().toString(Qt::SystemLocaleLongDate));
+	}
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // SongModel:
 
@@ -203,6 +221,13 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		}
 		case Qt::ToolTipRole:
 		{
+			switch (a_Index.column())
+			{
+				case colManualAuthor:            return formatLastModTooltip(song->tagManual().m_Author);
+				case colManualTitle:             return formatLastModTooltip(song->tagManual().m_Title);
+				case colManualGenre:             return formatLastModTooltip(song->tagManual().m_Genre);
+				case colManualMeasuresPerMinute: return formatLastModTooltip(song->tagManual().m_MeasuresPerMinute);
+			}
 			return song->getWarnings().join("\n");
 		}
 		case Qt::TextAlignmentRole:

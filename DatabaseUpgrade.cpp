@@ -139,7 +139,7 @@ static const std::vector<VersionScript> g_VersionScripts =
 		")",
 
 		"INSERT INTO Version (Version) VALUES (1)",
-	}),  // Version 0
+	}),  // Version 0 to Version 1
 
 
 	// Version 1 to Version 2:
@@ -210,7 +210,17 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"DROP TABLE SongMetadata",
 
 		"DROP TABLE SongHashes",
-	}),
+	}),  // Version 1 to Version 2
+
+
+	// Version 2 to Version 3:
+	// Add a last-modified field for each manual song prop:
+	VersionScript({
+		"ALTER TABLE SongFiles ADD COLUMN ManualAuthorLM DATETIME",
+		"ALTER TABLE SongFiles ADD COLUMN ManualTitleLM DATETIME",
+		"ALTER TABLE SongFiles ADD COLUMN ManualGenreLM DATETIME",
+		"ALTER TABLE SongFiles ADD COLUMN ManualMeasuresPerMinuteLM DATETIME",
+	}),  // Version 2 to Version 3
 };
 
 
