@@ -12,6 +12,24 @@
 
 
 
+/** Returns the value, clamped to the range provided. */
+template <typename T> static T clamp(T a_Value, T a_Min, T a_Max)
+{
+	if (a_Value < a_Min)
+	{
+		return a_Min;
+	}
+	if (a_Value > a_Max)
+	{
+		return a_Max;
+	}
+	return a_Value;
+}
+
+
+
+
+
 /** Returns a string representation of the specified song's length.
 a_Length is the length in seconds. */
 static QString formatLength(const Song & a_Song)
@@ -54,14 +72,33 @@ static QString formatLastPlayed(const Song & a_Song)
 
 
 
+/** Returns the number in the DatedOptional, if present, as a string, or an empty string if empty. */
+template <typename T> static QString numberIfPresent(const DatedOptional<T> & a_Value)
+{
+	if (a_Value.isPresent())
+	{
+		return QLocale::system().toString(a_Value.value(), 'f', 1);
+	}
+	else
+	{
+		return {};
+	}
+}
+
+
+
+
+
 static QString formatRating(const Song & a_Song)
 {
 	const auto & rating = a_Song.rating();
-	if (!rating.isValid())
-	{
-		return SongModel::tr("<none>", "Rating");
-	}
-	return QString::number(rating.toDouble(), 'f', 1);
+	QString res;
+	res.append(rating.m_RhythmClarity.isPresent()   ? QString::number(rating.m_RhythmClarity.value(),   'f', 1) : "--");
+	res.append(" | ");
+	res.append(rating.m_GenreTypicality.isPresent() ? QString::number(rating.m_GenreTypicality.value(), 'f', 1) : "--");
+	res.append(" | ");
+	res.append(rating.m_Popularity.isPresent()      ? QString::number(rating.m_Popularity.value(),      'f', 1) : "--");
+	return res;
 }
 
 
@@ -190,6 +227,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colFileName:                  return song->fileName();
 				case colLength:                    return formatLength(*song);
 				case colLastPlayed:                return formatLastPlayed(*song);
+				case colLocalRating:               return numberIfPresent(song->rating().m_Local);
 				case colRating:                    return formatRating(*song);
 				case colManualAuthor:              return song->tagManual().m_Author.valueOrDefault();
 				case colManualTitle:               return song->tagManual().m_Title.valueOrDefault();
@@ -268,7 +306,8 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colFileName:                  return tr("File name");
 		case colLength:                    return tr("Length");
 		case colLastPlayed:                return tr("Last played");
-		case colRating:                    return tr("Rating");
+		case colLocalRating:               return tr("Local rating");
+		case colRating:                    return tr("Community rating");
 		case colManualAuthor:              return tr("Author (M)", "Manual");
 		case colManualTitle:               return tr("Title (M)", "Manual");
 		case colManualGenre:               return tr("Genre (M)", "Manual");
@@ -296,6 +335,7 @@ Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
 	{
 		switch (a_Index.column())
 		{
+			case colLocalRating:
 			case colManualAuthor:
 			case colManualGenre:
 			case colManualMeasuresPerMinute:
@@ -342,6 +382,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 		case colLastPlayed: return false;
 		case colLength: return false;
 		case colRating: return false;
+		case colLocalRating: song->setLocalRating(clamp(a_Value.toDouble(), 0.0, 5.0)); break;
 		case colManualAuthor: song->setAuthor(a_Value.toString()); break;
 		case colManualTitle: song->setTitle(a_Value.toString()); break;
 		case colManualGenre: song->setGenre(a_Value.toString()); break;
@@ -454,6 +495,7 @@ QWidget * SongModelEditorDelegate::createEditor(
 			return res;
 		}
 		case SongModel::colManualMeasuresPerMinute:
+		case SongModel::colLocalRating:
 		{
 			// Text editor limited to entering numbers:
 			auto res = new QLineEdit(a_Parent);
@@ -513,6 +555,7 @@ void SongModelEditorDelegate::setEditorData(
 			return;
 		}
 		case SongModel::colManualMeasuresPerMinute:
+		case SongModel::colLocalRating:
 		{
 			auto le = qobject_cast<QLineEdit *>(a_Editor);
 			assert(le != nullptr);
@@ -572,6 +615,7 @@ void SongModelEditorDelegate::setModelData(
 			return;
 		}
 		case SongModel::colManualMeasuresPerMinute:
+		case SongModel::colLocalRating:
 		{
 			auto le = qobject_cast<QLineEdit *>(a_Editor);
 			assert(le != nullptr);

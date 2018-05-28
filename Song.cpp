@@ -9,6 +9,7 @@
 
 
 QVariant Song::m_Empty;
+Song::Rating Song::m_EmptyRating;
 
 
 
@@ -147,6 +148,18 @@ void Song::setSharedData(Song::SharedDataPtr a_SharedData)
 	assert(m_Hash.toByteArray() == a_SharedData->m_Hash);
 	m_SharedData = a_SharedData;
 	m_SharedData->addDuplicate(shared_from_this());
+}
+
+
+
+
+
+void Song::setLocalRating(double a_Value)
+{
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->m_Rating.m_Local = a_Value;
+	}
 }
 
 

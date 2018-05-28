@@ -221,6 +221,42 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"ALTER TABLE SongFiles ADD COLUMN ManualGenreLM DATETIME",
 		"ALTER TABLE SongFiles ADD COLUMN ManualMeasuresPerMinuteLM DATETIME",
 	}),  // Version 2 to Version 3
+
+	// Version 3 to Version 4:
+	// Split rating into categories:
+	VersionScript({
+		"ALTER TABLE SongSharedData RENAME TO SongSharedData_Old",
+
+		"CREATE TABLE SongSharedData ("
+			"Hash                    BLOB PRIMARY KEY,"
+			"Length                  NUMERIC,"
+			"LastPlayed              DATETIME,"
+			"LocalRating             NUMERIC,"
+			"LocalRatingLM           DATETIME,"
+			"RatingRhythmClarity     NUMERIC,"
+			"RatingRhythmClarityLM   DATETIME,"
+			"RatingGenreTypicality   NUMERIC,"
+			"RatingGenreTypicalityLM DATETIME,"
+			"RatingPopularity        NUMERIC,"
+			"RatingPopularityLM      DATETIME"
+		")",
+
+		"INSERT INTO SongSharedData("
+			"Hash, Length, LastPlayed,"
+			"LocalRating, LocalRatingLM,"
+			"RatingRhythmClarity,   RatingRhythmClarityLM,"
+			"RatingGenreTypicality, RatingGenreTypicalityLM,"
+			"RatingPopularity,      RatingPopularityLM"
+		") SELECT "
+			"Hash, Length, LastPlayed,"
+			"Rating, NULL,"
+			"Rating, NULL,"
+			"Rating, NULL,"
+			"Rating, NULL"
+		" FROM SongSharedData_Old",
+
+		"DROP TABLE SongSharedData_Old",
+	}),  // Version 3 to Version 4
 };
 
 

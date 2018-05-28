@@ -49,17 +49,32 @@ public:
 	};
 
 
+	/** Rating in various categories (#100) */
+	struct Rating
+	{
+		DatedOptional<double> m_RhythmClarity;
+		DatedOptional<double> m_GenreTypicality;
+		DatedOptional<double> m_Popularity;
+		DatedOptional<double> m_Local;
+	};
+
+
 	/** Data that can be shared among multiple files that represent the same song (same hash). */
 	struct SharedData
 	{
 		QByteArray m_Hash;
 		QVariant m_Length;
 		QVariant m_LastPlayed;
-		QVariant m_Rating;
+		Rating m_Rating;
 		QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
 		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
 
-		SharedData(const QByteArray & a_Hash, QVariant && a_Length, QVariant && a_LastPlayed, QVariant && a_Rating):
+		SharedData(
+			const QByteArray & a_Hash,
+			QVariant && a_Length,
+			QVariant && a_LastPlayed,
+			Rating && a_Rating
+		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
 			m_LastPlayed(std::move(a_LastPlayed)),
@@ -121,7 +136,7 @@ public:
 	// These return values from the shared data, if available:
 	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
 	const QVariant & lastPlayed() const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_LastPlayed; }
-	const QVariant & rating()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Rating; }
+	const Rating &   rating()     const { return (m_SharedData == nullptr) ? m_EmptyRating : m_SharedData->m_Rating; }
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;
@@ -171,6 +186,9 @@ public:
 
 	// Setters that move-preserve the date information:
 	void setNotes(DatedOptional<QString> && a_Notes) { m_Notes = std::move(a_Notes); }
+
+	// Sets the local rating, if SharedData is present; otherwise ignored. */
+	void setLocalRating(double a_Value);
 
 	/** Returns true if a tag rescan is needed for the song
 	(the tags are empty and the scan hasn't been performed already). */
@@ -223,8 +241,11 @@ protected:
 	SharedDataPtr m_SharedData;
 	DatedOptional<QString> m_Notes;
 
-	/** An empty variant returned when there's no shared data for a query */
+	/** An empty variant returned when there's no shared data for a song */
 	static QVariant m_Empty;
+
+	/** An empty rating returned when there's no shared ddata for a song. */
+	static Rating m_EmptyRating;
 };
 
 Q_DECLARE_METATYPE(SongPtr);

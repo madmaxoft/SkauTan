@@ -11,6 +11,26 @@
 
 
 
+static qint64 applyRating(qint64 a_CurrentWeight, const DatedOptional<double> & a_Rating)
+{
+	if (a_Rating.isPresent())
+	{
+		return a_CurrentWeight * (a_Rating.value() + 1) / 5;  // Even zero-rating songs need *some* chance
+	}
+	else
+	{
+		// Default to 2.5-star rating:
+		return static_cast<qint64>(a_CurrentWeight * 3.5 / 5);
+	}
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Playlist:
+
 Playlist::Playlist():
 	m_CurrentItemIdx(0),
 	m_IsPlaying(false)
@@ -277,16 +297,10 @@ int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 	}
 
 	// Penalize by rating:
-	auto rating = a_Song.rating();
-	if (rating.isValid())
-	{
-		res = res * (rating.toDouble() + 1) / 5;  // Even zero-rating songs need *some* chance
-	}
-	else
-	{
-		// Default to 2.5-star rating:
-		res = static_cast<qint64>(res * 3.5 / 5);
-	}
+	const auto & rating = a_Song.rating();
+	res = applyRating(res, rating.m_GenreTypicality);
+	res = applyRating(res, rating.m_Popularity);
+	res = applyRating(res, rating.m_RhythmClarity);
 
 	if (res > std::numeric_limits<int>::max())
 	{
