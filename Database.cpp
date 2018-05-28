@@ -32,6 +32,23 @@ static QVariant fieldValue(const QSqlField & a_Field)
 
 
 
+/** Constructs a DatedOptional from the two DB fields given the record to read and the field indices. */
+template <typename T> static DatedOptional<T> datedOptionalFromFields(
+	const QSqlRecord & a_Record,
+	int a_IdxValue,
+	int a_IdxLastModification
+)
+{
+	return DatedOptional<T>(
+		fieldValue(a_Record.field(a_IdxValue)),
+		a_Record.value(a_IdxLastModification).toDateTime()
+	);
+}
+
+
+
+
+
 /** Constructs a Song::Tag instance from the specified SQL record,
 reading the four values from the columns at the specified indices.
 Index 0: author column
@@ -48,19 +65,19 @@ static Song::Tag tagFromFields(
 	Song::Tag res;
 	if (a_Indices[0] >= 0)
 	{
-		res.m_Author = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[0])), a_Record.value(a_IndicesLM[0]).toDateTime());
+		res.m_Author = datedOptionalFromFields<QString>(a_Record, a_Indices[0], a_IndicesLM[0]);
 	}
 	if (a_Indices[1] >= 0)
 	{
-		res.m_Title = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[1])), a_Record.value(a_IndicesLM[1]).toDateTime());
+		res.m_Title = datedOptionalFromFields<QString>(a_Record, a_Indices[1], a_IndicesLM[1]);
 	}
 	if (a_Indices[2] >= 0)
 	{
-		res.m_Genre = DatedOptional<QString>(fieldValue(a_Record.field(a_Indices[2])), a_Record.value(a_IndicesLM[2]).toDateTime());
+		res.m_Genre = datedOptionalFromFields<QString>(a_Record, a_Indices[2], a_IndicesLM[2]);
 	}
 	if (a_Indices[3] >= 0)
 	{
-		res.m_MeasuresPerMinute = DatedOptional<double>(fieldValue(a_Record.field(a_Indices[3])), a_Record.value(a_IndicesLM[3]).toDateTime());
+		res.m_MeasuresPerMinute = datedOptionalFromFields<double>(a_Record, a_Indices[3], a_IndicesLM[3]);
 	}
 	return res;
 }
@@ -532,10 +549,17 @@ void Database::loadSongSharedData()
 		assert(!"DB error");
 		return;
 	}
-	auto fiHash       = query.record().indexOf("Hash");
-	auto fiLength     = query.record().indexOf("Length");
-	auto fiLastPlayed = query.record().indexOf("LastPlayed");
-	auto fiRating     = query.record().indexOf("Rating");
+	auto fiHash                    = query.record().indexOf("Hash");
+	auto fiLength                  = query.record().indexOf("Length");
+	auto fiLastPlayed              = query.record().indexOf("LastPlayed");
+	auto fiLocalRating             = query.record().indexOf("LocalRating");
+	auto fiLocalRatingLM           = query.record().indexOf("LocalRatingLM");
+	auto fiRatingRhythmClarity     = query.record().indexOf("RatingRhythmClarity");
+	auto fiRatingRhythmClarityLM   = query.record().indexOf("RatingRhythmClarityLM");
+	auto fiRatingGenreTypicality   = query.record().indexOf("RatingGenreTypicality");
+	auto fiRatingGenreTypicalityLM = query.record().indexOf("RatingGenreTypicalityLM");
+	auto fiRatingPopularity        = query.record().indexOf("RatingPopularity");
+	auto fiRatingPopularityLM      = query.record().indexOf("RatingPopularityLM");
 
 	// Load each record:
 	while (query.next())
@@ -546,7 +570,12 @@ void Database::loadSongSharedData()
 			hash,
 			fieldValue(rec.field(fiLength)),
 			fieldValue(rec.field(fiLastPlayed)),
-			fieldValue(rec.field(fiRating))
+			Song::Rating({
+				datedOptionalFromFields<double>(rec, fiRatingRhythmClarity,   fiRatingRhythmClarityLM),
+				datedOptionalFromFields<double>(rec, fiRatingGenreTypicality, fiRatingGenreTypicalityLM),
+				datedOptionalFromFields<double>(rec, fiRatingPopularity,      fiRatingPopularityLM),
+				datedOptionalFromFields<double>(rec, fiLocalRating,           fiLocalRatingLM)
+			})
 		);
 		m_SongSharedData[hash] = data;
 	}
@@ -1019,7 +1048,11 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 {
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE SongSharedData SET "
-		"Length = ?, LastPlayed = ?, Rating = ? "
+		"Length = ?, LastPlayed = ?,"
+		"LocalRating = ?, LocalRatingLM = ?,"
+		"RatingRhythmClarity = ?,   RatingRhythmClarityLM = ?, "
+		"RatingGenreTypicality = ?, RatingGenreTypicalityLM = ?, "
+		"RatingPopularity = ?,      RatingPopularityLM = ? "
 		"WHERE Hash = ?")
 	)
 	{
@@ -1029,7 +1062,14 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 	}
 	query.addBindValue(a_SharedData->m_Length);
 	query.addBindValue(a_SharedData->m_LastPlayed);
-	query.addBindValue(a_SharedData->m_Rating);
+	query.addBindValue(a_SharedData->m_Rating.m_Local.toVariant());
+	query.addBindValue(a_SharedData->m_Rating.m_Local.lastModification());
+	query.addBindValue(a_SharedData->m_Rating.m_RhythmClarity.toVariant());
+	query.addBindValue(a_SharedData->m_Rating.m_RhythmClarity.lastModification());
+	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.toVariant());
+	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.lastModification());
+	query.addBindValue(a_SharedData->m_Rating.m_Popularity.toVariant());
+	query.addBindValue(a_SharedData->m_Rating.m_Popularity.lastModification());
 	query.addBindValue(a_SharedData->m_Hash);
 	if (!query.exec())
 	{

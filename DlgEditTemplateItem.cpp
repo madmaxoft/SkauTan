@@ -29,7 +29,6 @@ static Template::Filter::SongProperty g_SongProperties[] =
 	Template::Filter::fspGenre,
 	Template::Filter::fspLength,
 	Template::Filter::fspMeasuresPerMinute,
-	Template::Filter::fspRating,
 	Template::Filter::fspLastPlayed,
 	Template::Filter::fspManualAuthor,
 	Template::Filter::fspManualTitle,
@@ -48,6 +47,10 @@ static Template::Filter::SongProperty g_SongProperties[] =
 	Template::Filter::fspPrimaryGenre,
 	Template::Filter::fspPrimaryMeasuresPerMinute,
 	Template::Filter::fspWarningCount,
+	Template::Filter::fspLocalRating,
+	Template::Filter::fspRatingRhythmClarity,
+	Template::Filter::fspRatingGenreTypicality,
+	Template::Filter::fspRatingPopularity,
 };
 
 static Template::Filter::Comparison g_Comparisons[] =

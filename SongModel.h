@@ -34,6 +34,7 @@ public:
 	/** Symbolic names for the individual columns. */
 	enum EColumn
 	{
+		colLocalRating,
 		colRating,
 		colManualAuthor,
 		colManualTitle,

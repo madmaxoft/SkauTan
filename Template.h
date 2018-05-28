@@ -83,7 +83,7 @@ public:
 			fspGenre                     = 2,  // ANY genre tag
 			fspLength                    = 3,
 			fspMeasuresPerMinute         = 4,  // ANY mpm tag
-			fspRating                    = 5,
+			fspLocalRating               = 5,
 			fspLastPlayed                = 6,
 			fspManualAuthor              = 7,
 			fspManualTitle               = 8,
@@ -102,6 +102,9 @@ public:
 			fspPrimaryGenre              = 21,  // The first of Manual-, Id3-, FileName-Genre that is non-null
 			fspPrimaryMeasuresPerMinute  = 22,  // The first of Manual-, Id3-, FileName-MPM that is non-null
 			fspWarningCount              = 23,
+			fspRatingRhythmClarity       = 24,
+			fspRatingGenreTypicality     = 25,
+			fspRatingPopularity          = 26,
 		};
 
 
