@@ -222,7 +222,7 @@ void DlgTemplatesList::importTemplatesFrom(const QString & a_FileName)
 		QMessageBox::warning(
 			this,
 			tr("SkauTan: Import templates"),
-			tr("There are not SkauTan templates in \"%1\".").arg(a_FileName)
+			tr("There are no SkauTan templates in \"%1\".").arg(a_FileName)
 		);
 		return;
 	}
