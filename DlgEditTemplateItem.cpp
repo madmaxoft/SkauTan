@@ -133,14 +133,8 @@ protected:
 			return false;
 		}
 
-		auto sm = dynamic_cast<SongModel *>(sourceModel());
-		if (sm == nullptr)
-		{
-			qWarning() << ": Expected a SongModel source";
-			assert(!"Unexpected source model type");
-			return true;
-		}
-		auto song = sm->songFromRow(a_SourceRow);
+		auto idx = sourceModel()->index(a_SourceRow, 0, a_SourceParent);
+		auto song = sourceModel()->data(idx, SongModel::roleSongPtr).value<SongPtr>();
 		if (song == nullptr)
 		{
 			qWarning() << ": Underlying model returned nullptr song for row " << a_SourceRow;

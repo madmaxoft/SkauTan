@@ -219,6 +219,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 	const auto & song = songFromRow(a_Index.row());
 	switch (a_Role)
 	{
+		case roleSongPtr: return QVariant::fromValue(song);
 		case Qt::DisplayRole:
 		case Qt::EditRole:
 		{

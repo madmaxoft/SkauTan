@@ -56,6 +56,10 @@ public:
 		colMax,
 	};
 
+	/** The data role that returns the song pointer for the specified QModelIndex, when queried by data().
+	Used by filter models to get back to the song represented by the row. */
+	static const int roleSongPtr = Qt::UserRole + 1;
+
 
 	SongModel(Database & a_DB);
 
