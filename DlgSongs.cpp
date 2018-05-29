@@ -4,6 +4,9 @@
 #include <QProcessEnvironment>
 #include <QMessageBox>
 #include <QComboBox>
+#include <QMenu>
+#include <QFile>
+#include <QInputDialog>
 #include "ui_DlgSongs.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -11,6 +14,7 @@
 #include "Stopwatch.h"
 #include "HashCalculator.h"
 #include "Settings.h"
+#include "DlgSongProperties.h"
 
 
 
@@ -64,19 +68,21 @@ DlgSongs::DlgSongs(
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Connect the signals:
-	connect(m_UI->btnAddFile,        &QPushButton::clicked,    this, &DlgSongs::chooseAddFile);
-	connect(m_UI->btnAddFolder,      &QPushButton::clicked,    this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnRemove,         &QPushButton::clicked,    this, &DlgSongs::removeSelected);
-	connect(m_UI->btnClose,          &QPushButton::clicked,    this, &DlgSongs::close);
-	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,    this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,    this, &DlgSongs::rescanMetadata);
-	connect(&m_SongModel,            &SongModel::songEdited,   this, &DlgSongs::modelSongEdited);
-	connect(&m_SongModel,            &SongModel::rowsInserted, this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                   &Database::songFileAdded, this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                   &Database::songRemoved,   this, &DlgSongs::updateSongStats);
-	connect(&m_PeriodicUiUpdate,     &QTimer::timeout,         this, &DlgSongs::periodicUiUpdate);
+	connect(m_UI->btnAddFile,        &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
+	connect(m_UI->btnAddFolder,      &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnRemove,         &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
+	connect(m_UI->btnClose,          &QPushButton::clicked,                   this, &DlgSongs::close);
+	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,                   this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
+	connect(&m_SongModel,            &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
+	connect(&m_SongModel,            &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                   &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                   &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
+	connect(&m_PeriodicUiUpdate,     &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
+	connect(m_UI->tblSongs,          &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
 
 	initFilterSearch();
+	createContextMenu();
 
 	Settings::loadHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
 
@@ -202,6 +208,36 @@ void DlgSongs::initFilterSearch()
 
 
 
+void DlgSongs::createContextMenu()
+{
+	// Create the context menu:
+	m_ContextMenu.reset(new QMenu());
+	m_ContextMenu->addAction(m_UI->actAddToPlaylist);
+	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actRemoveFromLibrary);
+	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
+	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actRate);
+	m_ContextMenu->addAction(QString("* * * * *"), [this](){ rateSelectedSongs(5); });
+	m_ContextMenu->addAction(QString("* * * *"),   [this](){ rateSelectedSongs(4); });
+	m_ContextMenu->addAction(QString("* * *"),     [this](){ rateSelectedSongs(3); });
+	m_ContextMenu->addAction(QString("* *"),       [this](){ rateSelectedSongs(2); });
+	m_ContextMenu->addAction(QString("*"),         [this](){ rateSelectedSongs(1); });
+	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actProperties);
+
+	// Connect the actions:
+	connect(m_UI->actAddToPlaylist,     &QAction::triggered, this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->actDeleteFromDisk,    &QAction::triggered, this, &DlgSongs::deleteFromDisk);
+	connect(m_UI->actProperties,        &QAction::triggered, this, &DlgSongs::showProperties);
+	connect(m_UI->actRate,              &QAction::triggered, this, &DlgSongs::rateSelected);
+	connect(m_UI->actRemoveFromLibrary, &QAction::triggered, this, &DlgSongs::removeSelected);
+}
+
+
+
+
+
 SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
 {
 	return m_SongModel.songFromIndex(
@@ -209,6 +245,26 @@ SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
 			m_FilterModel->mapToSource(a_Index)
 		)
 	);
+}
+
+
+
+
+
+void DlgSongs::rateSelectedSongs(double a_Rating)
+{
+	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	{
+		auto song = songFromIndex(idx);
+		if (song == nullptr)
+		{
+			qWarning() << "Got a nullptr song from index " << idx;
+			continue;
+		}
+		song->setLocalRating(a_Rating);
+		emit m_SongModel.songEdited(song);
+		m_DB.saveSong(song);
+	}
 }
 
 
@@ -268,7 +324,11 @@ void DlgSongs::removeSelected()
 	if (QMessageBox::question(
 		this,
 		tr("SkauTan: Remove songs?"),
-		tr("Are you sure you want to remove the selected songs? This operation cannot be undone!"),
+		tr(
+			"Are you sure you want to remove the selected songs from the library? The song files will stay "
+			"on the disk, but all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
 		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
 	) == QMessageBox::No)
 	{
@@ -279,6 +339,46 @@ void DlgSongs::removeSelected()
 	for (const auto & song: songs)
 	{
 		m_DB.delSong(*song);
+	}
+}
+
+
+
+
+
+void DlgSongs::deleteFromDisk()
+{
+	// Collect the songs to remove:
+	std::vector<SongPtr> songs;
+	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	{
+		songs.push_back(songFromIndex(idx));
+	}
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Remove songs?"),
+		tr(
+			"Are you sure you want to delete the selected songs from the disk?"
+			"The files will be deleted and all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB and delete files from disk:
+	for (const auto & song: songs)
+	{
+		m_DB.delSong(*song);
+		QFile::remove(song->fileName());
 	}
 }
 
@@ -387,4 +487,74 @@ void DlgSongs::searchTextEdited(const QString & a_NewText)
 {
 	m_NewSearchText = a_NewText;
 	m_TicksUntilSetSearchText = TICKS_UNTIL_SET_SEARCH_TEXT;
+}
+
+
+
+
+
+void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
+{
+	// Update the actions based on the selection:
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	m_UI->actAddToPlaylist->setEnabled(!sel.isEmpty());
+	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
+	m_UI->actProperties->setEnabled(sel.count() == 1);
+	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
+
+	// Show the context menu:
+	auto widget = dynamic_cast<QWidget *>(sender());
+	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
+	m_ContextMenu->exec(pos, nullptr);
+}
+
+
+
+
+
+void DlgSongs::showProperties()
+{
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	if (sel.isEmpty())
+	{
+		return;
+	}
+	auto song = songFromIndex(sel[0]);
+	DlgSongProperties dlg(m_DB, song, this);
+	dlg.exec();
+}
+
+
+
+
+
+void DlgSongs::rateSelected()
+{
+	bool isOK;
+	auto rating = QInputDialog::getDouble(
+		this,
+		tr("SkauTan: Rate songs"),
+		tr("Rating:"),
+		5, 0, 5,
+		1, &isOK
+	);
+	if (!isOK)
+	{
+		return;
+	}
+
+	// Apply the rating:
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	for (const auto & idx: sel)
+	{
+		auto song = songFromIndex(idx);
+		if (song == nullptr)
+		{
+			qWarning() << "Received a nullptr song from index " << idx;
+			continue;
+		}
+		song->setLocalRating(rating);
+		emit m_SongModel.songEdited(song);
+		m_DB.saveSong(song);
+	}
 }

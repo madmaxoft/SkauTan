@@ -20,6 +20,7 @@ class Song;
 class Database;
 class MetadataScanner;
 class HashCalculator;
+class QMenu;
 namespace Ui
 {
 	class DlgSongs;
@@ -110,6 +111,9 @@ private:
 	is the search text applied. */
 	int m_TicksUntilSetSearchText;
 
+	/** The context menu to display for rclk in tblSongs. */
+	std::unique_ptr<QMenu> m_ContextMenu;
+
 
 	/** Updates the UI related to song stats (count, filter) */
 	void updateSongStats();
@@ -117,9 +121,15 @@ private:
 	/** Adds the filter items into the cbFilter UI, and sets up connections for the search and filter. */
 	void initFilterSearch();
 
+	/** Creates the m_ContextMenu. */
+	void createContextMenu();
+
 	/** Returns the song represented by the specified index in tblSongs.
 	Translates the index through m_FilterModel and m_SongModelFilter. */
 	SongPtr songFromIndex(const QModelIndex & a_Index);
+
+	/** Sets the selected songs' local rating to the specified value. */
+	void rateSelectedSongs(double a_Rating);
 
 
 private slots:
@@ -132,6 +142,10 @@ private slots:
 
 	/** After confirmation, removes the selected songs from the DB. */
 	void removeSelected();
+
+	/** After confirmation, deletes the selected songs' files from the disk
+	(as well as the songs from the DB). */
+	void deleteFromDisk();
 
 	/** Adds the selected songs into the playlist.
 	Emits the addSongToPlaylist() signal for each selected song. */
@@ -153,6 +167,16 @@ private slots:
 	/** The user has edited the search text in leSearch.
 	Applies the search text to m_SongModelFilter. */
 	void searchTextEdited(const QString & a_NewText);
+
+	/** Shows the tblSongs context menu at the specified position. */
+	void showSongsContextMenu(const QPoint & a_Pos);
+
+	/** Shows the DlgSongProperties for the (first) selected song. */
+	void showProperties();
+
+	/** Asks for a (local) rating, then assigns it to all selected songs. */
+	void rateSelected();
+
 
 signals:
 

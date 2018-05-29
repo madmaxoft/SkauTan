@@ -37,6 +37,9 @@
    </item>
    <item>
     <widget class="QTableView" name="tblSongs">
+     <property name="contextMenuPolicy">
+      <enum>Qt::CustomContextMenu</enum>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOn</enum>
      </property>
@@ -218,6 +221,55 @@
     </layout>
    </item>
   </layout>
+  <action name="actRemoveFromLibrary">
+   <property name="text">
+    <string>&amp;Remove from library...</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the songs from the library, but keep the files on the disk</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actDeleteFromDisk">
+   <property name="text">
+    <string>&amp;Delete from disk...</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete the songs from both the library and the disk</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Del</string>
+   </property>
+  </action>
+  <action name="actAddToPlaylist">
+   <property name="text">
+    <string>Add to playlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Add selected songs to playlist</string>
+   </property>
+  </action>
+  <action name="actProperties">
+   <property name="text">
+    <string>Properties</string>
+   </property>
+   <property name="toolTip">
+    <string>Show song details in a dedicated dialog</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="actRate">
+   <property name="text">
+    <string>Rate:</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the songs' local rating</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
