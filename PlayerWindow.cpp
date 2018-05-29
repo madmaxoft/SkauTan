@@ -433,11 +433,11 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	contextMenu.addAction(m_UI->actDeleteFromDisk);
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRate);
-	contextMenu.addAction(QString("* * * * *"), [this](){ rateSelectedSongs(5); });
-	contextMenu.addAction(QString("* * * *"),   [this](){ rateSelectedSongs(4); });
-	contextMenu.addAction(QString("* * *"),     [this](){ rateSelectedSongs(3); });
-	contextMenu.addAction(QString("* *"),       [this](){ rateSelectedSongs(2); });
-	contextMenu.addAction(QString("*"),         [this](){ rateSelectedSongs(1); });
+	connect(contextMenu.addAction(QString("* * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(contextMenu.addAction(QString("* * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(contextMenu.addAction(QString("* * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(contextMenu.addAction(QString("* *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(contextMenu.addAction(QString("*")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actSongProperties);
 

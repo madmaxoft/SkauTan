@@ -218,11 +218,11 @@ void DlgSongs::createContextMenu()
 	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actRate);
-	m_ContextMenu->addAction(QString("* * * * *"), [this](){ rateSelectedSongs(5); });
-	m_ContextMenu->addAction(QString("* * * *"),   [this](){ rateSelectedSongs(4); });
-	m_ContextMenu->addAction(QString("* * *"),     [this](){ rateSelectedSongs(3); });
-	m_ContextMenu->addAction(QString("* *"),       [this](){ rateSelectedSongs(2); });
-	m_ContextMenu->addAction(QString("*"),         [this](){ rateSelectedSongs(1); });
+	connect(m_ContextMenu->addAction(QString("* * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(m_ContextMenu->addAction(QString("* * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(m_ContextMenu->addAction(QString("* * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(m_ContextMenu->addAction(QString("* *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(m_ContextMenu->addAction(QString("*")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actProperties);
 
