@@ -59,7 +59,7 @@ protected:
 		if (fr.isNull())
 		{
 			// File format not recognized
-			qDebug() << ": Unable to parse file.";
+			qDebug() << ": Unable to parse file " << a_FileName;
 			return;
 		}
 
@@ -71,14 +71,14 @@ protected:
 		}
 		else
 		{
-			qDebug() << ": AudioProperties not found.";
+			qDebug() << ": AudioProperties not found in " << a_FileName;
 		}
 
 		// Set the author / title:
 		auto tag = fr.tag();
 		if (tag == nullptr)
 		{
-			qDebug() << ": No TagLib-extractable information found";
+			qDebug() << ": No TagLib-extractable information found in " << a_FileName;
 			return;
 		}
 		Song::Tag songTag;
