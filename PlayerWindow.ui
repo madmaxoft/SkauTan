@@ -350,6 +350,58 @@
    <property name="text">
     <string>Song properties...</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
+   </property>
+  </action>
+  <action name="actPlay">
+   <property name="text">
+    <string>&amp;Play</string>
+   </property>
+   <property name="toolTip">
+    <string>Play the selected song</string>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+  </action>
+  <action name="actRate">
+   <property name="text">
+    <string>Rate:</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the songs' local rating</string>
+   </property>
+  </action>
+  <action name="actRemoveFromLibrary">
+   <property name="text">
+    <string>&amp;Remove from library...</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the songs from the library, but keep the files on the disk</string>
+   </property>
+  </action>
+  <action name="actDeleteFromDisk">
+   <property name="text">
+    <string>&amp;Delete from disk...</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete the songs from both the library and the disk</string>
+   </property>
+  </action>
+  <action name="actRemoveFromPlaylist">
+   <property name="text">
+    <string>R&amp;emove from playlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the selected items from the playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

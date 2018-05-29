@@ -86,10 +86,11 @@ int main(int argc, char *argv[])
 		Player player;
 
 		// Connect the main objects together:
-		app.connect(&mainDB,   &Database::needSongHash,             &hashCalc, &HashCalculator::queueHashSong);
-		app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,  &Database::songHashCalculated);
-		app.connect(&mainDB,   &Database::needSongTagRescan,        &scanner, &MetadataScanner::queueScanSong);
-		app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,  &Database::songScanned);
+		app.connect(&mainDB,   &Database::needSongHash,             &hashCalc,          &HashCalculator::queueHashSong);
+		app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,            &Database::songHashCalculated);
+		app.connect(&mainDB,   &Database::needSongTagRescan,        &scanner,           &MetadataScanner::queueScanSong);
+		app.connect(&mainDB,   &Database::songRemoved,              &player.playlist(), &Playlist::removeSong);
+		app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,            &Database::songScanned);
 		app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
 				// Update the "last played" value in the DB:

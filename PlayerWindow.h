@@ -27,6 +27,7 @@ namespace Ui
 {
 	class PlayerWindow;
 }
+using SongPtr = std::shared_ptr<Song>;
 
 
 
@@ -89,6 +90,12 @@ private:
 	/** The queue length in the LibraryRescan UI on the last update.
 	Used for detecting whether to change the UI. */
 	int m_LastLibraryRescanQueue;
+
+	/** Sets the local rating for the selected songs. */
+	void rateSelectedSongs(double a_LocalRating);
+
+	/** Returns all songs that are selected in the playlist, in the playlist's order. */
+	std::vector<SongPtr> selectedPlaylistSongs() const;
 
 
 private slots:
@@ -161,6 +168,20 @@ private slots:
 
 	/** The user wants to see the properties of the selected playlist item. */
 	void showSongProperties();
+
+	/** Deletes the files of the selected songs; removes from library and playlist. */
+	void deleteSongsFromDisk();
+
+	/** Removes the selected songs from the library; removes from playlist. */
+	void removeSongsFromLibrary();
+
+	/** Removes the selected songs from the playlist. */
+	void removeSongsFromPlaylist();
+
+	/** Jumps to the first selected playlist item and starts playing it.
+	If the item is already playing, ignored.
+	If another item is already playing, fades it out first. */
+	void jumpToAndPlay();
 };
 
 

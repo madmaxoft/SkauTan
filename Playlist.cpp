@@ -107,6 +107,20 @@ void Playlist::deleteItem(int a_Index)
 
 
 
+void Playlist::deleteItems(std::vector<int> && a_Indices)
+{
+	std::vector<int> sortedIndices(std::move(a_Indices));
+	std::sort(sortedIndices.begin(), sortedIndices.end(), std::greater<int>());
+	for (const auto idx: sortedIndices)
+	{
+		deleteItem(idx);
+	}
+}
+
+
+
+
+
 IPlaylistItemPtr Playlist::currentItem() const
 {
 	if ((m_CurrentItemIdx < 0) || m_Items.empty())
@@ -307,4 +321,31 @@ int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
 		return std::numeric_limits<int>::max();
 	}
 	return static_cast<int>(res);
+}
+
+
+
+
+
+void Playlist::removeSong(SongPtr a_Song)
+{
+	int idx = 0;
+	for (auto itr = m_Items.begin(); itr != m_Items.end();)
+	{
+		auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(*itr);
+		if (plis == nullptr)
+		{
+			++itr;
+			++idx;
+			continue;
+		}
+		if (plis->song() != a_Song)
+		{
+			++itr;
+			++idx;
+			continue;
+		}
+		emit itemDeleting(itr->get(), idx);
+		itr = m_Items.erase(itr);
+	}
 }

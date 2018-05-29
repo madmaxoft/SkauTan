@@ -5,6 +5,7 @@
 
 
 
+#include <memory>
 #include <vector>
 #include <QObject>
 #include "IPlaylistItem.h"
@@ -16,6 +17,8 @@
 
 // fwd:
 class Database;
+class Song;
+using SongPtr = std::shared_ptr<Song>;
 
 
 
@@ -45,8 +48,15 @@ public:
 	Emits the appropriate signals. */
 	void deleteItem(int a_Index);
 
+	/** Reletes the items at the specified indices.
+	Emits the appropriate signals. */
+	void deleteItems(std::vector<int> && a_Indices);
+
 	/** Returns the current item being played, or to be played when the playback is started. */
 	IPlaylistItemPtr currentItem() const;
+
+	/** Returns the current item's index in the playlist. */
+	int currentItemIndex() const { return m_CurrentItemIdx; }
 
 	/** Moves the current item to the next in the list.
 	Returns true if the current item changed, false if not (end of list / no items). */
@@ -99,6 +109,12 @@ signals:
 
 	/** Emitted after the index for the current item is changed. */
 	void currentItemChanged(int a_CurrentItemIdx);
+
+
+public slots:
+
+	/** Removes any playlist entries relevant to the specified song. */
+	void removeSong(SongPtr a_Song);
 };
 
 using PlaylistPtr = std::shared_ptr<Playlist>;

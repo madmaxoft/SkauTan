@@ -122,6 +122,9 @@ protected:
 	/** Measures the time since the playback for the current item was started. */
 	QElapsedTimer m_Elapsed;
 
+	/** The track that is currently playing. */
+	IPlaylistItemPtr m_CurrentTrack;
+
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
 	Must not be fading out already. */
@@ -174,6 +177,9 @@ public slots:
 	Fades the current track first, if playing.
 	Ignored if the index is invalid. */
 	void jumpTo(int a_ItemIdx);
+
+	/** If the specified track is currently playing, stops playback. */
+	void deletePlaylistItem(IPlaylistItem * a_Track);
 
 
 protected slots:

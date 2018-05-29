@@ -8,6 +8,7 @@
 
 
 
+
 class Player::OutputThread:
 	public QThread
 {
@@ -82,6 +83,8 @@ Player::Player(QObject * a_Parent):
 	}
 	m_OutputThread = std::make_unique<OutputThread>(*this, m_Format);
 	m_OutputThread->start(QThread::HighPriority);
+
+	connect(m_Playlist.get(), &Playlist::itemDeleting, this, &Player::deletePlaylistItem);
 }
 
 
@@ -436,6 +439,23 @@ void Player::jumpTo(int a_ItemIdx)
 
 
 
+void Player::deletePlaylistItem(IPlaylistItem * a_Item)
+{
+	if (m_State != psPlaying)
+	{
+		return;
+	}
+	if (m_CurrentTrack.get() == a_Item)
+	{
+		// Fade out and start playing the next track if any (the same track index!):
+		fadeOut(psFadeOutToTrack);
+	}
+}
+
+
+
+
+
 void Player::outputStateChanged(QAudio::State a_NewState)
 {
 	if (a_NewState == QAudio::IdleState)
@@ -450,6 +470,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				m_State = psStopped;
 				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
+				m_CurrentTrack.reset();
 				if (m_Playlist->nextItem())
 				{
 					start();
@@ -462,6 +483,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				m_State = psStopped;
 				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
+				m_CurrentTrack.reset();
 				return;
 			}
 			case psFadeOutToTrack:
@@ -470,6 +492,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				m_State = psStopped;
 				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
+				m_CurrentTrack.reset();
 				start();
 				return;
 			}
@@ -517,6 +540,7 @@ void Player::OutputThread::run()
 
 void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 {
+	m_Player.m_CurrentTrack = a_Track;
 	m_Player.m_PlaybackBuffer.reset(a_Track->startDecoding(m_Format));
 	if (m_Player.m_PlaybackBuffer == nullptr)
 	{

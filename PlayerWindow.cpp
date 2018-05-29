@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QShortcut>
 #include <QMenu>
+#include <QMessageBox>
+#include <QFile>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
 #include "DlgSongs.h"
@@ -61,23 +63,27 @@ PlayerWindow::PlayerWindow(
 	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
 
 	// Connect the signals:
-	connect(m_UI->btnQuickPlayer,     &QPushButton::clicked,      this, &PlayerWindow::showQuickPlayer);
-	connect(m_UI->btnSongs,           &QPushButton::clicked,      this, &PlayerWindow::showSongs);
-	connect(m_UI->btnTemplates,       &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
-	connect(m_UI->btnHistory,         &QPushButton::clicked,      this, &PlayerWindow::showHistory);
-	connect(m_UI->btnAddFromTemplate, &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
-	connect(m_scDel.get(),            &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
-	connect(m_UI->btnPrev,            &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
-	connect(m_UI->btnPlay,            &QPushButton::clicked,      this, &PlayerWindow::playPause);
-	connect(m_UI->btnNext,            &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
-	connect(m_UI->tblPlaylist,        &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
-	connect(m_UI->vsVolume,           &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,            &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
-	connect(m_UI->btnTempoReset,      &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
-	connect(m_UI->actBackgroundTasks, &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
-	connect(m_UI->actSongProperties,  &QAction::triggered,        this, &PlayerWindow::showSongProperties);
-	connect(&m_UpdateTimer,           &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
-	connect(m_UI->tblPlaylist,        &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
+	connect(m_UI->btnQuickPlayer,        &QPushButton::clicked,      this, &PlayerWindow::showQuickPlayer);
+	connect(m_UI->btnSongs,              &QPushButton::clicked,      this, &PlayerWindow::showSongs);
+	connect(m_UI->btnTemplates,          &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
+	connect(m_UI->btnHistory,            &QPushButton::clicked,      this, &PlayerWindow::showHistory);
+	connect(m_UI->btnAddFromTemplate,    &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
+	connect(m_scDel.get(),               &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->btnPrev,               &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,               &QPushButton::clicked,      this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,               &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
+	connect(m_UI->tblPlaylist,           &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
+	connect(m_UI->vsVolume,              &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,               &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,         &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
+	connect(m_UI->actBackgroundTasks,    &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
+	connect(m_UI->actSongProperties,     &QAction::triggered,        this, &PlayerWindow::showSongProperties);
+	connect(&m_UpdateTimer,              &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
+	connect(m_UI->actDeleteFromDisk,     &QAction::triggered,        this, &PlayerWindow::deleteSongsFromDisk);
+	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,        this, &PlayerWindow::removeSongsFromLibrary);
+	connect(m_UI->actRemoveFromPlaylist, &QAction::triggered,        this, &PlayerWindow::removeSongsFromPlaylist);
+	connect(m_UI->actPlay,               &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
+	connect(m_UI->tblPlaylist,           &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -112,6 +118,45 @@ PlayerWindow::PlayerWindow(
 PlayerWindow::~PlayerWindow()
 {
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
+}
+
+
+
+
+
+void PlayerWindow::rateSelectedSongs(double a_LocalRating)
+{
+	for (auto & song: selectedPlaylistSongs())
+	{
+		song->setLocalRating(a_LocalRating);
+		m_DB.saveSong(song);
+	}
+}
+
+
+
+
+
+std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
+{
+	std::vector<SongPtr> res;
+	res.reserve(static_cast<size_t>(m_UI->tblPlaylist->selectionModel()->selectedRows().count()));
+	for (const auto & idx: m_UI->tblPlaylist->selectionModel()->selectedRows())
+	{
+		auto pli = m_Player.playlist().items()[static_cast<size_t>(idx.row())];
+		if (pli == nullptr)
+		{
+			qWarning() << "Got a nullptr playlist item";
+			continue;
+		}
+		auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(pli);
+		if (plis == nullptr)
+		{
+			continue;
+		}
+		res.push_back(plis->song());
+	}
+	return res;
 }
 
 
@@ -380,14 +425,34 @@ void PlayerWindow::periodicUIUpdate()
 
 void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 {
-	QList<QAction *> actions =
-	{
-		m_UI->actSongProperties,
-	};
-	m_UI->actSongProperties->setEnabled(m_UI->tblPlaylist->selectionModel()->selectedRows().count() == 1);
+	// Build the context menu:
+	QMenu contextMenu;
+	contextMenu.addAction(m_UI->actPlay);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRemoveFromLibrary);
+	contextMenu.addAction(m_UI->actDeleteFromDisk);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRate);
+	contextMenu.addAction(QString("* * * * *"), [this](){ rateSelectedSongs(5); });
+	contextMenu.addAction(QString("* * * *"),   [this](){ rateSelectedSongs(4); });
+	contextMenu.addAction(QString("* * *"),     [this](){ rateSelectedSongs(3); });
+	contextMenu.addAction(QString("* *"),       [this](){ rateSelectedSongs(2); });
+	contextMenu.addAction(QString("*"),         [this](){ rateSelectedSongs(1); });
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actSongProperties);
+
+	// Update actions based on selection:
+	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
+	m_UI->actSongProperties->setEnabled(sel.count() == 1);
+	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
+	m_UI->actRemoveFromPlaylist->setEnabled(!sel.isEmpty());
+	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
+	m_UI->actPlay->setEnabled(sel.count() == 1);
+
+	// Display the menu:
 	auto widget = dynamic_cast<QWidget *>(sender());
 	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
-	QMenu::exec(actions, pos, nullptr, widget);
+	contextMenu.exec(pos, nullptr);
 }
 
 
@@ -408,4 +473,108 @@ void PlayerWindow::showSongProperties()
 	auto song = songItem->song();
 	DlgSongProperties dlg(m_DB, song, this);
 	dlg.exec();
+}
+
+
+
+
+
+void PlayerWindow::deleteSongsFromDisk()
+{
+	// Collect the songs to remove:
+	auto songs = selectedPlaylistSongs();
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Delete songs?"),
+		tr(
+			"Are you sure you want to delete the selected songs from the disk?"
+			"The files will be deleted and all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB, delete from disk:
+	for (const auto & song: songs)
+	{
+		m_DB.delSong(*song);
+		QFile::remove(song->fileName());
+	}
+}
+
+
+
+
+
+void PlayerWindow::removeSongsFromLibrary()
+{
+	// Collect the songs to remove:
+	auto songs = selectedPlaylistSongs();
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Remove songs?"),
+		tr(
+			"Are you sure you want to remove the selected songs from the library? The song files will stay "
+			"on the disk, but all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB:
+	for (const auto & song: songs)
+	{
+		m_DB.delSong(*song);
+	}
+}
+
+
+
+
+
+void PlayerWindow::removeSongsFromPlaylist()
+{
+	std::vector<int> rows;
+	for (const auto & idx: m_UI->tblPlaylist->selectionModel()->selectedRows())
+	{
+		rows.push_back(idx.row());
+	}
+	m_Player.playlist().deleteItems(std::move(rows));
+}
+
+
+
+
+
+void PlayerWindow::jumpToAndPlay()
+{
+	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
+	if (sel.isEmpty())
+	{
+		return;
+	}
+	if (m_Player.playlist().currentItemIndex() == sel[0].row())
+	{
+		// Already playing this track, bail out:
+		return;
+	}
+	m_Player.jumpTo(sel[0].row());
 }

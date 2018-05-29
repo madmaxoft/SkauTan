@@ -362,7 +362,7 @@ void DlgSongs::deleteFromDisk()
 	// Ask for confirmation:
 	if (QMessageBox::question(
 		this,
-		tr("SkauTan: Remove songs?"),
+		tr("SkauTan: Delete songs?"),
 		tr(
 			"Are you sure you want to delete the selected songs from the disk?"
 			"The files will be deleted and all properties set in the library will be lost.\n\n"
