@@ -51,6 +51,7 @@ public:
 		colFileNameGenre,
 		colFileNameMeasuresPerMinute,
 		colNumMatchingFilters,
+		colNumDuplicates,
 		colFileName,
 
 		colMax,
@@ -90,6 +91,10 @@ protected:
 
 	/** Returns the number of filters that the specified song matches. */
 	qulonglong numMatchingFilters(SongPtr a_Song) const;
+
+	/** Returns the number of duplicates of the specified song (through its SharedData).
+	If the song has no SharedData yet, returns 1. */
+	qulonglong numDuplicates(SongPtr a_Song) const;
 
 
 protected slots:

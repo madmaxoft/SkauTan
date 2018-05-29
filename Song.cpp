@@ -323,3 +323,13 @@ void Song::SharedData::delDuplicate(SongPtr a_Duplicate)
 		}
 	}
 }
+
+
+
+
+
+size_t Song::SharedData::duplicatesCount() const
+{
+	QMutexLocker lock(&m_Mtx);
+	return m_Duplicates.size();
+}

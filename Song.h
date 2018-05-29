@@ -66,7 +66,7 @@ public:
 		QVariant m_Length;
 		QVariant m_LastPlayed;
 		Rating m_Rating;
-		QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
+		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
 		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
 
 		SharedData(
@@ -89,6 +89,7 @@ public:
 
 		void addDuplicate(SongPtr a_Duplicate);
 		void delDuplicate(SongPtr a_Duplicate);
+		size_t duplicatesCount() const;
 	};
 
 	using SharedDataPtr = std::shared_ptr<SharedData>;
