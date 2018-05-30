@@ -81,7 +81,6 @@ SOURCES += \
 	DlgEditTemplateItem.cpp \
 	DlgPickTemplateFavoriteItem.cpp \
 	DlgPickTemplate.cpp \
-	DlgQuickPlayer.cpp \
 	RingBuffer.cpp \
 	AudioEffects.cpp \
 	Stopwatch.cpp \
@@ -116,7 +115,6 @@ HEADERS += \
 	DlgEditTemplateItem.h \
 	DlgPickTemplateFavoriteItem.h \
 	DlgPickTemplate.h \
-	DlgQuickPlayer.h \
 	RingBuffer.h \
 	AudioDataSource.h \
 	Stopwatch.h \
@@ -139,7 +137,6 @@ FORMS += \
 	DlgEditTemplateItem.ui \
 	DlgPickTemplateFavoriteItem.ui \
 	DlgPickTemplate.ui \
-	DlgQuickPlayer.ui \
 	DlgChooseImportTemplates.ui \
 	DlgBackgroundTaskList.ui \
 	DlgSongProperties.ui \

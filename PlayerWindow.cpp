@@ -13,7 +13,6 @@
 #include "PlaylistItemSong.h"
 #include "Player.h"
 #include "DlgPickTemplate.h"
-#include "DlgQuickPlayer.h"
 #include "DlgBackgroundTaskList.h"
 #include "PlaybackBuffer.h"
 #include "MetadataScanner.h"
@@ -63,7 +62,6 @@ PlayerWindow::PlayerWindow(
 	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
 
 	// Connect the signals:
-	connect(m_UI->btnQuickPlayer,        &QPushButton::clicked,      this, &PlayerWindow::showQuickPlayer);
 	connect(m_UI->btnSongs,              &QPushButton::clicked,      this, &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,          &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,            &QPushButton::clicked,      this, &PlayerWindow::showHistory);
@@ -83,6 +81,7 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,        this, &PlayerWindow::removeSongsFromLibrary);
 	connect(m_UI->actRemoveFromPlaylist, &QAction::triggered,        this, &PlayerWindow::removeSongsFromPlaylist);
 	connect(m_UI->actPlay,               &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
+	connect(m_UI->lwQuickPlayer,         &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
 	connect(m_UI->tblPlaylist,           &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
 	connect(m_UI->waveform,              &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
 
@@ -108,6 +107,8 @@ PlayerWindow::PlayerWindow(
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addSeparator();
 	m_UI->btnTools->setMenu(menu);
+
+	refreshQuickPlayer();
 
 	m_UpdateTimer.start(200);
 }
@@ -164,12 +165,16 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 
 
 
-void PlayerWindow::showQuickPlayer()
+void PlayerWindow::refreshQuickPlayer()
 {
-	DlgQuickPlayer dlg(m_DB, m_Player);
-	connect(&dlg, &DlgQuickPlayer::addAndPlayItem, this,      &PlayerWindow::addAndPlayTemplateItem);
-	connect(&dlg, &DlgQuickPlayer::pause,          &m_Player, &Player::pause);
-	dlg.exec();
+	m_UI->lwQuickPlayer->clear();
+	auto favorites = m_DB.getFavoriteTemplateItems();
+	for (const auto & fav: favorites)
+	{
+		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlayer);
+		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(fav.get()));
+		item->setBackgroundColor(fav->bgColor());
+	}
 }
 
 
@@ -196,6 +201,8 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 
 	DlgTemplatesList dlg(m_DB, m_MetadataScanner, m_HashCalculator, this);
 	dlg.exec();
+
+	refreshQuickPlayer();
 }
 
 
@@ -319,22 +326,6 @@ void PlayerWindow::addFromTemplate()
 		return;
 	}
 	m_Player.playlist().addFromTemplate(m_DB, *tmpl);
-}
-
-
-
-
-
-void PlayerWindow::addAndPlayTemplateItem(Template::Item * a_Item)
-{
-	if (!m_Player.playlist().addFromTemplateItem(m_DB, *a_Item))
-	{
-		qDebug() << ": Failed to add a template item to playlist.";
-		return;
-	}
-	m_Player.pause();
-	m_Player.playlist().setCurrentItem(static_cast<int>(m_Player.playlist().items().size() - 1));
-	m_Player.start();
 }
 
 
@@ -578,4 +569,28 @@ void PlayerWindow::jumpToAndPlay()
 		return;
 	}
 	m_Player.jumpTo(sel[0].row());
+}
+
+
+
+
+
+void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
+{
+	auto item = reinterpret_cast<Template::Item *>(a_Item->data(Qt::UserRole).toULongLong());
+	if (item == nullptr)
+	{
+		return;
+	}
+	if (!m_Player.playlist().addFromTemplateItem(m_DB, *item))
+	{
+		qDebug() << ": Failed to add a template item to playlist.";
+		return;
+	}
+	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
+	{
+		m_Player.pause();
+		m_Player.playlist().setCurrentItem(static_cast<int>(m_Player.playlist().items().size() - 1));
+		m_Player.start();
+	}
 }

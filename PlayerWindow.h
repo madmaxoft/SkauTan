@@ -18,6 +18,7 @@
 
 // fwd:
 class QShortcut;
+class QListWidgetItem;
 class Player;
 class Song;
 class Database;
@@ -97,11 +98,11 @@ private:
 	/** Returns all songs that are selected in the playlist, in the playlist's order. */
 	std::vector<SongPtr> selectedPlaylistSongs() const;
 
+	/** Refreshes the items in lwQuickPlayer to match the favorite template items in the DB. */
+	void refreshQuickPlayer();
+
 
 private slots:
-
-	/** Shows the QuickPlayer dialog. */
-	void showQuickPlayer();
 
 	/** Shows the Songs dialog.
 	Signature must match QPushButton::clicked(). */
@@ -146,9 +147,6 @@ private slots:
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();
 
-	/** The QuickPlay dialog wants us to enqueue and play this item. */
-	void addAndPlayTemplateItem(Template::Item * a_Item);
-
 	/** Emitted by the global tempo slider; updates the playback tempo. */
 	void tempoValueChanged(int a_NewValue);
 
@@ -182,6 +180,9 @@ private slots:
 	If the item is already playing, ignored.
 	If another item is already playing, fades it out first. */
 	void jumpToAndPlay();
+
+	/** The user has clicked a QuickPlayer item, insert it into the playlist and maybe start playing. */
+	void quickPlayerItemClicked(QListWidgetItem * a_Item);
 };
 
 
