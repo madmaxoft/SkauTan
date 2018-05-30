@@ -8,6 +8,8 @@
 // fwd:
 class QHeaderView;
 class QSettings;
+class QWidget;
+class QSplitter;
 
 
 
@@ -15,13 +17,6 @@ class QSettings;
 
 #include <memory>
 #include <QString>
-
-
-
-
-
-// fwd:
-class QWidget;
 
 
 
@@ -46,6 +41,12 @@ public:
 
 	/** Restores a previously saved top level window's position and size. */
 	static void loadWindowPos(const char * a_WindowName, QWidget & a_Window);
+
+	/** Saves the splitter section sizes. */
+	static void saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter & a_Splitter);
+
+	/** Restores previously saves splitter section sizes. */
+	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter);
 
 
 protected:

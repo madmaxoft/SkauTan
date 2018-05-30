@@ -43,6 +43,7 @@ PlayerWindow::PlayerWindow(
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
 	m_UI->setupUi(this);
+	Settings::loadSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
@@ -60,6 +61,18 @@ PlayerWindow::PlayerWindow(
 	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("000:00"));
 	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("000:00"));
 	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
+
+	// Decorate the splitter handle with 3 sunken lines:
+	auto lay = new QVBoxLayout(m_UI->splitter->handle(1));
+	lay->setSpacing(0);
+	lay->setMargin(0);
+	for (int i = 0; i < 3; ++i)
+	{
+		auto frame = new QFrame(m_UI->splitter->handle(1));
+		frame->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+		frame->setLineWidth(1);
+		lay->addWidget(frame);
+	}
 
 	// Connect the signals:
 	connect(m_UI->btnSongs,              &QPushButton::clicked,      this, &PlayerWindow::showSongs);
@@ -120,6 +133,7 @@ PlayerWindow::PlayerWindow(
 PlayerWindow::~PlayerWindow()
 {
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
+	Settings::saveSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 }
 
 

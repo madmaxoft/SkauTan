@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <QSettings>
 #include <QHeaderView>
+#include <QSplitter>
 #include <QDebug>
 
 
@@ -9,6 +10,18 @@
 
 
 std::unique_ptr<QSettings> Settings::m_Settings;
+
+
+
+
+
+#define CHECK_VALID \
+	assert(m_Settings != nullptr); \
+	if (m_Settings == nullptr) \
+	{ \
+		qWarning() << "The Settings object has not been initialized."; \
+		return; \
+	} \
 
 
 
@@ -29,12 +42,7 @@ void Settings::saveHeaderView(
 	const QHeaderView & a_HeaderView
 )
 {
-	assert(m_Settings != nullptr);
-	if (m_Settings == nullptr)
-	{
-		qWarning() << "Cannot save header column widths, not initialized.";
-		return;
-	}
+	CHECK_VALID;
 
 	m_Settings->beginGroup(a_WindowName);
 		m_Settings->beginGroup(a_HeaderViewName);
@@ -61,12 +69,7 @@ void Settings::loadHeaderView(
 	QHeaderView & a_HeaderView
 )
 {
-	assert(m_Settings != nullptr);
-	if (m_Settings == nullptr)
-	{
-		qWarning() << "Cannot save header column widths, not initialized.";
-		return;
-	}
+	CHECK_VALID;
 
 	m_Settings->beginGroup(a_WindowName);
 		m_Settings->beginGroup(a_HeaderViewName);
@@ -93,12 +96,7 @@ void Settings::loadHeaderView(
 
 void Settings::saveWindowPos(const char * a_WindowName, const QWidget & a_Window)
 {
-	assert(m_Settings != nullptr);
-	if (m_Settings == nullptr)
-	{
-		qWarning() << "Cannot save window pos, not initialized.";
-		return;
-	}
+	CHECK_VALID;
 
 	m_Settings->beginGroup(a_WindowName);
 		m_Settings->setValue("pos", a_Window.pos());
@@ -113,15 +111,55 @@ void Settings::saveWindowPos(const char * a_WindowName, const QWidget & a_Window
 
 void Settings::loadWindowPos(const char * a_WindowName, QWidget & a_Window)
 {
-	assert(m_Settings != nullptr);
-	if (m_Settings == nullptr)
-	{
-		qWarning() << "Cannot save window pos, not initialized.";
-		return;
-	}
+	CHECK_VALID;
 
 	m_Settings->beginGroup(a_WindowName);
 		a_Window.resize(m_Settings->value("size", a_Window.size()).toSize());
 		a_Window.move(  m_Settings->value("pos",  a_Window.pos()).toPoint());
+	m_Settings->endGroup();
+}
+
+
+
+
+
+void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter & a_Splitter)
+{
+	CHECK_VALID;
+
+	m_Settings->beginGroup(a_WindowName);
+		m_Settings->beginGroup(a_SplitterName);
+			m_Settings->beginWriteArray("sectionSizes");
+				const auto & sizes = a_Splitter.sizes();
+				int numSections = sizes.count();
+				for (int i = 0; i < numSections; ++i)
+				{
+					m_Settings->setArrayIndex(i);
+					m_Settings->setValue("sectionSize", sizes[i]);
+				}
+			m_Settings->endArray();
+		m_Settings->endGroup();
+	m_Settings->endGroup();
+	m_Settings->sync();
+}
+
+
+
+
+
+void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter)
+{
+	m_Settings->beginGroup(a_WindowName);
+		m_Settings->beginGroup(a_SplitterName);
+			int numSections = m_Settings->beginReadArray("sectionSizes");
+				QList<int> sectionSizes;
+				for (int i = 0; i < numSections; ++i)
+				{
+					m_Settings->setArrayIndex(i);
+					sectionSizes.append(m_Settings->value("sectionSize").toInt());
+				}
+				a_Splitter.setSizes(sectionSizes);
+			m_Settings->endArray();
+		m_Settings->endGroup();
 	m_Settings->endGroup();
 }
