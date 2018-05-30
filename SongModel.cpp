@@ -794,7 +794,16 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 				}
 			}
 			break;
-		}
+		}  // case fltNoTemplateFilterMatch
+
+		case fltDuplicates:
+		{
+			if (song->duplicates().size() <= 1)
+			{
+				return false;  // Don't want duplicates
+			}
+			break;
+		}  // case fltDuplicates
 	}
 	return songMatchesSearchString(song);
 }

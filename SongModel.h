@@ -180,6 +180,7 @@ public:
 		fltNoMeasuresPerMinute,    //< Songs missing their MPM
 		fltWarnings,               //< Songs with warnings
 		fltNoTemplateFilterMatch,  //< Songs matching no Template filter
+		fltDuplicates,             //< Songs that have duplicates
 	};
 
 
