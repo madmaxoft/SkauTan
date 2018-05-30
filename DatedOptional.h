@@ -236,6 +236,12 @@ public:
 
 	const QDateTime & lastModification() const { return m_LastModification; }
 
+	/** Resets the DatedOptional to "empty" state. */
+	void reset()
+	{
+		m_IsPresent = false;
+	}
+
 
 protected:
 

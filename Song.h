@@ -68,17 +68,20 @@ public:
 		Rating m_Rating;
 		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
 		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
+		DatedOptional<double> m_SkipStart;  // Where to start playing
 
 		SharedData(
 			const QByteArray & a_Hash,
 			QVariant && a_Length,
 			QVariant && a_LastPlayed,
-			Rating && a_Rating
+			Rating && a_Rating,
+			DatedOptional<double> a_SkipStart
 		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
 			m_LastPlayed(std::move(a_LastPlayed)),
-			m_Rating(std::move(a_Rating))
+			m_Rating(std::move(a_Rating)),
+			m_SkipStart(std::move(a_SkipStart))
 		{
 		}
 
@@ -138,6 +141,7 @@ public:
 	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
 	const QVariant & lastPlayed() const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_LastPlayed; }
 	const Rating &   rating()     const { return (m_SharedData == nullptr) ? m_EmptyRating : m_SharedData->m_Rating; }
+	const DatedOptional<double> skipStart() const;
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;
@@ -188,8 +192,14 @@ public:
 	// Setters that move-preserve the date information:
 	void setNotes(DatedOptional<QString> && a_Notes) { m_Notes = std::move(a_Notes); }
 
-	// Sets the local rating, if SharedData is present; otherwise ignored. */
+	/** Sets the local rating, if SharedData is present; otherwise ignored. */
 	void setLocalRating(double a_Value);
+
+	/** Sets the skip start, if SharedData is present; otherwise ignored. */
+	void setSkipStart(double a_Seconds);
+
+	/** Removes the skip-start, if SharedData is present; otherwise ignored. */
+	void delSkipStart();
 
 	/** Returns true if a tag rescan is needed for the song
 	(the tags are empty and the scan hasn't been performed already). */

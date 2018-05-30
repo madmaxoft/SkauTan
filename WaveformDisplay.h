@@ -20,6 +20,8 @@
 class Player;
 class PlayerWidget;
 class QPainter;
+class Song;
+using SongPtr = std::shared_ptr<Song>;
 
 
 
@@ -59,6 +61,10 @@ protected:
 	May be nullptr. */
 	PlaybackBufferPtr m_PlaybackBuffer;
 
+	/** The song currently displayed.
+	If the current track is not a song, this member is set to nullptr. */
+	SongPtr m_CurrentSong;
+
 	/** The calculated waveform peaks. */
 	std::vector<short> m_Peaks;
 
@@ -77,15 +83,27 @@ protected:
 	/** Calculates the peaks for the current widget size and current PlaybackBuffer fill mark. */
 	void calculatePeaks();
 
+	/** Sets the song's skip-start to the time corresponding to the specified X position.
+	If the current track is not a song, ignored. */
+	void setSkipStart(int a_PosX);
+
+	/** Removes the song's skip-start.
+	If the current track is not a song, ignored. */
+	void delSkipStart();
+
 
 	// QWidget overrides:
 	virtual void paintEvent(QPaintEvent * a_Event) override;
 	virtual void resizeEvent(QResizeEvent * a_Event) override;
 	virtual QSize sizeHint() const override;
 	virtual void mouseReleaseEvent(QMouseEvent * a_Event) override;
+	virtual void contextMenuEvent(QContextMenuEvent * a_Event) override;
 
 
 signals:
+
+	/** Emitted after a song is changed as a result of user's operation within this widget. */
+	void songChanged(SongPtr a_Song);
 
 
 public slots:

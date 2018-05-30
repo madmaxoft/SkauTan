@@ -35,11 +35,12 @@ DlgQuickPlayer::DlgQuickPlayer(Database & a_DB, Player & a_Player):
 	}
 
 	// Connect the signals:
-	connect(m_UI->lwFavorites,     &QListWidget::itemClicked,     this, &DlgQuickPlayer::playClickedItem);
-	connect(m_UI->btnClose,        &QPushButton::clicked,         this, &DlgQuickPlayer::close);
-	connect(m_UI->btnPause,        &QPushButton::clicked,         this, &DlgQuickPlayer::pause);
-	connect(&a_Player.playlist(),  &Playlist::currentItemChanged, this, &DlgQuickPlayer::playlistCurrentItemChanged);
-	connect(m_UpdateUITimer.get(), &QTimer::timeout,              this, &DlgQuickPlayer::updateTimePos);
+	connect(m_UI->lwFavorites,     &QListWidget::itemClicked,     this,  &DlgQuickPlayer::playClickedItem);
+	connect(m_UI->btnClose,        &QPushButton::clicked,         this,  &DlgQuickPlayer::close);
+	connect(m_UI->btnPause,        &QPushButton::clicked,         this,  &DlgQuickPlayer::pause);
+	connect(&a_Player.playlist(),  &Playlist::currentItemChanged, this,  &DlgQuickPlayer::playlistCurrentItemChanged);
+	connect(m_UpdateUITimer.get(), &QTimer::timeout,              this,  &DlgQuickPlayer::updateTimePos);
+	connect(m_UI->waveform,        &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
 
 	// Update the UI every 200 msec:
 	m_UpdateUITimer->start(200);

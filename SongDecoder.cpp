@@ -14,6 +14,11 @@ SongDecoder::SongDecoder(const QAudioFormat & a_OutputFormat, SongPtr a_Song):
 	m_Termination(0)
 {
 	QtConcurrent::run(this, &SongDecoder::decode);
+	if (a_Song->skipStart().isPresent())
+	{
+		qDebug() << "Skip-start active: " << a_Song->skipStart().value();
+		seekToFrame(a_OutputFormat.framesForDuration(static_cast<qint64>(a_Song->skipStart().value() * 1000000)));
+	}
 }
 
 

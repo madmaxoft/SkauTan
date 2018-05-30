@@ -560,6 +560,8 @@ void Database::loadSongSharedData()
 	auto fiRatingGenreTypicalityLM = query.record().indexOf("RatingGenreTypicalityLM");
 	auto fiRatingPopularity        = query.record().indexOf("RatingPopularity");
 	auto fiRatingPopularityLM      = query.record().indexOf("RatingPopularityLM");
+	auto fiSkipStart               = query.record().indexOf("SkipStart");
+	auto fiSkipStartLM             = query.record().indexOf("SkipStartLM");
 
 	// Load each record:
 	while (query.next())
@@ -575,7 +577,8 @@ void Database::loadSongSharedData()
 				datedOptionalFromFields<double>(rec, fiRatingGenreTypicality, fiRatingGenreTypicalityLM),
 				datedOptionalFromFields<double>(rec, fiRatingPopularity,      fiRatingPopularityLM),
 				datedOptionalFromFields<double>(rec, fiLocalRating,           fiLocalRatingLM)
-			})
+			}),
+			datedOptionalFromFields<double>(rec, fiSkipStart, fiSkipStartLM)
 		);
 		m_SongSharedData[hash] = data;
 	}
@@ -1052,7 +1055,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		"LocalRating = ?, LocalRatingLM = ?,"
 		"RatingRhythmClarity = ?,   RatingRhythmClarityLM = ?, "
 		"RatingGenreTypicality = ?, RatingGenreTypicalityLM = ?, "
-		"RatingPopularity = ?,      RatingPopularityLM = ? "
+		"RatingPopularity = ?,      RatingPopularityLM = ?, "
+		"SkipStart = ?, SkipStartLM = ? "
 		"WHERE Hash = ?")
 	)
 	{
@@ -1070,6 +1074,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.lastModification());
 	query.addBindValue(a_SharedData->m_Rating.m_Popularity.toVariant());
 	query.addBindValue(a_SharedData->m_Rating.m_Popularity.lastModification());
+	query.addBindValue(a_SharedData->m_SkipStart.toVariant());
+	query.addBindValue(a_SharedData->m_SkipStart.lastModification());
 	query.addBindValue(a_SharedData->m_Hash);
 	if (!query.exec())
 	{

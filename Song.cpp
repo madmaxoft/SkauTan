@@ -117,6 +117,20 @@ const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 
 
 
+const DatedOptional<double> Song::skipStart() const
+{
+	static const DatedOptional<double> emptySkipStart;  // returned when the song has no SharedData
+	if (m_SharedData == nullptr)
+	{
+		return emptySkipStart;
+	}
+	return m_SharedData->m_SkipStart;
+}
+
+
+
+
+
 void Song::setLength(double a_Length)
 {
 	assert(m_SharedData != nullptr);
@@ -159,6 +173,30 @@ void Song::setLocalRating(double a_Value)
 	if (m_SharedData != nullptr)
 	{
 		m_SharedData->m_Rating.m_Local = a_Value;
+	}
+}
+
+
+
+
+
+void Song::setSkipStart(double a_Seconds)
+{
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->m_SkipStart = a_Seconds;
+	}
+}
+
+
+
+
+
+void Song::delSkipStart()
+{
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->m_SkipStart.reset();
 	}
 }
 

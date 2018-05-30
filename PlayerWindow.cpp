@@ -84,6 +84,7 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->actRemoveFromPlaylist, &QAction::triggered,        this, &PlayerWindow::removeSongsFromPlaylist);
 	connect(m_UI->actPlay,               &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
 	connect(m_UI->tblPlaylist,           &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
+	connect(m_UI->waveform,              &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());

@@ -71,6 +71,9 @@ public:
 	Sets the read position for the next read operation to read the specified frame. */
 	void seekToFrame(int a_Frame);
 
+	/** Returns the total duration of the stored audio data, in fractional seconds. */
+	double duration() const;
+
 
 protected:
 
@@ -109,6 +112,10 @@ private:
 
 	/** A flag that specifies that an error has occured while decoding. */
 	bool m_HasError;
+
+	/** Initial value of m_ReadPos, to be copied once the decoder provides the BufferLimit.
+	Used for seeking before the decoder provides any data (skip-start). */
+	size_t m_ReadPosInit;
 };
 
 using PlaybackBufferPtr = std::shared_ptr<PlaybackBuffer>;

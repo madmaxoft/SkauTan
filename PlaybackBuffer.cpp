@@ -12,7 +12,8 @@ PlaybackBuffer::PlaybackBuffer(const QAudioFormat & a_OutputFormat):
 	m_ReadPos(0),
 	m_BufferLimit(0),
 	m_ShouldAbort(false),
-	m_HasError(false)
+	m_HasError(false),
+	m_ReadPosInit(0)
 {
 }
 
@@ -38,7 +39,10 @@ bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 	auto numBytesToWrite = std::min(a_Len, numBytesLeft);
 	memcpy(m_AudioData.data() + static_cast<int>(m_WritePos), a_Data, numBytesToWrite);
 	m_WritePos += numBytesToWrite;
-	m_CVHasData.wakeAll();
+	if (m_WritePos > m_ReadPos)
+	{
+		m_CVHasData.wakeAll();
+	}
 	if (m_ShouldAbort.load())
 	{
 		return false;
@@ -56,6 +60,7 @@ void PlaybackBuffer::setDuration(double a_DurationSec)
 	assert(m_AudioData.empty());  // Can be called only once
 	m_BufferLimit = static_cast<size_t>(m_OutputFormat.bytesForDuration(static_cast<qint64>(a_DurationSec * 1000000)));
 	m_AudioData.resize(m_BufferLimit);
+	m_ReadPos = std::min(m_ReadPosInit, m_BufferLimit.load());
 }
 
 
@@ -65,7 +70,24 @@ void PlaybackBuffer::setDuration(double a_DurationSec)
 void PlaybackBuffer::seekToFrame(int a_Frame)
 {
 	assert(a_Frame >= 0);
+	QMutexLocker lock(&m_Mtx);
+	if (m_BufferLimit.load() == 0)
+	{
+		// The decoder hasn't provided any audiodata yet
+		// Instead of immediate seeking, store the new ReadPos so that it is set once the decoder kicks in:
+		m_ReadPosInit = static_cast<size_t>(a_Frame * m_OutputFormat.bytesPerFrame());
+		return;
+	}
 	m_ReadPos = std::min(static_cast<size_t>(a_Frame * m_OutputFormat.bytesPerFrame()), m_BufferLimit.load());
+}
+
+
+
+
+
+double PlaybackBuffer::duration() const
+{
+	return static_cast<double>(m_OutputFormat.durationForBytes(static_cast<qint32>(m_BufferLimit))) / 1000000;
 }
 
 

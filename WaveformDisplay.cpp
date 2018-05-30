@@ -1,7 +1,10 @@
 #include "WaveformDisplay.h"
 #include <QPainter>
 #include <QPaintEvent>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include "Player.h"
+#include "PlaylistItemSong.h"
 
 
 
@@ -70,9 +73,21 @@ void WaveformDisplay::paint(QPainter & a_Painter, const QPoint & a_Origin, int a
 	// Paint the player position:
 	auto pos = m_PlaybackBuffer->readPos();
 	auto total = m_PlaybackBuffer->bufferLimit();
-	a_Painter.setPen(QColor(0, 255, 0));
+	a_Painter.setPen(QColor(0, 192, 0));
 	int left = static_cast<int>(static_cast<size_t>(m_Width) * pos / total);
 	a_Painter.drawLine(left, 0, left, a_Height);
+
+	// Paint the skip-start:
+	if (m_CurrentSong != nullptr)
+	{
+		auto skipStart = m_CurrentSong->skipStart();
+		if (skipStart.isPresent())
+		{
+			auto left = static_cast<int>(m_Width * skipStart.value() / m_PlaybackBuffer->duration());
+			a_Painter.setPen(QColor(255, 0, 0));
+			a_Painter.drawLine(left, 0, left, a_Height);
+		}
+	}
 }
 
 
@@ -124,6 +139,45 @@ void WaveformDisplay::calculatePeaks()
 		m_Sums[i] = static_cast<int>(sum / static_cast<int>(toSample - fromSample + 1));
 		fromSample = toSample;
 	}
+}
+
+
+
+
+
+void WaveformDisplay::setSkipStart(int a_PosX)
+{
+	if (m_CurrentSong == nullptr)
+	{
+		qDebug() << "Not a song, ignoring.";
+		return;
+	}
+	bool isOK;
+	auto len = m_CurrentSong->length().toDouble(&isOK);
+	if (!isOK)
+	{
+		qDebug() << "Song doesn't have a valid length, ignoring.";
+		return;
+	}
+	m_CurrentSong->setSkipStart(a_PosX * len / width());
+	emit songChanged(m_CurrentSong);
+	update();
+}
+
+
+
+
+
+void WaveformDisplay::delSkipStart()
+{
+	if (m_CurrentSong == nullptr)
+	{
+		qDebug() << "Not a song, ignoring.";
+		return;
+	}
+	m_CurrentSong->delSkipStart();
+	emit songChanged(m_CurrentSong);
+	update();
 }
 
 
@@ -201,6 +255,23 @@ void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
 
 
 
+void WaveformDisplay::contextMenuEvent(QContextMenuEvent * a_Event)
+{
+	auto x = a_Event->x();
+	QMenu menu;
+	auto actSetSkipStart = menu.addAction(tr("Set skip-start here"));
+	auto actDelSkipStart = menu.addAction(tr("Remove skip-start"));
+	actSetSkipStart->setEnabled(m_CurrentSong != nullptr);
+	actDelSkipStart->setEnabled((m_CurrentSong != nullptr) && m_CurrentSong->skipStart().isPresent());
+	connect(actSetSkipStart, &QAction::triggered, [this, x]() { setSkipStart (x); });
+	connect(actDelSkipStart, &QAction::triggered, [this]() { delSkipStart(); });
+	menu.exec(a_Event->globalPos());
+}
+
+
+
+
+
 void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer)
 {
 	Q_UNUSED(a_Item);
@@ -208,6 +279,11 @@ void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBuf
 	m_PlaybackBuffer = a_PlaybackBuffer;
 	m_UpdateTimer.start(50);
 	m_IsPeakDataComplete = false;
+	auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(m_Player->currentTrack());
+	if (plis != nullptr)
+	{
+		m_CurrentSong = plis->song();
+	}
 }
 
 

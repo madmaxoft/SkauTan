@@ -257,6 +257,13 @@ static const std::vector<VersionScript> g_VersionScripts =
 
 		"DROP TABLE SongSharedData_Old",
 	}),  // Version 3 to Version 4
+
+	// Version 5 to Version 5:
+	// Add song skip-start to shared data (#69):
+	VersionScript({
+		"ALTER TABLE SongSharedData ADD COLUMN SkipStart NUMERIC",
+		"ALTER TABLE SongSharedData ADD COLUMN SkipStartLM DATETIME",
+	}),  // Version 4 to Version 5
 };
 
 
