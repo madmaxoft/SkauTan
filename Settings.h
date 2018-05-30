@@ -20,6 +20,13 @@ class QSettings;
 
 
 
+// fwd:
+class QWidget;
+
+
+
+
+
 /** Saves and restores various app settings to a common setting file. */
 class Settings
 {
@@ -33,6 +40,12 @@ public:
 
 	/** Restores previously saved QHeaderView's columns' widths. */
 	static void loadHeaderView(const char * a_WindowName, const char * a_HeaderViewName, QHeaderView & a_HeaderView);
+
+	/** Saves a top level window's position and size. */
+	static void saveWindowPos(const char * a_WindowName, const QWidget & a_Window);
+
+	/** Restores a previously saved top level window's position and size. */
+	static void loadWindowPos(const char * a_WindowName, QWidget & a_Window);
 
 
 protected:

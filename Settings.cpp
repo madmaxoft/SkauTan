@@ -86,3 +86,42 @@ void Settings::loadHeaderView(
 		m_Settings->endGroup();
 	m_Settings->endGroup();
 }
+
+
+
+
+
+void Settings::saveWindowPos(const char * a_WindowName, const QWidget & a_Window)
+{
+	assert(m_Settings != nullptr);
+	if (m_Settings == nullptr)
+	{
+		qWarning() << "Cannot save window pos, not initialized.";
+		return;
+	}
+
+	m_Settings->beginGroup(a_WindowName);
+		m_Settings->setValue("pos", a_Window.pos());
+		m_Settings->setValue("size", a_Window.size());
+	m_Settings->endGroup();
+	m_Settings->sync();
+}
+
+
+
+
+
+void Settings::loadWindowPos(const char * a_WindowName, QWidget & a_Window)
+{
+	assert(m_Settings != nullptr);
+	if (m_Settings == nullptr)
+	{
+		qWarning() << "Cannot save window pos, not initialized.";
+		return;
+	}
+
+	m_Settings->beginGroup(a_WindowName);
+		a_Window.resize(m_Settings->value("size", a_Window.size()).toSize());
+		a_Window.move(  m_Settings->value("pos",  a_Window.pos()).toPoint());
+	m_Settings->endGroup();
+}

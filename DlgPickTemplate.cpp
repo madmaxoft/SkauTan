@@ -15,6 +15,7 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 	m_UI(new Ui::DlgPickTemplate)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgPickTemplate", *this);
 
 	// Connect the signals:
 	connect(m_UI->tblTemplates, &QTableWidget::cellDoubleClicked, this, &DlgPickTemplate::cellDblClicked);
@@ -47,6 +48,7 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 DlgPickTemplate::~DlgPickTemplate()
 {
 	Settings::saveHeaderView("DlgPickTemplate", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::saveWindowPos("DlgPickTemplate", *this);
 }
 
 

@@ -13,6 +13,7 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 	m_UI(new Ui::DlgPickTemplateFavoriteItem)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgPickTemplateFavoriteItem", *this);
 
 	// Connect signals:
 	connect(m_UI->tblItems, &QTableWidget::cellDoubleClicked, this, &DlgPickTemplateFavoriteItem::itemDblClicked);
@@ -51,6 +52,7 @@ DlgPickTemplateFavoriteItem::DlgPickTemplateFavoriteItem(std::vector<Template::I
 DlgPickTemplateFavoriteItem::~DlgPickTemplateFavoriteItem()
 {
 	Settings::saveHeaderView("DlgPickTemplateFavoriteItem", "tblItems", *m_UI->tblItems->horizontalHeader());
+	Settings::saveWindowPos("DlgPickTemplateFavoriteItem", *this);
 }
 
 

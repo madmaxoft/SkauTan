@@ -28,6 +28,7 @@ DlgTemplatesList::DlgTemplatesList(
 	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgTemplatesList", *this);
 
 	// Connect the signals:
 	connect(m_UI->btnClose,          &QPushButton::clicked,               this, &DlgTemplatesList::close);
@@ -71,6 +72,7 @@ DlgTemplatesList::~DlgTemplatesList()
 {
 	Settings::saveHeaderView("DlgTemplatesList", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
 	Settings::saveHeaderView("DlgTemplatesList", "tblItems",     *m_UI->tblItems->horizontalHeader());
+	Settings::saveWindowPos("DlgTemplatesList", *this);
 }
 
 

@@ -9,6 +9,7 @@
 #include <QAbstractItemModel>
 #include "DlgSongs.h"
 #include "Database.h"
+#include "Settings.h"
 
 
 
@@ -329,6 +330,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 {
 	m_Item.checkFilterConsistency();
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgEditTemplateItem", *this);
 	m_UI->twFilters->setItemDelegate(new FilterDelegate);
 
 	// Connect the signals:
@@ -367,6 +369,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 
 DlgEditTemplateItem::~DlgEditTemplateItem()
 {
+	Settings::saveWindowPos("DlgEditTemplateItem", *this);
 	delete m_UI->twFilters->itemDelegate();
 }
 

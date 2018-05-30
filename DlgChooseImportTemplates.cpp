@@ -12,6 +12,7 @@ DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && a
 	m_UI(new Ui::DlgChooseImportTemplates)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgChooseImportTemplates", *this);
 
 	// Connect the signals:
 	connect(m_UI->btnCancel,    &QPushButton::clicked,               this, &QDialog::reject);
@@ -47,6 +48,7 @@ DlgChooseImportTemplates::~DlgChooseImportTemplates()
 {
 	Settings::saveHeaderView("DlgChooseImportTemplates", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
 	Settings::saveHeaderView("DlgChooseImportTemplates", "tblItems",     *m_UI->tblItems->horizontalHeader());
+	Settings::saveWindowPos("DlgChooseImportTemplates", *this);
 }
 
 

@@ -27,6 +27,7 @@ DlgEditTemplate::DlgEditTemplate(
 	m_UI(new Ui::DlgEditTemplate)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgEditTemplate", *this);
 
 	// Connect the slots:
 	connect(m_UI->btnClose,           &QPushButton::clicked,      this, &DlgEditTemplate::saveAndClose);
@@ -72,6 +73,7 @@ DlgEditTemplate::DlgEditTemplate(
 DlgEditTemplate::~DlgEditTemplate()
 {
 	Settings::saveHeaderView("DlgEditTemplate", "tblItems", *m_UI->tblItems->horizontalHeader());
+	Settings::saveWindowPos("DlgEditTemplate", *this);
 }
 
 

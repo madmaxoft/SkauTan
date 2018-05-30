@@ -53,6 +53,7 @@ DlgSongs::DlgSongs(
 	m_TicksUntilSetSearchText(0)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgSongs", *this);
 	if (m_FilterModel == nullptr)
 	{
 		m_FilterModel.reset(new QSortFilterProxyModel);
@@ -101,6 +102,7 @@ DlgSongs::DlgSongs(
 DlgSongs::~DlgSongs()
 {
 	Settings::saveHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
+	Settings::saveWindowPos("DlgSongs", *this);
 }
 
 

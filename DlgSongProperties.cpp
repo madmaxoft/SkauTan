@@ -3,6 +3,7 @@
 #include <QDebug>
 #include "ui_DlgSongProperties.h"
 #include "Database.h"
+#include "Settings.h"
 
 
 
@@ -29,6 +30,7 @@ DlgSongProperties::DlgSongProperties(
 
 	// Initialize the UI:
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgSongProperties", *this);
 	m_UI->tblDuplicates->setColumnCount(1);
 	auto genres = Song::recognizedGenres();
 	genres.insert(0, "");
@@ -71,7 +73,7 @@ DlgSongProperties::DlgSongProperties(
 
 DlgSongProperties::~DlgSongProperties()
 {
-	// Nothing explicit needed yet
+	Settings::saveWindowPos("DlgSongProperties", *this);
 }
 
 

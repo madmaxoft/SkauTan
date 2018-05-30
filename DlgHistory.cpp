@@ -15,6 +15,7 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 	m_UI(new Ui::DlgHistory)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgHistory", *this);
 	auto model = new QSqlQueryModel(this);
 	model->setQuery(a_DB.playbackHistorySqlQuery());
 	if (model->lastError().type() != QSqlError::NoError)
@@ -49,6 +50,7 @@ DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
 DlgHistory::~DlgHistory()
 {
 	Settings::saveHeaderView("DlgHistory", "tblHistory", *m_UI->tblHistory->horizontalHeader());
+	Settings::saveWindowPos("DlgHistory", *this);
 }
 
 

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <QDebug>
 #include "Stopwatch.h"
+#include "Settings.h"
 
 
 
@@ -13,6 +14,7 @@ DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
 	m_UI(new Ui::DlgBackgroundTaskList)
 {
 	m_UI->setupUi(this);
+	Settings::loadWindowPos("DlgBackgroundTaskList", *this);
 	auto & backgroundTasks = BackgroundTasks::get();
 
 	// Connect the signals:
@@ -39,7 +41,7 @@ DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
 
 DlgBackgroundTaskList::~DlgBackgroundTaskList()
 {
-	// Nothing explicit needed, but must be in the CPP file due to m_UI.
+	Settings::saveWindowPos("DlgBackgroundTaskList", *this);
 }
 
 
