@@ -734,6 +734,10 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 	Q_UNUSED(a_SrcParent);  // For release builds
 
 	auto song = m_ParentModel.songFromRow(a_SrcRow);
+	if (song == nullptr)
+	{
+		return false;
+	}
 	switch (m_Filter)
 	{
 		case fltNone: break;
