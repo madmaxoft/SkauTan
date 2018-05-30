@@ -682,7 +682,7 @@ void SongModelEditorDelegate::commitAndCloseEditor()
 SongModelFilter::SongModelFilter(SongModel & a_ParentModel):
 	m_ParentModel(a_ParentModel),
 	m_Filter(fltNone),
-	m_SearchString("")
+	m_SearchString("", QRegularExpression::CaseInsensitiveOption)
 {
 	setSourceModel(&m_ParentModel);
 }
