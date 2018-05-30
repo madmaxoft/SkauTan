@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QTextCodec>
 #include <taglib/fileref.h>
 #include "Song.h"
 #include "BackgroundTasks.h"
@@ -55,7 +56,12 @@ protected:
 	/** Parses any tags within the song using TagLib. */
 	void parseTagLibMetadata(const QString & a_FileName)
 	{
-		TagLib::FileRef fr(a_FileName.toUtf8().constData());
+		#ifdef _WIN32
+			// TagLib on Windows needs UTF16-BE filenames (#134):
+			TagLib::FileRef fr(reinterpret_cast<const wchar_t *>(a_FileName.constData()));
+		#else
+			TagLib::FileRef fr(a_FileName.toUtf8().constData());
+		#endif
 		if (fr.isNull())
 		{
 			// File format not recognized
