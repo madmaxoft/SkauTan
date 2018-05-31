@@ -264,6 +264,13 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"ALTER TABLE SongSharedData ADD COLUMN SkipStart NUMERIC",
 		"ALTER TABLE SongSharedData ADD COLUMN SkipStartLM DATETIME",
 	}),  // Version 4 to Version 5
+
+	// Version 5 to Version 6:
+	// Add Notes to SongFiles (#137):
+	VersionScript({
+		"ALTER TABLE SongFiles ADD COLUMN Notes TEXT",
+		"ALTER TABLE SongFiles ADD COLUMN NotesLM DATETIME",
+	}),  // Version 5 to Version 6
 };
 
 

@@ -136,6 +136,10 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 	{
 		m_UI->leManualMeasuresPerMinute->setText(loc.toString(cs.m_ManualTag.m_MeasuresPerMinute.value()));
 	}
+	else
+	{
+		m_UI->leManualMeasuresPerMinute->clear();
+	}
 	m_UI->leId3Author->setText(a_Song.tagId3().m_Author.valueOrDefault());
 	m_UI->leId3Title->setText(a_Song.tagId3().m_Title.valueOrDefault());
 	m_UI->leId3Genre->setText(a_Song.tagId3().m_Genre.valueOrDefault());
@@ -143,12 +147,20 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 	{
 		m_UI->leId3MeasuresPerMinute->setText(loc.toString(a_Song.tagId3().m_MeasuresPerMinute.value()));
 	}
+	else
+	{
+		m_UI->leId3MeasuresPerMinute->clear();
+	}
 	m_UI->leFilenameAuthor->setText(a_Song.tagFileName().m_Author.valueOrDefault());
 	m_UI->leFilenameTitle->setText(a_Song.tagFileName().m_Title.valueOrDefault());
 	m_UI->leFilenameGenre->setText(a_Song.tagFileName().m_Genre.valueOrDefault());
 	if (a_Song.tagFileName().m_MeasuresPerMinute.isPresent())
 	{
 		m_UI->leFilenameMeasuresPerMinute->setText(loc.toString(a_Song.tagFileName().m_MeasuresPerMinute.value()));
+	}
+	else
+	{
+		m_UI->leFilenameMeasuresPerMinute->clear();
 	}
 	m_UI->pteNotes->setPlainText(cs.m_Notes.valueOrDefault());
 	m_IsInternalChange = false;

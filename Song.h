@@ -115,7 +115,8 @@ public:
 		Tag && a_TagFileName,
 		Tag && a_TagId3,
 		QVariant && a_LastTagRescanned,
-		QVariant && a_NumTagRescanAttempts
+		QVariant && a_NumTagRescanAttempts,
+		DatedOptional<QString> && a_Notes
 	);
 
 	~Song();
