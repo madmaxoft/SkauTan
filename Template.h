@@ -105,6 +105,7 @@ public:
 			fspRatingRhythmClarity       = 24,
 			fspRatingGenreTypicality     = 25,
 			fspRatingPopularity          = 26,
+			fspNotes                     = 27,
 		};
 
 

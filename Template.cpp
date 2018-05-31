@@ -381,6 +381,7 @@ Template::Filter::SongProperty Template::Filter::intToSongProperty(int a_SongPro
 		case fspRatingRhythmClarity:       return fspRatingRhythmClarity;
 		case fspRatingGenreTypicality:     return fspRatingGenreTypicality;
 		case fspRatingPopularity:          return fspRatingPopularity;
+		case fspNotes:                     return fspNotes;
 	}
 	throw std::runtime_error(QString("Unknown filter SongProperty: %1").arg(a_SongProperty).toUtf8().constData());
 }
@@ -420,6 +421,7 @@ QString Template::Filter::songPropertyCaption(Template::Filter::SongProperty a_P
 		case fspRatingRhythmClarity:       return Template::tr("Rhythm clarity rating",   "SongPropertyCaption");
 		case fspRatingGenreTypicality:     return Template::tr("Genre typicality rating", "SongPropertyCaption");
 		case fspRatingPopularity:          return Template::tr("Popularity rating",       "SongPropertyCaption");
+		case fspNotes:                     return Template::tr("Notes",                   "SongPropertyCaption");
 	}
 	assert(!"Unknown filter SongProperty");
 	return QString();
@@ -538,6 +540,7 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 		case fspRatingRhythmClarity:       return isNumberComparisonSatisfiedBy(a_Song.rating().m_RhythmClarity);
 		case fspRatingGenreTypicality:     return isNumberComparisonSatisfiedBy(a_Song.rating().m_GenreTypicality);
 		case fspRatingPopularity:          return isNumberComparisonSatisfiedBy(a_Song.rating().m_Popularity);
+		case fspNotes:                     return isStringComparisonSatisfiedBy(a_Song.notes());
 	}
 	assert(!"Unknown song property in comparison");
 	return false;
