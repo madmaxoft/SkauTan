@@ -438,7 +438,7 @@ void SongModel::addSongFile(SongPtr a_NewSong)
 	Q_UNUSED(a_NewSong);
 
 	auto lastIdx = static_cast<int>(m_DB.songs().size()) - 1;
-	beginInsertRows(QModelIndex(), lastIdx, lastIdx + 1);
+	beginInsertRows(QModelIndex(), lastIdx, lastIdx);
 	endInsertRows();
 }
 
