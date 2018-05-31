@@ -230,11 +230,11 @@ void DlgSongs::createContextMenu()
 	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actRate);
-	connect(m_ContextMenu->addAction(QString("* * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
-	connect(m_ContextMenu->addAction(QString("* * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
-	connect(m_ContextMenu->addAction(QString("* * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
-	connect(m_ContextMenu->addAction(QString("* *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
-	connect(m_ContextMenu->addAction(QString("*")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
+	connect(m_ContextMenu->addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(m_ContextMenu->addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(m_ContextMenu->addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(m_ContextMenu->addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(m_ContextMenu->addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actProperties);
 
@@ -513,6 +513,7 @@ void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
 	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
 	m_UI->actProperties->setEnabled(sel.count() == 1);
 	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
+	m_UI->actRate->setEnabled(!sel.isEmpty());
 
 	// Show the context menu:
 	auto widget = dynamic_cast<QWidget *>(sender());

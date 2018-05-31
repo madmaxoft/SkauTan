@@ -449,11 +449,11 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	contextMenu.addAction(m_UI->actPlay);
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRate);
-	connect(contextMenu.addAction(QString("   * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
-	connect(contextMenu.addAction(QString("   * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
-	connect(contextMenu.addAction(QString("   * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
-	connect(contextMenu.addAction(QString("   * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
-	connect(contextMenu.addAction(QString("   *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
+	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRemoveFromPlaylist);
 	contextMenu.addSeparator();
