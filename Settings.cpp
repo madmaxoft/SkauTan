@@ -149,6 +149,8 @@ void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_Split
 
 void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter)
 {
+	CHECK_VALID;
+
 	m_Settings->beginGroup(a_WindowName);
 		m_Settings->beginGroup(a_SplitterName);
 			int numSections = m_Settings->beginReadArray("sectionSizes");
@@ -162,4 +164,38 @@ void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_Split
 			m_Settings->endArray();
 		m_Settings->endGroup();
 	m_Settings->endGroup();
+}
+
+
+
+
+
+void Settings::saveValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Value)
+{
+	CHECK_VALID;
+
+	m_Settings->beginGroup(a_WindowName);
+		m_Settings->setValue(a_ValueName, a_Value);
+	m_Settings->endGroup();
+	m_Settings->sync();
+}
+
+
+
+
+
+QVariant Settings::loadValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Default)
+{
+	assert(m_Settings != nullptr);
+	if (m_Settings == nullptr)
+	{
+		qWarning() << "The Settings object has not been initialized.";
+		return a_Default;
+	}
+
+	m_Settings->beginGroup(a_WindowName);
+		auto res = m_Settings->value(a_ValueName, a_Default);
+	m_Settings->endGroup();
+
+	return res;
 }

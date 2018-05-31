@@ -17,6 +17,7 @@ class QSplitter;
 
 #include <memory>
 #include <QString>
+#include <QVariant>
 
 
 
@@ -47,6 +48,12 @@ public:
 
 	/** Restores previously saves splitter section sizes. */
 	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter);
+
+	/** Saves a generic value. */
+	static void saveValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Value);
+
+	/** Loads a previously saved generic value. */
+	static QVariant loadValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Default = QVariant());
 
 
 protected:

@@ -108,6 +108,7 @@ PlayerWindow::PlayerWindow(
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
 	Settings::loadHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
+	m_UI->chbImmediatePlayback->setChecked(Settings::loadValue("PlayerWindow", "chbImmediatePlayback.isChecked", true).toBool());
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = m_UI->btnTempoReset->fontMetrics();
@@ -132,6 +133,7 @@ PlayerWindow::PlayerWindow(
 
 PlayerWindow::~PlayerWindow()
 {
+	Settings::saveValue("PlayerWindow", "chbImmediatePlayback.isChecked", m_UI->chbImmediatePlayback->isChecked());
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 	Settings::saveSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 }
