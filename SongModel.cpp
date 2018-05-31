@@ -131,7 +131,7 @@ SongModel::SongModel(Database & a_DB):
 {
 	connect(&m_DB, &Database::songFileAdded, this, &SongModel::addSongFile);
 	connect(&m_DB, &Database::songSaved,     this, &SongModel::songChanged);
-	// TODO: Deleting songs from the DB should remove them from the model
+	connect(&m_DB, &Database::songRemoved,   this, &SongModel::delSong);
 }
 
 
@@ -446,7 +446,7 @@ void SongModel::addSongFile(SongPtr a_NewSong)
 
 
 
-void SongModel::delSong(const Song * a_Song, size_t a_Index)
+void SongModel::delSong(SongPtr a_Song, size_t a_Index)
 {
 	Q_UNUSED(a_Song);
 
@@ -736,6 +736,8 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 	auto song = m_ParentModel.songFromRow(a_SrcRow);
 	if (song == nullptr)
 	{
+		qWarning() << "Got a row without an assigned song: " << a_SrcRow;
+		assert(!"Got a row without an assigned song");
 		return false;
 	}
 	switch (m_Filter)

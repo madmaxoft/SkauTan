@@ -103,7 +103,7 @@ protected slots:
 	void addSongFile(SongPtr a_NewSong);
 
 	/** Emitted by m_DB just before a song is removed; remove it from the model. */
-	void delSong(const Song * a_Song, size_t a_Index);
+	void delSong(SongPtr a_Song, size_t a_Index);
 
 	/** Emitted by m_DB after a song data has changed.
 	Updates the model entries for the specified song. */
