@@ -68,6 +68,15 @@ DlgSongs::DlgSongs(
 	m_UI->tblSongs->setModel(m_FilterModel.get());
 	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
+	// Add the context-menu actions to their respective controls, so that their shortcuts work:
+	m_UI->tblSongs->addActions({
+		m_UI->actAddToPlaylist,
+		m_UI->actDeleteFromDisk,
+		m_UI->actProperties,
+		m_UI->actRate,
+		m_UI->actRemoveFromLibrary,
+	});
+
 	// Connect the signals:
 	connect(m_UI->btnAddFile,        &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
 	connect(m_UI->btnAddFolder,      &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);

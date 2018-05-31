@@ -17,7 +17,6 @@
 
 
 // fwd:
-class QShortcut;
 class QListWidgetItem;
 class Player;
 class Song;
@@ -74,9 +73,6 @@ private:
 
 	/** The model used to display the playlist. */
 	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
-
-	/** The shortcut for deleting playlist items using the Del key. */
-	std::unique_ptr<QShortcut> m_scDel;
 
 	/** The timer used for periodic UI updates. */
 	QTimer m_UpdateTimer;

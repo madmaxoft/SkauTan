@@ -46,7 +46,6 @@ PlayerWindow::PlayerWindow(
 	Settings::loadSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
-	m_scDel.reset(new QShortcut(QKeySequence(Qt::Key_Delete), m_UI->tblPlaylist));
 	m_UI->waveform->setPlayer(m_Player);
 	QFont fnt(m_UI->lblPosition->font());
 	if (fnt.pixelSize() > 0)
@@ -79,7 +78,6 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->btnTemplates,          &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,            &QPushButton::clicked,      this, &PlayerWindow::showHistory);
 	connect(m_UI->btnAddFromTemplate,    &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
-	connect(m_scDel.get(),               &QShortcut::activated,      this, &PlayerWindow::deleteSelectedPlaylistItems);
 	connect(m_UI->btnPrev,               &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
 	connect(m_UI->btnPlay,               &QPushButton::clicked,      this, &PlayerWindow::playPause);
 	connect(m_UI->btnNext,               &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
@@ -121,6 +119,19 @@ PlayerWindow::PlayerWindow(
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addSeparator();
 	m_UI->btnTools->setMenu(menu);
+
+	// Add the context-menu actions to their respective controls, so that their shortcuts work:
+	m_UI->tblPlaylist->addActions({
+		m_UI->actDeleteFromDisk,
+		m_UI->actPlay,
+		m_UI->actRate,
+		m_UI->actRemoveFromLibrary,
+		m_UI->actRemoveFromPlaylist,
+		m_UI->actSongProperties,
+	});
+	m_UI->btnTools->addActions({
+		m_UI->actBackgroundTasks,
+	});
 
 	refreshQuickPlayer();
 
@@ -437,15 +448,17 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	QMenu contextMenu;
 	contextMenu.addAction(m_UI->actPlay);
 	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRate);
+	connect(contextMenu.addAction(QString("   * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(contextMenu.addAction(QString("   * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(contextMenu.addAction(QString("   * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(contextMenu.addAction(QString("   * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(contextMenu.addAction(QString("   *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRemoveFromPlaylist);
+	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRemoveFromLibrary);
 	contextMenu.addAction(m_UI->actDeleteFromDisk);
-	contextMenu.addSeparator();
-	contextMenu.addAction(m_UI->actRate);
-	connect(contextMenu.addAction(QString("* * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
-	connect(contextMenu.addAction(QString("* * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
-	connect(contextMenu.addAction(QString("* * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
-	connect(contextMenu.addAction(QString("* *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
-	connect(contextMenu.addAction(QString("*")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actSongProperties);
 
@@ -456,6 +469,7 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	m_UI->actRemoveFromPlaylist->setEnabled(!sel.isEmpty());
 	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
 	m_UI->actPlay->setEnabled(sel.count() == 1);
+	m_UI->actRate->setEnabled(!sel.isEmpty());
 
 	// Display the menu:
 	auto widget = dynamic_cast<QWidget *>(sender());

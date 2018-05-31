@@ -231,6 +231,9 @@
    <property name="shortcut">
     <string>Del</string>
    </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actDeleteFromDisk">
    <property name="text">
@@ -242,6 +245,9 @@
    <property name="shortcut">
     <string>Shift+Del</string>
    </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actAddToPlaylist">
    <property name="text">
@@ -249,6 +255,12 @@
    </property>
    <property name="toolTip">
     <string>Add selected songs to playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actProperties">
@@ -261,6 +273,9 @@
    <property name="shortcut">
     <string>Alt+3</string>
    </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actRate">
    <property name="text">
@@ -268,6 +283,12 @@
    </property>
    <property name="toolTip">
     <string>Set the songs' local rating</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

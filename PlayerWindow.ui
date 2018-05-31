@@ -402,6 +402,15 @@
    <property name="text">
     <string>Background tasks</string>
    </property>
+   <property name="toolTip">
+    <string>Show the tasks running in the background</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actSongProperties">
    <property name="text">
@@ -409,6 +418,9 @@
    </property>
    <property name="shortcut">
     <string>Alt+3</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actPlay">
@@ -424,6 +436,12 @@
      <bold>true</bold>
     </font>
    </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actRate">
    <property name="text">
@@ -431,6 +449,12 @@
    </property>
    <property name="toolTip">
     <string>Set the songs' local rating</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actRemoveFromLibrary">
@@ -458,6 +482,9 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
    </property>
   </action>
  </widget>
