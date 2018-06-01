@@ -152,14 +152,10 @@ void WaveformDisplay::setSkipStart(int a_PosX)
 		qDebug() << "Not a song, ignoring.";
 		return;
 	}
-	bool isOK;
-	auto len = m_CurrentSong->length().toDouble(&isOK);
-	if (!isOK)
-	{
-		qDebug() << "Song doesn't have a valid length, ignoring.";
-		return;
-	}
-	m_CurrentSong->setSkipStart(a_PosX * len / width());
+	auto bufferBytes = static_cast<qint32>(m_PlaybackBuffer->bufferLimit());
+	auto songLength = static_cast<double>(m_PlaybackBuffer->format().durationForBytes(bufferBytes)) / 1000000;
+	qDebug() << "Setting skip-start for " << m_CurrentSong->fileName() << " to " << a_PosX * songLength / width();
+	m_CurrentSong->setSkipStart(a_PosX * songLength / width());
 	emit songChanged(m_CurrentSong);
 	update();
 }
