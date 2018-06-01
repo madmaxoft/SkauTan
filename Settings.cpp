@@ -160,7 +160,10 @@ void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_Split
 					m_Settings->setArrayIndex(i);
 					sectionSizes.append(m_Settings->value("sectionSize").toInt());
 				}
-				a_Splitter.setSizes(sectionSizes);
+				if (!sectionSizes.isEmpty())
+				{
+					a_Splitter.setSizes(sectionSizes);
+				}
 			m_Settings->endArray();
 		m_Settings->endGroup();
 	m_Settings->endGroup();
