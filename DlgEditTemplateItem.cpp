@@ -10,6 +10,7 @@
 #include "DlgSongs.h"
 #include "Database.h"
 #include "Settings.h"
+#include "Utils.h"
 
 
 
@@ -342,6 +343,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 	connect(m_UI->btnPreview,          &QPushButton::clicked,   this, &DlgEditTemplateItem::previewFilter);
 	connect(m_UI->leBgColor,           &QLineEdit::textChanged, this, &DlgEditTemplateItem::bgColorTextChanged);
 	connect(m_UI->btnBgColor,          &QPushButton::clicked,   this, &DlgEditTemplateItem::chooseBgColor);
+	connect(m_UI->leDurationLimit,     &QLineEdit::textEdited,  this, &DlgEditTemplateItem::durationLimitEdited);
 	connect(
 		m_UI->twFilters->selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &DlgEditTemplateItem::filterSelectionChanged
@@ -353,6 +355,10 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 	m_UI->chbIsFavorite->setChecked(m_Item.isFavorite());
 	m_UI->pteNotes->setPlainText(m_Item.notes());
 	m_UI->leBgColor->setText(m_Item.bgColor().name());
+	if (m_Item.durationLimit().isPresent())
+	{
+		m_UI->leDurationLimit->setText(Utils::formatFractionalTime(m_Item.durationLimit().value()));
+	}
 
 	// Display the filters tree:
 	m_UI->twFilters->setHeaderLabels({tr("Filter", "FilterTree")});
@@ -399,6 +405,16 @@ void DlgEditTemplateItem::save()
 	if (c.isValid())
 	{
 		m_Item.setBgColor(c);
+	}
+	bool isOK;
+	auto durationLimit = Utils::parseTime(m_UI->leDurationLimit->text(), isOK);
+	if (isOK)
+	{
+		m_Item.setDurationLimit(durationLimit);
+	}
+	else
+	{
+		m_Item.resetDurationLimit();
 	}
 }
 
@@ -714,5 +730,28 @@ void DlgEditTemplateItem::chooseBgColor()
 	if (c.isValid())
 	{
 		m_UI->leBgColor->setText(c.name());
+	}
+}
+
+
+
+
+
+void DlgEditTemplateItem::durationLimitEdited(const QString & a_NewText)
+{
+	if (a_NewText.trimmed().isEmpty())
+	{
+		m_UI->leDurationLimit->setStyleSheet({});
+		return;
+	}
+	bool isOK;
+	Utils::parseTime(a_NewText, isOK);
+	if (isOK)
+	{
+		m_UI->leDurationLimit->setStyleSheet({});
+	}
+	else
+	{
+		m_UI->leDurationLimit->setStyleSheet("background-color: #ff7f7f");
 	}
 }

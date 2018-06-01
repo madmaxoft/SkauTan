@@ -91,6 +91,7 @@ SOURCES += \
 	DatabaseUpgrade.cpp \
 	Settings.cpp \
 	DlgSongProperties.cpp \
+	Utils.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -127,6 +128,7 @@ HEADERS += \
 	Settings.h \
 	DlgSongProperties.h \
 	DatedOptional.h \
+	Utils.h \
 
 FORMS += \
 	PlayerWindow.ui \

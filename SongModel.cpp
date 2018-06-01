@@ -7,24 +7,7 @@
 #include "Database.h"
 #include "MetadataScanner.h"
 #include "Stopwatch.h"
-
-
-
-
-
-/** Returns the value, clamped to the range provided. */
-template <typename T> static T clamp(T a_Value, T a_Min, T a_Max)
-{
-	if (a_Value < a_Min)
-	{
-		return a_Min;
-	}
-	if (a_Value > a_Max)
-	{
-		return a_Max;
-	}
-	return a_Value;
-}
+#include "Utils.h"
 
 
 
@@ -387,7 +370,7 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 		case colLastPlayed: return false;
 		case colLength: return false;
 		case colRating: return false;
-		case colLocalRating: song->setLocalRating(clamp(a_Value.toDouble(), 0.0, 5.0)); break;
+		case colLocalRating: song->setLocalRating(Utils::clamp(a_Value.toDouble(), 0.0, 5.0)); break;
 		case colManualAuthor: song->setAuthor(a_Value.toString()); break;
 		case colManualTitle: song->setTitle(a_Value.toString()); break;
 		case colManualGenre: song->setGenre(a_Value.toString()); break;

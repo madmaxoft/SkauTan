@@ -9,6 +9,7 @@
 #include "Database.h"
 #include "DlgEditTemplateItem.h"
 #include "Settings.h"
+#include "Utils.h"
 
 
 
@@ -49,8 +50,15 @@ DlgTemplatesList::DlgTemplatesList(
 	m_UI->tblTemplates->setColumnCount(3);
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
 	m_UI->tblItems->setRowCount(0);
-	m_UI->tblItems->setColumnCount(5);
-	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("# Songs"), tr("Filter")});
+	m_UI->tblItems->setColumnCount(6);
+	m_UI->tblItems->setHorizontalHeaderLabels({
+		tr("Name"),
+		tr("Notes"),
+		tr("Fav", "Favorite"),
+		tr("Dur", "Duration"),
+		tr("# Songs", "Number of matching songs"),
+		tr("Filter")
+	});
 	templateSelectionChanged();
 
 	// Insert all the templates into the table view:
@@ -163,17 +171,23 @@ void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Template::Item & a
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 2, wi);
 
+	const auto & durationLimit = a_Item.durationLimit();
+	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatFractionalTime(durationLimit.value()) : "");
+	wi->setBackgroundColor(a_Item.bgColor());
+	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+	m_UI->tblItems->setItem(a_Row, 3, wi);
+
 	auto numMatching = m_DB.numSongsMatchingFilter(*a_Item.filter());
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_UI->tblItems->setItem(a_Row, 4, wi);
 
 	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 4, wi);
+	m_UI->tblItems->setItem(a_Row, 5, wi);
 	m_IsInternalChange = false;
 }
 
@@ -452,6 +466,26 @@ void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
 		case 2:
 		{
 			item->setIsFavorite(a_Item->checkState() == Qt::Checked);
+			break;
+		}
+		case 3:
+		{
+			bool isOK;
+			auto durationLimit = Utils::parseTime(a_Item->text(), isOK);
+			if (isOK)
+			{
+				item->setDurationLimit(durationLimit);
+				m_IsInternalChange = true;
+				a_Item->setText(Utils::formatFractionalTime(durationLimit));
+				m_IsInternalChange = false;
+			}
+			else
+			{
+				item->resetDurationLimit();
+				m_IsInternalChange = true;
+				a_Item->setText({});
+				m_IsInternalChange = false;
+			}
 			break;
 		}
 	}

@@ -260,7 +260,11 @@ public:
 	class Item
 	{
 	public:
-		Item(const QString & a_DisplayName, const QString & a_Notes, bool a_IsFavorite);
+		Item(
+			const QString & a_DisplayName,
+			const QString & a_Notes,
+			bool a_IsFavorite
+		);
 
 		/** Returns a clone of this item, with IsFavorite set to false. */
 		ItemPtr clone() const;
@@ -270,6 +274,7 @@ public:
 		bool isFavorite() const { return m_IsFavorite; }
 		FilterPtr filter() const { return m_Filter; }
 		const QColor & bgColor() const { return m_BgColor; }
+		const DatedOptional<double> durationLimit() const { return m_DurationLimit; }
 
 		/** Returns the user-visible description of the entire filter. */
 		QString getFilterDescription() const { return m_Filter->getDescription(); }
@@ -279,6 +284,10 @@ public:
 		void setIsFavorite(bool a_IsFavorite) { m_IsFavorite = a_IsFavorite; }
 		void setFilter(FilterPtr a_Filter) { m_Filter = a_Filter; m_Filter->setParent(nullptr); }
 		void setBgColor(const QColor & a_BgColor) { m_BgColor = a_BgColor; }
+		void setDurationLimit(double a_Seconds) { m_DurationLimit = a_Seconds; }
+
+		/** Removed the duration limit. */
+		void resetDurationLimit() { m_DurationLimit.reset(); }
 
 		/** Sets the filter to a noop filter.
 		Used when loader detects invalid filter. */
@@ -304,6 +313,10 @@ public:
 
 		/** The color to use for background when displaying this item. */
 		QColor m_BgColor;
+
+		/** An optional limit for duration.
+		If set, the playlist item created from this will inherit the limit. */
+		DatedOptional<double> m_DurationLimit;
 	};
 
 

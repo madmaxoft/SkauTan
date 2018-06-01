@@ -271,6 +271,12 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"ALTER TABLE SongFiles ADD COLUMN Notes TEXT",
 		"ALTER TABLE SongFiles ADD COLUMN NotesLM DATETIME",
 	}),  // Version 5 to Version 6
+
+	// Version 6 to Versino 7:
+	// Add LimitDuration to template filters:
+	VersionScript({
+		"ALTER TABLE TemplateItems ADD COLUMN DurationLimit NUMERIC",
+	}),
 };
 
 

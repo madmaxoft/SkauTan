@@ -857,6 +857,10 @@ QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & a_Templ
 			{
 				itemElement.setAttribute("isFavorite", 1);
 			}
+			if (item->durationLimit().isPresent())
+			{
+				itemElement.setAttribute("durationLimit", item->durationLimit().value());
+			}
 			auto filterElement = m_Document.createElement("filter");
 			addFilterToDom(item->filter(), filterElement);
 			itemElement.appendChild(filterElement);
@@ -1023,6 +1027,15 @@ Template::ItemPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_Item
 	if (c.isValid())
 	{
 		res->setBgColor(c);
+	}
+
+	// Read the item's durationLimit:
+	auto durationLimitStr = a_ItemXmlElement.attribute("durationLimit");
+	bool isOK;
+	auto durationLimit = durationLimitStr.toDouble(&isOK);
+	if (isOK)
+	{
+		res->setDurationLimit(durationLimit);
 	}
 
 	// Read the item's filter:

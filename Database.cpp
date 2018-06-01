@@ -663,11 +663,12 @@ void Database::loadTemplate(TemplatePtr a_Template)
 		assert(!"DB error");
 		return;
 	}
-	auto fiRowId       = query.record().indexOf("RowID");
-	auto fiDisplayName = query.record().indexOf("DisplayName");
-	auto fiNotes       = query.record().indexOf("Notes");
-	auto fiIsFavorite  = query.record().indexOf("IsFavorite");
-	auto fiBgColor     = query.record().indexOf("BgColor");
+	auto fiRowId         = query.record().indexOf("RowID");
+	auto fiDisplayName   = query.record().indexOf("DisplayName");
+	auto fiNotes         = query.record().indexOf("Notes");
+	auto fiIsFavorite    = query.record().indexOf("IsFavorite");
+	auto fiBgColor       = query.record().indexOf("BgColor");
+	auto fiDurationLimit = query.record().indexOf("DurationLimit");
 
 	// Load each template:
 	if (!query.isActive())
@@ -693,6 +694,13 @@ void Database::loadTemplate(TemplatePtr a_Template)
 		if (c.isValid())
 		{
 			item->setBgColor(c);
+		}
+		auto durationLimit = query.value(fiDurationLimit);
+		bool isOK;
+		auto durationLimitValue = durationLimit.toDouble(&isOK);
+		if (isOK)
+		{
+			item->setDurationLimit(durationLimitValue);
 		}
 		auto rowId = query.value(fiRowId).toLongLong();
 		loadTemplateFilters(a_Template, rowId, *item);
@@ -871,8 +879,15 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.setForwardOnly(true);
 	qlonglong rowId = -1;
 	if (!query.prepare(
-		"INSERT INTO TemplateItems (DisplayName, Notes, IsFavorite, TemplateID, IndexInParent, BgColor)"
-		"VALUES (?, ?, ?, ?, ?, ?)"
+		"INSERT INTO TemplateItems ("
+			"DisplayName, "
+			"Notes, "
+			"IsFavorite, "
+			"TemplateID, "
+			"IndexInParent, "
+			"BgColor, "
+			"DurationLimit) "
+		"VALUES (?, ?, ?, ?, ?, ?, ?)"
 	))
 	{
 		qWarning() << ": Cannot insert template item into the DB, template "
@@ -888,6 +903,7 @@ void Database::saveTemplateItem(const Template & a_Template, int a_Index, const 
 	query.addBindValue(a_Template.dbRowId());
 	query.addBindValue(a_Index);
 	query.addBindValue(a_Item.bgColor().name());
+	query.addBindValue(a_Item.durationLimit().toVariant());
 	if (!query.exec())
 	{
 		qWarning() << ": Cannot insert template item in the DB, template "

@@ -134,6 +134,11 @@ protected slots:
 
 	/** Opens the color chooser, sets the selected color to leBgColor. */
 	void chooseBgColor();
+
+	/** The text in the DurationLimit QLineEdit has been edited.
+	Try to parse it and change the QLineEdit's background to indicate success / failure.
+	If a valid duration is input, set chbDurationLimit to checked. */
+	void durationLimitEdited(const QString & a_NewText);
 };
 
 
