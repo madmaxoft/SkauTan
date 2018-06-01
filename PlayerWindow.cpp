@@ -45,6 +45,7 @@ PlayerWindow::PlayerWindow(
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
 
 	m_UI->setupUi(this);
+	m_UI->splitter->setCollapsible(1, false);
 	Settings::loadSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
