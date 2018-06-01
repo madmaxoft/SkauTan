@@ -207,7 +207,7 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 {
 	for (const auto & item: a_Template.items())
 	{
-		addFromTemplateItem(a_DB, *item);
+		addFromTemplateItem(a_DB, item);
 	}
 }
 
@@ -215,13 +215,13 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 
 
 
-bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item & a_Item)
+bool Playlist::addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item)
 {
 	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
 	int totalWeight = 0;
 	for (const auto & song: a_DB.songs())
 	{
-		if (a_Item.filter()->isSatisfiedBy(*song))
+		if (a_Item->filter()->isSatisfiedBy(*song))
 		{
 			auto weight = getSongWeight(a_DB, *song);
 			songs.push_back(std::make_pair(song, weight));
@@ -231,7 +231,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 
 	if (songs.empty())
 	{
-		qDebug() << ": No song matches item " << a_Item.displayName();
+		qDebug() << ": No song matches item " << a_Item->displayName();
 		return false;
 	}
 
@@ -255,7 +255,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 	static int counter = 0;
 	auto fnam = QString("debug_template_%1.log").arg(QString::number(counter++), 3, '0');
 	std::ofstream f(fnam.toStdString().c_str());
-	f << "Choices for template item " << a_Item.displayName().toStdString() << std::endl;
+	f << "Choices for template item " << a_Item->displayName().toStdString() << std::endl;
 	f << "------" << std::endl << std::endl;
 	f << "Candidates:" << std::endl;
 	for (const auto & song: songs)
@@ -271,7 +271,7 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, const Template::Item &
 	#endif
 
 	assert(chosen != nullptr);
-	addItem(std::make_shared<PlaylistItemSong>(chosen));
+	addItem(std::make_shared<PlaylistItemSong>(chosen, a_Item));
 	return true;
 }
 

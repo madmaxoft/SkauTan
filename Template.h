@@ -257,7 +257,8 @@ public:
 
 	/** Represents  a single item in the template.
 	Based on the description in this class, one item will be added to the playlist upon request. */
-	class Item
+	class Item:
+		public std::enable_shared_from_this<Item>
 	{
 	public:
 		Item(

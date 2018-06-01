@@ -97,6 +97,9 @@ private:
 	/** Refreshes the items in lwQuickPlayer to match the favorite template items in the DB. */
 	void refreshQuickPlayer();
 
+	/** Sets the specified duration limit for all playlist items selected in m_tblPlaylist. */
+	void setSelectedItemsDurationLimit(double a_NewDurationLimit);
+
 
 private slots:
 
@@ -179,6 +182,12 @@ private slots:
 
 	/** The user has clicked a QuickPlayer item, insert it into the playlist and maybe start playing. */
 	void quickPlayerItemClicked(QListWidgetItem * a_Item);
+
+	/** Asks the user for the new duration limit, then applies it to all selected playlist items. */
+	void setDurationLimit();
+
+	/** Removes the duration limit from all selected playlist items. */
+	void removeDurationLimit();
 };
 
 

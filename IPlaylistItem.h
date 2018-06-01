@@ -47,6 +47,12 @@ public:
 	/** Returns the display tempo of the item, <0 if not available. */
 	virtual double displayTempo() const = 0;
 
+	/** Returns the duration limit assigned to the item, or <0 if no such limit. */
+	virtual double durationLimit() const = 0;
+
+	/** Sets a new duration limit, or removes the current limit if <0. */
+	virtual void setDurationLimit(double a_Seconds) = 0;
+
 	// Playback-related functions:
 
 	/** Starts decoding the item into the specified audio format.

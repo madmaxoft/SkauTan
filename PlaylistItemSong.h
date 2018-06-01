@@ -7,6 +7,7 @@
 
 #include "IPlaylistItem.h"
 #include"Song.h"
+#include "Template.h"
 
 
 
@@ -20,7 +21,7 @@ class PlaylistItemSong:
 
 
 public:
-	PlaylistItemSong(SongPtr a_Song);
+	PlaylistItemSong(SongPtr a_Song, Template::ItemPtr a_TemplateItem);
 
 
 	// IPlaylistItem overrides, playlist-related functions:
@@ -30,6 +31,8 @@ public:
 	virtual double displayLength() const override;
 	virtual QString displayGenre() const override;
 	virtual double displayTempo() const override;
+	virtual double durationLimit() const override { return m_DurationLimit; }
+	virtual void setDurationLimit(double a_Seconds) override;
 
 	// IPlaylistItem overrides, playback-related functions:
 	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) override;
@@ -39,7 +42,16 @@ public:
 
 protected:
 
+	/** The song to be represented by this entry. */
 	SongPtr m_Song;
+
+	/** The template that chose this song; nullptr if inserted directly by the user. */
+	Template::ItemPtr m_TemplateItem;
+
+	/** The duration limit assigned to this item.
+	Initially inherited from m_TemplateItem, but user-editable.
+	-1 if no limit. */
+	double m_DurationLimit;
 };
 
 

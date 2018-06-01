@@ -58,6 +58,10 @@ public:
 	/** Returns the current item's index in the playlist. */
 	int currentItemIndex() const { return m_CurrentItemIdx; }
 
+	/** Returns true if the current item is not the last item in the playlist
+	(ie. the nextItem() operation will succeed) */
+	bool hasNextSong() const { return (m_CurrentItemIdx + 1 < static_cast<int>(m_Items.size())); }
+
 	/** Moves the current item to the next in the list.
 	Returns true if the current item changed, false if not (end of list / no items). */
 	bool nextItem();
@@ -80,7 +84,7 @@ public:
 	void addFromTemplate(const Database & a_DB, const Template & a_Template);
 
 	/** Adds a new random song based on the specified template item, using songs from the specified DB. */
-	bool addFromTemplateItem(const Database & a_DB, const Template::Item & a_Item);
+	bool addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item);
 
 
 protected:

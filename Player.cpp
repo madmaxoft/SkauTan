@@ -531,6 +531,36 @@ void Player::OutputThread::run()
 {
 	m_Output.reset(new QAudioOutput(m_Format));
 	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged, Qt::BlockingQueuedConnection);
+	connect(m_Output.get(), &QAudioOutput::notify, [this]()
+		{
+			if (m_Player.m_State != psPlaying)
+			{
+				return;
+			}
+			auto currTrack = m_Player.currentTrack();
+			if (currTrack == nullptr)
+			{
+				return;
+			}
+			auto durationLimit = currTrack->durationLimit();
+			if (durationLimit < 0)
+			{
+				// No limit to enforce
+				return;
+			}
+			if (m_Player.m_Elapsed.hasExpired(static_cast<qint64>(1000 * durationLimit)))
+			{
+				if (m_Player.playlist().hasNextSong())
+				{
+					m_Player.nextTrack();
+				}
+				else
+				{
+					m_Player.pause();
+				}
+			}
+		}
+	);
 	exec();
 }
 
@@ -564,6 +594,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 	qDebug() << "Setting audio output buffer size to " << bufSize;
 	m_Output->setBufferSize(bufSize);
 	m_Output->start(m_Player.m_AudioDataSource.get());
+	m_Output->setNotifyInterval(100);
 	m_Player.m_State = psPlaying;
 	QMetaObject::invokeMethod(
 		&m_Player, "startedPlayback",

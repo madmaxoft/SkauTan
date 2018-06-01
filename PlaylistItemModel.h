@@ -21,6 +21,7 @@ public:
 	enum EColumn
 	{
 		colLength,
+		colDurationLimit,
 		colGenre,
 		colMeasuresPerMinute,
 		colAuthor,

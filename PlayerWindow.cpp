@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QFile>
+#include <QInputDialog>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
 #include "DlgSongs.h"
@@ -19,6 +20,7 @@
 #include "HashCalculator.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
+#include "Utils.h"
 
 
 
@@ -74,27 +76,29 @@ PlayerWindow::PlayerWindow(
 	}
 
 	// Connect the signals:
-	connect(m_UI->btnSongs,              &QPushButton::clicked,      this, &PlayerWindow::showSongs);
-	connect(m_UI->btnTemplates,          &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
-	connect(m_UI->btnHistory,            &QPushButton::clicked,      this, &PlayerWindow::showHistory);
-	connect(m_UI->btnAddFromTemplate,    &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
-	connect(m_UI->btnPrev,               &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
-	connect(m_UI->btnPlay,               &QPushButton::clicked,      this, &PlayerWindow::playPause);
-	connect(m_UI->btnNext,               &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
-	connect(m_UI->tblPlaylist,           &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
-	connect(m_UI->vsVolume,              &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,               &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
-	connect(m_UI->btnTempoReset,         &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
-	connect(m_UI->actBackgroundTasks,    &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
-	connect(m_UI->actSongProperties,     &QAction::triggered,        this, &PlayerWindow::showSongProperties);
-	connect(&m_UpdateTimer,              &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
-	connect(m_UI->actDeleteFromDisk,     &QAction::triggered,        this, &PlayerWindow::deleteSongsFromDisk);
-	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,        this, &PlayerWindow::removeSongsFromLibrary);
-	connect(m_UI->actRemoveFromPlaylist, &QAction::triggered,        this, &PlayerWindow::removeSongsFromPlaylist);
-	connect(m_UI->actPlay,               &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
-	connect(m_UI->lwQuickPlayer,         &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
-	connect(m_UI->tblPlaylist,           &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
-	connect(m_UI->waveform,              &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
+	connect(m_UI->btnSongs,               &QPushButton::clicked,      this, &PlayerWindow::showSongs);
+	connect(m_UI->btnTemplates,           &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
+	connect(m_UI->btnHistory,             &QPushButton::clicked,      this, &PlayerWindow::showHistory);
+	connect(m_UI->btnAddFromTemplate,     &QPushButton::clicked,      this, &PlayerWindow::addFromTemplate);
+	connect(m_UI->btnPrev,                &QPushButton::clicked,      this, &PlayerWindow::prevTrack);
+	connect(m_UI->btnPlay,                &QPushButton::clicked,      this, &PlayerWindow::playPause);
+	connect(m_UI->btnNext,                &QPushButton::clicked,      this, &PlayerWindow::nextTrack);
+	connect(m_UI->tblPlaylist,            &QTableView::doubleClicked, this, &PlayerWindow::trackDoubleClicked);
+	connect(m_UI->vsVolume,               &QSlider::sliderMoved,      this, &PlayerWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,                &QSlider::valueChanged,     this, &PlayerWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,          &QToolButton::clicked,      this, &PlayerWindow::resetTempo);
+	connect(m_UI->actBackgroundTasks,     &QAction::triggered,        this, &PlayerWindow::showBackgroundTasks);
+	connect(m_UI->actSongProperties,      &QAction::triggered,        this, &PlayerWindow::showSongProperties);
+	connect(&m_UpdateTimer,               &QTimer::timeout,           this, &PlayerWindow::periodicUIUpdate);
+	connect(m_UI->actDeleteFromDisk,      &QAction::triggered,        this, &PlayerWindow::deleteSongsFromDisk);
+	connect(m_UI->actRemoveFromLibrary,   &QAction::triggered,        this, &PlayerWindow::removeSongsFromLibrary);
+	connect(m_UI->actRemoveFromPlaylist,  &QAction::triggered,        this, &PlayerWindow::removeSongsFromPlaylist);
+	connect(m_UI->actPlay,                &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
+	connect(m_UI->actSetDurationLimit,    &QAction::triggered,        this, &PlayerWindow::setDurationLimit);
+	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,        this, &PlayerWindow::removeDurationLimit);
+	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
+	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
+	connect(m_UI->waveform,               &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -208,6 +212,19 @@ void PlayerWindow::refreshQuickPlayer()
 
 
 
+void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
+{
+	const auto & items = m_Player.playlist().items();
+	for (const auto & row: m_UI->tblPlaylist->selectionModel()->selectedRows())
+	{
+		items[row.row()]->setDurationLimit(a_NewDurationLimit);
+	}
+}
+
+
+
+
+
 void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
@@ -250,7 +267,7 @@ void PlayerWindow::showHistory(bool a_IsChecked)
 
 void PlayerWindow::addSong(std::shared_ptr<Song> a_Song)
 {
-	addPlaylistItem(std::make_shared<PlaylistItemSong>(a_Song));
+	addPlaylistItem(std::make_shared<PlaylistItemSong>(a_Song, nullptr));
 }
 
 
@@ -445,6 +462,7 @@ void PlayerWindow::periodicUIUpdate()
 void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 {
 	// Build the context menu:
+	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
 	QMenu contextMenu;
 	contextMenu.addAction(m_UI->actPlay);
 	contextMenu.addSeparator();
@@ -455,6 +473,15 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
 	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actSetDurationLimit);
+	for (const auto dl: {30, 45, 60, 75, 90, 120, 150})
+	{
+		auto actQuickOffer = contextMenu.addAction(QString("    %1").arg(Utils::formatTime(dl)));
+		connect(actQuickOffer, &QAction::triggered, [this, dl]() { setSelectedItemsDurationLimit(dl); });
+		actQuickOffer->setEnabled(!sel.isEmpty());
+	}
+	contextMenu.addAction(m_UI->actRemoveDurationLimit);
+	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRemoveFromPlaylist);
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actRemoveFromLibrary);
@@ -463,13 +490,14 @@ void PlayerWindow::showPlaylistContextMenu(const QPoint & a_Pos)
 	contextMenu.addAction(m_UI->actSongProperties);
 
 	// Update actions based on selection:
-	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
 	m_UI->actSongProperties->setEnabled(sel.count() == 1);
 	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
 	m_UI->actRemoveFromPlaylist->setEnabled(!sel.isEmpty());
 	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
 	m_UI->actPlay->setEnabled(sel.count() == 1);
 	m_UI->actRate->setEnabled(!sel.isEmpty());
+	m_UI->actSetDurationLimit->setEnabled(!sel.isEmpty());
+	m_UI->actRemoveDurationLimit->setEnabled(!sel.isEmpty());
 
 	// Display the menu:
 	auto widget = dynamic_cast<QWidget *>(sender());
@@ -612,7 +640,7 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 	{
 		return;
 	}
-	if (!m_Player.playlist().addFromTemplateItem(m_DB, *item))
+	if (!m_Player.playlist().addFromTemplateItem(m_DB, item->shared_from_this()))
 	{
 		qDebug() << ": Failed to add a template item to playlist.";
 		return;
@@ -623,4 +651,41 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 		m_Player.playlist().setCurrentItem(static_cast<int>(m_Player.playlist().items().size() - 1));
 		m_Player.start();
 	}
+}
+
+
+
+
+
+void PlayerWindow::setDurationLimit()
+{
+	bool isOK;
+	QString durationLimitStr = QInputDialog::getText(
+		this,
+		tr("SkauTan: Set duration limit"),
+		tr("New duration:"),
+		QLineEdit::Normal,
+		QString(),
+		&isOK
+	);
+	if (!isOK)
+	{
+		return;
+	}
+	auto durationLimit = Utils::parseTime(durationLimitStr, isOK);
+	if (durationLimitStr.isEmpty() || !isOK)
+	{
+		durationLimit = -1;
+	}
+
+	setSelectedItemsDurationLimit(durationLimit);
+}
+
+
+
+
+
+void PlayerWindow::removeDurationLimit()
+{
+	setSelectedItemsDurationLimit(-1);
 }

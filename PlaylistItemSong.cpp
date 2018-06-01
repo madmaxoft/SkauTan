@@ -6,8 +6,13 @@
 
 
 
-PlaylistItemSong::PlaylistItemSong(SongPtr a_Song):
-	m_Song(a_Song)
+PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, Template::ItemPtr a_TemplateItem):
+	m_Song(a_Song),
+	m_TemplateItem(a_TemplateItem),
+	m_DurationLimit(
+		((a_TemplateItem != nullptr) && a_TemplateItem->durationLimit().isPresent()) ?
+		a_TemplateItem->durationLimit().value() : -1
+	)
 {
 }
 
@@ -76,6 +81,15 @@ double PlaylistItemSong::displayTempo() const
 		return m_Song->primaryMeasuresPerMinute().value();
 	}
 	return -1;
+}
+
+
+
+
+
+void PlaylistItemSong::setDurationLimit(double a_Seconds)
+{
+	m_DurationLimit = a_Seconds;
 }
 
 

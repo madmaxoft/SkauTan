@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QFont>
 #include <QApplication>
+#include "Utils.h"
 
 
 
@@ -36,6 +37,19 @@ static QString formatTempo(double a_Tempo)
 		return PlaylistItemModel::tr("<unknown>", "Tempo");
 	}
 	return QString::number(a_Tempo, 'f', 1);
+}
+
+
+
+
+
+static QString formatDurationLimit(double a_DurationLimit)
+{
+	if (a_DurationLimit < 0)
+	{
+		return QString();
+	}
+	return Utils::formatTime(a_DurationLimit);
 }
 
 
@@ -199,6 +213,19 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 	}
 	switch (a_Role)
 	{
+		case Qt::TextAlignmentRole:
+		{
+			switch (a_Index.column())
+			{
+				case colLength:
+				case colDurationLimit:
+				case colMeasuresPerMinute:
+				{
+					return Qt::AlignRight;
+				}
+			}
+			return Qt::AlignLeft;
+		}
 		case Qt::DisplayRole:
 		{
 			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
@@ -210,6 +237,7 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			{
 				case colGenre:             return item->displayGenre();
 				case colLength:            return formatLength(item->displayLength());
+				case colDurationLimit:     return formatDurationLimit(item->durationLimit());
 				case colMeasuresPerMinute: return formatTempo(item->displayTempo());
 				case colAuthor:            return item->displayAuthor();
 				case colTitle:             return item->displayTitle();
@@ -259,6 +287,7 @@ QVariant PlaylistItemModel::headerData(int a_Section, Qt::Orientation a_Orientat
 	{
 		case colGenre:             return tr("Genre");
 		case colLength:            return tr("Length");
+		case colDurationLimit:     return tr("Dur", "Duration (limit)");
 		case colMeasuresPerMinute: return tr("MPM");
 		case colAuthor:            return tr("Author");
 		case colTitle:             return tr("Title");
