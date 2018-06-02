@@ -207,6 +207,7 @@ void DlgSongs::initFilterSearch()
 	m_UI->cbFilter->addItem(tr("Songs with warnings"),                  SongModelFilter::fltWarnings);
 	m_UI->cbFilter->addItem(tr("Songs not matching any template item"), SongModelFilter::fltNoTemplateFilterMatch);
 	m_UI->cbFilter->addItem(tr("Songs with duplicates"),                SongModelFilter::fltDuplicates);
+	m_UI->cbFilter->addItem(tr("Songs with skip-start"),                SongModelFilter::fltSkipStart);
 
 	// Bind signals / slots:
 	// Cannot bind overloaded signal via fn ptr in older Qt, need to use SIGNAL() / SLOT()

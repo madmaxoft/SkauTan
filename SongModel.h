@@ -182,6 +182,7 @@ public:
 		fltWarnings,               //< Songs with warnings
 		fltNoTemplateFilterMatch,  //< Songs matching no Template filter
 		fltDuplicates,             //< Songs that have duplicates
+		fltSkipStart,              //< Songs that have a skip-start defined
 	};
 
 

@@ -112,7 +112,7 @@ static QString formatSkipStart(const DatedOptional<double> & a_SkipStart)
 	{
 		return QString();
 	}
-	return Utils::formatTime(a_SkipStart.value());
+	return Utils::formatFractionalTime(a_SkipStart.value(), 3);
 }
 
 
@@ -806,6 +806,15 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 			}
 			break;
 		}  // case fltDuplicates
+
+		case fltSkipStart:
+		{
+			if (!song->skipStart().isPresent())
+			{
+				return false;  // Don't want without skip-start
+			}
+			break;
+		}  // case fltSkipStart
 	}
 	return songMatchesSearchString(song);
 }

@@ -44,8 +44,9 @@ double parseTime(const QString & a_TimeString, bool & isOK);
 Fractional second part is rounded and otherwise ignored. */
 QString formatTime(double a_Seconds);
 
-/** Formats the time in fractional seconds into string "mmm:ss.fff". */
-QString formatFractionalTime(double a_Seconds);
+/** Formats the time in fractional seconds into string "mmm:ss.fff".
+a_Decimals specifies the number of decimal places after the decimal dot ("f"). */
+QString formatFractionalTime(double a_Seconds, int a_NumDecimals);
 
 
 

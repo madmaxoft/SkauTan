@@ -88,12 +88,21 @@ QString formatTime(double a_Seconds)
 
 
 
-QString formatFractionalTime(double a_Seconds)
+QString formatFractionalTime(double a_Seconds, int a_NumDecimals)
 {
 	auto seconds = static_cast<int>(std::floor(a_Seconds));
 	auto minutes = seconds / 60;
-	auto leftoverSeconds = a_Seconds - 60 * minutes;
-	return QString("%1:%2").arg(minutes).arg(QString::number(leftoverSeconds, 'f', 1), 2, '0');
+	QString fractionalSecondsStr;
+	auto fractionalSeconds = (a_Seconds - seconds) * 10;
+	for (int i = 0; i < a_NumDecimals; ++i)
+	{
+		fractionalSecondsStr.append(QChar('0' + static_cast<int>(fractionalSeconds)));
+		fractionalSeconds = (fractionalSeconds - static_cast<int>(fractionalSeconds)) * 10;
+	}
+	return QString("%1:%2.%3")
+		.arg(minutes)
+		.arg(QString::number(seconds % 60), 2,'0')
+		.arg(fractionalSecondsStr);
 }
 
 
