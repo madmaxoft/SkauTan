@@ -106,6 +106,19 @@ template <typename T> static QString formatLastModTooltip(const DatedOptional<T>
 
 
 
+static QString formatSkipStart(const DatedOptional<double> & a_SkipStart)
+{
+	if (!a_SkipStart.isPresent())
+	{
+		return QString();
+	}
+	return Utils::formatTime(a_SkipStart.value());
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // SongModel:
 
@@ -227,6 +240,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
 				case colNumMatchingFilters:        return numMatchingFilters(song);
 				case colNumDuplicates:             return numDuplicates(song);
+				case colSkipStart:                 return formatSkipStart(song->skipStart());
 			}
 			break;
 		}
@@ -236,6 +250,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 			{
 				case colNumMatchingFilters: return (numMatchingFilters(song) > 0) ? QVariant() : QColor(255, 192, 192);
 				case colNumDuplicates:      return (numDuplicates(song) < 2) ? QVariant() : QColor(255, 192, 192);
+				case colSkipStart:          return (song->skipStart().valueOrDefault() > 0) ? QColor(255, 255, 192) : QVariant();
 			}
 			if (!song->getWarnings().isEmpty())
 			{
@@ -264,6 +279,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colManualMeasuresPerMinute:
 				case colId3MeasuresPerMinute:
 				case colFileNameMeasuresPerMinute:
+				case colSkipStart:
 				{
 					return Qt::AlignRight;
 				}
@@ -309,6 +325,7 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colId3MeasuresPerMinute:      return tr("MPM (T)", "ID3 Tag");
 		case colNumMatchingFilters:        return tr("# flt", "Num matching favorite filters");
 		case colNumDuplicates:             return tr("# dup", "Num duplicates");
+		case colSkipStart:                 return tr("Skip-start");
 	}
 	return QVariant();
 }

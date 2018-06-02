@@ -52,6 +52,7 @@ public:
 		colFileNameMeasuresPerMinute,
 		colNumMatchingFilters,
 		colNumDuplicates,
+		colSkipStart,
 		colFileName,
 
 		colMax,
