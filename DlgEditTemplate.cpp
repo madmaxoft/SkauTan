@@ -135,7 +135,7 @@ void DlgEditTemplate::updateTemplateItemRow(int a_Row, const Template::Item & a_
 	m_UI->tblItems->setItem(a_Row, 2, wi);
 
 	const auto & durationLimit = a_Item.durationLimit();
-	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatFractionalTime(durationLimit.value()) : "");
+	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 3, wi);

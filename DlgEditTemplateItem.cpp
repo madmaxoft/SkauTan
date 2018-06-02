@@ -357,7 +357,7 @@ DlgEditTemplateItem::DlgEditTemplateItem(
 	m_UI->leBgColor->setText(m_Item.bgColor().name());
 	if (m_Item.durationLimit().isPresent())
 	{
-		m_UI->leDurationLimit->setText(Utils::formatFractionalTime(m_Item.durationLimit().value()));
+		m_UI->leDurationLimit->setText(Utils::formatTime(m_Item.durationLimit().value()));
 	}
 
 	// Display the filters tree:
