@@ -243,7 +243,7 @@ QStringList Song::getWarnings() const
 		if (primaryMPM.isPresent())
 		{
 			auto mpm = primaryMPM.value();
-			auto range = competitionTempoRangeForGenre(primaryGenre().value());
+			auto range = competitionTempoRangeForGenre(primaryGenre().valueOrDefault());
 			if (mpm < range.first * 0.7)
 			{
 				res.append(tr("The detected tempo is suspiciously low: Lowest competition tempo: %1; detected tempo: %2")
