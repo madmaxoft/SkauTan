@@ -1,6 +1,5 @@
 #include "Song.h"
 #include <assert.h>
-#include <QSqlQuery>
 #include <QVariant>
 #include <QDebug>
 
