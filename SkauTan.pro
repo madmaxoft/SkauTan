@@ -92,6 +92,7 @@ SOURCES += \
 	Settings.cpp \
 	DlgSongProperties.cpp \
 	Utils.cpp \
+	TempoDetector.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -129,6 +130,7 @@ HEADERS += \
 	DlgSongProperties.h \
 	DatedOptional.h \
 	Utils.h \
+	TempoDetector.h \
 
 FORMS += \
 	PlayerWindow.ui \

@@ -9,6 +9,9 @@ leaks.xml
 *.SkauTanTemplates
 *.ini
 *.log
+BeatDetectTest/*.raw
+BeatDetectTest/*.pk
+
 
 # Compiled translations
 translations/*.qm
