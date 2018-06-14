@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include <QString>
 #include <QDebug>
+#include <QListWidget>
 
 
 
@@ -103,6 +104,24 @@ QString formatFractionalTime(double a_Seconds, int a_NumDecimals)
 		.arg(minutes)
 		.arg(QString::number(seconds % 60), 2,'0')
 		.arg(fractionalSecondsStr);
+}
+
+
+
+
+
+bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data)
+{
+	int numRows = a_ListWidget->count();
+	for (int row = 0; row < numRows; ++row)
+	{
+		if (a_ListWidget->item(row)->data(Qt::UserRole) == a_Data)
+		{
+			a_ListWidget->setCurrentRow(row);
+			return true;
+		}
+	}
+	return false;
 }
 
 

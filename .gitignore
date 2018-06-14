@@ -6,6 +6,8 @@ leaks.xml
 # Runtime files:
 *.sqlite
 *.mp3
+*.pk
+*.raw
 *.SkauTanTemplates
 *.ini
 *.log

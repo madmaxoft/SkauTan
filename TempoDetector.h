@@ -93,6 +93,10 @@ public:
 		Options(const Options &) = default;
 		Options(Options &&) = default;
 		Options();
+
+		bool operator < (const Options & a_Other);
+		bool operator ==(const Options & a_Other);
+		Options & operator = (const Options & a_Other) = default;
 	};
 
 
@@ -100,6 +104,9 @@ public:
 	/** Holds the calculated result of the detection. */
 	struct Result
 	{
+		/** The options used to calculate this result. */
+		Options m_Options;
+
 		/** The detected tempo. */
 		int m_Tempo;
 
@@ -119,6 +126,8 @@ public:
 		/** A vector of all levels calculated for the audio. */
 		std::vector<qint32> m_Levels;
 	};
+
+	using ResultPtr = std::shared_ptr<Result>;
 
 
 	TempoDetector();
@@ -143,9 +152,10 @@ protected:
 signals:
 
 	/** Emitted after a song has been scanned. */
-	void songScanned(SongPtr a_Song, std::shared_ptr<Result> a_Result);
+	void songScanned(SongPtr a_Song, TempoDetector::ResultPtr a_Result);
 };
 
+Q_DECLARE_METATYPE(TempoDetector::ResultPtr);
 
 
 

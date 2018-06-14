@@ -93,6 +93,7 @@ SOURCES += \
 	DlgSongProperties.cpp \
 	Utils.cpp \
 	TempoDetector.cpp \
+	DlgTempoDetect.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -131,6 +132,7 @@ HEADERS += \
 	DatedOptional.h \
 	Utils.h \
 	TempoDetector.h \
+	DlgTempoDetect.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -144,6 +146,7 @@ FORMS += \
 	DlgChooseImportTemplates.ui \
 	DlgBackgroundTaskList.ui \
 	DlgSongProperties.ui \
+	DlgTempoDetect.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

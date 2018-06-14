@@ -7,6 +7,8 @@
 
 // Fwd:
 class QString;
+class QListWidget;
+class QVariant;
 
 
 
@@ -36,6 +38,16 @@ template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
 
 
 
+/** Returns true if the specified value lies within the specified range. Min and Max are inclusive. */
+template <typename T> bool isInRange(T a_Value, T a_Min, T a_Max)
+{
+	return (a_Value >= a_Min) && (a_Value <= a_Max);
+}
+
+
+
+
+
 /** Parses the string in the format "[[hh:]mm:]ss.fff" or "[hh:]mmm:ss.fff" into fractional seconds.
 If the string cannot be parsed, isOK is set to false and returns -1. */
 double parseTime(const QString & a_TimeString, bool & isOK);
@@ -48,7 +60,10 @@ QString formatTime(double a_Seconds);
 a_Decimals specifies the number of decimal places after the decimal dot ("f"). */
 QString formatFractionalTime(double a_Seconds, int a_NumDecimals);
 
-
+/** Finds the first item in the widget that has the specified data set as its Qt::UserRole,
+and selects the item's row.
+Returns true if item found, false otherwise. */
+bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data);
 
 
 };

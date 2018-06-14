@@ -177,6 +177,9 @@ private slots:
 	/** Asks for a (local) rating, then assigns it to all selected songs. */
 	void rateSelected();
 
+	/** Shows the tempo detector dialog for the first selected song. */
+	void showTempoDetector();
+
 
 signals:
 
