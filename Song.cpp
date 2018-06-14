@@ -282,6 +282,7 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 		{"PD", {58, 60}},
 		{"JI", {40, 44}},
 		{"PO", {56, 60}},
+		{"BL", {20, 23}},
 	};
 
 	// Find the genre:
