@@ -13,6 +13,7 @@ leaks.xml
 *.log
 BeatDetectTest/*.raw
 BeatDetectTest/*.pk
+BeatDetectTest/filelist*
 
 
 # Compiled translations
