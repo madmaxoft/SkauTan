@@ -14,6 +14,7 @@
 #include "PlaybackBuffer.h"
 #include "Template.h"
 #include "Settings.h"
+#include "TempoDetector.h"
 
 
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
 		// Initialize singletons / subsystems:
 		BackgroundTasks::get();
 		qRegisterMetaType<SongPtr>();
+		qRegisterMetaType<TempoDetector::ResultPtr>();
 		Settings::init("SkauTan.ini");
 
 		// Create the main app objects:

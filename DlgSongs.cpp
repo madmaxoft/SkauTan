@@ -1,4 +1,5 @@
 #include "DlgSongs.h"
+#include <assert.h>
 #include <QFileDialog>
 #include <QDebug>
 #include <QProcessEnvironment>
@@ -15,6 +16,7 @@
 #include "HashCalculator.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
+#include "DlgTempoDetect.h"
 
 
 
@@ -75,6 +77,7 @@ DlgSongs::DlgSongs(
 		m_UI->actProperties,
 		m_UI->actRate,
 		m_UI->actRemoveFromLibrary,
+		m_UI->actTempoDetector,
 	});
 
 	// Connect the signals:
@@ -237,6 +240,8 @@ void DlgSongs::createContextMenu()
 	connect(m_ContextMenu->addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
 	connect(m_ContextMenu->addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actTempoDetector);
+	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actProperties);
 
 	// Connect the actions:
@@ -245,6 +250,7 @@ void DlgSongs::createContextMenu()
 	connect(m_UI->actProperties,        &QAction::triggered, this, &DlgSongs::showProperties);
 	connect(m_UI->actRate,              &QAction::triggered, this, &DlgSongs::rateSelected);
 	connect(m_UI->actRemoveFromLibrary, &QAction::triggered, this, &DlgSongs::removeSelected);
+	connect(m_UI->actTempoDetector,     &QAction::triggered, this, &DlgSongs::showTempoDetector);
 }
 
 
@@ -515,6 +521,7 @@ void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
 	m_UI->actProperties->setEnabled(sel.count() == 1);
 	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
 	m_UI->actRate->setEnabled(!sel.isEmpty());
+	m_UI->actTempoDetector->setEnabled(sel.count() == 1);
 
 	// Show the context menu:
 	auto widget = dynamic_cast<QWidget *>(sender());
@@ -571,4 +578,21 @@ void DlgSongs::rateSelected()
 		emit m_SongModel.songEdited(song);
 		m_DB.saveSong(song);
 	}
+}
+
+
+
+
+
+void DlgSongs::showTempoDetector()
+{
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	if (sel.isEmpty())
+	{
+		return;
+	}
+	auto song = songFromIndex(sel[0]);
+	assert(song != nullptr);
+	DlgTempoDetect dlg(m_DB, song, this);
+	dlg.exec();
 }

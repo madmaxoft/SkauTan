@@ -53,6 +53,7 @@ public:
 		context->decode();
 
 		auto res = std::make_shared<TempoDetector::Result>();
+		res->m_Options = m_Options;
 		res->m_Levels = calcLevels(buf);
 		debugLevelsInAudioData(buf, res->m_Levels);
 		res->m_Beats = detectBeats(res->m_Levels);
@@ -636,4 +637,62 @@ TempoDetector::Options::Options():
 	m_HistogramFoldMin(16),
 	m_HistogramFoldMax(240)
 {
+}
+
+
+
+
+
+bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
+{
+	#define COMPARE(val) \
+		if (val < a_Other.val) \
+		{ \
+			return true; \
+		} \
+		if (val > a_Other.val) \
+		{ \
+			return false; \
+		}
+
+	COMPARE(m_LevelAlgorithm)
+	COMPARE(m_WindowSize)
+	COMPARE(m_Stride)
+	COMPARE(m_LevelAvg)
+	COMPARE(m_LevelPeak)
+	COMPARE(m_HistogramCutoff)
+	COMPARE(m_ShouldFoldHistogram)
+	if (m_ShouldFoldHistogram)
+	{
+		COMPARE(m_HistogramFoldMin)
+		COMPARE(m_HistogramFoldMax)
+	}
+	return false;
+}
+
+
+
+
+
+bool TempoDetector::Options::operator ==(const TempoDetector::Options & a_Other)
+{
+	if (
+		m_ShouldFoldHistogram &&
+		(
+			(m_HistogramFoldMin != a_Other.m_HistogramFoldMin) ||
+			(m_HistogramFoldMax != a_Other.m_HistogramFoldMax)
+		)
+	)
+	{
+		return false;
+	}
+	return (
+		(m_LevelAlgorithm == a_Other.m_LevelAlgorithm) &&
+		(m_WindowSize == a_Other.m_WindowSize) &&
+		(m_Stride == a_Other.m_Stride) &&
+		(m_LevelAvg == a_Other.m_LevelAvg) &&
+		(m_LevelPeak == a_Other.m_LevelPeak) &&
+		(m_HistogramCutoff == a_Other.m_HistogramCutoff) &&
+		(m_ShouldFoldHistogram == a_Other.m_ShouldFoldHistogram)
+	);
 }

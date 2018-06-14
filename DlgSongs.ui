@@ -276,6 +276,14 @@
     <string>Ctrl+R</string>
    </property>
   </action>
+  <action name="actTempoDetector">
+   <property name="text">
+    <string>Tempo detector...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
