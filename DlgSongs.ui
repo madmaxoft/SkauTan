@@ -281,6 +281,14 @@
     <string>Tempo detector...</string>
    </property>
    <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actTapTempo">
+   <property name="text">
+    <string>Tap tempo...</string>
+   </property>
+   <property name="shortcut">
     <string>Ctrl+T</string>
    </property>
   </action>

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <QVariant>
 #include <QDebug>
+#include "Utils.h"
 
 
 
@@ -331,6 +332,51 @@ QStringList Song::recognizedGenres()
 		"SL",
 		"RO",
 	};
+}
+
+
+
+
+
+double Song::foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Genre)
+{
+	auto range = competitionTempoRangeForGenre(a_Genre.valueOrDefault());
+	if (range.first <= 0.1)
+	{
+		qDebug() << "No valid range for genre " << a_Genre.valueOrDefault() << ", bailing out of MPM adjustment.";
+		return a_Tempo;
+	}
+	range.first = range.first * 0.8;  // Allow 20 % slower songs
+	range.second = range.second * 1.1;  // Allow 10 % faster songs
+	if (a_Tempo < range.first)
+	{
+		while (a_Tempo < range.first)
+		{
+			a_Tempo = a_Tempo * 2;
+		}
+		return a_Tempo;
+	}
+
+	// The tempo is faster than the regular range
+	// For SW, VW and BL, try first if it makes sense to divide by 3:
+	const auto & genre = a_Genre.value();
+	if ((genre == "SW") || (genre == "VW") || (genre == "BL"))
+	{
+		for (int d: {1, 2, 4, 8, 16})
+		{
+			if (Utils::isInRange((a_Tempo / d) / 3, range.first, range.second))
+			{
+				return (a_Tempo / d) / 3;
+			}
+		}
+	}
+
+	// All other genres only half the tempo until it is lower than the max:
+	while (a_Tempo > range.second)
+	{
+		a_Tempo = a_Tempo / 2;
+	}
+	return a_Tempo;
 }
 
 

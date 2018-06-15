@@ -240,6 +240,10 @@ public:
 	/** Returns all recognized genres, in a format suitable for QComboBox items. */
 	static QStringList recognizedGenres();
 
+	/** Returns the best guess of the MPM for a song of the specified genre from the specified tempo.
+	Assumes that the tempo is a reasonable multiple of the destination MPM; genre is used for triplet tempos. */
+	static double foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Genre);
+
 protected:
 
 	QString m_FileName;

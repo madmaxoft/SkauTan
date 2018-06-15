@@ -94,6 +94,7 @@ SOURCES += \
 	Utils.cpp \
 	TempoDetector.cpp \
 	DlgTempoDetect.cpp \
+	DlgTapTempo.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -133,6 +134,7 @@ HEADERS += \
 	Utils.h \
 	TempoDetector.h \
 	DlgTempoDetect.h \
+	DlgTapTempo.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -147,6 +149,7 @@ FORMS += \
 	DlgBackgroundTaskList.ui \
 	DlgSongProperties.ui \
 	DlgTempoDetect.ui \
+	DlgTapTempo.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

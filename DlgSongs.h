@@ -180,6 +180,9 @@ private slots:
 	/** Shows the tempo detector dialog for the first selected song. */
 	void showTempoDetector();
 
+	/** Shows the TapTempo dialog fo the first selected song. */
+	void showTapTempo();
+
 
 signals:
 

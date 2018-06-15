@@ -17,6 +17,7 @@
 #include "Settings.h"
 #include "DlgSongProperties.h"
 #include "DlgTempoDetect.h"
+#include "DlgTapTempo.h"
 
 
 
@@ -78,21 +79,29 @@ DlgSongs::DlgSongs(
 		m_UI->actRate,
 		m_UI->actRemoveFromLibrary,
 		m_UI->actTempoDetector,
+		m_UI->actTapTempo,
 	});
 
 	// Connect the signals:
-	connect(m_UI->btnAddFile,        &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
-	connect(m_UI->btnAddFolder,      &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnRemove,         &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
-	connect(m_UI->btnClose,          &QPushButton::clicked,                   this, &DlgSongs::close);
-	connect(m_UI->btnAddToPlaylist,  &QPushButton::clicked,                   this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->btnRescanMetadata, &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
-	connect(&m_SongModel,            &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
-	connect(&m_SongModel,            &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                   &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                   &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
-	connect(&m_PeriodicUiUpdate,     &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
-	connect(m_UI->tblSongs,          &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
+	connect(m_UI->btnAddFile,           &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
+	connect(m_UI->btnAddFolder,         &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
+	connect(m_UI->btnRemove,            &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
+	connect(m_UI->btnClose,             &QPushButton::clicked,                   this, &DlgSongs::close);
+	connect(m_UI->btnAddToPlaylist,     &QPushButton::clicked,                   this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->btnRescanMetadata,    &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
+	connect(&m_SongModel,               &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
+	connect(&m_SongModel,               &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                      &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
+	connect(&m_DB,                      &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
+	connect(&m_PeriodicUiUpdate,        &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
+	connect(m_UI->tblSongs,             &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
+	connect(m_UI->actAddToPlaylist,     &QAction::triggered, this, &DlgSongs::addSelectedToPlaylist);
+	connect(m_UI->actDeleteFromDisk,    &QAction::triggered, this, &DlgSongs::deleteFromDisk);
+	connect(m_UI->actProperties,        &QAction::triggered, this, &DlgSongs::showProperties);
+	connect(m_UI->actRate,              &QAction::triggered, this, &DlgSongs::rateSelected);
+	connect(m_UI->actRemoveFromLibrary, &QAction::triggered, this, &DlgSongs::removeSelected);
+	connect(m_UI->actTempoDetector,     &QAction::triggered, this, &DlgSongs::showTempoDetector);
+	connect(m_UI->actTapTempo,          &QAction::triggered, this, &DlgSongs::showTapTempo);
 
 	initFilterSearch();
 	createContextMenu();
@@ -243,14 +252,6 @@ void DlgSongs::createContextMenu()
 	m_ContextMenu->addAction(m_UI->actTempoDetector);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actProperties);
-
-	// Connect the actions:
-	connect(m_UI->actAddToPlaylist,     &QAction::triggered, this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->actDeleteFromDisk,    &QAction::triggered, this, &DlgSongs::deleteFromDisk);
-	connect(m_UI->actProperties,        &QAction::triggered, this, &DlgSongs::showProperties);
-	connect(m_UI->actRate,              &QAction::triggered, this, &DlgSongs::rateSelected);
-	connect(m_UI->actRemoveFromLibrary, &QAction::triggered, this, &DlgSongs::removeSelected);
-	connect(m_UI->actTempoDetector,     &QAction::triggered, this, &DlgSongs::showTempoDetector);
 }
 
 
@@ -594,5 +595,22 @@ void DlgSongs::showTempoDetector()
 	auto song = songFromIndex(sel[0]);
 	assert(song != nullptr);
 	DlgTempoDetect dlg(m_DB, song, this);
+	dlg.exec();
+}
+
+
+
+
+
+void DlgSongs::showTapTempo()
+{
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	if (sel.isEmpty())
+	{
+		return;
+	}
+	auto song = songFromIndex(sel[0]);
+	assert(song != nullptr);
+	DlgTapTempo dlg(m_DB, song, this);
 	dlg.exec();
 }
