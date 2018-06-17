@@ -134,6 +134,10 @@ const std::list<BackgroundTasks::TaskPtr> BackgroundTasks::tasks() const
 BackgroundTasks::TaskPtr BackgroundTasks::getNextTask()
 {
 	QMutexLocker lock(&m_Mtx);
+	if (m_ShouldTerminate)
+	{
+		return nullptr;
+	}
 	while (m_Tasks.empty())
 	{
 		if (m_ShouldTerminate)
@@ -180,7 +184,7 @@ void BackgroundTasks::Executor::run()
 		QMetaObject::invokeMethod(
 			&m_Parent,
 			"emitTaskFinished",
-			Qt::BlockingQueuedConnection,
+			Qt::QueuedConnection,
 			Q_ARG(BackgroundTasks::TaskPtr, task)
 		);
 		task = m_Parent.getNextTask();
