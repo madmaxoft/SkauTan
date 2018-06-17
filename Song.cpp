@@ -149,6 +149,12 @@ void Song::setLength(double a_Length)
 
 void Song::setHash(QByteArray && a_Hash)
 {
+	if (a_Hash == m_Hash)
+	{
+		// Setting the same hash is supported, and is used for length update (#141):
+		return;
+	}
+
 	assert(m_SharedData == nullptr);
 	assert(!m_Hash.isValid());
 
@@ -162,6 +168,11 @@ void Song::setHash(QByteArray && a_Hash)
 void Song::setSharedData(Song::SharedDataPtr a_SharedData)
 {
 	assert(m_Hash.toByteArray() == a_SharedData->m_Hash);
+	if (a_SharedData == m_SharedData)
+	{
+		// SharedData already set, bail out:
+		return;
+	}
 	m_SharedData = a_SharedData;
 	m_SharedData->addDuplicate(shared_from_this());
 }
@@ -390,6 +401,14 @@ double Song::foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Gen
 void Song::SharedData::addDuplicate(SongPtr a_Duplicate)
 {
 	QMutexLocker lock(&m_Mtx);
+	for (const auto & d: m_Duplicates)
+	{
+		if (d == a_Duplicate)
+		{
+			// Already added, bail out.
+			return;
+		}
+	}
 	m_Duplicates.push_back(a_Duplicate);
 }
 

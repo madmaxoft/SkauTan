@@ -617,7 +617,13 @@ void Database::loadSongs()
 		{
 			auto shared = m_SongSharedData.find(song->hash().toByteArray());
 			song->setSharedData(shared->second);
-			if (song->needsTagRescan())
+			if (!shared->second->m_Length.isValid())
+			{
+				// The song length hasn't been set, update it (the Hasher does that; #141):
+				qDebug() << "Enqueueuing song for length update: " << song->fileName();
+				emit needSongHash(song);
+			}
+			else if (song->needsTagRescan())
 			{
 				emit needSongTagRescan(song);
 			}
@@ -1314,6 +1320,7 @@ void Database::songHashCalculated(SongPtr a_Song, double a_Length)
 	if (a_Length > 0)
 	{
 		a_Song->setLength(a_Length);
+		saveSongSharedData(a_Song->sharedData());
 	}
 	else
 	{

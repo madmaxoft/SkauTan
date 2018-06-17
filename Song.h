@@ -151,8 +151,8 @@ public:
 	void setLength(double a_Length);
 
 	/** Sets the hash to the specified value.
-	Raises an assert if there is already a hash for this song, or valid SharedData.
-	Does NOT set SharedData based on the hash! */
+	Raises an assert if attempting to change an already-existing hash.
+	Does NOT set SharedData based on the hash (Database does that)! */
 	void setHash(QByteArray && a_Hash);
 
 	// void setLastPlayed(const QDateTime & a_LastPlayed);
