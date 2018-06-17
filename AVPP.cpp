@@ -578,7 +578,10 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 
 
 
-bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, int /* a_Size */)> a_Function)
+bool Format::feedRawAudioDataTo(
+	std::function<void (const void * /* a_Data */, int /* a_Size */)> a_Function,
+	double & a_LengthSec
+)
 {
 	assert(m_AudioOutput == nullptr);  // Cannot work as both decoder and feeder
 
@@ -594,6 +597,7 @@ bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, i
 
 	// Feed the stream:
 	AVPacket packet;
+	qint64 maxPts = 0;
 	while (true)
 	{
 		auto ret = av_read_frame(m_Context, &packet);
@@ -613,7 +617,16 @@ bool Format::feedRawAudioDataTo(std::function<void (const void * /* a_Data */, i
 				qDebug() << ": Negative packet size.";
 			}
 		}
+		if (packet.pts != AV_NOPTS_VALUE)
+		{
+			maxPts = std::max(maxPts, packet.pts);
+		}
 		av_packet_unref(&packet);
+	}
+	if (maxPts > 0)
+	{
+		auto stream = m_Context->streams[m_AudioStreamIdx];
+		a_LengthSec = static_cast<double>(maxPts) * stream->time_base.num / stream->time_base.den;
 	}
 	qDebug() << ": Feeding done.";
 	return true;

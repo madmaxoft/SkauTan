@@ -34,11 +34,13 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 				return;
 			}
 			QCryptographicHash ch(QCryptographicHash::Sha1);
+			double length = 0;
 			if (!context->feedRawAudioDataTo([&](const void * a_Data, int a_Size)
 				{
 					assert(a_Size >= 0);
 					ch.addData(reinterpret_cast<const char *>(a_Data), a_Size);
-				}
+				},
+				length
 			))
 			{
 				qWarning() << ": Cannot read song data for hash calculation: " << a_Song->fileName();
@@ -48,7 +50,7 @@ void HashCalculator::queueHashSong(SongPtr a_Song)
 			}
 			a_Song->setHash(ch.result());
 			m_QueueLength -= 1;
-			emit songHashCalculated(a_Song);
+			emit songHashCalculated(a_Song, length);
 		}
 	);
 }

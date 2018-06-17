@@ -1273,7 +1273,7 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 
 
 
-void Database::songHashCalculated(SongPtr a_Song)
+void Database::songHashCalculated(SongPtr a_Song, double a_Length)
 {
 	assert(a_Song != nullptr);
 	assert(a_Song->hash().isValid());
@@ -1309,6 +1309,15 @@ void Database::songHashCalculated(SongPtr a_Song)
 	else
 	{
 		a_Song->setSharedData(itr->second);
+	}
+
+	if (a_Length > 0)
+	{
+		a_Song->setLength(a_Length);
+	}
+	else
+	{
+		qWarning() << "Cannot get song length: " << a_Song->fileName();
 	}
 
 	// Save into the DB:

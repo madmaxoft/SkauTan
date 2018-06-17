@@ -214,8 +214,12 @@ namespace AVPP
 
 		/** Finds the best audio stream and passes all raw (compressed) audio data from that stream
 		to the specified callback function.
+		a_LengthSec gets filled with the audio data length in seconds, if available.
 		Returns true if feeding was successful, false on error. */
-		bool feedRawAudioDataTo(std::function<void (const void * /*a_Data */, int /* a_Size */)> a_Function);
+		bool feedRawAudioDataTo(
+			std::function<void (const void * /*a_Data */, int /* a_Size */)> a_Function,
+			double & a_LengthSec
+		);
 
 		/** Reads the input and decodes any data found in it, according to routing set with routeAudioTo().
 		Blocks until the entire input is decoded (or seeked out of, using seekTo() from another thread). */

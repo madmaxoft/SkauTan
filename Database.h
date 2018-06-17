@@ -191,7 +191,7 @@ public slots:
 
 	/** To be called when the song hash has been calculated and stored in a_Song.
 	The DB prepares a row for the song hash in the metadata table, or assigns an existing row to this song. */
-	void songHashCalculated(SongPtr a_Song);
+	void songHashCalculated(SongPtr a_Song, double a_Length);
 
 	/** Saves (updates) the specified song into the DB.
 	Assumes (doesn't check) that the song is contained within this DB. */

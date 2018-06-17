@@ -49,7 +49,7 @@ signals:
 
 	/** Emitted after successfully hashing the song.
 	The song's hash is already stored in a_Song before emitting this signal. */
-	void songHashCalculated(SongPtr a_Song);
+	void songHashCalculated(SongPtr a_Song, double a_Length);
 
 	/** Emitted after encountering a problem while hashing a song. */
 	void songHashFailed(SongPtr a_Song);
