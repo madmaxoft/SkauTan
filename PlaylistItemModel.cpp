@@ -4,7 +4,9 @@
 #include <QIcon>
 #include <QFont>
 #include <QApplication>
+#include <QPainter>
 #include "Utils.h"
+#include "PlaylistItemSong.h"
 
 
 
@@ -64,6 +66,7 @@ PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 {
 	connect(&m_Playlist, &Playlist::itemAdded,          this, &PlaylistItemModel::playlistItemAdded);
 	connect(&m_Playlist, &Playlist::itemDeleting,       this, &PlaylistItemModel::playlistItemDeleting);
+	connect(&m_Playlist, &Playlist::itemReplaced,       this, &PlaylistItemModel::playlistItemReplaced);
 	connect(&m_Playlist, &Playlist::currentItemChanged, this, &PlaylistItemModel::playlistCurrentChanged);
 }
 
@@ -268,8 +271,21 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			}
 			return QVariant();
 		}
+		case Qt::UserRole:
+		{
+			if (a_Index.column() != colReplace)
+			{
+				return QVariant();
+			}
+			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
+			{
+				return QVariant();
+			}
+			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
+			auto ps = std::dynamic_pointer_cast<PlaylistItemSong>(item);
+			return (ps != nullptr) && (ps->templateItem() != nullptr);
+		}
 	}
-	// TODO
 	return QVariant();
 }
 
@@ -292,6 +308,7 @@ QVariant PlaylistItemModel::headerData(int a_Section, Qt::Orientation a_Orientat
 		case colAuthor:            return tr("Author");
 		case colTitle:             return tr("Title");
 		case colDisplayName:       return tr("Name");
+		case colReplace:           return tr("Rplc", "Replace");
 	}
 	return QVariant();
 }
@@ -324,6 +341,16 @@ void PlaylistItemModel::playlistItemDeleting(IPlaylistItem * a_Item, int a_Index
 
 
 
+void PlaylistItemModel::playlistItemReplaced(int a_Index, IPlaylistItem * a_NewItem)
+{
+	Q_UNUSED(a_NewItem);
+	emit dataChanged(index(a_Index, 0), index(a_Index, colMax));
+}
+
+
+
+
+
 void PlaylistItemModel::playlistCurrentChanged(int a_CurrentItemIdx)
 {
 	if (a_CurrentItemIdx == m_CurrentItemIdx)
@@ -346,4 +373,87 @@ void PlaylistItemModel::playlistCurrentChanged(int a_CurrentItemIdx)
 		auto bottomRight = createIndex(oldItemIdx, colMax);
 		emit dataChanged(topLeft, bottomRight);
 	}
+}
+
+
+
+
+
+
+static QIcon icoReplace()
+{
+	static QIcon icon(":/img/replace.png");
+	return icon;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// PlaylistItemDelegate:
+
+void PlaylistItemDelegate::paint(
+	QPainter * a_Painter,
+	const QStyleOptionViewItem & a_Option,
+	const QModelIndex & a_Index
+) const
+{
+	switch (a_Index.column())
+	{
+		case PlaylistItemModel::colReplace:
+		{
+			Super::paint(a_Painter, a_Option, a_Index);
+			if (a_Index.model()->data(a_Index, Qt::UserRole).toBool())
+			{
+				icoReplace().paint(a_Painter, a_Option.rect);
+			}
+			break;
+		}
+		default:
+		{
+			return Super::paint(a_Painter, a_Option, a_Index);
+		}
+	}
+}
+
+
+
+
+
+QSize PlaylistItemDelegate::sizeHint(const QStyleOptionViewItem & a_Option, const QModelIndex & a_Index) const
+{
+	switch (a_Index.column())
+	{
+		case PlaylistItemModel::colReplace:
+		{
+			return icoReplace().availableSizes()[0];
+		}
+		default:
+		{
+			return Super::sizeHint(a_Option, a_Index);
+		}
+	}
+}
+
+
+
+
+
+bool PlaylistItemDelegate::editorEvent(
+	QEvent * a_Event,
+	QAbstractItemModel * a_Model,
+	const QStyleOptionViewItem & a_Option,
+	const QModelIndex & a_Index
+)
+{
+	if (
+		(a_Event->type() != QEvent::MouseButtonRelease) ||
+		(a_Index.column() != PlaylistItemModel::colReplace)
+	)
+	{
+		return Super::editorEvent(a_Event, a_Model, a_Option, a_Index);
+	}
+	emit replaceSong(a_Index);
+	return true;
 }

@@ -5,12 +5,14 @@
 
 
 #include <QAbstractTableModel>
+#include <QStyledItemDelegate>
 #include "Playlist.h"
 
 
 
 
 
+/** Provides the data for Qt widgets based on a playlist. */
 class PlaylistItemModel:
 	public QAbstractTableModel
 {
@@ -24,6 +26,7 @@ public:
 		colDurationLimit,
 		colGenre,
 		colMeasuresPerMinute,
+		colReplace,
 		colAuthor,
 		colTitle,
 		colDisplayName,
@@ -58,9 +61,47 @@ protected slots:
 
 	void playlistItemAdded(IPlaylistItem * a_Item);
 	void playlistItemDeleting(IPlaylistItem * a_Item, int a_Index);
+	void playlistItemReplaced(int a_Index, IPlaylistItem * a_NewItem);
 
 	/** Emitted by m_Playlist when its index of the current item changes. */
 	void playlistCurrentChanged(int a_CurrentItemIdx);
+};
+
+
+
+
+
+/** Provides special drawing and handling for the "Replace" column. */
+class PlaylistItemDelegate:
+	public QStyledItemDelegate
+{
+	using Super = QStyledItemDelegate;
+	Q_OBJECT
+
+public:
+
+	// QStyledItemDelegate overrides:
+	virtual void paint(
+		QPainter * a_Painter,
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) const override;
+	virtual QSize sizeHint(
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) const override;
+	virtual bool editorEvent(
+		QEvent * a_Event,
+		QAbstractItemModel * a_Model,
+		const QStyleOptionViewItem & a_Option,
+		const QModelIndex & a_Index
+	) override;
+
+
+signals:
+
+	/** Emitted when the user clicks the Replace button. */
+	void replaceSong(const QModelIndex & a_Index);
 };
 
 

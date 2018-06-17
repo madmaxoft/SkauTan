@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>img/play.png</file>
+        <file>img/replace.png</file>
         <file>other/STT-LAT.SkauTanTemplates</file>
     </qresource>
 </RCC>

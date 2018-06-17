@@ -74,6 +74,9 @@ private:
 	/** The model used to display the playlist. */
 	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
 
+	/** The delegate used for drawing individual playlist items. */
+	std::unique_ptr<PlaylistItemDelegate> m_PlaylistDelegate;
+
 	/** The timer used for periodic UI updates. */
 	QTimer m_UpdateTimer;
 
@@ -188,6 +191,10 @@ private slots:
 
 	/** Removes the duration limit from all selected playlist items. */
 	void removeDurationLimit();
+
+	/** Replaces the song at the specified index with another song matching the template.
+	If the playlist item doesn't have a template item attached, does nothing. */
+	void replaceSong(const QModelIndex & a_Index);
 };
 
 

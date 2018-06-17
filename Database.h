@@ -85,6 +85,10 @@ public:
 	/** Returns the number of songs that match the specified filter. */
 	int numSongsMatchingFilter(Template::Filter & a_Filter) const;
 
+	/** Picks a random song matching the specified template item.
+	If possible, avoids a_Avoid from being picked (picks it only if it is the only song matching the template item). */
+	SongPtr pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Avoid = nullptr) const;
+
 
 protected:
 
@@ -140,6 +144,11 @@ protected:
 	/** Returns the internal Qt DB object.
 	Only used in the DatabaseUpgrade class. */
 	QSqlDatabase & database() { return m_Database; }
+
+	/** Returns the relative "weight" of a song, when choosing by a template.
+	The weight is adjusted based on song's rating, last played date, etc.
+	If a_Playlist is given, songs on the playlist are further reduced. */
+	int getSongWeight(const Song & a_Song, const Playlist * a_Playlist = nullptr) const;
 
 
 protected slots:

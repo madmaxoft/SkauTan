@@ -2,6 +2,8 @@
 #include <assert.h>
 #include <set>
 #include <array>
+#include <fstream>
+#include <random>
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -11,6 +13,8 @@
 #include <QApplication>
 #include "Stopwatch.h"
 #include "DatabaseUpgrade.h"
+#include "Playlist.h"
+#include "PlaylistItemSong.h"
 
 
 
@@ -80,6 +84,25 @@ static Song::Tag tagFromFields(
 		res.m_MeasuresPerMinute = datedOptionalFromFields<double>(a_Record, a_Indices[3], a_IndicesLM[3]);
 	}
 	return res;
+}
+
+
+
+
+
+/** Applies the specified rating, if present, to the song weight. */
+static qint64 applyRating(qint64 a_CurrentWeight, const DatedOptional<double> & a_Rating)
+{
+	if (a_Rating.isPresent())
+	{
+		// Even zero-rating songs need *some* chance, so we add 1 to all ratings
+		return static_cast<qint64>(a_CurrentWeight * (a_Rating.value() + 1) / 5);
+	}
+	else
+	{
+		// Default to 2.5-star rating:
+		return static_cast<qint64>(a_CurrentWeight * 3.5 / 5);
+	}
 }
 
 
@@ -441,6 +464,73 @@ int Database::numSongsMatchingFilter(Template::Filter & a_Filter) const
 		}
 	}
 	return res;
+}
+
+
+
+
+
+SongPtr Database::pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Avoid) const
+{
+	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
+	int totalWeight = 0;
+	for (const auto & song: m_Songs)
+	{
+		if (song == a_Avoid)
+		{
+			continue;
+		}
+		if (a_Item->filter()->isSatisfiedBy(*song))
+		{
+			auto weight = getSongWeight(*song);
+			songs.push_back(std::make_pair(song, weight));
+			totalWeight += weight;
+		}
+	}
+
+	if (songs.empty())
+	{
+		if (a_Item->filter()->isSatisfiedBy(*a_Avoid))
+		{
+			return a_Avoid;
+		}
+		qDebug() << ": No song matches item " << a_Item->displayName();
+		return nullptr;
+	}
+
+	totalWeight = std::max(totalWeight, 1);
+	static std::mt19937_64 mt(0);
+	auto rnd = std::uniform_int_distribution<>(0, totalWeight)(mt);
+	auto threshold = rnd;
+	for (const auto & song: songs)
+	{
+		threshold -= song.second;
+		if (threshold <= 0)
+		{
+			#if 0
+			// DEBUG: Output the choices made into a file:
+			static int counter = 0;
+			auto fnam = QString("debug_template_%1.log").arg(QString::number(counter++), 3, '0');
+			std::ofstream f(fnam.toStdString().c_str());
+			f << "Choices for template item " << a_Item->displayName().toStdString() << std::endl;
+			f << "------" << std::endl << std::endl;
+			f << "Candidates:" << std::endl;
+			for (const auto & s: songs)
+			{
+				f << s.second << '\t';
+				f << s.first->lastPlayed().toString().toStdString() << '\t';
+				f << s.first->fileName().toStdString() << std::endl;
+			}
+			f << std::endl;
+			f << "totalWeight: " << totalWeight << std::endl;
+			f << "threshold: " << rnd << std::endl;
+			f << "chosen: " << song.first->fileName().toStdString() << std::endl;
+			#endif
+
+			return song.first;
+		}
+	}
+	return songs[0].first;
 }
 
 
@@ -1007,6 +1097,56 @@ void Database::saveTemplateFilters(
 			saveTemplateFilters(a_TemplateRowId, a_TemplateItemRowId, *ch, rowId);
 		}
 	}
+}
+
+
+
+
+
+int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) const
+{
+	qint64 res = 10000;  // Base weight
+
+	// Penalize the last played date:
+	auto lastPlayed = a_Song.lastPlayed();
+	if (lastPlayed.isValid())
+	{
+		auto numDays = lastPlayed.toDateTime().daysTo(QDateTime::currentDateTime());
+		res = res * (numDays + 1) / (numDays + 2);  // The more days have passed, the less penalty
+	}
+
+	// Penalize presence in the list:
+	if (a_Playlist != nullptr)
+	{
+		int idx = 0;
+		for (const auto & itm: a_Playlist->items())
+		{
+			auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(itm);
+			if (spi != nullptr)
+			{
+				if (spi->song().get() == &a_Song)
+				{
+					// This song is already present, penalize depending on distance from the end (where presumably it is to be added):
+					auto numInBetween = static_cast<int>(a_Playlist->items().size()) - idx;
+					res = res * (numInBetween + 100) / (numInBetween + 200);
+					// Do not stop processing - if present multiple times, penalize multiple times
+				}
+			}
+			idx += 1;
+		}
+	}
+
+	// Penalize by rating:
+	const auto & rating = a_Song.rating();
+	res = applyRating(res, rating.m_GenreTypicality);
+	res = applyRating(res, rating.m_Popularity);
+	res = applyRating(res, rating.m_RhythmClarity);
+
+	if (res > std::numeric_limits<int>::max())
+	{
+		return std::numeric_limits<int>::max();
+	}
+	return static_cast<int>(res);
 }
 
 

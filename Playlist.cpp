@@ -1,28 +1,9 @@
 #include "Playlist.h"
 #include <limits>
 #include <assert.h>
-#include <fstream>
-#include <random>
 #include <QDebug>
 #include "Database.h"
 #include "PlaylistItemSong.h"
-
-
-
-
-
-static qint64 applyRating(qint64 a_CurrentWeight, const DatedOptional<double> & a_Rating)
-{
-	if (a_Rating.isPresent())
-	{
-		return a_CurrentWeight * (a_Rating.value() + 1) / 5;  // Even zero-rating songs need *some* chance
-	}
-	else
-	{
-		// Default to 2.5-star rating:
-		return static_cast<qint64>(a_CurrentWeight * 3.5 / 5);
-	}
-}
 
 
 
@@ -217,61 +198,12 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 
 bool Playlist::addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item)
 {
-	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
-	int totalWeight = 0;
-	for (const auto & song: a_DB.songs())
+	auto song = a_DB.pickSongForTemplateItem(a_Item);
+	if (song == nullptr)
 	{
-		if (a_Item->filter()->isSatisfiedBy(*song))
-		{
-			auto weight = getSongWeight(a_DB, *song);
-			songs.push_back(std::make_pair(song, weight));
-			totalWeight += weight;
-		}
-	}
-
-	if (songs.empty())
-	{
-		qDebug() << ": No song matches item " << a_Item->displayName();
 		return false;
 	}
-
-	auto chosen = songs[0].first;
-	totalWeight = std::max(totalWeight, 1);
-	static std::mt19937_64 mt(0);
-	auto rnd = std::uniform_int_distribution<>(0, totalWeight)(mt);
-	auto threshold = rnd;
-	for (const auto & song: songs)
-	{
-		threshold -= song.second;
-		if (threshold <= 0)
-		{
-			chosen = song.first;
-			break;
-		}
-	}
-
-	#if 0
-	// DEBUG: Output the choices made into a file:
-	static int counter = 0;
-	auto fnam = QString("debug_template_%1.log").arg(QString::number(counter++), 3, '0');
-	std::ofstream f(fnam.toStdString().c_str());
-	f << "Choices for template item " << a_Item->displayName().toStdString() << std::endl;
-	f << "------" << std::endl << std::endl;
-	f << "Candidates:" << std::endl;
-	for (const auto & song: songs)
-	{
-		f << song.second << '\t';
-		f << song.first->lastPlayed().toString().toStdString() << '\t';
-		f << song.first->fileName().toStdString() << std::endl;
-	}
-	f << std::endl;
-	f << "totalWeight: " << totalWeight << std::endl;
-	f << "threshold: " << rnd << std::endl;
-	f << "chosen: " << chosen->fileName().toStdString() << std::endl;
-	#endif
-
-	assert(chosen != nullptr);
-	addItem(std::make_shared<PlaylistItemSong>(chosen, a_Item));
+	addItem(std::make_shared<PlaylistItemSong>(song, a_Item));
 	return true;
 }
 
@@ -279,48 +211,14 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_It
 
 
 
-int Playlist::getSongWeight(const Database & a_DB, const Song & a_Song)
+void Playlist::replaceItem(size_t a_Index, IPlaylistItemPtr a_Item)
 {
-	Q_UNUSED(a_DB);
-	qint64 res = 10000;  // Base weight
-
-	// Penalize the last played date:
-	auto lastPlayed = a_Song.lastPlayed();
-	if (lastPlayed.isValid())
+	if (a_Index >= m_Items.size())
 	{
-		auto numDays = lastPlayed.toDateTime().daysTo(QDateTime::currentDateTime());
-		res = res * (numDays + 1) / (numDays + 2);  // The more days have passed, the less penalty
+		return;
 	}
-
-	// Penalize presence in the list:
-	int idx = 0;
-	for (const auto & itm: items())
-	{
-		auto spi = dynamic_cast<PlaylistItemSong *>(itm.get());
-		if (spi != nullptr)
-		{
-			if (spi->song().get() == &a_Song)
-			{
-				// This song is already present, penalize depending on distance from the end (where presumably it is to be added):
-				auto numInBetween = static_cast<int>(m_Items.size()) - idx;
-				res = res * (numInBetween + 100) / (numInBetween + 200);
-				// Do not stop processing - if present multiple times, penalize multiple times
-			}
-		}
-		idx += 1;
-	}
-
-	// Penalize by rating:
-	const auto & rating = a_Song.rating();
-	res = applyRating(res, rating.m_GenreTypicality);
-	res = applyRating(res, rating.m_Popularity);
-	res = applyRating(res, rating.m_RhythmClarity);
-
-	if (res > std::numeric_limits<int>::max())
-	{
-		return std::numeric_limits<int>::max();
-	}
-	return static_cast<int>(res);
+	m_Items[a_Index] = a_Item;
+	emit itemReplaced(static_cast<int>(a_Index), a_Item.get());
 }
 
 

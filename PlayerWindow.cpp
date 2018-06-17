@@ -38,6 +38,7 @@ PlayerWindow::PlayerWindow(
 	m_MetadataScanner(a_Scanner),
 	m_HashCalculator(a_Hasher),
 	m_Player(a_Player),
+	m_PlaylistDelegate(new PlaylistItemDelegate),
 	m_IsLibraryRescanShown(true),
 	m_LastLibraryRescanTotal(0),
 	m_LastLibraryRescanQueue(-1)
@@ -48,6 +49,7 @@ PlayerWindow::PlayerWindow(
 	m_UI->splitter->setCollapsible(1, false);
 	Settings::loadSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
+	m_UI->tblPlaylist->setItemDelegate(m_PlaylistDelegate.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_UI->waveform->setPlayer(m_Player);
 	QFont fnt(m_UI->lblPosition->font());
@@ -98,6 +100,7 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->actSetDurationLimit,    &QAction::triggered,        this, &PlayerWindow::setDurationLimit);
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,        this, &PlayerWindow::removeDurationLimit);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
+	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this, &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
 	connect(m_UI->waveform,               &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
 
@@ -689,4 +692,44 @@ void PlayerWindow::setDurationLimit()
 void PlayerWindow::removeDurationLimit()
 {
 	setSelectedItemsDurationLimit(-1);
+}
+
+
+
+
+
+void PlayerWindow::replaceSong(const QModelIndex & a_Index)
+{
+	// Is it a replace-able song:
+	auto idx = static_cast<size_t>(a_Index.row());
+	if (idx >= m_Player.playlist().items().size())
+	{
+		return;
+	}
+	auto pli = m_Player.playlist().items()[idx];
+	auto pls = std::dynamic_pointer_cast<PlaylistItemSong>(pli);
+	if (pls == nullptr)
+	{
+		return;
+	}
+	if (pls->templateItem() == nullptr)
+	{
+		return;
+	}
+
+	// Get a replacement:
+	auto song = m_DB.pickSongForTemplateItem(pls->templateItem(), pls->song());
+	if (song == pls->song())
+	{
+		// No replacement available
+		return;
+	}
+	m_Player.playlist().replaceItem(idx, std::make_shared<PlaylistItemSong>(song, pls->templateItem()));
+
+	// Special handling for replacing currently-played song:
+	if (m_Player.isPlaying() && a_Index.row() == m_Player.playlist().currentItemIndex())
+	{
+		// Replacing the currently played song, restart the playback of the new item:
+		m_Player.jumpTo(a_Index.row());
+	}
 }

@@ -38,6 +38,7 @@ public:
 	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) override;
 
 	SongPtr song() const { return m_Song; }
+	Template::ItemPtr templateItem() const { return m_TemplateItem; }
 
 
 protected:

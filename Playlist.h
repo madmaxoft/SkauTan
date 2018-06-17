@@ -86,6 +86,10 @@ public:
 	/** Adds a new random song based on the specified template item, using songs from the specified DB. */
 	bool addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item);
 
+	/** Replaces the item at the specified index with the specified item.
+	If the index is invalid, does nothing. */
+	void replaceItem(size_t a_Index, IPlaylistItemPtr a_Item);
+
 
 protected:
 
@@ -99,10 +103,6 @@ protected:
 	bool m_IsPlaying;
 
 
-	/** Returns the relative "weight" of a song, when choosing by a template.
-	The weight is adjusted based on song's rating, last played date, if it is already in the playlist etc. */
-	int getSongWeight(const Database & a_DB, const Song & a_Song);
-
 signals:
 
 	/** Emitted after the specified item is added to the bottom of the playlist. */
@@ -110,6 +110,9 @@ signals:
 
 	/** Emitted before the specified item is deleted from the playlist. */
 	void itemDeleting(IPlaylistItem * a_Item, int a_Index);
+
+	/** Emitted after an item at the specified index is replaced with a_NewItem. */
+	void itemReplaced(int a_Index, IPlaylistItem * a_NewItem);
 
 	/** Emitted after the index for the current item is changed. */
 	void currentItemChanged(int a_CurrentItemIdx);
