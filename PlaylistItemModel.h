@@ -62,6 +62,7 @@ protected slots:
 	void playlistItemAdded(IPlaylistItem * a_Item);
 	void playlistItemDeleting(IPlaylistItem * a_Item, int a_Index);
 	void playlistItemReplaced(int a_Index, IPlaylistItem * a_NewItem);
+	void playlistItemInserted(int a_Index, IPlaylistItem * a_NewItem);
 
 	/** Emitted by m_Playlist when its index of the current item changes. */
 	void playlistCurrentChanged(int a_CurrentItemIdx);

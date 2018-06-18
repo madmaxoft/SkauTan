@@ -292,6 +292,14 @@
     <string>Ctrl+T</string>
    </property>
   </action>
+  <action name="actInsertIntoPlaylist">
+   <property name="text">
+    <string>Insert into playlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert the selected songs after the currently selected song in the playlist</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

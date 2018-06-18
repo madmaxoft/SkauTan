@@ -67,6 +67,7 @@ PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 	connect(&m_Playlist, &Playlist::itemAdded,          this, &PlaylistItemModel::playlistItemAdded);
 	connect(&m_Playlist, &Playlist::itemDeleting,       this, &PlaylistItemModel::playlistItemDeleting);
 	connect(&m_Playlist, &Playlist::itemReplaced,       this, &PlaylistItemModel::playlistItemReplaced);
+	connect(&m_Playlist, &Playlist::itemInserted,       this, &PlaylistItemModel::playlistItemInserted);
 	connect(&m_Playlist, &Playlist::currentItemChanged, this, &PlaylistItemModel::playlistCurrentChanged);
 }
 
@@ -345,6 +346,18 @@ void PlaylistItemModel::playlistItemReplaced(int a_Index, IPlaylistItem * a_NewI
 {
 	Q_UNUSED(a_NewItem);
 	emit dataChanged(index(a_Index, 0), index(a_Index, colMax));
+}
+
+
+
+
+
+void PlaylistItemModel::playlistItemInserted(int a_Index, IPlaylistItem * a_NewItem)
+{
+	Q_UNUSED(a_NewItem);
+
+	beginInsertRows(QModelIndex(), a_Index, a_Index);
+	endInsertRows();
 }
 
 

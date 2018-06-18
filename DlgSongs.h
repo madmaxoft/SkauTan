@@ -151,6 +151,11 @@ private slots:
 	Emits the addSongToPlaylist() signal for each selected song. */
 	void addSelectedToPlaylist();
 
+	/** Inserts the selected songs into the playlist.
+	Emits the insertSongToPlaylist() signal for each selected song, in reverse order,
+	so that the songs are inserted in the original order. */
+	void insertSelectedToPlaylist();
+
 	/** Queues the selected songs for metadata rescan. */
 	void rescanMetadata();
 
@@ -187,7 +192,10 @@ private slots:
 signals:
 
 	/** Emitted when the user asks to add songs to the playlist. */
-	void addSongToPlaylist(std::shared_ptr<Song> a_Song);
+	void addSongToPlaylist(SongPtr a_Song);
+
+	/** Emitted when the user asks to insert songs into the playlist (after the current playlist selection). */
+	void insertSongToPlaylist(SongPtr a_Song);
 };
 
 

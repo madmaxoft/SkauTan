@@ -221,7 +221,7 @@ void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 	const auto & items = m_Player.playlist().items();
 	for (const auto & row: m_UI->tblPlaylist->selectionModel()->selectedRows())
 	{
-		items[row.row()]->setDurationLimit(a_NewDurationLimit);
+		items[static_cast<size_t>(row.row())]->setDurationLimit(a_NewDurationLimit);
 	}
 }
 
@@ -234,7 +234,8 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 	Q_UNUSED(a_IsChecked);
 
 	DlgSongs dlg(m_DB, m_MetadataScanner, m_HashCalculator, nullptr, true, this);
-	connect(&dlg, &DlgSongs::addSongToPlaylist, this, &PlayerWindow::addSong);
+	connect(&dlg, &DlgSongs::addSongToPlaylist,    this, &PlayerWindow::addSongToPlaylist);
+	connect(&dlg, &DlgSongs::insertSongToPlaylist, this, &PlayerWindow::insertSongToPlaylist);
 	dlg.showMaximized();
 	dlg.exec();
 }
@@ -269,9 +270,27 @@ void PlayerWindow::showHistory(bool a_IsChecked)
 
 
 
-void PlayerWindow::addSong(std::shared_ptr<Song> a_Song)
+void PlayerWindow::addSongToPlaylist(SongPtr a_Song)
 {
 	addPlaylistItem(std::make_shared<PlaylistItemSong>(a_Song, nullptr));
+}
+
+
+
+
+
+void PlayerWindow::insertSongToPlaylist(SongPtr a_Song)
+{
+	const auto & sel = m_UI->tblPlaylist->selectionModel()->selectedRows();
+	if (sel.isEmpty())
+	{
+		// No selection -> append to end
+		return addSongToPlaylist(a_Song);
+	}
+	auto row = sel[0].row() + 1;
+	m_Player.playlist().insertItem(row, std::make_shared<PlaylistItemSong>(a_Song, nullptr));
+	m_UI->tblPlaylist->selectionModel()->clearSelection();
+	m_UI->tblPlaylist->selectRow(row);
 }
 
 

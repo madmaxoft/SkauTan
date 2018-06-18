@@ -120,7 +120,11 @@ private slots:
 
 	/** Adds the specified song to the playlist.
 	The song is assumed to be present in m_DB (but not checked). */
-	void addSong(std::shared_ptr<Song> a_Song);
+	void addSongToPlaylist(SongPtr a_Song);
+
+	/** Inserts the specified song to the playlist after the current selection.
+	The song is assumed to be present in m_DB (but not checked). */
+	void insertSongToPlaylist(SongPtr a_Song);
 
 	/** Adds the specified item to the playlist. */
 	void addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item);

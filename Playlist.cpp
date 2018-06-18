@@ -225,6 +225,20 @@ void Playlist::replaceItem(size_t a_Index, IPlaylistItemPtr a_Item)
 
 
 
+void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
+{
+	if (a_Index > static_cast<int>(m_Items.size()))
+	{
+		a_Index = static_cast<int>(m_Items.size());
+	}
+	m_Items.insert(m_Items.begin() + a_Index, a_Item);
+	emit itemInserted(a_Index, a_Item.get());
+}
+
+
+
+
+
 void Playlist::removeSong(SongPtr a_Song)
 {
 	int idx = 0;

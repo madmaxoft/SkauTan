@@ -90,6 +90,10 @@ public:
 	If the index is invalid, does nothing. */
 	void replaceItem(size_t a_Index, IPlaylistItemPtr a_Item);
 
+	/** Inserts the specified item so that it is on the specified index.
+	If the index is out of bounds, appends the item to the end of the playlist. */
+	void insertItem(int a_Index, IPlaylistItemPtr a_Item);
+
 
 protected:
 
@@ -113,6 +117,9 @@ signals:
 
 	/** Emitted after an item at the specified index is replaced with a_NewItem. */
 	void itemReplaced(int a_Index, IPlaylistItem * a_NewItem);
+
+	/** Emitted after the specified item is inserted at the specified index. */
+	void itemInserted(int a_Index, IPlaylistItem * a_NewItem);
 
 	/** Emitted after the index for the current item is changed. */
 	void currentItemChanged(int a_CurrentItemIdx);
