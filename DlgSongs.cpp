@@ -252,6 +252,7 @@ void DlgSongs::createContextMenu()
 	connect(m_ContextMenu->addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
 	connect(m_ContextMenu->addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
 	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actTapTempo);
 	m_ContextMenu->addAction(m_UI->actTempoDetector);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actProperties);
