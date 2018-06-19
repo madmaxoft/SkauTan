@@ -34,8 +34,6 @@ DlgTapTempo::DlgTapTempo(Database & a_DB, SongPtr a_Song, QWidget * a_Parent):
 	connect(m_UI->btnCancel, &QPushButton::pressed, this, &DlgTapTempo::reject);
 	connect(m_UI->btnSave,   &QPushButton::pressed, this, &DlgTapTempo::saveAndClose);
 
-	m_Timer.start();
-
 	// Start the playback:
 	m_Player.reset(new Player);
 	m_Player->playlist().addItem(std::make_shared<PlaylistItemSong>(m_Song, nullptr));
@@ -71,12 +69,14 @@ void DlgTapTempo::addTimePoint(qint64 a_MSecElapsed)
 {
 	m_TimePoints.push_back(a_MSecElapsed);
 	auto row = m_UI->twMeasures->rowCount();
+	auto tempo = 60000.0 / a_MSecElapsed;
 	m_UI->twMeasures->setRowCount(row + 1);
 	m_UI->twMeasures->setItem(row, 0, new QTableWidgetItem(QString::number(a_MSecElapsed)));
-	m_UI->twMeasures->setItem(row, 1, new QTableWidgetItem(formatMPM(60000 / a_MSecElapsed)));
+	m_UI->twMeasures->setItem(row, 1, new QTableWidgetItem(formatMPM(tempo)));
+	m_UI->twMeasures->setItem(row, 2, new QTableWidgetItem(formatMPM(Song::foldTempoToMPM(tempo, m_Song->primaryGenre()))));
 	m_UI->twMeasures->resizeRowToContents(row);
 	auto overallMPM = detectMPM();
-	m_UI->lblDetectionResults->setText(tr("Detected MPM: %1").arg(formatMPM(overallMPM)));
+	m_UI->lblDetectionResults->setText(tr("Detected average MPM: %1").arg(formatMPM(overallMPM)));
 	m_UI->btnSave->setEnabled(true);
 }
 
@@ -91,7 +91,7 @@ double DlgTapTempo::detectMPM()
 	{
 		sum += tp;
 	}
-	auto tempo = (static_cast<double>(sum) / 1000) / m_TimePoints.size();
+	auto tempo = (static_cast<double>(m_TimePoints.size()) * 60000) / sum;
 	return Song::foldTempoToMPM(tempo, m_Song->primaryGenre());
 }
 
@@ -101,10 +101,16 @@ double DlgTapTempo::detectMPM()
 
 void DlgTapTempo::buttonPressed()
 {
-	auto elapsed = m_Timer.restart();
-	if (elapsed > 5000)
+	if (!m_Timer.isValid())
 	{
-		// Longer than 5 seconds - we assume the user has abandoned the previous attempt and is re-starting
+		// This is the first press of the button, start the timer
+		m_Timer.start();
+		return;
+	}
+	auto elapsed = m_Timer.restart();
+	if (elapsed > 3000)
+	{
+		// Longer than 3 seconds - we assume the user has abandoned the previous attempt and is re-starting
 		clearTimePoints();
 		return;
 	}

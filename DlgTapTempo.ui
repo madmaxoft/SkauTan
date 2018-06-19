@@ -76,6 +76,11 @@
        <string>Tempo</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>MPM</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item>

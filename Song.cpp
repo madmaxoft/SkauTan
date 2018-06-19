@@ -367,15 +367,16 @@ double Song::foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Gen
 	}
 
 	// The tempo is faster than the regular range
-	// For SW, VW and BL, try first if it makes sense to divide by 3:
+	// For SW and VW, try first if it makes sense to divide by 3:
 	const auto & genre = a_Genre.value();
-	if ((genre == "SW") || (genre == "VW") || (genre == "BL"))
+	if ((genre == "SW") || (genre == "VW"))
 	{
 		for (int d: {1, 2, 4, 8, 16})
 		{
-			if (Utils::isInRange((a_Tempo / d) / 3, range.first, range.second))
+			auto tempoThird = a_Tempo / 3;
+			if (Utils::isInRange(tempoThird / d, range.first, range.second))
 			{
-				return (a_Tempo / d) / 3;
+				return tempoThird / d;
 			}
 		}
 	}
