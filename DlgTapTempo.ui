@@ -73,7 +73,7 @@
      </column>
      <column>
       <property name="text">
-       <string>MPM</string>
+       <string>Tempo</string>
       </property>
      </column>
     </widget>

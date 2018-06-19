@@ -102,9 +102,9 @@ double DlgTapTempo::detectMPM()
 void DlgTapTempo::buttonPressed()
 {
 	auto elapsed = m_Timer.restart();
-	if (elapsed > 3000)
+	if (elapsed > 5000)
 	{
-		// Longer than 3 seconds - we assume the user has abandoned the previous attempt and is re-starting
+		// Longer than 5 seconds - we assume the user has abandoned the previous attempt and is re-starting
 		clearTimePoints();
 		return;
 	}
