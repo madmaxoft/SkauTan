@@ -66,6 +66,7 @@ public:
 		QVariant m_Length;
 		QVariant m_LastPlayed;
 		Rating m_Rating;
+		Tag m_TagManual;
 		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
 		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
 		DatedOptional<double> m_SkipStart;  // Where to start playing
@@ -75,12 +76,14 @@ public:
 			QVariant && a_Length,
 			QVariant && a_LastPlayed,
 			Rating && a_Rating,
+			Tag && a_TagManual,
 			DatedOptional<double> a_SkipStart
 		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
 			m_LastPlayed(std::move(a_LastPlayed)),
 			m_Rating(std::move(a_Rating)),
+			m_TagManual(std::move(a_TagManual)),
 			m_SkipStart(std::move(a_SkipStart))
 		{
 		}
@@ -111,7 +114,6 @@ public:
 		QString && a_FileName,
 		qulonglong a_FileSize,
 		QVariant && a_Hash,
-		Tag && a_TagManual,
 		Tag && a_TagFileName,
 		Tag && a_TagId3,
 		QVariant && a_LastTagRescanned,
@@ -124,7 +126,7 @@ public:
 	const QString & fileName() const { return m_FileName; }
 	qulonglong fileSize() const { return m_FileSize; }
 	const QVariant & hash() const { return m_Hash; }
-	const Tag & tagManual() const { return m_TagManual; }
+	const Tag & tagManual() const { return m_SharedData->m_TagManual; }
 	const Tag & tagFileName() const { return m_TagFileName; }
 	const Tag & tagId3() const { return m_TagId3; }
 	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
@@ -139,9 +141,9 @@ public:
 	const DatedOptional<double>  & primaryMeasuresPerMinute() const;
 
 	// These return values from the shared data, if available:
-	const QVariant & length()     const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_Length; }
-	const QVariant & lastPlayed() const { return (m_SharedData == nullptr) ? m_Empty : m_SharedData->m_LastPlayed; }
-	const Rating &   rating()     const { return (m_SharedData == nullptr) ? m_EmptyRating : m_SharedData->m_Rating; }
+	const QVariant & length()     const { return m_SharedData->m_Length; }
+	const QVariant & lastPlayed() const { return m_SharedData->m_LastPlayed; }
+	const Rating &   rating()     const { return m_SharedData->m_Rating; }
 	const DatedOptional<double> skipStart() const;
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
@@ -160,17 +162,17 @@ public:
 	void setSharedData(SharedDataPtr a_SharedData);
 
 	// Setters that redirect into the Manual tag:
-	void setAuthor(QVariant a_Author) { m_TagManual.m_Author = a_Author; }
-	void setTitle(QVariant a_Title) { m_TagManual.m_Title = a_Title; }
-	void setGenre(const QString & a_Genre) { m_TagManual.m_Genre = a_Genre; }
-	void setMeasuresPerMinute(double a_MeasuresPerMinute) { m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
+	void setAuthor(QVariant a_Author) { m_SharedData->m_TagManual.m_Author = a_Author; }
+	void setTitle(QVariant a_Title) { m_SharedData->m_TagManual.m_Title = a_Title; }
+	void setGenre(const QString & a_Genre) { m_SharedData->m_TagManual.m_Genre = a_Genre; }
+	void setMeasuresPerMinute(double a_MeasuresPerMinute) { m_SharedData->m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
 
 	// Setters for specific tags:
-	void setManualAuthor(QVariant a_Author) { m_TagManual.m_Author = a_Author; }
-	void setManualTitle(QVariant a_Title) { m_TagManual.m_Title = a_Title; }
-	void setManualGenre(const QString & a_Genre) { m_TagManual.m_Genre = a_Genre; }
-	void setManualMeasuresPerMinute(double a_MeasuresPerMinute) { m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
-	void setManualTag(const Tag & a_Tag) { m_TagManual = a_Tag; }
+	void setManualAuthor(QVariant a_Author) { m_SharedData->m_TagManual.m_Author = a_Author; }
+	void setManualTitle(QVariant a_Title) { m_SharedData->m_TagManual.m_Title = a_Title; }
+	void setManualGenre(const QString & a_Genre) { m_SharedData->m_TagManual.m_Genre = a_Genre; }
+	void setManualMeasuresPerMinute(double a_MeasuresPerMinute) { m_SharedData->m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
+	void setManualTag(const Tag & a_Tag) { m_SharedData->m_TagManual = a_Tag; }
 	void setId3Author(const QString & a_Author) { m_TagId3.m_Author = a_Author; }
 	void setId3Title(const QString & a_Title)   { m_TagId3.m_Title  = a_Title; }
 	void setId3Genre(const QString & a_Genre)   { m_TagId3.m_Genre  = a_Genre; }
@@ -249,7 +251,6 @@ protected:
 	QString m_FileName;
 	qulonglong m_FileSize;
 	QVariant m_Hash;
-	Tag m_TagManual;
 	Tag m_TagFileName;
 	Tag m_TagId3;
 	QVariant m_LastTagRescanned;

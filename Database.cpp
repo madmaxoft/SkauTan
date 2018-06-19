@@ -560,20 +560,6 @@ void Database::loadSongs()
 	auto fiNumTagRescanAttempts = query.record().indexOf("NumTagRescanAttempts");
 	auto fiNotes                = query.record().indexOf("Notes");
 	auto fiNotesLM              = query.record().indexOf("NotesLM");
-	std::array<int, 4> fisManual
-	{{
-		query.record().indexOf("ManualAuthor"),
-		query.record().indexOf("ManualTitle"),
-		query.record().indexOf("ManualGenre"),
-		query.record().indexOf("ManualMeasuresPerMinute"),
-	}};
-	std::array<int, 4> fisManualLM
-	{{
-		query.record().indexOf("ManualAuthorLM"),
-		query.record().indexOf("ManualTitleLM"),
-		query.record().indexOf("ManualGenreLM"),
-		query.record().indexOf("ManualMeasuresPerMinuteLM"),
-	}};
 	std::array<int, 4> fisFileName
 	{{
 		query.record().indexOf("FileNameAuthor"),
@@ -601,7 +587,6 @@ void Database::loadSongs()
 			query.value(fiFileName).toString(),
 			query.value(fiFileSize).toULongLong(),
 			fieldValue(rec.field(fiHash)),
-			tagFromFields(rec, fisManual,   fisManualLM),
 			tagFromFields(rec, fisFileName, fisInvalidLM),
 			tagFromFields(rec, fisId3,      fisInvalidLM),
 			fieldValue(rec.field(fiLastTagRescanned)),
@@ -661,6 +646,20 @@ void Database::loadSongSharedData()
 	auto fiRatingPopularityLM      = query.record().indexOf("RatingPopularityLM");
 	auto fiSkipStart               = query.record().indexOf("SkipStart");
 	auto fiSkipStartLM             = query.record().indexOf("SkipStartLM");
+	std::array<int, 4> fisManual
+	{{
+		query.record().indexOf("ManualAuthor"),
+		query.record().indexOf("ManualTitle"),
+		query.record().indexOf("ManualGenre"),
+		query.record().indexOf("ManualMeasuresPerMinute"),
+	}};
+	std::array<int, 4> fisManualLM
+	{{
+		query.record().indexOf("ManualAuthorLM"),
+		query.record().indexOf("ManualTitleLM"),
+		query.record().indexOf("ManualGenreLM"),
+		query.record().indexOf("ManualMeasuresPerMinuteLM"),
+	}};
 
 	// Load each record:
 	while (query.next())
@@ -677,6 +676,7 @@ void Database::loadSongSharedData()
 				datedOptionalFromFields<double>(rec, fiRatingPopularity,      fiRatingPopularityLM),
 				datedOptionalFromFields<double>(rec, fiLocalRating,           fiLocalRatingLM)
 			}),
+			tagFromFields(rec, fisManual, fisManualLM),
 			datedOptionalFromFields<double>(rec, fiSkipStart, fiSkipStartLM)
 		);
 		m_SongSharedData[hash] = data;
@@ -1164,10 +1164,6 @@ void Database::saveSongFileData(SongPtr a_Song)
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE SongFiles SET "
 		"FileSize = ?, Hash = ?, "
-		"ManualAuthor = ?, ManualAuthorLM = ?,"
-		"ManualTitle = ?, ManualTitleLM = ?,"
-		"ManualGenre = ?, ManualGenreLM = ?,"
-		"ManualMeasuresPerMinute = ?, ManualMeasuresPerMinuteLM = ?,"
 		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
 		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?,"
 		"LastTagRescanned = ?,"
@@ -1182,14 +1178,6 @@ void Database::saveSongFileData(SongPtr a_Song)
 	}
 	query.addBindValue(a_Song->fileSize());
 	query.addBindValue(a_Song->hash());
-	query.addBindValue(a_Song->tagManual().m_Author.toVariant());
-	query.addBindValue(a_Song->tagManual().m_Author.lastModification());
-	query.addBindValue(a_Song->tagManual().m_Title.toVariant());
-	query.addBindValue(a_Song->tagManual().m_Title.lastModification());
-	query.addBindValue(a_Song->tagManual().m_Genre.toVariant());
-	query.addBindValue(a_Song->tagManual().m_Genre.lastModification());
-	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute.toVariant());
-	query.addBindValue(a_Song->tagManual().m_MeasuresPerMinute.lastModification());
 	query.addBindValue(a_Song->tagFileName().m_Author.toVariant());
 	query.addBindValue(a_Song->tagFileName().m_Title.toVariant());
 	query.addBindValue(a_Song->tagFileName().m_Genre.toVariant());
@@ -1224,6 +1212,10 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		"RatingRhythmClarity = ?,   RatingRhythmClarityLM = ?, "
 		"RatingGenreTypicality = ?, RatingGenreTypicalityLM = ?, "
 		"RatingPopularity = ?,      RatingPopularityLM = ?, "
+		"ManualAuthor = ?, ManualAuthorLM = ?,"
+		"ManualTitle = ?, ManualTitleLM = ?,"
+		"ManualGenre = ?, ManualGenreLM = ?,"
+		"ManualMeasuresPerMinute = ?, ManualMeasuresPerMinuteLM = ?,"
 		"SkipStart = ?, SkipStartLM = ? "
 		"WHERE Hash = ?")
 	)
@@ -1242,6 +1234,14 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.lastModification());
 	query.addBindValue(a_SharedData->m_Rating.m_Popularity.toVariant());
 	query.addBindValue(a_SharedData->m_Rating.m_Popularity.lastModification());
+	query.addBindValue(a_SharedData->m_TagManual.m_Author.toVariant());
+	query.addBindValue(a_SharedData->m_TagManual.m_Author.lastModification());
+	query.addBindValue(a_SharedData->m_TagManual.m_Title.toVariant());
+	query.addBindValue(a_SharedData->m_TagManual.m_Title.lastModification());
+	query.addBindValue(a_SharedData->m_TagManual.m_Genre.toVariant());
+	query.addBindValue(a_SharedData->m_TagManual.m_Genre.lastModification());
+	query.addBindValue(a_SharedData->m_TagManual.m_MeasuresPerMinute.toVariant());
+	query.addBindValue(a_SharedData->m_TagManual.m_MeasuresPerMinute.lastModification());
 	query.addBindValue(a_SharedData->m_SkipStart.toVariant());
 	query.addBindValue(a_SharedData->m_SkipStart.lastModification());
 	query.addBindValue(a_SharedData->m_Hash);

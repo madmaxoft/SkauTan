@@ -32,7 +32,6 @@ Song::Song(
 	QString && a_FileName,
 	qulonglong a_FileSize,
 	QVariant && a_Hash,
-	Tag && a_TagManual,
 	Tag && a_TagFileName,
 	Tag && a_TagId3,
 	QVariant && a_LastTagRescanned,
@@ -42,7 +41,6 @@ Song::Song(
 	m_FileName(std::move(a_FileName)),
 	m_FileSize(a_FileSize),
 	m_Hash(std::move(a_Hash)),
-	m_TagManual(std::move(a_TagManual)),
 	m_TagFileName(std::move(a_TagFileName)),
 	m_TagId3(std::move(a_TagId3)),
 	m_LastTagRescanned(std::move(a_LastTagRescanned)),
@@ -70,7 +68,7 @@ Song::~Song()
 const DatedOptional<QString> & Song::primaryAuthor() const
 {
 	return primaryValue(
-		m_TagManual.m_Author,
+		m_SharedData->m_TagManual.m_Author,
 		m_TagId3.m_Author,
 		m_TagFileName.m_Author
 	);
@@ -83,7 +81,7 @@ const DatedOptional<QString> & Song::primaryAuthor() const
 const DatedOptional<QString> & Song::primaryTitle() const
 {
 	return primaryValue(
-		m_TagManual.m_Title,
+		m_SharedData->m_TagManual.m_Title,
 		m_TagId3.m_Title,
 		m_TagFileName.m_Title
 	);
@@ -96,7 +94,7 @@ const DatedOptional<QString> & Song::primaryTitle() const
 const DatedOptional<QString> & Song::primaryGenre() const
 {
 	return primaryValue(
-		m_TagManual.m_Genre,
+		m_SharedData->m_TagManual.m_Genre,
 		m_TagId3.m_Genre,
 		m_TagFileName.m_Genre
 	);
@@ -109,7 +107,7 @@ const DatedOptional<QString> & Song::primaryGenre() const
 const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 {
 	return primaryValue(
-		m_TagManual.m_MeasuresPerMinute,
+		m_SharedData->m_TagManual.m_MeasuresPerMinute,
 		m_TagId3.m_MeasuresPerMinute,
 		m_TagFileName.m_MeasuresPerMinute
 	);
@@ -238,7 +236,7 @@ QStringList Song::getWarnings() const
 
 	// If auto-detected genres are different and there's no override, report:
 	if (
-		!m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
+		!m_SharedData->m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
 		m_TagFileName.m_Genre.isPresent() &&
 		m_TagId3.m_Genre.isPresent() &&
 		(m_TagId3.m_Genre.value() != m_TagFileName.m_Genre.value())   // ID3 genre not equal to FileName genre
@@ -248,7 +246,7 @@ QStringList Song::getWarnings() const
 	}
 
 	// If the detected MPM is way outside the primary genre's competition range, report:
-	if (!m_TagManual.m_MeasuresPerMinute.isPresent())  // Allow the user to override the warning
+	if (!m_SharedData->m_TagManual.m_MeasuresPerMinute.isPresent())  // Allow the user to override the warning
 	{
 		auto primaryMPM = m_TagId3.m_MeasuresPerMinute.isPresent() ? m_TagId3.m_MeasuresPerMinute : m_TagFileName.m_MeasuresPerMinute;
 		if (primaryMPM.isPresent())
