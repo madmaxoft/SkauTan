@@ -619,7 +619,7 @@ bool Format::feedRawAudioDataTo(
 		}
 		if (packet.pts != AV_NOPTS_VALUE)
 		{
-			maxPts = std::max(maxPts, packet.pts);
+			maxPts = std::max<qint64>(maxPts, packet.pts);
 		}
 		av_packet_unref(&packet);
 	}
