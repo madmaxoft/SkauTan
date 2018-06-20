@@ -35,8 +35,7 @@ Song::Song(
 	Tag && a_TagFileName,
 	Tag && a_TagId3,
 	QVariant && a_LastTagRescanned,
-	QVariant && a_NumTagRescanAttempts,
-	DatedOptional<QString> && a_Notes
+	QVariant && a_NumTagRescanAttempts
 ):
 	m_FileName(std::move(a_FileName)),
 	m_FileSize(a_FileSize),
@@ -44,8 +43,7 @@ Song::Song(
 	m_TagFileName(std::move(a_TagFileName)),
 	m_TagId3(std::move(a_TagId3)),
 	m_LastTagRescanned(std::move(a_LastTagRescanned)),
-	m_NumTagRescanAttempts(std::move(a_NumTagRescanAttempts)),
-	m_Notes(std::move(a_Notes))
+	m_NumTagRescanAttempts(std::move(a_NumTagRescanAttempts))
 {
 }
 

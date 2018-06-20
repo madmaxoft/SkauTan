@@ -70,6 +70,7 @@ public:
 		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
 		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
 		DatedOptional<double> m_SkipStart;  // Where to start playing
+		DatedOptional<QString> m_Notes;
 
 		SharedData(
 			const QByteArray & a_Hash,
@@ -77,14 +78,16 @@ public:
 			QVariant && a_LastPlayed,
 			Rating && a_Rating,
 			Tag && a_TagManual,
-			DatedOptional<double> a_SkipStart
+			DatedOptional<double> && a_SkipStart,
+			DatedOptional<QString> && a_Notes
 		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
 			m_LastPlayed(std::move(a_LastPlayed)),
 			m_Rating(std::move(a_Rating)),
 			m_TagManual(std::move(a_TagManual)),
-			m_SkipStart(std::move(a_SkipStart))
+			m_SkipStart(std::move(a_SkipStart)),
+			m_Notes(std::move(a_Notes))
 		{
 		}
 
@@ -117,8 +120,7 @@ public:
 		Tag && a_TagFileName,
 		Tag && a_TagId3,
 		QVariant && a_LastTagRescanned,
-		QVariant && a_NumTagRescanAttempts,
-		DatedOptional<QString> && a_Notes
+		QVariant && a_NumTagRescanAttempts
 	);
 
 	~Song();
@@ -132,7 +134,7 @@ public:
 	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
 	const QVariant & numTagRescanAttempts() const { return m_NumTagRescanAttempts; }
 	const SharedDataPtr & sharedData() const { return m_SharedData; }
-	const DatedOptional<QString> & notes() const { return m_Notes; }
+	const DatedOptional<QString> & notes() const { return m_SharedData->m_Notes; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
 	const DatedOptional<QString> & primaryAuthor() const;
@@ -187,13 +189,13 @@ public:
 	// Basic setters:
 	void setLastTagRescanned(const QDateTime & a_LastTagRescanned) { m_LastTagRescanned = a_LastTagRescanned; }
 	void setNumTagRescanAttempts(int a_NumTagRescanAttempts) { m_NumTagRescanAttempts = a_NumTagRescanAttempts; }
-	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
+	void setNotes(const QString & a_Notes) { m_SharedData->m_Notes = a_Notes; }
 
 	// Setters that preserve the date information:
-	void setNotes(const DatedOptional<QString> & a_Notes) { m_Notes = a_Notes; }
+	void setNotes(const DatedOptional<QString> & a_Notes) { m_SharedData->m_Notes = a_Notes; }
 
 	// Setters that move-preserve the date information:
-	void setNotes(DatedOptional<QString> && a_Notes) { m_Notes = std::move(a_Notes); }
+	void setNotes(DatedOptional<QString> && a_Notes) { m_SharedData->m_Notes = std::move(a_Notes); }
 
 	/** Sets the local rating, if SharedData is present; otherwise ignored. */
 	void setLocalRating(double a_Value);
@@ -256,7 +258,6 @@ protected:
 	QVariant m_LastTagRescanned;
 	QVariant m_NumTagRescanAttempts;
 	SharedDataPtr m_SharedData;
-	DatedOptional<QString> m_Notes;
 
 	/** An empty variant returned when there's no shared data for a song */
 	static QVariant m_Empty;

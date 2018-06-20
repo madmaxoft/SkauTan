@@ -558,8 +558,6 @@ void Database::loadSongs()
 	auto fiHash                 = query.record().indexOf("Hash");
 	auto fiLastTagRescanned     = query.record().indexOf("LastTagRescanned");
 	auto fiNumTagRescanAttempts = query.record().indexOf("NumTagRescanAttempts");
-	auto fiNotes                = query.record().indexOf("Notes");
-	auto fiNotesLM              = query.record().indexOf("NotesLM");
 	std::array<int, 4> fisFileName
 	{{
 		query.record().indexOf("FileNameAuthor"),
@@ -590,8 +588,7 @@ void Database::loadSongs()
 			tagFromFields(rec, fisFileName, fisInvalidLM),
 			tagFromFields(rec, fisId3,      fisInvalidLM),
 			fieldValue(rec.field(fiLastTagRescanned)),
-			fieldValue(rec.field(fiNumTagRescanAttempts)),
-			datedOptionalFromFields<QString>(rec, fiNotes, fiNotesLM)
+			fieldValue(rec.field(fiNumTagRescanAttempts))
 		);
 		m_Songs.push_back(song);
 		if (!song->hash().isValid())
@@ -646,6 +643,8 @@ void Database::loadSongSharedData()
 	auto fiRatingPopularityLM      = query.record().indexOf("RatingPopularityLM");
 	auto fiSkipStart               = query.record().indexOf("SkipStart");
 	auto fiSkipStartLM             = query.record().indexOf("SkipStartLM");
+	auto fiNotes                   = query.record().indexOf("Notes");
+	auto fiNotesLM                 = query.record().indexOf("NotesLM");
 	std::array<int, 4> fisManual
 	{{
 		query.record().indexOf("ManualAuthor"),
@@ -677,7 +676,8 @@ void Database::loadSongSharedData()
 				datedOptionalFromFields<double>(rec, fiLocalRating,           fiLocalRatingLM)
 			}),
 			tagFromFields(rec, fisManual, fisManualLM),
-			datedOptionalFromFields<double>(rec, fiSkipStart, fiSkipStartLM)
+			datedOptionalFromFields<double>(rec, fiSkipStart, fiSkipStartLM),
+			datedOptionalFromFields<QString>(rec, fiNotes, fiNotesLM)
 		);
 		m_SongSharedData[hash] = data;
 	}
@@ -1167,8 +1167,7 @@ void Database::saveSongFileData(SongPtr a_Song)
 		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
 		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?,"
 		"LastTagRescanned = ?,"
-		"NumTagRescanAttempts = ?, "
-		"Notes = ?, NotesLM = ? "
+		"NumTagRescanAttempts = ? "
 		"WHERE FileName = ?")
 	)
 	{
@@ -1188,8 +1187,6 @@ void Database::saveSongFileData(SongPtr a_Song)
 	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute.toVariant());
 	query.addBindValue(a_Song->lastTagRescanned());
 	query.addBindValue(a_Song->numTagRescanAttempts());
-	query.addBindValue(a_Song->notes().toVariant());
-	query.addBindValue(a_Song->notes().lastModification());
 	query.addBindValue(a_Song->fileName());
 	if (!query.exec())
 	{
@@ -1216,7 +1213,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		"ManualTitle = ?, ManualTitleLM = ?,"
 		"ManualGenre = ?, ManualGenreLM = ?,"
 		"ManualMeasuresPerMinute = ?, ManualMeasuresPerMinuteLM = ?,"
-		"SkipStart = ?, SkipStartLM = ? "
+		"SkipStart = ?, SkipStartLM = ?, "
+		"Notes = ?, NotesLM = ? "
 		"WHERE Hash = ?")
 	)
 	{
@@ -1244,6 +1242,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 	query.addBindValue(a_SharedData->m_TagManual.m_MeasuresPerMinute.lastModification());
 	query.addBindValue(a_SharedData->m_SkipStart.toVariant());
 	query.addBindValue(a_SharedData->m_SkipStart.lastModification());
+	query.addBindValue(a_SharedData->m_Notes.toVariant());
+	query.addBindValue(a_SharedData->m_Notes.lastModification());
 	query.addBindValue(a_SharedData->m_Hash);
 	if (!query.exec())
 	{

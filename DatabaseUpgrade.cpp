@@ -450,7 +450,132 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"FROM SongFiles_Old",
 
 		"DROP TABLE SongFiles_Old",
-	}),
+	}),  // Version 7 to Version 8
+
+
+	// Version 8 to Version 9:
+	// Move the Notes from SongFiles to SongSharedData:
+	VersionScript({
+		"CREATE TEMPORARY VIEW SongNotes ("
+			"Hash,"
+			"Notes,"
+			"LastMod"
+		") AS SELECT "
+			"Hash,"
+			"Notes,"
+			"max(NotesLM)"
+		"FROM SongFiles WHERE Notes IS NOT NULL "
+		"GROUP BY Hash",
+
+		"ALTER TABLE SongSharedData RENAME TO SongSharedData_Old",
+
+		"CREATE TABLE SongSharedData ("
+			"Hash                      BLOB PRIMARY KEY,"
+			"Length                    NUMERIC,"
+			"LastPlayed                DATETIME,"
+			"LocalRating               NUMERIC,"
+			"LocalRatingLM             DATETIME,"
+			"RatingRhythmClarity       NUMERIC,"
+			"RatingRhythmClarityLM     DATETIME,"
+			"RatingGenreTypicality     NUMERIC,"
+			"RatingGenreTypicalityLM   DATETIME,"
+			"RatingPopularity          NUMERIC,"
+			"RatingPopularityLM        DATETIME,"
+			"ManualAuthor              TEXT,"
+			"ManualAuthorLM            DATETIME,"
+			"ManualTitle               TEXT,"
+			"ManualTitleLM             DATETIME,"
+			"ManualGenre               TEXT,"
+			"ManualGenreLM             DATETIME,"
+			"ManualMeasuresPerMinute   TEXT,"
+			"ManualMeasuresPerMinuteLM DATETIME,"
+			"SkipStart                 NUMERIC,"
+			"SkipStartLM               DATETIME,"
+			"Notes                     TEXT,"
+			"NotesLM                   DATETIME"
+		")",
+
+		"INSERT INTO SongSharedData("
+			"Hash, Length, LastPlayed,"
+			"LocalRating, LocalRatingLM,"
+			"RatingRhythmClarity,   RatingRhythmClarityLM,"
+			"RatingGenreTypicality, RatingGenreTypicalityLM,"
+			"RatingPopularity,      RatingPopularityLM,"
+			"ManualAuthor,            ManualAuthorLM,"
+			"ManualTitle,             ManualTitleLM,"
+			"ManualGenre,             ManualGenreLM,"
+			"ManualMeasuresPerMinute, ManualMeasuresPerMinuteLM,"
+			"SkipStart, SkipStartLM,"
+			"Notes, NotesLM"
+		") SELECT "
+			"SongSharedData_Old.Hash, SongSharedData_Old.Length, SongSharedData_Old.LastPlayed,"
+			"SongSharedData_Old.LocalRating, SongSharedData_Old.LocalRatingLM,"
+			"SongSharedData_Old.RatingRhythmClarity,   SongSharedData_Old.RatingRhythmClarityLM,"
+			"SongSharedData_Old.RatingGenreTypicality, SongSharedData_Old.RatingGenreTypicalityLM,"
+			"SongSharedData_Old.RatingPopularity,      SongSharedData_Old.RatingPopularityLM,"
+			"SongSharedData_Old.ManualAuthor,            SongSharedData_Old.ManualAuthorLM,"
+			"SongSharedData_Old.ManualTitle,             SongSharedData_Old.ManualTitleLM,"
+			"SongSharedData_Old.ManualGenre,             SongSharedData_Old.ManualGenreLM,"
+			"SongSharedData_Old.ManualMeasuresPerMinute, SongSharedData_Old.ManualMeasuresPerMinuteLM,"
+			"SongSharedData_Old.SkipStart, SongSharedData_Old.SkipStartLM, "
+			"SongNotes.Notes, SongNotes.LastMod "
+		"FROM SongSharedData_Old "
+		"LEFT JOIN SongNotes ON SongNotes.Hash = SongSharedData_Old.Hash",
+
+		"DROP TABLE SongSharedData_Old",
+
+		"DROP VIEW SongNotes",
+
+		"ALTER TABLE SongFiles RENAME TO SongFiles_Old",
+
+		"CREATE TABLE SongFiles ("
+			"FileName                  TEXT PRIMARY KEY,"
+			"FileSize                  NUMERIC,"
+			"Hash                      BLOB,"
+			"FileNameAuthor            TEXT,"
+			"FileNameTitle             TEXT,"
+			"FileNameGenre             TEXT,"
+			"FileNameMeasuresPerMinute NUMERIC,"
+			"ID3Author                 TEXT,"
+			"ID3Title                  TEXT,"
+			"ID3Genre                  TEXT,"
+			"ID3MeasuresPerMinute      NUMERIC,"
+			"LastTagRescanned          DATETIME DEFAULT NULL,"
+			"NumTagRescanAttempts      NUMERIC DEFAULT 0"
+		")",
+
+		"INSERT INTO SongFiles("
+			"FileName,"
+			"FileSize,"
+			"Hash,"
+			"FileNameAuthor,"
+			"FileNameTitle,"
+			"FileNameGenre,"
+			"FileNameMeasuresPerMinute,"
+			"ID3Author,"
+			"ID3Title,"
+			"ID3Genre,"
+			"ID3MeasuresPerMinute,"
+			"LastTagRescanned,"
+			"NumTagRescanAttempts"
+		") SELECT "
+			"FileName,"
+			"FileSize,"
+			"Hash,"
+			"FileNameAuthor,"
+			"FileNameTitle,"
+			"FileNameGenre,"
+			"FileNameMeasuresPerMinute,"
+			"ID3Author,"
+			"ID3Title,"
+			"ID3Genre,"
+			"ID3MeasuresPerMinute,"
+			"LastTagRescanned,"
+			"NumTagRescanAttempts "
+		"FROM SongFiles_Old",
+
+		"DROP TABLE SongFiles_Old",
+	}),  // Version 8 to Version 9
 };
 
 
