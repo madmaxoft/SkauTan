@@ -8,7 +8,7 @@
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"
-#include "HashCalculator.h"
+#include "LengthHashCalculator.h"
 #include "Player.h"
 #include "PlaylistItemSong.h"
 #include "PlaybackBuffer.h"
@@ -78,22 +78,26 @@ int main(int argc, char *argv[])
 		// Initialize singletons / subsystems:
 		BackgroundTasks::get();
 		qRegisterMetaType<SongPtr>();
+		qRegisterMetaType<Song::SharedDataPtr>();
 		qRegisterMetaType<TempoDetector::ResultPtr>();
 		Settings::init("SkauTan.ini");
 
 		// Create the main app objects:
 		Database mainDB;
 		MetadataScanner scanner;
-		HashCalculator hashCalc;
+		LengthHashCalculator lhCalc;
 		Player player;
 
 		// Connect the main objects together:
-		app.connect(&mainDB,   &Database::needSongHash,             &hashCalc,          &HashCalculator::queueHashSong);
-		app.connect(&hashCalc, &HashCalculator::songHashCalculated, &mainDB,            &Database::songHashCalculated);
-		app.connect(&mainDB,   &Database::needSongTagRescan,        &scanner,           &MetadataScanner::queueScanSong);
-		app.connect(&mainDB,   &Database::songRemoved,              &player.playlist(), &Playlist::removeSong);
-		app.connect(&scanner,  &MetadataScanner::songScanned,       &mainDB,            &Database::songScanned);
-		app.connect(&player,   &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
+		app.connect(&mainDB,  &Database::needFileHash,                     &lhCalc,            &LengthHashCalculator::queueHashFile);
+		app.connect(&mainDB,  &Database::needSongLength,                   &lhCalc,            &LengthHashCalculator::queueLengthSong);
+		app.connect(&lhCalc,  &LengthHashCalculator::fileHashCalculated,   &mainDB,            &Database::songHashCalculated);
+		app.connect(&lhCalc,  &LengthHashCalculator::fileHashFailed,       &mainDB,            &Database::songHashFailed);
+		app.connect(&lhCalc,  &LengthHashCalculator::songLengthCalculated, &mainDB,            &Database::songLengthCalculated);
+		app.connect(&mainDB,  &Database::needSongTagRescan,                &scanner,           &MetadataScanner::queueScanSong);
+		app.connect(&mainDB,  &Database::songRemoved,                      &player.playlist(), &Playlist::removeSong);
+		app.connect(&scanner, &MetadataScanner::songScanned,               &mainDB,            &Database::songScanned);
+		app.connect(&player,  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
 				// Update the "last played" value in the DB:
 				auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Show the UI:
-		PlayerWindow w(mainDB, scanner, hashCalc, player);
+		PlayerWindow w(mainDB, scanner, lhCalc, player);
 		w.showMaximized();
 
 		return app.exec();

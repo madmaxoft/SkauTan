@@ -24,12 +24,24 @@ public:
 	{
 		qDebug() << "Executing DB upgrade script to version " << a_Version;
 
-		// Begin transaction:
-		auto query = a_DB.exec("begin");
-		if (query.lastError().type() != QSqlError::NoError)
+		// Temporarily disable FKs:
 		{
-			qWarning() << "SQL query failed: " << query.lastError();
-			throw DatabaseUpgrade::SqlError(query.lastError(), "begin");
+			auto query = a_DB.exec("pragma foreign_keys = off");
+			if (query.lastError().type() != QSqlError::NoError)
+			{
+				qWarning() << "SQL query failed: " << query.lastError();
+				throw DatabaseUpgrade::SqlError(query.lastError(), query.lastQuery().toStdString());
+			}
+		}
+
+		// Begin transaction:
+		{
+			auto query = a_DB.exec("begin");
+			if (query.lastError().type() != QSqlError::NoError)
+			{
+				qWarning() << "SQL query failed: " << query.lastError();
+				throw DatabaseUpgrade::SqlError(query.lastError(), query.lastQuery().toStdString());
+			}
 		}
 
 		// Execute the individual commands:
@@ -54,13 +66,33 @@ public:
 			}
 		}
 
+		// Check the FK constraints:
+		{
+			auto query = a_DB.exec("pragma check_foreign_keys");
+			if (query.lastError().type() != QSqlError::NoError)
+			{
+				qWarning() << "SQL transaction commit failed: " << query.lastError();
+				throw DatabaseUpgrade::SqlError(query.lastError(), query.lastQuery().toStdString());
+			}
+		}
+
 		// Commit the transaction:
 		{
 			auto query = a_DB.exec("commit");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL transaction commit failed: " << query.lastError();
-				throw DatabaseUpgrade::SqlError(query.lastError(), "commit");
+				throw DatabaseUpgrade::SqlError(query.lastError(), query.lastQuery().toStdString());
+			}
+		}
+
+		// Re-enable FKs:
+		{
+			auto query = a_DB.exec("pragma foreign_keys = on");
+			if (query.lastError().type() != QSqlError::NoError)
+			{
+				qWarning() << "SQL query failed: " << query.lastError();
+				throw DatabaseUpgrade::SqlError(query.lastError(), query.lastQuery().toStdString());
 			}
 		}
 	}
@@ -576,6 +608,68 @@ static const std::vector<VersionScript> g_VersionScripts =
 
 		"DROP TABLE SongFiles_Old",
 	}),  // Version 8 to Version 9
+
+
+	// Version 9 to Version 10:
+	// New files are put into a queue until their hash is calculated, only then added to SongFiles (#25)
+	// Drop Song FileSize (it's useless and not updated on file change)
+	VersionScript({
+		"CREATE TABLE NewFiles ("
+			"FileName TEXT PRIMARY KEY"
+		")",
+
+		"INSERT INTO NewFiles (FileName, FileSize) "
+		"SELECT FileName, FileSize FROM SongFiles WHERE Hash IS NULL",
+
+		"DELETE FROM SongFiles WHERE Hash IS NULL",
+
+		"ALTER TABLE SongFiles RENAME TO SongFiles_Old",
+
+		"CREATE TABLE SongFiles ("
+			"FileName                  TEXT PRIMARY KEY,"
+			"Hash                      BLOB NOT NULL REFERENCES SongSharedData(Hash),"
+			"FileNameAuthor            TEXT,"
+			"FileNameTitle             TEXT,"
+			"FileNameGenre             TEXT,"
+			"FileNameMeasuresPerMinute NUMERIC,"
+			"ID3Author                 TEXT,"
+			"ID3Title                  TEXT,"
+			"ID3Genre                  TEXT,"
+			"ID3MeasuresPerMinute      NUMERIC,"
+			"LastTagRescanned          DATETIME DEFAULT NULL,"
+			"NumTagRescanAttempts      NUMERIC DEFAULT 0"
+		")",
+
+		"INSERT INTO SongFiles("
+			"FileName,"
+			"Hash,"
+			"FileNameAuthor,"
+			"FileNameTitle,"
+			"FileNameGenre,"
+			"FileNameMeasuresPerMinute,"
+			"ID3Author,"
+			"ID3Title,"
+			"ID3Genre,"
+			"ID3MeasuresPerMinute,"
+			"LastTagRescanned,"
+			"NumTagRescanAttempts"
+		") SELECT "
+			"FileName,"
+			"Hash,"
+			"FileNameAuthor,"
+			"FileNameTitle,"
+			"FileNameGenre,"
+			"FileNameMeasuresPerMinute,"
+			"ID3Author,"
+			"ID3Title,"
+			"ID3Genre,"
+			"ID3MeasuresPerMinute,"
+			"LastTagRescanned,"
+			"NumTagRescanAttempts "
+		"FROM SongFiles_Old",
+
+		"DROP TABLE SongFiles_Old",
+	}),
 };
 
 

@@ -17,11 +17,12 @@ Song::Rating Song::m_EmptyRating;
 
 Song::Song(
 	const QString & a_FileName,
-	qulonglong a_FileSize
+	SharedDataPtr a_SharedData
 ):
 	m_FileName(a_FileName),
-	m_FileSize(a_FileSize)
+	m_SharedData(a_SharedData)
 {
+	a_SharedData->addDuplicate(this);
 }
 
 
@@ -30,21 +31,20 @@ Song::Song(
 
 Song::Song(
 	QString && a_FileName,
-	qulonglong a_FileSize,
-	QVariant && a_Hash,
+	SharedDataPtr a_SharedData,
 	Tag && a_TagFileName,
 	Tag && a_TagId3,
 	QVariant && a_LastTagRescanned,
 	QVariant && a_NumTagRescanAttempts
 ):
 	m_FileName(std::move(a_FileName)),
-	m_FileSize(a_FileSize),
-	m_Hash(std::move(a_Hash)),
+	m_SharedData(a_SharedData),
 	m_TagFileName(std::move(a_TagFileName)),
 	m_TagId3(std::move(a_TagId3)),
 	m_LastTagRescanned(std::move(a_LastTagRescanned)),
 	m_NumTagRescanAttempts(std::move(a_NumTagRescanAttempts))
 {
+	a_SharedData->addDuplicate(this);
 }
 
 
@@ -53,10 +53,7 @@ Song::Song(
 
 Song::~Song()
 {
-	if (m_SharedData != nullptr)
-	{
-		m_SharedData->delDuplicate(shared_from_this());
-	}
+	m_SharedData->delDuplicate(this);
 }
 
 
@@ -117,11 +114,6 @@ const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 
 const DatedOptional<double> Song::skipStart() const
 {
-	static const DatedOptional<double> emptySkipStart;  // returned when the song has no SharedData
-	if (m_SharedData == nullptr)
-	{
-		return emptySkipStart;
-	}
 	return m_SharedData->m_SkipStart;
 }
 
@@ -131,46 +123,7 @@ const DatedOptional<double> Song::skipStart() const
 
 void Song::setLength(double a_Length)
 {
-	assert(m_SharedData != nullptr);
-
-	if (m_SharedData != nullptr)
-	{
-		m_SharedData->m_Length = a_Length;
-	}
-}
-
-
-
-
-
-void Song::setHash(QByteArray && a_Hash)
-{
-	if (a_Hash == m_Hash)
-	{
-		// Setting the same hash is supported, and is used for length update (#141):
-		return;
-	}
-
-	assert(m_SharedData == nullptr);
-	assert(!m_Hash.isValid());
-
-	m_Hash = std::move(a_Hash);
-}
-
-
-
-
-
-void Song::setSharedData(Song::SharedDataPtr a_SharedData)
-{
-	assert(m_Hash.toByteArray() == a_SharedData->m_Hash);
-	if (a_SharedData == m_SharedData)
-	{
-		// SharedData already set, bail out:
-		return;
-	}
-	m_SharedData = a_SharedData;
-	m_SharedData->addDuplicate(shared_from_this());
+	m_SharedData->m_Length = a_Length;
 }
 
 
@@ -179,10 +132,7 @@ void Song::setSharedData(Song::SharedDataPtr a_SharedData)
 
 void Song::setLocalRating(double a_Value)
 {
-	if (m_SharedData != nullptr)
-	{
-		m_SharedData->m_Rating.m_Local = a_Value;
-	}
+	m_SharedData->m_Rating.m_Local = a_Value;
 }
 
 
@@ -191,10 +141,7 @@ void Song::setLocalRating(double a_Value)
 
 void Song::setSkipStart(double a_Seconds)
 {
-	if (m_SharedData != nullptr)
-	{
-		m_SharedData->m_SkipStart = a_Seconds;
-	}
+	m_SharedData->m_SkipStart = a_Seconds;
 }
 
 
@@ -203,10 +150,7 @@ void Song::setSkipStart(double a_Seconds)
 
 void Song::delSkipStart()
 {
-	if (m_SharedData != nullptr)
-	{
-		m_SharedData->m_SkipStart.reset();
-	}
+	m_SharedData->m_SkipStart.reset();
 }
 
 
@@ -306,13 +250,9 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 
 
 
-std::vector<SongPtr> Song::duplicates()
+std::vector<Song *> Song::duplicates()
 {
-	if (m_SharedData == nullptr)
-	{
-		return {shared_from_this()};
-	}
-	return m_SharedData->m_Duplicates;
+	return m_SharedData->duplicates();
 }
 
 
@@ -395,7 +335,7 @@ double Song::foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Gen
 ////////////////////////////////////////////////////////////////////////////////
 // Song::SharedData:
 
-void Song::SharedData::addDuplicate(SongPtr a_Duplicate)
+void Song::SharedData::addDuplicate(Song * a_Duplicate)
 {
 	QMutexLocker lock(&m_Mtx);
 	for (const auto & d: m_Duplicates)
@@ -413,7 +353,7 @@ void Song::SharedData::addDuplicate(SongPtr a_Duplicate)
 
 
 
-void Song::SharedData::delDuplicate(SongPtr a_Duplicate)
+void Song::SharedData::delDuplicate(const Song * a_Duplicate)
 {
 	QMutexLocker lock(&m_Mtx);
 	for (auto itr = m_Duplicates.begin(), end = m_Duplicates.end(); itr != end; ++itr)
@@ -434,4 +374,14 @@ size_t Song::SharedData::duplicatesCount() const
 {
 	QMutexLocker lock(&m_Mtx);
 	return m_Duplicates.size();
+}
+
+
+
+
+
+std::vector<Song *> Song::SharedData::duplicates() const
+{
+	QMutexLocker lock(&m_Mtx);
+	return m_Duplicates;
 }

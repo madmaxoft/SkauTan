@@ -22,7 +22,7 @@ class Player;
 class Song;
 class Database;
 class MetadataScanner;
-class HashCalculator;
+class LengthHashCalculator;
 namespace Ui
 {
 	class PlayerWindow;
@@ -47,7 +47,7 @@ public:
 	explicit PlayerWindow(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
-		HashCalculator & a_Hasher,
+		LengthHashCalculator & a_Hasher,
 		Player & a_Player
 	);
 
@@ -64,9 +64,9 @@ private:
 	/** The scanner for ID3 and other metadata. */
 	MetadataScanner & m_MetadataScanner;
 
-	/** Calculates hashes for song files.
+	/** Calculates lengths and hashes for song files.
 	Used to query queue length. */
-	HashCalculator & m_HashCalculator;
+	LengthHashCalculator & m_LengthHashCalculator;
 
 	/** The player that sends the audio data to the output and manages the playlist. */
 	Player & m_Player;

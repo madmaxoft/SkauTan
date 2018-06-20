@@ -13,7 +13,7 @@
 #include "MetadataScanner.h"
 #include "AVPP.h"
 #include "Stopwatch.h"
-#include "HashCalculator.h"
+#include "LengthHashCalculator.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
 #include "DlgTempoDetect.h"
@@ -37,7 +37,7 @@ static const int TICKS_UNTIL_SET_SEARCH_TEXT = 3;
 DlgSongs::DlgSongs(
 	Database & a_DB,
 	MetadataScanner & a_Scanner,
-	HashCalculator & a_Hasher,
+	LengthHashCalculator & a_Hasher,
 	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 	bool a_ShowManipulators,
 	QWidget * a_Parent
@@ -45,7 +45,7 @@ DlgSongs::DlgSongs(
 	Super(a_Parent),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_HashCalculator(a_Hasher),
+	m_LengthHashCalculator(a_Hasher),
 	m_UI(new Ui::DlgSongs),
 	m_FilterModel(std::move(a_FilterModel)),
 	m_SongModel(a_DB),
@@ -135,7 +135,7 @@ DlgSongs::~DlgSongs()
 void DlgSongs::addFiles(const QStringList & a_FileNames)
 {
 	// Duplicates are skippen inside m_DB, no need to handle them here
-	std::vector<std::pair<QString, qulonglong>> songs;
+	QStringList songs;
 	for (const auto & fnam: a_FileNames)
 	{
 		QFileInfo fi(fnam);
@@ -143,11 +143,7 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 		{
 			continue;
 		}
-		if (!AVPP::isExtensionSupported(fi.suffix()))
-		{
-			continue;
-		}
-		songs.emplace_back(fnam, static_cast<qulonglong>(fi.size()));
+		songs.append(fnam);
 	}
 	if (songs.empty())
 	{
@@ -161,26 +157,22 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 
 
 
-void DlgSongs::addFolder(const QString & a_Path)
+void DlgSongs::addFolderRecursive(const QString & a_Path)
 {
 	QDir dir(a_Path + "/");
-	std::vector<std::pair<QString, qulonglong>> songs;
+	QStringList songs;
 	for (const auto & item: dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot))
 	{
 		if (item.isDir())
 		{
-			addFolder(item.absoluteFilePath());
+			addFolderRecursive(item.absoluteFilePath());
 			continue;
 		}
 		if (!item.isFile())
 		{
 			continue;
 		}
-		if (!AVPP::isExtensionSupported(item.suffix()))
-		{
-			continue;
-		}
-		songs.emplace_back(item.absoluteFilePath(), static_cast<qulonglong>(item.size()));
+		songs.append(item.absoluteFilePath());
 	}
 	if (songs.empty())
 	{
@@ -324,7 +316,7 @@ void DlgSongs::chooseAddFolder()
 	{
 		return;
 	}
-	addFolder(dir);
+	addFolderRecursive(dir);
 }
 
 
@@ -445,10 +437,7 @@ void DlgSongs::rescanMetadata()
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
-		if (song->hash().isValid())
-		{
-			m_MetadataScanner.queueScanSong(song);
-		}
+		m_MetadataScanner.queueScanSong(song);
 	}
 }
 
@@ -468,7 +457,9 @@ void DlgSongs::modelSongEdited(SongPtr a_Song)
 void DlgSongs::periodicUiUpdate()
 {
 	// Update the LibraryRescan UI:
-	auto queueLength = m_HashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	// Hash calc is calculated twice for the queue length, because after calculating the hash,
+	// songs will go to metadata updater anyway.
+	auto queueLength = m_LengthHashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
 	if (m_LastLibraryRescanQueue != queueLength)
 	{
 		m_LastLibraryRescanQueue = queueLength;

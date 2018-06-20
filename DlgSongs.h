@@ -19,7 +19,7 @@
 class Song;
 class Database;
 class MetadataScanner;
-class HashCalculator;
+class LengthHashCalculator;
 class QMenu;
 namespace Ui
 {
@@ -46,7 +46,7 @@ public:
 	explicit DlgSongs(
 		Database & a_DB,
 		MetadataScanner & a_Scanner,
-		HashCalculator & a_Hasher,
+		LengthHashCalculator & a_Hasher,
 		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 		bool a_ShowManipulators,
 		QWidget * a_Parent
@@ -54,13 +54,13 @@ public:
 
 	virtual ~DlgSongs() override;
 
-	/** Adds songs from the specified files to the DB.
+	/** Adds songs from the specified files to the DB, skipping non-existent files.
 	Duplicate files are skipped. */
 	void addFiles(const QStringList & a_FileNames);
 
 	/** Adds songs from the specified path to the DB, recursively.
-	Skips duplicate files. Schedules the added files for metadata re-scan. */
-	void addFolder(const QString & a_Path);
+	Skips duplicate files. */
+	void addFolderRecursive(const QString & a_Path);
 
 
 private:
@@ -73,7 +73,7 @@ private:
 
 	/** Calculates hashes for song files.
 	Used to query queue length. */
-	HashCalculator & m_HashCalculator;
+	LengthHashCalculator & m_LengthHashCalculator;
 
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;

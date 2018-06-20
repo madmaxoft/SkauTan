@@ -25,7 +25,7 @@ DlgSongProperties::DlgSongProperties(
 	m_Notes = m_Song->notes();
 	for (const auto & song: m_Duplicates)
 	{
-		m_TagID3Changes[song.get()] = song->tagId3();
+		m_TagID3Changes[song] = song->tagId3();
 	}
 
 	// Initialize the UI:
@@ -109,7 +109,7 @@ void DlgSongProperties::fillDuplicates()
 	for (const auto & song: m_Duplicates)
 	{
 		auto item = new QListWidgetItem(song->fileName());
-		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(song.get()));
+		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(song));
 		m_UI->lwDuplicates->addItem(item);
 		row += 1;
 	}
@@ -170,9 +170,9 @@ SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
 {
 	for (const auto & song: m_Duplicates)
 	{
-		if (song.get() == &a_Song)
+		if (song == &a_Song)
 		{
-			return song;
+			return song->shared_from_this();
 		}
 	}
 	return nullptr;
@@ -189,7 +189,7 @@ void DlgSongProperties::applyAndClose()
 	m_DB.saveSongSharedData(m_Song->sharedData());
 	for (const auto & song: m_Duplicates)
 	{
-		const auto & cs = m_TagID3Changes[song.get()];
+		const auto & cs = m_TagID3Changes[song];
 		// TODO: Apply the tag changes (#128)
 		Q_UNUSED(cs);
 		// m_DB.saveSong(song);

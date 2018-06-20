@@ -68,7 +68,7 @@ public:
 		Rating m_Rating;
 		Tag m_TagManual;
 		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
-		std::vector<SongPtr> m_Duplicates;  // All songs having the same hash
+		std::vector<Song *> m_Duplicates;  // All songs having the same hash
 		DatedOptional<double> m_SkipStart;  // Where to start playing
 		DatedOptional<QString> m_Notes;
 
@@ -96,9 +96,10 @@ public:
 		{
 		}
 
-		void addDuplicate(SongPtr a_Duplicate);
-		void delDuplicate(SongPtr a_Duplicate);
+		void addDuplicate(Song * a_Duplicate);
+		void delDuplicate(const Song * a_Duplicate);
 		size_t duplicatesCount() const;
+		std::vector<Song *> duplicates() const;
 	};
 
 	using SharedDataPtr = std::shared_ptr<SharedData>;
@@ -108,15 +109,14 @@ public:
 	Used when adding new files. */
 	explicit Song(
 		const QString & a_FileName,
-		qulonglong a_FileSize
+		SharedDataPtr a_SharedData
 	);
 
 	/** Creates a new instance with all fields set.
 	Used when loading songs from the DB. */
 	explicit Song(
 		QString && a_FileName,
-		qulonglong a_FileSize,
-		QVariant && a_Hash,
+		SharedDataPtr a_SharedData,
 		Tag && a_TagFileName,
 		Tag && a_TagId3,
 		QVariant && a_LastTagRescanned,
@@ -126,8 +126,7 @@ public:
 	~Song();
 
 	const QString & fileName() const { return m_FileName; }
-	qulonglong fileSize() const { return m_FileSize; }
-	const QVariant & hash() const { return m_Hash; }
+	const QByteArray & hash() const { return m_SharedData->m_Hash; }
 	const Tag & tagManual() const { return m_SharedData->m_TagManual; }
 	const Tag & tagFileName() const { return m_TagFileName; }
 	const Tag & tagId3() const { return m_TagId3; }
@@ -153,15 +152,6 @@ public:
 
 	/** Updates the length of the song, in seconds. */
 	void setLength(double a_Length);
-
-	/** Sets the hash to the specified value.
-	Raises an assert if attempting to change an already-existing hash.
-	Does NOT set SharedData based on the hash (Database does that)! */
-	void setHash(QByteArray && a_Hash);
-
-	// void setLastPlayed(const QDateTime & a_LastPlayed);
-
-	void setSharedData(SharedDataPtr a_SharedData);
 
 	// Setters that redirect into the Manual tag:
 	void setAuthor(QVariant a_Author) { m_SharedData->m_TagManual.m_Author = a_Author; }
@@ -237,9 +227,8 @@ public:
 	If the genre is not known, returns 0 .. MAX_USHORT */
 	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
 
-	/** Returns all the songs that have the same hash as this song, including this.
-	If this song has no hash assigned yet, returns only self in the vector. */
-	std::vector<SongPtr> duplicates();
+	/** Returns all the songs that have the same hash as this song, including this. */
+	std::vector<Song *> duplicates();
 
 	/** Returns all recognized genres, in a format suitable for QComboBox items. */
 	static QStringList recognizedGenres();
@@ -248,16 +237,15 @@ public:
 	Assumes that the tempo is a reasonable multiple of the destination MPM; genre is used for triplet tempos. */
 	static double foldTempoToMPM(double a_Tempo, const DatedOptional<QString> & a_Genre);
 
+
 protected:
 
 	QString m_FileName;
-	qulonglong m_FileSize;
-	QVariant m_Hash;
+	SharedDataPtr m_SharedData;
 	Tag m_TagFileName;
 	Tag m_TagId3;
 	QVariant m_LastTagRescanned;
 	QVariant m_NumTagRescanAttempts;
-	SharedDataPtr m_SharedData;
 
 	/** An empty variant returned when there's no shared data for a song */
 	static QVariant m_Empty;

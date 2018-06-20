@@ -16,14 +16,14 @@
 DlgEditTemplate::DlgEditTemplate(
 	Database & a_DB,
 	MetadataScanner & a_Scanner,
-	HashCalculator & a_Hasher,
+	LengthHashCalculator & a_Hasher,
 	Template & a_Template,
 	QWidget * a_Parent
 ):
 	QDialog(a_Parent),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_HashCalculator(a_Hasher),
+	m_LengthHashCalculator(a_Hasher),
 	m_Template(a_Template),
 	m_UI(new Ui::DlgEditTemplate)
 {
@@ -171,7 +171,7 @@ void DlgEditTemplate::saveAndClose()
 void DlgEditTemplate::addItem()
 {
 	auto item = m_Template.addItem(tr("New item"), QString(), false);
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_HashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 
@@ -194,7 +194,7 @@ void DlgEditTemplate::editSelectedItem()
 	}
 	auto row = sel[0].row();
 	auto item = m_Template.items()[static_cast<size_t>(row)];
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_HashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	updateTemplateItemRow(row, *item);
@@ -285,7 +285,7 @@ void DlgEditTemplate::cellDoubleClicked(int a_Row, int a_Column)
 	Q_UNUSED(a_Column);
 
 	auto item = m_Template.items()[static_cast<size_t>(a_Row)];
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_HashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(m_Template);
 	updateTemplateItemRow(a_Row, *item);

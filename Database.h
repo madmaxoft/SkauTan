@@ -38,16 +38,15 @@ public:
 	/** Returns all songs currently known in the DB. */
 	const std::vector<SongPtr> & songs() const { return m_Songs; }
 
-	/** Adds the specified files to m_Songs, with no metadata.
-	Each pair contains the file name and size.
-	Schedules the metadata to be updated.
+	/** Adds the specified files to the new files list.
+	Schedules the hash to be calculated; once calculated, the song will be added to m_Songs.
 	Skips duplicate entries. */
-	void addSongFiles(const std::vector<std::pair<QString, qulonglong> > & a_Files);
+	void addSongFiles(const QStringList & a_Files);
 
-	/** Adds the specified file to m_Songs, with no metadata.
-	Schedules the metadata to be updated.
+	/** Adds the specified file to the new files list.
+	Schedules the hash to be calculated; once calculated, the song will be added to m_Songs.
 	Skips duplicate entries. */
-	void addSongFile(const QString & a_FileName, qulonglong a_FileSize);
+	void addSongFile(const QString & a_FileName);
 
 	/** Removes the specified song from the song list, and from DB's SongHashes table.
 	Assumes (asserts) that the song is contained within this DB.
@@ -113,8 +112,15 @@ protected:
 	Use Song::isStillValid() for checking before adding the song to playlist / before starting playback. */
 	void loadSongs();
 
+	/** Loads the songs into m_Songs vector.
+	Songs that need metadata rescan are sent through needSongTagRescan() signal. */
+	void loadSongFiles();
+
 	/** Loads the data shared between songs with the same hash (m_SongSharedData). */
 	void loadSongSharedData();
+
+	/** The new files stored in the DB are enqueued for hash calculation. */
+	void loadNewFiles();
 
 	/** Loads all the templates in the DB into m_Templates. */
 	void loadTemplates();
@@ -163,8 +169,11 @@ signals:
 	/** Emitted after a song is removed from the DB. */
 	void songRemoved(SongPtr a_Song, size_t a_Index);
 
-	/** Emitted when a song is loaded that has no hash assigned to it. */
-	void needSongHash(SongPtr a_Song);
+	/** Emitted when a new file is added to song list that has no hash assigned to it. */
+	void needFileHash(const QString & a_FileName);
+
+	/** Emitted after loading for each song shared data that has an invalid length (#141). */
+	void needSongLength(Song::SharedDataPtr a_SongSharedData);
 
 	/** Emitted when encountering a song with hash but without tag in the DB.
 	This can happen either at DB load time (open()), or when adding new songs (songHashCalculated()). */
@@ -180,9 +189,18 @@ public slots:
 	/** Indicates that the song has started playing and the DB should store that info. */
 	void songPlaybackStarted(SongPtr a_Song);
 
-	/** To be called when the song hash has been calculated and stored in a_Song.
-	The DB prepares a row for the song hash in the metadata table, or assigns an existing row to this song. */
-	void songHashCalculated(SongPtr a_Song, double a_Length);
+	/** To be called when the song hash and length has been calculated.
+	Moves the song from NewFiles to SongFiles, creates an in-memory Song object for the file.
+	Prepares a row for the song hash in the SharedData table, or assigns an existing row to this song.
+	Emits the songFileAdded signal. */
+	void songHashCalculated(const QString & a_FileName, const QByteArray & a_Hash, double a_Length);
+
+	/** To be called when the hash calculation fails.
+	Removes the specified file from the DB table of new files. */
+	void songHashFailed(const QString & a_FileName);
+
+	/** To be called when the song length has been calculated. */
+	void songLengthCalculated(Song::SharedDataPtr a_SharedData, double a_LengthSec);
 
 	/** Saves (updates) the specified song into the DB.
 	Assumes (doesn't check) that the song is contained within this DB. */

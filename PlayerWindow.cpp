@@ -17,7 +17,7 @@
 #include "DlgBackgroundTaskList.h"
 #include "PlaybackBuffer.h"
 #include "MetadataScanner.h"
-#include "HashCalculator.h"
+#include "LengthHashCalculator.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
 #include "Utils.h"
@@ -29,14 +29,14 @@
 PlayerWindow::PlayerWindow(
 	Database & a_DB,
 	MetadataScanner & a_Scanner,
-	HashCalculator & a_Hasher,
+	LengthHashCalculator & a_Hasher,
 	Player & a_Player
 ):
 	Super(nullptr),
 	m_UI(new Ui::PlayerWindow),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_HashCalculator(a_Hasher),
+	m_LengthHashCalculator(a_Hasher),
 	m_Player(a_Player),
 	m_PlaylistDelegate(new PlaylistItemDelegate),
 	m_IsLibraryRescanShown(true),
@@ -233,7 +233,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(m_DB, m_MetadataScanner, m_HashCalculator, nullptr, true, this);
+	DlgSongs dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist,    this, &PlayerWindow::addSongToPlaylist);
 	connect(&dlg, &DlgSongs::insertSongToPlaylist, this, &PlayerWindow::insertSongToPlaylist);
 	dlg.showMaximized();
@@ -248,7 +248,7 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgTemplatesList dlg(m_DB, m_MetadataScanner, m_HashCalculator, this);
+	DlgTemplatesList dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, this);
 	dlg.exec();
 
 	refreshQuickPlayer();
@@ -447,7 +447,7 @@ void PlayerWindow::periodicUIUpdate()
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 
 	// Update the SongScan UI:
-	auto queueLength = m_HashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	auto queueLength = m_LengthHashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
 	if (m_LastLibraryRescanQueue != queueLength)
 	{
 		m_LastLibraryRescanQueue = queueLength;

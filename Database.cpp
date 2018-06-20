@@ -109,8 +109,72 @@ static qint64 applyRating(qint64 a_CurrentWeight, const DatedOptional<double> & 
 
 
 
+/** Implements a RAII-like behavior for transactions.
+Unless explicitly committed, a transaction is rolled back upon destruction of this object. */
+class SqlTransaction
+{
+public:
+
+	/** Starts a transaction.
+	If a transaction cannot be started, logs and throws a std::runtime_error. */
+	SqlTransaction(QSqlDatabase & a_DB):
+		m_DB(a_DB),
+		m_IsActive(a_DB.transaction())
+	{
+		if (!m_IsActive)
+		{
+			qWarning() << "DB doesn't support transactions: " << m_DB.lastError();
+			throw std::runtime_error("DB doesn't support transactions");
+		}
+	}
+
+
+	/** Rolls back the transaction, unless it has been committed.
+	If the transaction fails to roll back, an error is logged (but nothing thrown). */
+	~SqlTransaction()
+	{
+		if (m_IsActive)
+		{
+			if (!m_DB.rollback())
+			{
+				qWarning() << "DB transaction rollback failed: " << m_DB.lastError();
+				return;
+			}
+		}
+	}
+
+
+	/** Commits the transaction.
+	If a transaction wasn't started, or is already committed, logs and throws a std::logic_error.
+	If the transaction fails to commit, throws a std::runtime_error. */
+	void commit()
+	{
+		if (!m_IsActive)
+		{
+			qWarning() << "DB transaction not started, nothing to commit";
+			throw std::logic_error("DB transaction not started");
+		}
+		if (!m_DB.commit())
+		{
+			qWarning() << "Failed to commit DB transaction: " << m_DB.lastError();
+			throw std::runtime_error("DB transaction commit failed");
+		}
+		m_IsActive = false;
+	}
+
+
+protected:
+
+	QSqlDatabase & m_DB;
+	bool m_IsActive;
+};
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
-// SongDatabase:
+// Database:
 
 Database::Database()
 {
@@ -139,6 +203,14 @@ void Database::open(const QString & a_DBFileName)
 		qWarning() << "Turning off synchronous failed: " << query.lastError();
 	}
 
+	// Turn on foreign keys:
+	query = m_Database.exec("PRAGMA foreign_keys = on");
+	if (query.lastError().type() != QSqlError::NoError)
+	{
+		qWarning() << "Turning on foreign keys failed: " << query.lastError();
+		return;
+	}
+
 	// Upgrade the DB to the latest version:
 	DatabaseUpgrade::upgrade(*this);
 
@@ -150,11 +222,11 @@ void Database::open(const QString & a_DBFileName)
 
 
 
-void Database::addSongFiles(const std::vector<std::pair<QString, qulonglong>> & a_Files)
+void Database::addSongFiles(const QStringList & a_Files)
 {
 	for (const auto & f: a_Files)
 	{
-		addSongFile(f.first, f.second);
+		addSongFile(f);
 	}
 }
 
@@ -162,7 +234,7 @@ void Database::addSongFiles(const std::vector<std::pair<QString, qulonglong>> & 
 
 
 
-void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
+void Database::addSongFile(const QString & a_FileName)
 {
 	// Check for duplicates:
 	for (const auto & song: m_Songs)
@@ -176,14 +248,13 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 
 	// Insert into DB:
 	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT INTO SongFiles (FileName, FileSize, NumTagRescanAttempts) VALUES(?, ?, 0)"))
+	if (!query.prepare("INSERT INTO NewFiles (FileName) VALUES(?)"))
 	{
 		qWarning() << ": Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
 	query.bindValue(0, a_FileName);
-	query.bindValue(1, a_FileSize);
 	if (!query.exec())
 	{
 		qWarning() << ": Cannot exec statement: " << query.lastError();
@@ -191,18 +262,9 @@ void Database::addSongFile(const QString & a_FileName, qulonglong a_FileSize)
 		return;
 	}
 
-	// Insert into memory:
-	auto song = std::make_shared<Song>(a_FileName, a_FileSize);
-	m_Songs.push_back(song);
-	emit songFileAdded(song);
-	if (!song->hash().isValid())
-	{
-		emit needSongHash(song);
-	}
-	else if (song->needsTagRescan())
-	{
-		emit needSongTagRescan(song);
-	}
+	// Enqueue it in the Hash calculator:
+	// (After the hash is calculated, only then a Song instance is created for the song, in songHashCalculated())
+	emit needFileHash(a_FileName);
 }
 
 
@@ -541,7 +603,25 @@ void Database::loadSongs()
 {
 	// First load the shared data:
 	loadSongSharedData();
+	loadSongFiles();
+	loadNewFiles();
 
+	// Enqueue songs with unknown length for length calc (#141):
+	for (const auto & sd: m_SongSharedData)
+	{
+		if (!sd.second->m_Length.isValid())
+		{
+			emit needSongLength(sd.second);
+		}
+	}
+}
+
+
+
+
+
+void Database::loadSongFiles()
+{
 	STOPWATCH("Loading songs from the DB");
 
 	// Initialize the query:
@@ -554,7 +634,6 @@ void Database::loadSongs()
 		return;
 	}
 	auto fiFileName             = query.record().indexOf("FileName");
-	auto fiFileSize             = query.record().indexOf("FileSize");
 	auto fiHash                 = query.record().indexOf("Hash");
 	auto fiLastTagRescanned     = query.record().indexOf("LastTagRescanned");
 	auto fiNumTagRescanAttempts = query.record().indexOf("NumTagRescanAttempts");
@@ -581,34 +660,31 @@ void Database::loadSongs()
 	while (query.next())
 	{
 		const auto & rec = query.record();
+		auto hash = fieldValue(rec.field(fiHash));
+		if (!hash.isValid())
+		{
+			emit needFileHash(query.value(fiFileName).toString());
+			continue;
+		}
+		auto fileName = query.value(fiFileName).toString();
+		auto sharedData = m_SongSharedData.find(hash.toByteArray());
+		if (sharedData == m_SongSharedData.end())
+		{
+			qWarning() << "Song " << fileName << " has a hash not present in SongSharedData; skipping song.";
+			continue;
+		}
 		auto song = std::make_shared<Song>(
-			query.value(fiFileName).toString(),
-			query.value(fiFileSize).toULongLong(),
-			fieldValue(rec.field(fiHash)),
+			std::move(fileName),
+			sharedData->second,
 			tagFromFields(rec, fisFileName, fisInvalidLM),
 			tagFromFields(rec, fisId3,      fisInvalidLM),
 			fieldValue(rec.field(fiLastTagRescanned)),
 			fieldValue(rec.field(fiNumTagRescanAttempts))
 		);
 		m_Songs.push_back(song);
-		if (!song->hash().isValid())
+		if (song->needsTagRescan())
 		{
-			emit needSongHash(song);
-		}
-		else
-		{
-			auto shared = m_SongSharedData.find(song->hash().toByteArray());
-			song->setSharedData(shared->second);
-			if (!shared->second->m_Length.isValid())
-			{
-				// The song length hasn't been set, update it (the Hasher does that; #141):
-				qDebug() << "Enqueueuing song for length update: " << song->fileName();
-				emit needSongHash(song);
-			}
-			else if (song->needsTagRescan())
-			{
-				emit needSongTagRescan(song);
-			}
+			emit needSongTagRescan(song);
 		}
 	}
 }
@@ -680,6 +756,33 @@ void Database::loadSongSharedData()
 			datedOptionalFromFields<QString>(rec, fiNotes, fiNotesLM)
 		);
 		m_SongSharedData[hash] = data;
+	}
+}
+
+
+
+
+
+void Database::loadNewFiles()
+{
+	STOPWATCH("Loading new files from the DB");
+
+	// Initialize the query:
+	QSqlQuery query(m_Database);
+	query.setForwardOnly(true);
+	if (!query.exec("SELECT * FROM NewFiles"))
+	{
+		qWarning() << ": Cannot query new files from the DB: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	auto fiFileName = query.record().indexOf("FileName");
+
+	// Load and enqueue each file:
+	while (query.next())
+	{
+		auto fileName = query.value(fiFileName).toString();
+		emit needFileHash(fileName);
 	}
 }
 
@@ -1175,22 +1278,21 @@ void Database::songPlaybackStarted(SongPtr a_Song)
 
 
 
-void Database::songHashCalculated(SongPtr a_Song, double a_Length)
+void Database::songHashCalculated(const QString & a_FileName, const QByteArray & a_Hash, double a_Length)
 {
-	assert(a_Song != nullptr);
-	assert(a_Song->hash().isValid());
+	assert(!a_FileName.isEmpty());
+	assert(!a_Hash.isEmpty());
 
 	// Insert the SharedData record, now that we know the song hash:
-	const auto hash = a_Song->hash().toByteArray();
-	assert(!hash.isEmpty());
 	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash) VALUES (?)"))
+	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash, Length) VALUES (?, ?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, hash);
+	query.bindValue(0, a_Hash);
+	query.bindValue(1, a_Length);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -1199,38 +1301,96 @@ void Database::songHashCalculated(SongPtr a_Song, double a_Length)
 	}
 
 	// Create the SharedData, if not already created:
-	auto itr = m_SongSharedData.find(hash);
+	auto itr = m_SongSharedData.find(a_Hash);
+	Song::SharedDataPtr sharedData;
 	if (itr == m_SongSharedData.end())
 	{
 		// Create new SharedData:
-		auto shared = std::make_shared<Song::SharedData>(hash);
-		m_SongSharedData[hash] = shared;
-		a_Song->setSharedData(shared);
-		saveSongSharedData(shared);  // Hash has been inserted above, so now can be updated
+		sharedData = std::make_shared<Song::SharedData>(a_Hash);
+		m_SongSharedData[a_Hash] = sharedData;
+		saveSongSharedData(sharedData);  // Hash has been inserted above, so now can be updated
 	}
 	else
 	{
-		a_Song->setSharedData(itr->second);
-	}
-
-	if (a_Length > 0)
-	{
-		a_Song->setLength(a_Length);
-		saveSongSharedData(a_Song->sharedData());
-	}
-	else
-	{
-		qWarning() << "Cannot get song length: " << a_Song->fileName();
+		sharedData = itr->second;
 	}
 
 	// Save into the DB:
-	saveSongFileData(a_Song);
-
-	// We finally have the hash, we can scan for tags and other metadata (some stored in SharedData):
-	if (a_Song->needsTagRescan())
 	{
-		emit needSongTagRescan(a_Song);
+		SqlTransaction transaction(m_Database);
+		QSqlQuery query(m_Database);
+		if (!query.prepare("DELETE FROM NewFiles WHERE FileName = ?"))
+		{
+			qWarning() << ": Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.addBindValue(a_FileName);
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.finish();
+		query.clear();
+
+		if (!query.prepare("INSERT OR IGNORE INTO SongFiles (FileName, Hash) VALUES (?, ?)"))
+		{
+			qWarning() << ": Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.addBindValue(a_FileName);
+		query.addBindValue(a_Hash);
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		transaction.commit();
 	}
+
+	// Create the Song object:
+	auto song = std::make_shared<Song>(a_FileName, sharedData);
+	m_Songs.push_back(song);
+	emit songFileAdded(song);
+
+	// We finally have the hash, we can scan for tags and other metadata:
+	emit needSongTagRescan(song);
+}
+
+
+
+
+
+void Database::songHashFailed(const QString & a_FileName)
+{
+	QSqlQuery query(m_Database);
+	if (!query.prepare("DELETE FROM NewFiles WHERE FileName = ?"))
+	{
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.addBindValue(a_FileName);
+	if (!query.exec())
+	{
+		qWarning() << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+}
+
+
+
+
+
+void Database::songLengthCalculated(Song::SharedDataPtr a_SharedData, double a_LengthSec)
+{
+	a_SharedData->m_Length = a_LengthSec;
+	saveSongSharedData(a_SharedData);
 }
 
 
@@ -1258,7 +1418,7 @@ void Database::saveSongFileData(SongPtr a_Song)
 {
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE SongFiles SET "
-		"FileSize = ?, Hash = ?, "
+		"Hash = ?, "
 		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
 		"ID3Author = ?, ID3Title = ?, ID3Genre = ?, ID3MeasuresPerMinute = ?,"
 		"LastTagRescanned = ?,"
@@ -1270,7 +1430,6 @@ void Database::saveSongFileData(SongPtr a_Song)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Song->fileSize());
 	query.addBindValue(a_Song->hash());
 	query.addBindValue(a_Song->tagFileName().m_Author.toVariant());
 	query.addBindValue(a_Song->tagFileName().m_Title.toVariant());
@@ -1371,22 +1530,19 @@ void Database::songScanned(SongPtr a_Song)
 void Database::addPlaybackHistory(SongPtr a_Song, const QDateTime & a_Timestamp)
 {
 	// Add a history playlist record:
-	if (a_Song->hash().isValid())
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
 	{
-		QSqlQuery query(m_Database);
-		if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
-		{
-			qWarning() << ": Cannot prepare statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
-		query.bindValue(0, a_Song->hash());
-		query.bindValue(1, a_Timestamp);
-		if (!query.exec())
-		{
-			qWarning() << ": Cannot exec statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
+		qWarning() << ": Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.bindValue(0, a_Song->hash());
+	query.bindValue(1, a_Timestamp);
+	if (!query.exec())
+	{
+		qWarning() << ": Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
 	}
 }

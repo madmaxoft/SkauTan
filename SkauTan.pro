@@ -68,7 +68,6 @@ SOURCES += \
 	DlgSongs.cpp \
 	SongModel.cpp \
 	MetadataScanner.cpp \
-	HashCalculator.cpp \
 	PlaylistItemModel.cpp \
 	Player.cpp \
 	PlaybackBuffer.cpp \
@@ -95,6 +94,7 @@ SOURCES += \
 	TempoDetector.cpp \
 	DlgTempoDetect.cpp \
 	DlgTapTempo.cpp \
+	LengthHashCalculator.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -106,7 +106,6 @@ HEADERS += \
 	DlgSongs.h \
 	SongModel.h \
 	MetadataScanner.h \
-	HashCalculator.h \
 	PlaylistItemModel.h \
 	Player.h \
 	PlaybackBuffer.h \
@@ -135,6 +134,7 @@ HEADERS += \
 	TempoDetector.h \
 	DlgTempoDetect.h \
 	DlgTapTempo.h \
+	LengthHashCalculator.h \
 
 FORMS += \
 	PlayerWindow.ui \

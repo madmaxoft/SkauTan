@@ -18,13 +18,13 @@
 DlgTemplatesList::DlgTemplatesList(
 	Database & a_DB,
 	MetadataScanner & a_Scanner,
-	HashCalculator & a_Hasher,
+	LengthHashCalculator & a_Hasher,
 	QWidget * a_Parent
 ):
 	Super(a_Parent),
 	m_DB(a_DB),
 	m_MetadataScanner(a_Scanner),
-	m_HashCalculator(a_Hasher),
+	m_LengthHashCalculator(a_Hasher),
 	m_UI(new Ui::DlgTemplatesList),
 	m_IsInternalChange(false)
 {
@@ -283,7 +283,7 @@ void DlgTemplatesList::addTemplate()
 		);
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_HashCalculator, *tmpl, this);
+	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *tmpl, this);
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 
@@ -357,7 +357,7 @@ void DlgTemplatesList::editTemplateAt(const QModelIndex & a_Index)
 	{
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_HashCalculator, *tmpl, this);
+	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *tmpl, this);
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 
@@ -511,7 +511,7 @@ void DlgTemplatesList::editTemplateItemAt(const QModelIndex & a_Index)
 		return;
 	}
 
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_HashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
 	dlg.exec();
 	m_DB.saveTemplate(*tmpl);
 	updateTemplateItemRow(a_Index.row(), *item);
