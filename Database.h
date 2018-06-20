@@ -151,15 +151,6 @@ protected:
 	int getSongWeight(const Song & a_Song, const Playlist * a_Playlist = nullptr) const;
 
 
-protected slots:
-
-	/** Updates the song's file-related data in the DB. */
-	void saveSongFileData(SongPtr a_Song);
-
-	/** Updates the song's shared data in the SongSharedData DB table. */
-	void saveSongSharedData(Song::SharedDataPtr a_SharedData);
-
-
 signals:
 
 	/** Emitted after a new song file is added to the list of songs (addSongFile, addSongFiles).
@@ -196,6 +187,12 @@ public slots:
 	/** Saves (updates) the specified song into the DB.
 	Assumes (doesn't check) that the song is contained within this DB. */
 	void saveSong(SongPtr a_Song);
+
+	/** Updates the song's file-related data in the DB. */
+	void saveSongFileData(SongPtr a_Song);
+
+	/** Updates the song's shared data in the SongSharedData DB table. */
+	void saveSongSharedData(Song::SharedDataPtr a_SharedData);
 
 	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
 	Writes the whole updated song to the DB. */

@@ -21,11 +21,11 @@ DlgSongProperties::DlgSongProperties(
 	m_Duplicates(a_Song->duplicates())
 {
 	// Initialize the ChangeSets:
+	m_TagManual = m_Song->tagManual();
+	m_Notes = m_Song->notes();
 	for (const auto & song: m_Duplicates)
 	{
-		auto & cs = m_ChangeSets[song.get()];
-		cs.m_ManualTag = song->tagManual();
-		cs.m_Notes = song->notes();
+		m_TagID3Changes[song.get()] = song->tagId3();
 	}
 
 	// Initialize the UI:
@@ -63,6 +63,21 @@ DlgSongProperties::DlgSongProperties(
 	m_UI->leFilenameGenre->setPalette(p);
 	m_UI->leFilenameMeasuresPerMinute->setPalette(p);
 
+	// Fill in the data:
+	m_IsInternalChange = true;
+	m_UI->leManualAuthor->setText(m_TagManual.m_Author.valueOrDefault());
+	m_UI->leManualTitle->setText(m_TagManual.m_Title.valueOrDefault());
+	m_UI->cbManualGenre->setCurrentText(m_TagManual.m_Genre.valueOrDefault());
+	if (m_TagManual.m_MeasuresPerMinute.isPresent())
+	{
+		m_UI->leManualMeasuresPerMinute->setText(QLocale::system().toString(m_TagManual.m_MeasuresPerMinute.value()));
+	}
+	else
+	{
+		m_UI->leManualMeasuresPerMinute->clear();
+	}
+	m_UI->pteNotes->setPlainText(m_Notes.valueOrDefault());
+	m_IsInternalChange = false;
 	fillDuplicates();
 	selectSong(*m_Song);
 }
@@ -128,18 +143,6 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 		);
 	}
 	const auto loc = QLocale::system();
-	const auto & cs = m_ChangeSets[&a_Song];
-	m_UI->leManualAuthor->setText(cs.m_ManualTag.m_Author.valueOrDefault());
-	m_UI->leManualTitle->setText(cs.m_ManualTag.m_Title.valueOrDefault());
-	m_UI->cbManualGenre->setCurrentText(cs.m_ManualTag.m_Genre.valueOrDefault());
-	if (cs.m_ManualTag.m_MeasuresPerMinute.isPresent())
-	{
-		m_UI->leManualMeasuresPerMinute->setText(loc.toString(cs.m_ManualTag.m_MeasuresPerMinute.value()));
-	}
-	else
-	{
-		m_UI->leManualMeasuresPerMinute->clear();
-	}
 	m_UI->leId3Author->setText(a_Song.tagId3().m_Author.valueOrDefault());
 	m_UI->leId3Title->setText(a_Song.tagId3().m_Title.valueOrDefault());
 	m_UI->leId3Genre->setText(a_Song.tagId3().m_Genre.valueOrDefault());
@@ -162,7 +165,6 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 	{
 		m_UI->leFilenameMeasuresPerMinute->clear();
 	}
-	m_UI->pteNotes->setPlainText(cs.m_Notes.valueOrDefault());
 	m_IsInternalChange = false;
 }
 
@@ -188,12 +190,15 @@ SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
 
 void DlgSongProperties::applyAndClose()
 {
+	m_Song->sharedData()->m_TagManual = m_TagManual;
+	m_Song->sharedData()->m_Notes = m_Notes;
+	m_DB.saveSongSharedData(m_Song->sharedData());
 	for (const auto & song: m_Duplicates)
 	{
-		const auto & cs = m_ChangeSets[song.get()];
-		song->setManualTag(cs.m_ManualTag);
-		song->setNotes(cs.m_Notes);
-		m_DB.saveSong(song);
+		const auto & cs = m_TagID3Changes[song.get()];
+		// TODO: Apply the tag changes (#128)
+		Q_UNUSED(cs);
+		// m_DB.saveSong(song);
 	}
 	accept();
 }
@@ -204,7 +209,10 @@ void DlgSongProperties::applyAndClose()
 
 void DlgSongProperties::authorTextEdited(const QString & a_NewText)
 {
-	m_ChangeSets[m_Song.get()].m_ManualTag.m_Author = a_NewText;
+	if (!m_IsInternalChange)
+	{
+		m_TagManual.m_Author = a_NewText;
+	}
 }
 
 
@@ -213,7 +221,10 @@ void DlgSongProperties::authorTextEdited(const QString & a_NewText)
 
 void DlgSongProperties::titleTextEdited(const QString & a_NewText)
 {
-	m_ChangeSets[m_Song.get()].m_ManualTag.m_Title = a_NewText;
+	if (!m_IsInternalChange)
+	{
+		m_TagManual.m_Title = a_NewText;
+	}
 }
 
 
@@ -222,7 +233,10 @@ void DlgSongProperties::titleTextEdited(const QString & a_NewText)
 
 void DlgSongProperties::genreSelected(const QString & a_NewGenre)
 {
-	m_ChangeSets[m_Song.get()].m_ManualTag.m_Genre = a_NewGenre;
+	if (!m_IsInternalChange)
+	{
+		m_TagManual.m_Genre = a_NewGenre;
+	}
 }
 
 
@@ -231,11 +245,26 @@ void DlgSongProperties::genreSelected(const QString & a_NewGenre)
 
 void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
 {
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	if (a_NewText.isEmpty())
+	{
+		m_UI->leManualMeasuresPerMinute->setStyleSheet("");
+		m_TagManual.m_MeasuresPerMinute.reset();
+		return;
+	}
 	bool isOK;
 	auto mpm = QLocale::system().toDouble(a_NewText, &isOK);
 	if (isOK)
 	{
-		m_ChangeSets[m_Song.get()].m_ManualTag.m_MeasuresPerMinute = mpm;
+		m_UI->leManualMeasuresPerMinute->setStyleSheet("");
+		m_TagManual.m_MeasuresPerMinute = mpm;
+	}
+	else
+	{
+		m_UI->leManualMeasuresPerMinute->setStyleSheet("background-color:#fcc");
 	}
 }
 
@@ -245,7 +274,7 @@ void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
 
 void DlgSongProperties::notesChanged()
 {
-	m_ChangeSets[m_Song.get()].m_Notes = m_UI->pteNotes->toPlainText();
+	m_Notes = m_UI->pteNotes->toPlainText();
 }
 
 

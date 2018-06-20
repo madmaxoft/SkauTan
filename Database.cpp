@@ -1159,6 +1159,101 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 
 
 
+void Database::songPlaybackStarted(SongPtr a_Song)
+{
+	auto now = QDateTime::currentDateTimeUtc();
+	auto shared = a_Song->sharedData();
+	if (shared != nullptr)
+	{
+		shared->m_LastPlayed = now;
+		QMetaObject::invokeMethod(this, "saveSongSharedData", Q_ARG(Song::SharedDataPtr, shared));
+	}
+	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, a_Song), Q_ARG(QDateTime, now));
+}
+
+
+
+
+
+void Database::songHashCalculated(SongPtr a_Song, double a_Length)
+{
+	assert(a_Song != nullptr);
+	assert(a_Song->hash().isValid());
+
+	// Insert the SharedData record, now that we know the song hash:
+	const auto hash = a_Song->hash().toByteArray();
+	assert(!hash.isEmpty());
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash) VALUES (?)"))
+	{
+		qWarning() << "Cannot prepare statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+	query.bindValue(0, hash);
+	if (!query.exec())
+	{
+		qWarning() << "Cannot exec statement: " << query.lastError();
+		assert(!"DB error");
+		return;
+	}
+
+	// Create the SharedData, if not already created:
+	auto itr = m_SongSharedData.find(hash);
+	if (itr == m_SongSharedData.end())
+	{
+		// Create new SharedData:
+		auto shared = std::make_shared<Song::SharedData>(hash);
+		m_SongSharedData[hash] = shared;
+		a_Song->setSharedData(shared);
+		saveSongSharedData(shared);  // Hash has been inserted above, so now can be updated
+	}
+	else
+	{
+		a_Song->setSharedData(itr->second);
+	}
+
+	if (a_Length > 0)
+	{
+		a_Song->setLength(a_Length);
+		saveSongSharedData(a_Song->sharedData());
+	}
+	else
+	{
+		qWarning() << "Cannot get song length: " << a_Song->fileName();
+	}
+
+	// Save into the DB:
+	saveSongFileData(a_Song);
+
+	// We finally have the hash, we can scan for tags and other metadata (some stored in SharedData):
+	if (a_Song->needsTagRescan())
+	{
+		emit needSongTagRescan(a_Song);
+	}
+}
+
+
+
+
+
+void Database::saveSong(SongPtr a_Song)
+{
+	assert(a_Song != nullptr);
+	assert(QThread::currentThread() == QApplication::instance()->thread());
+
+	saveSongFileData(a_Song);
+	if (a_Song->sharedData())
+	{
+		saveSongSharedData(a_Song->sharedData());
+	}
+	emit songSaved(a_Song);
+}
+
+
+
+
+
 void Database::saveSongFileData(SongPtr a_Song)
 {
 	QSqlQuery query(m_Database);
@@ -1257,101 +1352,6 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		assert(!"DB_error");
 		return;
 	}
-}
-
-
-
-
-
-void Database::songPlaybackStarted(SongPtr a_Song)
-{
-	auto now = QDateTime::currentDateTimeUtc();
-	auto shared = a_Song->sharedData();
-	if (shared != nullptr)
-	{
-		shared->m_LastPlayed = now;
-		QMetaObject::invokeMethod(this, "saveSongSharedData", Q_ARG(Song::SharedDataPtr, shared));
-	}
-	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, a_Song), Q_ARG(QDateTime, now));
-}
-
-
-
-
-
-void Database::songHashCalculated(SongPtr a_Song, double a_Length)
-{
-	assert(a_Song != nullptr);
-	assert(a_Song->hash().isValid());
-
-	// Insert the SharedData record, now that we know the song hash:
-	const auto hash = a_Song->hash().toByteArray();
-	assert(!hash.isEmpty());
-	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash) VALUES (?)"))
-	{
-		qWarning() << "Cannot prepare statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
-	query.bindValue(0, hash);
-	if (!query.exec())
-	{
-		qWarning() << "Cannot exec statement: " << query.lastError();
-		assert(!"DB error");
-		return;
-	}
-
-	// Create the SharedData, if not already created:
-	auto itr = m_SongSharedData.find(hash);
-	if (itr == m_SongSharedData.end())
-	{
-		// Create new SharedData:
-		auto shared = std::make_shared<Song::SharedData>(hash);
-		m_SongSharedData[hash] = shared;
-		a_Song->setSharedData(shared);
-		saveSongSharedData(shared);  // Hash has been inserted above, so now can be updated
-	}
-	else
-	{
-		a_Song->setSharedData(itr->second);
-	}
-
-	if (a_Length > 0)
-	{
-		a_Song->setLength(a_Length);
-		saveSongSharedData(a_Song->sharedData());
-	}
-	else
-	{
-		qWarning() << "Cannot get song length: " << a_Song->fileName();
-	}
-
-	// Save into the DB:
-	saveSongFileData(a_Song);
-
-	// We finally have the hash, we can scan for tags and other metadata (some stored in SharedData):
-	if (a_Song->needsTagRescan())
-	{
-		emit needSongTagRescan(a_Song);
-	}
-}
-
-
-
-
-
-void Database::saveSong(SongPtr a_Song)
-{
-	assert(a_Song != nullptr);
-	assert(QThread::currentThread() == QApplication::instance()->thread());
-
-	saveSongFileData(a_Song);
-	if (a_Song->sharedData())
-	{
-		saveSongSharedData(a_Song->sharedData());
-	}
-	emit songSaved(a_Song);
 }
 
 
