@@ -31,27 +31,25 @@ DlgSongProperties::DlgSongProperties(
 	// Initialize the UI:
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgSongProperties", *this);
-	m_UI->tblDuplicates->setColumnCount(1);
 	auto genres = Song::recognizedGenres();
 	genres.insert(0, "");
 	m_UI->cbManualGenre->addItems(genres);
 	m_UI->cbManualGenre->setMaxVisibleItems(genres.count());
 
 	// Connect the signals:
-	connect(m_UI->btnCancel,                 &QPushButton::clicked,          this, &DlgSongProperties::reject);
-	connect(m_UI->btnOK,                     &QPushButton::clicked,          this, &DlgSongProperties::applyAndClose);
-	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,         this, &DlgSongProperties::authorTextEdited);
-	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,         this, &DlgSongProperties::titleTextEdited);
-	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged, this, &DlgSongProperties::genreSelected);
-	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,         this, &DlgSongProperties::measuresPerMinuteTextEdited);
-	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,   this, &DlgSongProperties::notesChanged);
-	connect(m_UI->tblDuplicates,             &QTableWidget::currentCellChanged, this, &DlgSongProperties::switchDuplicate);
+	connect(m_UI->btnCancel,                 &QPushButton::clicked,           this, &DlgSongProperties::reject);
+	connect(m_UI->btnOK,                     &QPushButton::clicked,           this, &DlgSongProperties::applyAndClose);
+	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,          this, &DlgSongProperties::authorTextEdited);
+	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,          this, &DlgSongProperties::titleTextEdited);
+	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,  this, &DlgSongProperties::genreSelected);
+	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,          this, &DlgSongProperties::measuresPerMinuteTextEdited);
+	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,    this, &DlgSongProperties::notesChanged);
+	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged, this, &DlgSongProperties::switchDuplicate);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
 	p.setColor(QPalette::Active,   QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
 	p.setColor(QPalette::Inactive, QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
-	m_UI->leFileName->setPalette(p);
 	m_UI->leHash->setPalette(p);
 	m_UI->leLength->setPalette(p);
 	m_UI->leId3Author->setPalette(p);
@@ -65,6 +63,16 @@ DlgSongProperties::DlgSongProperties(
 
 	// Fill in the data:
 	m_IsInternalChange = true;
+	// TODO: m_UI->leHash->setText(hexString(a_Song.hash().toByteArray()));
+	auto length = m_Song->length();
+	if (length.isValid())
+	{
+		auto numSeconds = static_cast<int>(length.toDouble() + 0.5);
+		m_UI->leLength->setText(tr("%1:%2 (%n seconds)", "SongLength", numSeconds)
+			.arg(QString::number(numSeconds / 60))
+			.arg(QString::number(numSeconds % 60), 2, '0')
+		);
+	}
 	m_UI->leManualAuthor->setText(m_TagManual.m_Author.valueOrDefault());
 	m_UI->leManualTitle->setText(m_TagManual.m_Title.valueOrDefault());
 	m_UI->cbManualGenre->setCurrentText(m_TagManual.m_Genre.valueOrDefault());
@@ -97,17 +105,14 @@ DlgSongProperties::~DlgSongProperties()
 
 void DlgSongProperties::fillDuplicates()
 {
-	m_UI->tblDuplicates->setRowCount(static_cast<int>(m_Duplicates.size()));
 	int row = 0;
 	for (const auto & song: m_Duplicates)
 	{
-		auto item = new QTableWidgetItem(song->fileName());
+		auto item = new QListWidgetItem(song->fileName());
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(song.get()));
-		m_UI->tblDuplicates->setItem(row, 0, item);
+		m_UI->lwDuplicates->addItem(item);
 		row += 1;
 	}
-	m_UI->tblDuplicates->resizeColumnsToContents();
-	m_UI->tblDuplicates->resizeRowsToContents();
 }
 
 
@@ -120,28 +125,17 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 	m_IsInternalChange = true;
 	m_Song = songPtrFromRef(a_Song);
 	assert(m_Song != nullptr);
-	auto numRows = m_UI->tblDuplicates->rowCount();
+	auto numRows = m_UI->lwDuplicates->count();
 	for (int row = 0; row < numRows; ++row)
 	{
-		auto itemSong = reinterpret_cast<const Song *>(m_UI->tblDuplicates->item(row, 0)->data(Qt::UserRole).toULongLong());
+		auto itemSong = reinterpret_cast<const Song *>(m_UI->lwDuplicates->item(row)->data(Qt::UserRole).toULongLong());
 		if (itemSong == &a_Song)
 		{
-			m_UI->tblDuplicates->selectRow(row);
+			m_UI->lwDuplicates->setCurrentRow(row);
 			break;
 		}
 	}
 
-	m_UI->leFileName->setText(a_Song.fileName());
-	// TODO: m_UI->leHash->setText(hexString(a_Song.hash().toByteArray()));
-	auto length = a_Song.length();
-	if (length.isValid())
-	{
-		auto numSeconds = static_cast<int>(length.toDouble() + 0.5);
-		m_UI->leLength->setText(tr("%1:%2 (%n seconds)", "SongLength", numSeconds)
-			.arg(QString::number(numSeconds / 60))
-			.arg(QString::number(numSeconds % 60), 2, '0')
-		);
-	}
 	const auto loc = QLocale::system();
 	m_UI->leId3Author->setText(a_Song.tagId3().m_Author.valueOrDefault());
 	m_UI->leId3Title->setText(a_Song.tagId3().m_Title.valueOrDefault());
