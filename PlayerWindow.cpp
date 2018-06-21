@@ -579,8 +579,7 @@ void PlayerWindow::deleteSongsFromDisk()
 	// Remove from the DB, delete from disk:
 	for (const auto & song: songs)
 	{
-		m_DB.delSong(*song);
-		QFile::remove(song->fileName());
+		m_DB.removeSong(*song, true);
 	}
 }
 
@@ -615,7 +614,7 @@ void PlayerWindow::removeSongsFromLibrary()
 	// Remove from the DB:
 	for (const auto & song: songs)
 	{
-		m_DB.delSong(*song);
+		m_DB.removeSong(*song, false);
 	}
 }
 

@@ -669,6 +669,19 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"FROM SongFiles_Old",
 
 		"DROP TABLE SongFiles_Old",
+	}),  // Version 9 to Version 10
+
+
+	// Version 10 to Version 11
+	// Add a log of removed and deleted songs
+	VersionScript({
+		"CREATE TABLE RemovedSongs ("
+			"FileName       TEXT,"
+			"Hash           BLOB REFERENCES SongSharedData(Hash),"
+			"DateRemoved    DATETIME,"
+			"WasFileDeleted INTEGER,"
+			"NumDuplicates  INTEGER"
+		")",
 	}),
 };
 

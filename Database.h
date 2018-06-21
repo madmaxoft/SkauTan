@@ -28,6 +28,19 @@ class Database:
 
 
 public:
+
+	struct RemovedSong
+	{
+		QString m_FileName;
+		QDateTime m_DateRemoved;
+		bool m_WasDeleted;
+		QByteArray m_Hash;
+		int m_NumDuplicates;  // ... at the time of removal
+	};
+
+	using RemovedSongPtr = std::shared_ptr<RemovedSong>;
+
+
 	Database();
 
 	/** Opens the specified SQLite file and reads its contents into this object.
@@ -48,10 +61,12 @@ public:
 	Skips duplicate entries. */
 	void addSongFile(const QString & a_FileName);
 
-	/** Removes the specified song from the song list, and from DB's SongHashes table.
+	/** Removes the specified song from the song list.
+	If a_DeleteDiskFile is true, also deletes the song file from the disk.
 	Assumes (asserts) that the song is contained within this DB.
-	Note that the SongMetadata entry is kept, in case there are duplicates or the song is re-added later on. */
-	void delSong(const Song & a_Song);
+	Adds an entry to the deletion log.
+	Note that the SongSharedData entry is kept, in case there are duplicates or the song is re-added later on. */
+	void removeSong(const Song & a_Song, bool a_DeleteDiskFile);
 
 	/** Returns all templates stored in the DB. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
@@ -87,6 +102,13 @@ public:
 	/** Picks a random song matching the specified template item.
 	If possible, avoids a_Avoid from being picked (picks it only if it is the only song matching the template item). */
 	SongPtr pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Avoid = nullptr) const;
+
+	/** Reads and returns all the songs that have been removed from the library. */
+	std::vector<RemovedSongPtr> removedSongs() const;
+
+	/** Returns the SharedData for the specified song hash.
+	Returns nullptr if no such SharedData was found. */
+	Song::SharedDataPtr sharedDataFromHash(const QByteArray & a_Hash) const;
 
 
 protected:

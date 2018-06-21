@@ -354,7 +354,7 @@ void DlgSongs::removeSelected()
 	// Remove from the DB:
 	for (const auto & song: songs)
 	{
-		m_DB.delSong(*song);
+		m_DB.removeSong(*song, false);
 	}
 }
 
@@ -393,8 +393,7 @@ void DlgSongs::deleteFromDisk()
 	// Remove from the DB and delete files from disk:
 	for (const auto & song: songs)
 	{
-		m_DB.delSong(*song);
-		QFile::remove(song->fileName());
+		m_DB.removeSong(*song, true);
 	}
 }
 

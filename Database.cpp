@@ -11,6 +11,7 @@
 #include <QSqlField>
 #include <QThread>
 #include <QApplication>
+#include <QFile>
 #include "Stopwatch.h"
 #include "DatabaseUpgrade.h"
 #include "Playlist.h"
@@ -271,7 +272,7 @@ void Database::addSongFile(const QString & a_FileName)
 
 
 
-void Database::delSong(const Song & a_Song)
+void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 {
 	size_t idx = 0;
 	for (auto itr = m_Songs.cbegin(), end = m_Songs.cend(); itr != end; ++itr, ++idx)
@@ -285,19 +286,57 @@ void Database::delSong(const Song & a_Song)
 		m_Songs.erase(itr);
 
 		// Remove from the DB:
-		QSqlQuery query(m_Database);
-		if (!query.prepare("DELETE FROM SongFiles WHERE FileName = ?"))
 		{
-			qWarning() << ": Cannot prepare statement: " << query.lastError();
-			assert(!"DB error");
-			return;
+			QSqlQuery query(m_Database);
+			if (!query.prepare("DELETE FROM SongFiles WHERE FileName = ?"))
+			{
+				qWarning() << "Cannot prepare statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
+			query.addBindValue(a_Song.fileName());
+			if (!query.exec())
+			{
+				qWarning() << "Cannot exec statement: " << query.lastError();
+				assert(!"DB error");
+				return;
+			}
 		}
-		query.addBindValue(a_Song.fileName());
-		if (!query.exec())
+
+		// Add a log entry:
 		{
-			qWarning() << ": Cannot exec statement: " << query.lastError();
-			assert(!"DB error");
-			return;
+			QSqlQuery query(m_Database);
+			if (!query.prepare(
+				"INSERT INTO RemovedSongs "
+				"(FileName, Hash, DateRemoved, WasFileDeleted, NumDuplicates) "
+				"VALUES (?, ?, ?, ?, ?)"
+			))
+			{
+				qWarning() << "Cannot prepare statement: " << query.lastError();
+				assert(!"DB error");
+			}
+			else
+			{
+				query.addBindValue(a_Song.fileName());
+				query.addBindValue(a_Song.hash());
+				query.addBindValue(QDateTime::currentDateTimeUtc());
+				query.addBindValue(a_DeleteDiskFile);
+				query.addBindValue(static_cast<qulonglong>(a_Song.sharedData()->duplicatesCount()));
+				if (!query.exec())
+				{
+					qWarning() << "Cannot exec statement: " << query.lastError();
+					assert(!"DB error");
+				}
+			}
+		}
+
+		// Delete the disk file, if requested:
+		if (a_DeleteDiskFile)
+		{
+			if (!QFile::remove(a_Song.fileName()))
+			{
+				qWarning() << "Cannot delete disk file " << a_Song.fileName();
+			}
 		}
 
 		emit songRemoved(song, idx);
@@ -593,6 +632,61 @@ SongPtr Database::pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Av
 		}
 	}
 	return songs[0].first;
+}
+
+
+
+
+
+std::vector<Database::RemovedSongPtr> Database::removedSongs() const
+{
+	std::vector<RemovedSongPtr> res;
+
+	QSqlQuery query(m_Database);
+	if (!query.prepare("SELECT * FROM RemovedSongs"))
+	{
+		qWarning() << "Cannot prepare query: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return res;
+	}
+	if (!query.exec())
+	{
+		qWarning() << "Cannot prepare query: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return res;
+	}
+	auto fiFileName      = query.record().indexOf("FileName");
+	auto fiDateRemoved   = query.record().indexOf("DateRemoved");
+	auto fiHash          = query.record().indexOf("Hash");
+	auto fiWasDeleted    = query.record().indexOf("WasFileDeleted");
+	auto fiNumDuplicates = query.record().indexOf("NumDuplicates");
+	while (query.next())
+	{
+		auto rsp = std::make_shared<RemovedSong>();
+		rsp->m_FileName      = query.value(fiFileName).toString();
+		rsp->m_DateRemoved   = query.value(fiDateRemoved).toDateTime();
+		rsp->m_Hash          = query.value(fiHash).toByteArray();
+		rsp->m_WasDeleted    = query.value(fiWasDeleted).toBool();
+		rsp->m_NumDuplicates = query.value(fiNumDuplicates).toInt();
+		res.push_back(rsp);
+	}
+	return res;
+}
+
+
+
+
+
+Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & a_Hash) const
+{
+	auto itr = m_SongSharedData.find(a_Hash);
+	if (itr == m_SongSharedData.end())
+	{
+		return nullptr;
+	}
+	return itr->second;
 }
 
 
