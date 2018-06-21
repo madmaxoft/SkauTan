@@ -618,8 +618,8 @@ static const std::vector<VersionScript> g_VersionScripts =
 			"FileName TEXT PRIMARY KEY"
 		")",
 
-		"INSERT INTO NewFiles (FileName, FileSize) "
-		"SELECT FileName, FileSize FROM SongFiles WHERE Hash IS NULL",
+		"INSERT INTO NewFiles (FileName) "
+		"SELECT FileName FROM SongFiles WHERE Hash IS NULL",
 
 		"DELETE FROM SongFiles WHERE Hash IS NULL",
 
