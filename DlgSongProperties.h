@@ -108,6 +108,12 @@ private slots:
 
 	/** The user has selected the duplicate at the specified row, switch data to that duplicate. */
 	void switchDuplicate(int a_Row);
+
+	/** Asks for confirmation, then removes the selected duplicate from the library. */
+	void removeFromLibrary();
+
+	/** Asks for confirmation, then deletes the selected duplicate from the disk. */
+	void deleteFromDisk();
 };
 
 

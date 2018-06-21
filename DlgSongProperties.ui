@@ -45,6 +45,9 @@
      </item>
      <item row="10" column="0" colspan="4">
       <widget class="QListWidget" name="lwDuplicates">
+       <property name="contextMenuPolicy">
+        <enum>Qt::ActionsContextMenu</enum>
+       </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOn</enum>
        </property>
@@ -295,6 +298,25 @@
     </layout>
    </item>
   </layout>
+  <action name="actRemoveFromLibrary">
+   <property name="text">
+    <string>Remove from library...</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes the song from the library, keeps the disk file</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actDeleteFromDisk">
+   <property name="text">
+    <string>Delete from disk...</string>
+   </property>
+   <property name="toolTip">
+    <string>Removes song from library AND deletes the file from the disk</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

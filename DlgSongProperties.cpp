@@ -1,6 +1,7 @@
 #include "DlgSongProperties.h"
 #include <assert.h>
 #include <QDebug>
+#include <QMessageBox>
 #include "ui_DlgSongProperties.h"
 #include "Database.h"
 #include "Settings.h"
@@ -35,6 +36,10 @@ DlgSongProperties::DlgSongProperties(
 	genres.insert(0, "");
 	m_UI->cbManualGenre->addItems(genres);
 	m_UI->cbManualGenre->setMaxVisibleItems(genres.count());
+	m_UI->lwDuplicates->addActions({
+		m_UI->actRemoveFromLibrary,
+		m_UI->actDeleteFromDisk,
+	});
 
 	// Connect the signals:
 	connect(m_UI->btnCancel,                 &QPushButton::clicked,           this, &DlgSongProperties::reject);
@@ -45,6 +50,8 @@ DlgSongProperties::DlgSongProperties(
 	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,          this, &DlgSongProperties::measuresPerMinuteTextEdited);
 	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,    this, &DlgSongProperties::notesChanged);
 	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged, this, &DlgSongProperties::switchDuplicate);
+	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,             this, &DlgSongProperties::removeFromLibrary);
+	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,             this, &DlgSongProperties::deleteFromDisk);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -284,4 +291,76 @@ void DlgSongProperties::switchDuplicate(int a_Row)
 	}
 	auto song = m_Duplicates[static_cast<size_t>(a_Row)];
 	selectSong(*song);
+}
+
+
+
+
+
+void DlgSongProperties::removeFromLibrary()
+{
+	auto row = m_UI->lwDuplicates->currentRow();
+	if ((row < 0) || (row >= static_cast<int>(m_Duplicates.size())))
+	{
+		qWarning() << "Invalid row: " << row;
+		return;
+	}
+	auto song = m_Duplicates[static_cast<size_t>(row)]->shared_from_this();
+	assert(song != nullptr);
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Remove songs?"),
+		tr(
+			"Are you sure you want to remove the song %1 from the library? The song file will stay "
+			"on the disk, but all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		).arg(song->fileName()),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB:
+	m_DB.removeSong(*song, false);
+	m_Duplicates.erase(m_Duplicates.begin() + row);
+	delete m_UI->lwDuplicates->takeItem(row);
+}
+
+
+
+
+
+void DlgSongProperties::deleteFromDisk()
+{
+	auto row = m_UI->lwDuplicates->currentRow();
+	if ((row < 0) || (row >= static_cast<int>(m_Duplicates.size())))
+	{
+		qWarning() << "Invalid row: " << row;
+		return;
+	}
+	auto song = m_Duplicates[static_cast<size_t>(row)]->shared_from_this();
+	assert(song != nullptr);
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Remove songs?"),
+		tr(
+			"Are you sure you want to delete the file %1 from the disk? "
+			"The file will be deleted and all its properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		).arg(song->fileName()),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Delete from the disk:
+	m_DB.removeSong(*song, true);
+	m_Duplicates.erase(m_Duplicates.begin() + row);
+	delete m_UI->lwDuplicates->takeItem(row);
 }
