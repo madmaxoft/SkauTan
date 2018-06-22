@@ -178,9 +178,9 @@ QStringList Song::getWarnings() const
 
 	// If auto-detected genres are different and there's no override, report:
 	if (
-		!m_SharedData->m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
-		m_TagFileName.m_Genre.isPresent() &&
-		m_TagId3.m_Genre.isPresent() &&
+		m_SharedData->m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
+		!m_TagFileName.m_Genre.isEmpty() &&
+		!m_TagId3.m_Genre.isEmpty() &&
 		(m_TagId3.m_Genre.value() != m_TagFileName.m_Genre.value())   // ID3 genre not equal to FileName genre
 	)
 	{
