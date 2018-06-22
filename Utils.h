@@ -9,6 +9,7 @@
 class QString;
 class QListWidget;
 class QVariant;
+class QByteArray;
 
 
 
@@ -65,6 +66,8 @@ and selects the item's row.
 Returns true if item found, false otherwise. */
 bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data);
 
+/** Returns a string that represents the data in hex. */
+QString toHex(const QByteArray & a_Data);
 
 };
 

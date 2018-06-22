@@ -2,6 +2,7 @@
 #include <QString>
 #include <QDebug>
 #include <QListWidget>
+#include <QByteArray>
 
 
 
@@ -122,6 +123,25 @@ bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data)
 		}
 	}
 	return false;
+}
+
+
+
+
+
+QString toHex(const QByteArray & a_Data)
+{
+	QString res;
+	auto len = a_Data.size();
+	res.resize(len * 2);
+	static const char hexChar[] = "0123456789abcdef";
+	for (auto i = 0; i < len; ++i)
+	{
+		auto val = a_Data[i];
+		res[2 * i] = hexChar[(val >> 4) & 0x0f];
+		res[2 * i + 1] = hexChar[val & 0x0f];
+	}
+	return res;
 }
 
 

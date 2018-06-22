@@ -5,6 +5,7 @@
 #include "ui_DlgSongProperties.h"
 #include "Database.h"
 #include "Settings.h"
+#include "Utils.h"
 
 
 
@@ -70,7 +71,7 @@ DlgSongProperties::DlgSongProperties(
 
 	// Fill in the data:
 	m_IsInternalChange = true;
-	// TODO: m_UI->leHash->setText(hexString(a_Song.hash().toByteArray()));
+	m_UI->leHash->setText(Utils::toHex(a_Song->hash()));
 	auto length = m_Song->length();
 	if (length.isValid())
 	{
