@@ -95,6 +95,7 @@ SOURCES += \
 	DlgTempoDetect.cpp \
 	DlgTapTempo.cpp \
 	LengthHashCalculator.cpp \
+	DlgRemovedSongs.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -135,6 +136,7 @@ HEADERS += \
 	DlgTempoDetect.h \
 	DlgTapTempo.h \
 	LengthHashCalculator.h \
+	DlgRemovedSongs.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -150,6 +152,7 @@ FORMS += \
 	DlgSongProperties.ui \
 	DlgTempoDetect.ui \
 	DlgTapTempo.ui \
+	DlgRemovedSongs.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

@@ -21,6 +21,7 @@
 #include "Settings.h"
 #include "DlgSongProperties.h"
 #include "Utils.h"
+#include "DlgRemovedSongs.h"
 
 
 
@@ -99,6 +100,7 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->actPlay,                &QAction::triggered,        this, &PlayerWindow::jumpToAndPlay);
 	connect(m_UI->actSetDurationLimit,    &QAction::triggered,        this, &PlayerWindow::setDurationLimit);
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,        this, &PlayerWindow::removeDurationLimit);
+	connect(m_UI->actRemovedSongs,        &QAction::triggered,        this, &PlayerWindow::showRemovedSongs);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this, &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
@@ -125,7 +127,7 @@ PlayerWindow::PlayerWindow(
 	// Set up the Tools button:
 	auto menu = new QMenu(this);
 	menu->addAction(m_UI->actBackgroundTasks);
-	menu->addSeparator();
+	menu->addAction(m_UI->actRemovedSongs);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -750,4 +752,14 @@ void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 		// Replacing the currently played song, restart the playback of the new item:
 		m_Player.jumpTo(a_Index.row());
 	}
+}
+
+
+
+
+
+void PlayerWindow::showRemovedSongs()
+{
+	DlgRemovedSongs dlg(m_DB, this);
+	dlg.exec();
 }

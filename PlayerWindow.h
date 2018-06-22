@@ -199,6 +199,9 @@ private slots:
 	/** Replaces the song at the specified index with another song matching the template.
 	If the playlist item doesn't have a template item attached, does nothing. */
 	void replaceSong(const QModelIndex & a_Index);
+
+	/** Shows the DlgRemovedSongs. */
+	void showRemovedSongs();
 };
 
 

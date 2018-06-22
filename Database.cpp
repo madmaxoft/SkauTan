@@ -679,6 +679,20 @@ std::vector<Database::RemovedSongPtr> Database::removedSongs() const
 
 
 
+void Database::clearRemovedSongs()
+{
+	auto query = m_Database.exec("DELETE FROM RemovedSongs");
+	if (query.lastError().type() != QSqlError::NoError)
+	{
+		qWarning() << "SQL query failed: " << query.lastError();
+		return;
+	}
+}
+
+
+
+
+
 Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & a_Hash) const
 {
 	auto itr = m_SongSharedData.find(a_Hash);

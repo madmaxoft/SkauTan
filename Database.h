@@ -106,6 +106,9 @@ public:
 	/** Reads and returns all the songs that have been removed from the library. */
 	std::vector<RemovedSongPtr> removedSongs() const;
 
+	/** Removes all entries from the history of removed songs. */
+	void clearRemovedSongs();
+
 	/** Returns the SharedData for the specified song hash.
 	Returns nullptr if no such SharedData was found. */
 	Song::SharedDataPtr sharedDataFromHash(const QByteArray & a_Hash) const;
