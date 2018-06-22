@@ -296,20 +296,36 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 
 QVariant PlaylistItemModel::headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const
 {
-	if ((a_Orientation != Qt::Horizontal) || (a_Role != Qt::DisplayRole))
+	if (a_Orientation != Qt::Horizontal)
 	{
 		return QVariant();
 	}
-	switch (a_Section)
+	switch (a_Role)
 	{
-		case colGenre:             return tr("Genre");
-		case colLength:            return tr("Length");
-		case colDurationLimit:     return tr("Dur", "Duration (limit)");
-		case colMeasuresPerMinute: return tr("MPM");
-		case colAuthor:            return tr("Author");
-		case colTitle:             return tr("Title");
-		case colDisplayName:       return tr("Name");
-		case colReplace:           return tr("Rplc", "Replace");
+		case Qt::DisplayRole:
+		{
+			switch (a_Section)
+			{
+				case colGenre:             return tr("Genre");
+				case colLength:            return tr("Length");
+				case colDurationLimit:     return tr("Dur", "Duration (limit)");
+				case colMeasuresPerMinute: return tr("MPM");
+				case colAuthor:            return tr("Author");
+				case colTitle:             return tr("Title");
+				case colDisplayName:       return tr("Name");
+				case colReplace:           return tr("Rplc", "Replace");
+			}
+			return QVariant();
+		}  // case Qt::DisplayRole
+
+		case Qt::ToolTipRole:
+		{
+			switch (a_Section)
+			{
+				case colDurationLimit: return tr("Duration (limit)");
+				case colReplace:       return tr("Click to replace the song with another one matching the template item");
+			}
+		}
 	}
 	return QVariant();
 }
