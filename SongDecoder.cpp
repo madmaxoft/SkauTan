@@ -52,7 +52,7 @@ void SongDecoder::decodeInternal()
 	if (m_FmtCtx == nullptr)
 	{
 		qDebug() << "Decoding failed for file " << m_Song->fileName();
-		abort();
+		abortWithError();
 		return;
 	}
 	m_FmtCtx->routeAudioTo(this);

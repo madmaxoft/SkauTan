@@ -47,6 +47,10 @@ public:
 	Used mainly by destructors. */
 	virtual void abort() = 0;
 
+	/** Signals that the operations should abort because an error was encountered.
+	Used mainly by async decoder to signal invalid data. */
+	virtual void abortWithError() = 0;
+
 	/** Returns true iff the source should terminate (abort has been called). */
 	virtual bool shouldAbort() const = 0;
 
@@ -109,6 +113,11 @@ public:
 	virtual void abort() override
 	{
 		return m_Lower->abort();
+	}
+
+	virtual void abortWithError() override
+	{
+		return m_Lower->abortWithError();
 	}
 
 	virtual bool shouldAbort() const override

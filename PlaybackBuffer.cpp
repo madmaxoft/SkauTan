@@ -31,6 +31,16 @@ void PlaybackBuffer::abort()
 
 
 
+void PlaybackBuffer::abortWithError()
+{
+	m_HasError = true;
+	abort();
+}
+
+
+
+
+
 bool PlaybackBuffer::writeDecodedAudio(const void * a_Data, size_t a_Len)
 {
 	QMutexLocker lock(&m_Mtx);
