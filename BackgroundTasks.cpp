@@ -1,4 +1,5 @@
 #include "BackgroundTasks.h"
+#include <memory>
 #include <QDebug>
 
 
