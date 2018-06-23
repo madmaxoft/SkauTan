@@ -56,6 +56,10 @@ public slots:
 	/** Queues the specified song for scanning in a background task.
 	Once the song is scanned, the songScanned() signal is emitted. */
 	void queueScanSong(SongPtr a_Song);
+
+	/** Scans the song synchronously.
+	Once the song is scanned, the songScanned() signal is emitted, as part of this call. */
+	void scanSong(SongPtr a_Song);
 };
 
 

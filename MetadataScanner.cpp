@@ -305,3 +305,14 @@ void MetadataScanner::queueScanSong(SongPtr a_Song)
 		}
 	);
 }
+
+
+
+
+
+void MetadataScanner::scanSong(SongPtr a_Song)
+{
+	SongProcessor proc(a_Song);
+	proc.process();
+	emit songScanned(a_Song);
+}
