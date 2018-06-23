@@ -64,10 +64,19 @@ BackgroundTasks & BackgroundTasks::get()
 
 
 
-void BackgroundTasks::addTask(TaskPtr a_Task)
+void BackgroundTasks::addTask(TaskPtr a_Task, bool a_Prioritize)
 {
-	QMutexLocker lock(&m_Mtx);
-	m_Tasks.push_back(a_Task);
+	{
+		QMutexLocker lock(&m_Mtx);
+		if (a_Prioritize)
+		{
+			m_Tasks.push_front(a_Task);
+		}
+		else
+		{
+			m_Tasks.push_back(a_Task);
+		}
+	}
 	emit taskAdded(a_Task);
 	m_WaitForTasks.wakeOne();
 }
@@ -79,6 +88,7 @@ void BackgroundTasks::addTask(TaskPtr a_Task)
 void BackgroundTasks::enqueue(
 	const QString & a_TaskName,
 	std::function<void ()> a_Task,
+	bool a_Prioritize,
 	std::function<void ()> a_OnAbort
 )
 {
@@ -113,7 +123,7 @@ void BackgroundTasks::enqueue(
 	};
 
 	// Enqueue the task adapter:
-	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_TaskName, a_Task, a_OnAbort));
+	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_TaskName, a_Task, a_OnAbort), a_Prioritize);
 }
 
 

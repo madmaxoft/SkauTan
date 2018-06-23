@@ -44,6 +44,9 @@ protected:
 	std::atomic<int> m_QueueLength;
 
 
+	/** Internal shared implementation of queueScanSong() and queueScanSongPriority(). */
+	void enqueueScan(SongPtr a_Song, bool a_Prioritize);
+
 signals:
 
 	/** Emitted after a song has been scanned.
@@ -56,6 +59,10 @@ public slots:
 	/** Queues the specified song for scanning in a background task.
 	Once the song is scanned, the songScanned() signal is emitted. */
 	void queueScanSong(SongPtr a_Song);
+
+	/** Queues the specified song for scanning in a background task, prioritized (executed asap).
+	Once the song is scanned, the songScanned() signal is emitted. */
+	void queueScanSongPriority(SongPtr a_Song);
 
 	/** Scans the song synchronously.
 	Once the song is scanned, the songScanned() signal is emitted, as part of this call. */

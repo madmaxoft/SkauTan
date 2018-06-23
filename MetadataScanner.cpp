@@ -293,7 +293,7 @@ MetadataScanner::MetadataScanner():
 
 
 
-void MetadataScanner::queueScanSong(SongPtr a_Song)
+void MetadataScanner::enqueueScan(SongPtr a_Song, bool a_Prioritize)
 {
 	m_QueueLength += 1;
 	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
@@ -302,8 +302,27 @@ void MetadataScanner::queueScanSong(SongPtr a_Song)
 			proc.process();
 			m_QueueLength -= 1;
 			emit this->songScanned(a_Song);
-		}
+		},
+		a_Prioritize
 	);
+}
+
+
+
+
+
+void MetadataScanner::queueScanSong(SongPtr a_Song)
+{
+	enqueueScan(a_Song, false);
+}
+
+
+
+
+
+void MetadataScanner::queueScanSongPriority(SongPtr a_Song)
+{
+	enqueueScan(a_Song, true);
 }
 
 

@@ -73,14 +73,19 @@ public:
 	static BackgroundTasks & get();
 
 	/** Adds the specified task to the internal list of tasks to run.
+	If a_Prioritize is true, adds the task to the front of the queue (executed asap),
+	otherwise adds to the end of the queue (executed last).
 	The task is then run when an executor becomes free. */
-	void addTask(TaskPtr a_Task);
+	void addTask(TaskPtr a_Task, bool a_Prioritize = false);
 
 	/** Adds a new task to the queue that executes the specified function.
+	If a_Prioritize is true, adds the task to the front of the queue (executed asap),
+	otherwise adds to the end of the queue (executed last).
 	a_OnAbort is called if the task is to be aborted (even before it starts). */
 	static void enqueue(
 		const QString & a_TaskName,
 		std::function<void()> a_Task,
+		bool a_Prioritize = false,
 		std::function<void()> a_OnAbort = [](){}
 	);
 
