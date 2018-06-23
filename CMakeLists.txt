@@ -16,6 +16,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 
 set(SOURCES
     AudioEffects.cpp
@@ -57,6 +59,10 @@ set(SOURCES
     main.cpp
 )
 
+set(RESOURCES
+    res/SkauTan.qrc
+)
+
 set(QT_LIBRARIES Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::Sql Qt5::Xml)
 find_package(Qt5Core CONFIG REQUIRED)
 find_package(Qt5Widgets CONFIG REQUIRED)
@@ -66,7 +72,7 @@ find_package(Qt5Xml CONFIG REQUIRED)
 find_package(Taglib REQUIRED)
 find_package(FFmpeg REQUIRED)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES} ${RESOURCES})
 
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${FFMPEG_LIBRARIES} ${TAGLIB_LIBRARIES})
 include_directories(${FFMPEG_INCLUDE_DIR})
