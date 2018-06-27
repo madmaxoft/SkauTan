@@ -14,9 +14,7 @@
 
 
 // fwd:
-class Database;
-class MetadataScanner;
-class LengthHashCalculator;
+class ComponentCollection;
 class QTableWidgetItem;
 namespace Ui
 {
@@ -37,9 +35,7 @@ class DlgTemplatesList:
 public:
 
 	explicit DlgTemplatesList(
-		Database & a_DB,
-		MetadataScanner & a_Scanner,
-		LengthHashCalculator & a_Hasher,
+		ComponentCollection & a_Components,
 		QWidget * a_Parent = nullptr
 	);
 
@@ -48,17 +44,11 @@ public:
 
 private:
 
-	/** The database where the templates are stored. */
-	Database & m_DB;
-
-	/** The scanner that can update the songs' metadata upon request.
-	Used when displaying songs matching a filter. */
-	MetadataScanner & m_MetadataScanner;
-
-	LengthHashCalculator & m_LengthHashCalculator;
-
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgTemplatesList> m_UI;
+
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** Set to true if the UI is updating internally; false when the changes come from the user. */
 	bool m_IsInternalChange;

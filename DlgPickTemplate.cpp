@@ -9,9 +9,9 @@
 
 
 
-DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
+DlgPickTemplate::DlgPickTemplate(ComponentCollection & a_Components, QWidget * a_Parent):
 	Super(a_Parent),
-	m_DB(a_DB),
+	m_Components(a_Components),
 	m_UI(new Ui::DlgPickTemplate)
 {
 	m_UI->setupUi(this);
@@ -22,11 +22,11 @@ DlgPickTemplate::DlgPickTemplate(const Database & a_DB, QWidget * a_Parent):
 
 	// Fill in the templates:
 	m_UI->tblTemplates->setColumnCount(3);
-	m_UI->tblTemplates->setRowCount(static_cast<int>(a_DB.templates().size()));
+	m_UI->tblTemplates->setRowCount(static_cast<int>(m_Components.get<Database>()->templates().size()));
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Template"), tr("#"), tr("Notes")});
 	int idx = 0;
 	auto colCount = m_UI->tblTemplates->columnCount();
-	for (const auto & tmpl: a_DB.templates())
+	for (const auto & tmpl: m_Components.get<Database>()->templates())
 	{
 		m_UI->tblTemplates->setItem(idx, 0, new QTableWidgetItem(tmpl->displayName()));
 		m_UI->tblTemplates->setItem(idx, 1, new QTableWidgetItem(QString::number(tmpl->items().size())));
@@ -65,8 +65,8 @@ void DlgPickTemplate::keyPressEvent(QKeyEvent * a_Event)
 			auto curIdx = m_UI->tblTemplates->currentRow();
 			if (curIdx >= 0)
 			{
-				assert(curIdx < static_cast<int>(m_DB.templates().size()));
-				m_SelectedTemplate = m_DB.templates()[static_cast<size_t>(curIdx)];
+				assert(curIdx < static_cast<int>(m_Components.get<Database>()->templates().size()));
+				m_SelectedTemplate = m_Components.get<Database>()->templates()[static_cast<size_t>(curIdx)];
 				accept();
 				return;
 			}
@@ -87,8 +87,8 @@ void DlgPickTemplate::cellDblClicked(int a_Row, int a_Column)
 
 	if (a_Row >= 0)
 	{
-		assert(a_Row < static_cast<int>(m_DB.templates().size()));
-		m_SelectedTemplate = m_DB.templates()[static_cast<size_t>(a_Row)];
+		assert(a_Row < static_cast<int>(m_Components.get<Database>()->templates().size()));
+		m_SelectedTemplate = m_Components.get<Database>()->templates()[static_cast<size_t>(a_Row)];
 		accept();
 	}
 }

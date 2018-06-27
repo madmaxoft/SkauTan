@@ -14,7 +14,7 @@
 
 
 // fwd:
-class Database;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgSongProperties;
@@ -37,7 +37,7 @@ public:
 	/** Creates a new instance of the dialog.
 	a_Song is the song that the user requested to edit. */
 	explicit DlgSongProperties(
-		Database & a_DB,
+		ComponentCollection & a_Components,
 		SongPtr a_Song,
 		QWidget * a_Parent = nullptr
 	);
@@ -50,8 +50,8 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgSongProperties> m_UI;
 
-	/** The database containing the songs. */
-	Database & m_DB;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The song being currently displayed. */
 	SongPtr m_Song;

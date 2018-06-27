@@ -20,9 +20,7 @@
 class QListWidgetItem;
 class Player;
 class Song;
-class Database;
-class MetadataScanner;
-class LengthHashCalculator;
+class ComponentCollection;
 namespace Ui
 {
 	class PlayerWindow;
@@ -44,32 +42,18 @@ class PlayerWindow:
 
 public:
 
-	explicit PlayerWindow(
-		Database & a_DB,
-		MetadataScanner & a_Scanner,
-		LengthHashCalculator & a_Hasher,
-		Player & a_Player
-	);
+	explicit PlayerWindow(ComponentCollection & a_Components);
 
 	~PlayerWindow();
 
 
 private:
 
+	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::PlayerWindow> m_UI;
 
-	/** The DB of all the songs and templates. */
-	Database & m_DB;
-
-	/** The scanner for ID3 and other metadata. */
-	MetadataScanner & m_MetadataScanner;
-
-	/** Calculates lengths and hashes for song files.
-	Used to query queue length. */
-	LengthHashCalculator & m_LengthHashCalculator;
-
-	/** The player that sends the audio data to the output and manages the playlist. */
-	Player & m_Player;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The model used to display the playlist. */
 	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;

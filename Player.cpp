@@ -319,18 +319,18 @@ void Player::prevTrack()
 
 
 
-void Player::startPause()
+void Player::startPausePlayback()
 {
 	switch (m_State)
 	{
 		case psStopped:
 		{
-			start();
+			startPlayback();
 			return;
 		}
 		case psPlaying:
 		{
-			pause();
+			pausePlayback();
 			return;
 		}
 		case psFadeOutToTrack:
@@ -350,7 +350,7 @@ void Player::startPause()
 
 
 
-void Player::start()
+void Player::startPlayback()
 {
 	auto track = m_Playlist->currentItem();
 	if (track == nullptr)
@@ -389,7 +389,7 @@ void Player::start()
 
 
 
-void Player::pause()
+void Player::pausePlayback()
 {
 	if (m_State != psPlaying)
 	{
@@ -419,7 +419,7 @@ void Player::jumpTo(int a_ItemIdx)
 		}
 		case psStopped:
 		{
-			start();
+			startPlayback();
 			break;
 		}
 		case psFadeOutToStop:
@@ -473,7 +473,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				m_CurrentTrack.reset();
 				if (m_Playlist->nextItem())
 				{
-					start();
+					startPlayback();
 				}
 				return;
 			}
@@ -493,7 +493,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				emit finishedPlayback(m_AudioDataSource);
 				m_AudioDataSource.reset();
 				m_CurrentTrack.reset();
-				start();
+				startPlayback();
 				return;
 			}
 			case psStopped:
@@ -556,7 +556,7 @@ void Player::OutputThread::run()
 				}
 				else
 				{
-					m_Player.pause();
+					m_Player.pausePlayback();
 				}
 			}
 		}

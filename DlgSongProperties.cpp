@@ -6,19 +6,20 @@
 #include "Database.h"
 #include "Settings.h"
 #include "Utils.h"
+#include "ComponentCollection.h"
 
 
 
 
 
 DlgSongProperties::DlgSongProperties(
-	Database & a_DB,
+	ComponentCollection & a_Components,
 	SongPtr a_Song,
 	QWidget * a_Parent
 ) :
 	Super(a_Parent),
 	m_UI(new Ui::DlgSongProperties),
-	m_DB(a_DB),
+	m_Components(a_Components),
 	m_Song(a_Song),
 	m_Duplicates(a_Song->duplicates())
 {
@@ -194,7 +195,7 @@ void DlgSongProperties::applyAndClose()
 {
 	m_Song->sharedData()->m_TagManual = m_TagManual;
 	m_Song->sharedData()->m_Notes = m_Notes;
-	m_DB.saveSongSharedData(m_Song->sharedData());
+	m_Components.get<Database>()->saveSongSharedData(m_Song->sharedData());
 	for (const auto & song: m_Duplicates)
 	{
 		const auto & cs = m_TagID3Changes[song];
@@ -325,7 +326,7 @@ void DlgSongProperties::removeFromLibrary()
 	}
 
 	// Remove from the DB:
-	m_DB.removeSong(*song, false);
+	m_Components.get<Database>()->removeSong(*song, false);
 	m_Duplicates.erase(m_Duplicates.begin() + row);
 	delete m_UI->lwDuplicates->takeItem(row);
 }
@@ -361,7 +362,7 @@ void DlgSongProperties::deleteFromDisk()
 	}
 
 	// Delete from the disk:
-	m_DB.removeSong(*song, true);
+	m_Components.get<Database>()->removeSong(*song, true);
 	m_Duplicates.erase(m_Duplicates.begin() + row);
 	delete m_UI->lwDuplicates->takeItem(row);
 }

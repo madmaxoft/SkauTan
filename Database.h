@@ -12,6 +12,7 @@
 #include <QSqlQuery>
 #include "Song.h"
 #include "Template.h"
+#include "ComponentCollection.h"
 
 
 
@@ -21,7 +22,8 @@
 Stores the song library, the shared song data, the templates and playback history.
 Note that all DB-access functions are not thread-safe. */
 class Database:
-	public QObject
+	public QObject,
+	public ComponentCollection::Component<ComponentCollection::ckDatabase>
 {
 	Q_OBJECT
 	using Super = QObject;

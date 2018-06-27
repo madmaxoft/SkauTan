@@ -13,7 +13,7 @@
 
 
 // fwd:
-class Database;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgRemovedSongs;
@@ -33,7 +33,7 @@ class DlgRemovedSongs:
 
 public:
 
-	explicit DlgRemovedSongs(Database & a_DB, QWidget * a_Parent);
+	explicit DlgRemovedSongs(ComponentCollection & a_Components, QWidget * a_Parent);
 	~DlgRemovedSongs();
 
 
@@ -42,8 +42,8 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgRemovedSongs> m_UI;
 
-	/** The DB from which to show the removed songs. */
-	Database & m_DB;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 
 protected slots:

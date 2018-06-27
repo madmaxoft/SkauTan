@@ -10,14 +10,14 @@
 
 
 
-DlgHistory::DlgHistory(Database & a_DB, QWidget * a_Parent) :
+DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 	Super(a_Parent),
 	m_UI(new Ui::DlgHistory)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgHistory", *this);
 	auto model = new QSqlQueryModel(this);
-	model->setQuery(a_DB.playbackHistorySqlQuery());
+	model->setQuery(a_Components.get<Database>()->playbackHistorySqlQuery());
 	if (model->lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << ": LastError: " << model->lastError();

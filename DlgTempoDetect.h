@@ -17,7 +17,7 @@
 
 // fwd:
 class QLabel;
-class Database;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgTempoDetect;
@@ -37,7 +37,7 @@ class DlgTempoDetect:
 
 public:
 
-	explicit DlgTempoDetect(Database & a_DB, SongPtr a_Song, QWidget * a_Parent = nullptr);
+	explicit DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Song, QWidget * a_Parent = nullptr);
 
 	~DlgTempoDetect();
 
@@ -47,8 +47,8 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgTempoDetect> m_UI;
 
-	/** The DB to which the song belongs. */
-	Database & m_DB;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The song being analyzed. */
 	SongPtr m_Song;

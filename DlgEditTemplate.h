@@ -14,9 +14,7 @@
 
 
 // fwd:
-class Database;
-class MetadataScanner;
-class LengthHashCalculator;
+class ComponentCollection;
 class QTableWidgetItem;
 namespace Ui
 {
@@ -37,9 +35,7 @@ class DlgEditTemplate:
 public:
 
 	explicit DlgEditTemplate(
-		Database & a_DB,
-		MetadataScanner & a_Scanner,
-		LengthHashCalculator & a_Hasher,
+		ComponentCollection & a_Components,
 		Template & a_Template,
 		QWidget * a_Parent = nullptr
 	);
@@ -49,14 +45,8 @@ public:
 
 private:
 
-	/** The database in which the edited template resides. */
-	Database & m_DB;
-
-	/** The scanner that can update the songs' metadata upon request.
-	Used when displaying songs matching a filter. */
-	MetadataScanner & m_MetadataScanner;
-
-	LengthHashCalculator & m_LengthHashCalculator;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The template being edited. */
 	Template & m_Template;

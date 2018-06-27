@@ -10,22 +10,19 @@
 #include "DlgEditTemplateItem.h"
 #include "Settings.h"
 #include "Utils.h"
+#include "ComponentCollection.h"
 
 
 
 
 
 DlgTemplatesList::DlgTemplatesList(
-	Database & a_DB,
-	MetadataScanner & a_Scanner,
-	LengthHashCalculator & a_Hasher,
+	ComponentCollection & a_Components,
 	QWidget * a_Parent
 ):
 	Super(a_Parent),
-	m_DB(a_DB),
-	m_MetadataScanner(a_Scanner),
-	m_LengthHashCalculator(a_Hasher),
 	m_UI(new Ui::DlgTemplatesList),
+	m_Components(a_Components),
 	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
@@ -45,7 +42,7 @@ DlgTemplatesList::DlgTemplatesList(
 	connect(m_UI->btnImport,         &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
 
 	// Update the UI state:
-	const auto & templates = m_DB.templates();
+	const auto & templates = m_Components.get<Database>()->templates();
 	m_UI->tblTemplates->setRowCount(static_cast<int>(templates.size()));
 	m_UI->tblTemplates->setColumnCount(3);
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
@@ -95,12 +92,12 @@ TemplatePtr DlgTemplatesList::templateFromRow(int a_Row)
 		return nullptr;
 	}
 	auto row = static_cast<size_t>(a_Row);
-	if (row >= m_DB.templates().size())
+	if (row >= m_Components.get<Database>()->templates().size())
 	{
 		assert(!"Invalid row");
 		return nullptr;
 	}
-	return m_DB.templates()[row];
+	return m_Components.get<Database>()->templates()[row];
 }
 
 
@@ -177,7 +174,7 @@ void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Template::Item & a
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 	m_UI->tblItems->setItem(a_Row, 3, wi);
 
-	auto numMatching = m_DB.numSongsMatchingFilter(*a_Item.filter());
+	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(*a_Item.filter());
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
@@ -210,7 +207,7 @@ void DlgTemplatesList::exportTemplatesTo(const QString & a_FileName)
 	std::vector<TemplatePtr> templates;
 	for (const auto & row: m_UI->tblTemplates->selectionModel()->selectedRows())
 	{
-		templates.push_back(m_DB.templates()[static_cast<size_t>(row.row())]);
+		templates.push_back(m_Components.get<Database>()->templates()[static_cast<size_t>(row.row())]);
 	}
 	f.write(TemplateXmlExport::run(templates));
 	f.close();
@@ -251,16 +248,17 @@ void DlgTemplatesList::importTemplatesFrom(const QString & a_FileName)
 	}
 
 	// Import the chosen templates:
+	auto db = m_Components.get<Database>();
 	for (const auto & tmpl: dlg.chosenTemplates())
 	{
-		m_DB.addTemplate(tmpl);
-		m_DB.saveTemplate(*tmpl);
+		db->addTemplate(tmpl);
+		db->saveTemplate(*tmpl);
 	}
 
 	// Insert the imported templates into the UI:
-	m_UI->tblTemplates->setRowCount(static_cast<int>(m_DB.templates().size()));
+	m_UI->tblTemplates->setRowCount(static_cast<int>(db->templates().size()));
 	int row = 0;
-	for (const auto & tmpl: m_DB.templates())
+	for (const auto & tmpl: db->templates())
 	{
 		updateTemplateRow(row, *tmpl);
 		row += 1;
@@ -273,7 +271,7 @@ void DlgTemplatesList::importTemplatesFrom(const QString & a_FileName)
 
 void DlgTemplatesList::addTemplate()
 {
-	auto tmpl = m_DB.createTemplate();
+	auto tmpl = m_Components.get<Database>()->createTemplate();
 	if (tmpl == nullptr)
 	{
 		QMessageBox::warning(
@@ -283,12 +281,12 @@ void DlgTemplatesList::addTemplate()
 		);
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *tmpl, this);
+	DlgEditTemplate dlg(m_Components, *tmpl, this);
 	dlg.exec();
-	m_DB.saveTemplate(*tmpl);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 
 	// Update the UI:
-	int idx = static_cast<int>(m_DB.templates().size()) - 1;
+	int idx = static_cast<int>(m_Components.get<Database>()->templates().size()) - 1;
 	m_UI->tblTemplates->setRowCount(idx + 1);
 	updateTemplateRow(idx, *tmpl);
 }
@@ -338,9 +336,10 @@ void DlgTemplatesList::removeTemplates()
 			return (a_Row1.row() > a_Row2.row());
 		}
 	);
+	auto db = m_Components.get<Database>();
 	for (const auto & row: rowsToRemove)
 	{
-		m_DB.delTemplate(templateFromRow(row.row()).get());
+		db->delTemplate(templateFromRow(row.row()).get());
 		m_UI->tblTemplates->removeRow(row.row());
 	}
 }
@@ -357,9 +356,9 @@ void DlgTemplatesList::editTemplateAt(const QModelIndex & a_Index)
 	{
 		return;
 	}
-	DlgEditTemplate dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *tmpl, this);
+	DlgEditTemplate dlg(m_Components, *tmpl, this);
 	dlg.exec();
-	m_DB.saveTemplate(*tmpl);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 
 	// Update the UI after the changes:
 	updateTemplateRow(a_Index.row(), *tmpl);
@@ -426,7 +425,7 @@ void DlgTemplatesList::templateChanged(QTableWidgetItem * a_Item)
 			break;
 		}
 	}
-	m_DB.saveTemplate(*tmpl);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 }
 
 
@@ -489,7 +488,7 @@ void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
 			break;
 		}
 	}
-	m_DB.saveTemplate(*tmpl);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 }
 
 
@@ -511,9 +510,9 @@ void DlgTemplatesList::editTemplateItemAt(const QModelIndex & a_Index)
 		return;
 	}
 
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_Components, *item, this);
 	dlg.exec();
-	m_DB.saveTemplate(*tmpl);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 	updateTemplateItemRow(a_Index.row(), *item);
 }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <atomic>
 #include <QObject>
+#include "ComponentCollection.h"
 
 
 
@@ -24,7 +25,8 @@ using SongPtr = std::shared_ptr<Song>;
 /** Implements the background scan / update for song metadata.
 Enqueues metadata scanning to background tasks. */
 class MetadataScanner:
-	public QObject
+	public QObject,
+	public ComponentCollection::Component<ComponentCollection::ckMetadataScanner>
 {
 	Q_OBJECT
 	using Super = QObject;
@@ -46,6 +48,7 @@ protected:
 
 	/** Internal shared implementation of queueScanSong() and queueScanSongPriority(). */
 	void enqueueScan(SongPtr a_Song, bool a_Prioritize);
+
 
 signals:
 
