@@ -88,6 +88,9 @@ public:
 	}
 
 
+	/** Creates a new component of the specified template type,
+	adds it to the collection and returns a shared ptr to it.
+	Asserts that a component of the same kind doesn't already exist. */
 	template <typename ComponentClass, typename... Args>
 	std::shared_ptr<ComponentClass> addNew(Args &&... a_Args)
 	{
