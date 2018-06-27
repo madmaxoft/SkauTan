@@ -17,9 +17,7 @@
 
 // fwd:
 class Song;
-class Database;
-class MetadataScanner;
-class LengthHashCalculator;
+class ComponentCollection;
 class QMenu;
 namespace Ui
 {
@@ -44,9 +42,7 @@ public:
 	a_FilterModel is the filter to apply to songs before displaying, nullptr to show all songs.
 	If a_ShowManipulators is true, the buttons for adding songs / adding to playlist are shown. */
 	explicit DlgSongs(
-		Database & a_DB,
-		MetadataScanner & a_Scanner,
-		LengthHashCalculator & a_Hasher,
+		ComponentCollection & a_Components,
 		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 		bool a_ShowManipulators,
 		QWidget * a_Parent
@@ -65,15 +61,8 @@ public:
 
 private:
 
-	/** The Song DB that is being displayed and manipulated. */
-	Database & m_DB;
-
-	/** The scanner that can be used to manually update the metadata. */
-	MetadataScanner & m_MetadataScanner;
-
-	/** Calculates hashes for song files.
-	Used to query queue length. */
-	LengthHashCalculator & m_LengthHashCalculator;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The Qt-managed UI.  */
 	std::unique_ptr<Ui::DlgSongs> m_UI;

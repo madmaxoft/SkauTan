@@ -96,6 +96,7 @@ SOURCES += \
 	DlgTapTempo.cpp \
 	LengthHashCalculator.cpp \
 	DlgRemovedSongs.cpp \
+	ComponentCollection.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -137,6 +138,7 @@ HEADERS += \
 	DlgTapTempo.h \
 	LengthHashCalculator.h \
 	DlgRemovedSongs.h \
+	ComponentCollection.h \
 
 FORMS += \
 	PlayerWindow.ui \

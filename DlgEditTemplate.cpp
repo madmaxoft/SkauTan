@@ -14,16 +14,12 @@
 
 
 DlgEditTemplate::DlgEditTemplate(
-	Database & a_DB,
-	MetadataScanner & a_Scanner,
-	LengthHashCalculator & a_Hasher,
+	ComponentCollection & a_Components,
 	Template & a_Template,
 	QWidget * a_Parent
 ):
 	QDialog(a_Parent),
-	m_DB(a_DB),
-	m_MetadataScanner(a_Scanner),
-	m_LengthHashCalculator(a_Hasher),
+	m_Components(a_Components),
 	m_Template(a_Template),
 	m_UI(new Ui::DlgEditTemplate)
 {
@@ -140,7 +136,7 @@ void DlgEditTemplate::updateTemplateItemRow(int a_Row, const Template::Item & a_
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 3, wi);
 
-	auto numMatching = m_DB.numSongsMatchingFilter(*a_Item.filter());
+	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(*a_Item.filter());
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
@@ -171,9 +167,9 @@ void DlgEditTemplate::saveAndClose()
 void DlgEditTemplate::addItem()
 {
 	auto item = m_Template.addItem(tr("New item"), QString(), false);
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_Components, *item, this);
 	dlg.exec();
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 
 	// Add the item in the UI:
 	auto idx = m_UI->tblItems->rowCount();
@@ -194,9 +190,9 @@ void DlgEditTemplate::editSelectedItem()
 	}
 	auto row = sel[0].row();
 	auto item = m_Template.items()[static_cast<size_t>(row)];
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_Components, *item, this);
 	dlg.exec();
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 	updateTemplateItemRow(row, *item);
 }
 
@@ -206,7 +202,7 @@ void DlgEditTemplate::editSelectedItem()
 
 void DlgEditTemplate::addFavoriteItem()
 {
-	auto favorites = m_DB.getFavoriteTemplateItems();
+	auto favorites = m_Components.get<Database>()->getFavoriteTemplateItems();
 	if (favorites.empty())
 	{
 		return;
@@ -227,7 +223,7 @@ void DlgEditTemplate::addFavoriteItem()
 		return;
 	}
 	m_Template.appendExistingItem(item);
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 
 	// Add the item in the UI:
 	auto idx = m_UI->tblItems->rowCount();
@@ -273,7 +269,7 @@ void DlgEditTemplate::removeSelectedItems()
 		m_Template.delItem(row);
 		m_UI->tblItems->removeRow(row);
 	}
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 }
 
 
@@ -285,9 +281,9 @@ void DlgEditTemplate::cellDoubleClicked(int a_Row, int a_Column)
 	Q_UNUSED(a_Column);
 
 	auto item = m_Template.items()[static_cast<size_t>(a_Row)];
-	DlgEditTemplateItem dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, *item, this);
+	DlgEditTemplateItem dlg(m_Components, *item, this);
 	dlg.exec();
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 	updateTemplateItemRow(a_Row, *item);
 }
 
@@ -388,5 +384,5 @@ void DlgEditTemplate::itemChanged(QTableWidgetItem * a_Item)
 			break;
 		}
 	}
-	m_DB.saveTemplate(m_Template);
+	m_Components.get<Database>()->saveTemplate(m_Template);
 }

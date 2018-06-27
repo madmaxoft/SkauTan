@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Settings.h"
 #include "Database.h"
+#include "ComponentCollection.h"
 
 
 
@@ -42,10 +43,10 @@ static QString levelAlgorithmToStr(TempoDetector::ELevelAlgorithm a_Alg)
 ////////////////////////////////////////////////////////////////////////////////
 // DlgTempoDetect:
 
-DlgTempoDetect::DlgTempoDetect(Database & a_DB, SongPtr a_Song, QWidget * a_Parent):
+DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Song, QWidget * a_Parent):
 	Super(a_Parent),
 	m_UI(new Ui::DlgTempoDetect),
-	m_DB(a_DB),
+	m_Components(a_Components),
 	m_Song(a_Song),
 	m_TempoDetectDelay(0),
 	m_Detector(new TempoDetector)
@@ -245,7 +246,7 @@ void DlgTempoDetect::updateHistoryRow(int a_Row)
 			{
 				m_Song->setManualMeasuresPerMinute(mpm);
 				m_UI->leMpmManual->setText(formatMPM(m_Song->tagManual().m_MeasuresPerMinute));
-				m_DB.saveSong(m_Song);
+				m_Components.get<Database>()->saveSong(m_Song);
 			}
 		);
 	}

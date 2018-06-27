@@ -13,7 +13,7 @@
 
 
 // fwd:
-class Database;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgHistory;
@@ -32,7 +32,7 @@ class DlgHistory:\
 
 public:
 
-	explicit DlgHistory(Database & a_DB, QWidget * a_Parent = nullptr);
+	explicit DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent = nullptr);
 
 	virtual ~DlgHistory() override;
 

@@ -15,8 +15,7 @@
 
 // fwd:
 class QTreeWidgetItem;
-class MetadataScanner;
-class LengthHashCalculator;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgEditTemplateItem;
@@ -38,9 +37,7 @@ public:
 
 	/** Creates a new dialog instance for editing the specified item. */
 	explicit DlgEditTemplateItem(
-		Database & a_DB,
-		MetadataScanner & a_Scanner,
-		LengthHashCalculator & a_Hasher,
+		ComponentCollection & a_Components,
 		Template::Item & a_Item,
 		QWidget * a_Parent = nullptr
 	);
@@ -50,14 +47,8 @@ public:
 
 private:
 
-	/** The DB on which the operations take place. */
-	Database & m_DB;
-
-	/** The scanner that can update the songs' metadata upon request.
-	Used when displaying songs matching a filter. */
-	MetadataScanner & m_MetadataScanner;
-
-	LengthHashCalculator & m_LengthHashCalculator;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The item being edited. */
 	Template::Item & m_Item;

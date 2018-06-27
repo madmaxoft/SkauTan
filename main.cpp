@@ -83,42 +83,43 @@ int main(int argc, char *argv[])
 		Settings::init("SkauTan.ini");
 
 		// Create the main app objects:
-		Database mainDB;
-		MetadataScanner scanner;
-		LengthHashCalculator lhCalc;
-		Player player;
+		ComponentCollection cc;
+		auto mainDB = cc.addNew<Database>();
+		auto scanner = cc.addNew<MetadataScanner>();
+		auto lhCalc = cc.addNew<LengthHashCalculator>();
+		auto player = cc.addNew<Player>();
 
 		// Connect the main objects together:
-		app.connect(&mainDB,  &Database::needFileHash,                     &lhCalc,            &LengthHashCalculator::queueHashFile);
-		app.connect(&mainDB,  &Database::needSongLength,                   &lhCalc,            &LengthHashCalculator::queueLengthSong);
-		app.connect(&lhCalc,  &LengthHashCalculator::fileHashCalculated,   &mainDB,            &Database::songHashCalculated);
-		app.connect(&lhCalc,  &LengthHashCalculator::fileHashFailed,       &mainDB,            &Database::songHashFailed);
-		app.connect(&lhCalc,  &LengthHashCalculator::songLengthCalculated, &mainDB,            &Database::songLengthCalculated);
-		app.connect(&mainDB,  &Database::needSongTagRescan,                &scanner,           &MetadataScanner::queueScanSong);
-		app.connect(&mainDB,  &Database::songRemoved,                      &player.playlist(), &Playlist::removeSong);
-		app.connect(&scanner, &MetadataScanner::songScanned,               &mainDB,            &Database::songScanned);
-		app.connect(&player,  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
+		app.connect(mainDB.get(),  &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);
+		app.connect(mainDB.get(),  &Database::needSongLength,                   lhCalc.get(),        &LengthHashCalculator::queueLengthSong);
+		app.connect(lhCalc.get(),  &LengthHashCalculator::fileHashCalculated,   mainDB.get(),        &Database::songHashCalculated);
+		app.connect(lhCalc.get(),  &LengthHashCalculator::fileHashFailed,       mainDB.get(),        &Database::songHashFailed);
+		app.connect(lhCalc.get(),  &LengthHashCalculator::songLengthCalculated, mainDB.get(),        &Database::songLengthCalculated);
+		app.connect(mainDB.get(),  &Database::needSongTagRescan,                scanner.get(),       &MetadataScanner::queueScanSong);
+		app.connect(mainDB.get(),  &Database::songRemoved,                      &player->playlist(), &Playlist::removeSong);
+		app.connect(scanner.get(), &MetadataScanner::songScanned,               mainDB.get(),        &Database::songScanned);
+		app.connect(player.get(),  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
 				// Update the "last played" value in the DB:
 				auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
 				if (spi != nullptr)
 				{
-					mainDB.songPlaybackStarted(spi->song());
+					mainDB->songPlaybackStarted(spi->song());
 				}
 			}
 		);
 
 		// Load the DB:
-		mainDB.open("SkauTan.sqlite");
+		mainDB->open("SkauTan.sqlite");
 
 		// Add default templates, if none in the DB:
-		if (mainDB.templates().empty())
+		if (mainDB->templates().empty())
 		{
-			importDefaultTemplates(mainDB);
+			importDefaultTemplates(*mainDB);
 		}
 
 		// Show the UI:
-		PlayerWindow w(mainDB, scanner, lhCalc, player);
+		PlayerWindow w(cc);
 		w.showMaximized();
 
 		return app.exec();

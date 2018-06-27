@@ -317,16 +317,12 @@ public:
 // DlgEditTemplateItem:
 
 DlgEditTemplateItem::DlgEditTemplateItem(
-	Database & a_DB,
-	MetadataScanner & a_Scanner,
-	LengthHashCalculator & a_Hasher,
+	ComponentCollection & a_Components,
 	Template::Item & a_Item,
 	QWidget * a_Parent
 ):
 	Super(a_Parent),
-	m_DB(a_DB),
-	m_MetadataScanner(a_Scanner),
-	m_LengthHashCalculator(a_Hasher),
+	m_Components(a_Components),
 	m_Item(a_Item),
 	m_UI(new Ui::DlgEditTemplateItem)
 {
@@ -675,7 +671,7 @@ void DlgEditTemplateItem::removeFilter()
 
 void DlgEditTemplateItem::previewFilter()
 {
-	DlgSongs dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, std::make_unique<FilterModel>(m_Item.filter()), false, this);
+	DlgSongs dlg(m_Components, std::make_unique<FilterModel>(m_Item.filter()), false, this);
 	dlg.exec();
 }
 
@@ -697,7 +693,7 @@ void DlgEditTemplateItem::filterSelectionChanged()
 
 void DlgEditTemplateItem::updateFilterStats()
 {
-	auto numMatching = m_DB.numSongsMatchingFilter(*m_Item.filter());
+	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(*m_Item.filter());
 	m_UI->lblMatchingSongCount->setText(tr("Matching songs: %n", "",numMatching));
 }
 

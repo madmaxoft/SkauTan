@@ -14,7 +14,7 @@
 
 
 // fwd:
-class Database;
+class ComponentCollection;
 namespace Ui
 {
 	class DlgPickTemplate;
@@ -33,7 +33,7 @@ class DlgPickTemplate:
 
 public:
 
-	explicit DlgPickTemplate(const Database & a_DB, QWidget * a_Parent = nullptr);
+	explicit DlgPickTemplate(ComponentCollection & a_Components, QWidget * a_Parent = nullptr);
 
 	virtual ~DlgPickTemplate() override;
 
@@ -43,8 +43,8 @@ public:
 
 private:
 
-	/** The DB from which to pick a template. */
-	const Database & m_DB;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The template that has been selected. */
 	TemplatePtr m_SelectedTemplate;

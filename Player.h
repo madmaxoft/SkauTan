@@ -13,6 +13,7 @@
 
 #include "IPlaylistItem.h"
 #include "PlaybackBuffer.h"
+#include "ComponentCollection.h"
 
 
 
@@ -27,7 +28,8 @@ class AudioDataSourceIO;
 
 
 class Player:
-	public QObject
+	public QObject,
+	public ComponentCollection::Component<ComponentCollection::ckPlayer>
 {
 	using Super = QObject;
 	Q_OBJECT
@@ -162,16 +164,16 @@ public slots:
 
 	/** Starts playing the current track (in m_Playlist), if currently stopped.
 	Stops playing if the player is already playing something. */
-	void startPause();
+	void startPausePlayback();
 
 	/** Starts playing the current track (in m_Playlist), if currently stopped.
 	Ignored if the player is already playing something. */
-	void start();
+	void startPlayback();
 
 	/** Pauses the current playback.
 	Fades the current track out first.
 	Ignored is the player is not playing anything. */
-	void pause();
+	void pausePlayback();
 
 	/** Starts playing back the playlist item at the specified index.
 	Fades the current track first, if playing.

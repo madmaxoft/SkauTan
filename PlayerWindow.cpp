@@ -27,24 +27,16 @@
 
 
 
-PlayerWindow::PlayerWindow(
-	Database & a_DB,
-	MetadataScanner & a_Scanner,
-	LengthHashCalculator & a_Hasher,
-	Player & a_Player
-):
+PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	Super(nullptr),
 	m_UI(new Ui::PlayerWindow),
-	m_DB(a_DB),
-	m_MetadataScanner(a_Scanner),
-	m_LengthHashCalculator(a_Hasher),
-	m_Player(a_Player),
+	m_Components(a_Components),
 	m_PlaylistDelegate(new PlaylistItemDelegate),
 	m_IsLibraryRescanShown(true),
 	m_LastLibraryRescanTotal(0),
 	m_LastLibraryRescanQueue(-1)
 {
-	m_PlaylistModel.reset(new PlaylistItemModel(m_Player.playlist()));
+	m_PlaylistModel.reset(new PlaylistItemModel(m_Components.get<Player>()->playlist()));
 
 	m_UI->setupUi(this);
 	m_UI->splitter->setCollapsible(1, false);
@@ -52,7 +44,7 @@ PlayerWindow::PlayerWindow(
 	m_UI->tblPlaylist->setModel(m_PlaylistModel.get());
 	m_UI->tblPlaylist->setItemDelegate(m_PlaylistDelegate.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
-	m_UI->waveform->setPlayer(m_Player);
+	m_UI->waveform->setPlayer(*m_Components.get<Player>());
 	QFont fnt(m_UI->lblPosition->font());
 	if (fnt.pixelSize() > 0)
 	{
@@ -80,6 +72,7 @@ PlayerWindow::PlayerWindow(
 	}
 
 	// Connect the signals:
+	auto db = m_Components.get<Database>();
 	connect(m_UI->btnSongs,               &QPushButton::clicked,      this, &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,      this, &PlayerWindow::showHistory);
@@ -104,7 +97,7 @@ PlayerWindow::PlayerWindow(
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,  this, &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this, &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
-	connect(m_UI->waveform,               &WaveformDisplay::songChanged, &m_DB, &Database::saveSong);
+	connect(m_UI->waveform,               &WaveformDisplay::songChanged, db.get(), &Database::saveSong);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -168,7 +161,7 @@ void PlayerWindow::rateSelectedSongs(double a_LocalRating)
 	for (auto & song: selectedPlaylistSongs())
 	{
 		song->setLocalRating(a_LocalRating);
-		m_DB.saveSong(song);
+		m_Components.get<Database>()->saveSong(song);
 	}
 }
 
@@ -180,9 +173,10 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 {
 	std::vector<SongPtr> res;
 	res.reserve(static_cast<size_t>(m_UI->tblPlaylist->selectionModel()->selectedRows().count()));
+	auto player = m_Components.get<Player>();
 	for (const auto & idx: m_UI->tblPlaylist->selectionModel()->selectedRows())
 	{
-		auto pli = m_Player.playlist().items()[static_cast<size_t>(idx.row())];
+		auto pli = player->playlist().items()[static_cast<size_t>(idx.row())];
 		if (pli == nullptr)
 		{
 			qWarning() << "Got a nullptr playlist item";
@@ -205,7 +199,7 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 void PlayerWindow::refreshQuickPlayer()
 {
 	m_UI->lwQuickPlayer->clear();
-	auto favorites = m_DB.getFavoriteTemplateItems();
+	auto favorites = m_Components.get<Database>()->getFavoriteTemplateItems();
 	for (const auto & fav: favorites)
 	{
 		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlayer);
@@ -220,7 +214,7 @@ void PlayerWindow::refreshQuickPlayer()
 
 void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 {
-	const auto & items = m_Player.playlist().items();
+	const auto & items = m_Components.get<Player>()->playlist().items();
 	for (const auto & row: m_UI->tblPlaylist->selectionModel()->selectedRows())
 	{
 		items[static_cast<size_t>(row.row())]->setDurationLimit(a_NewDurationLimit);
@@ -235,7 +229,7 @@ void PlayerWindow::showSongs(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgSongs dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, nullptr, true, this);
+	DlgSongs dlg(m_Components, nullptr, true, this);
 	connect(&dlg, &DlgSongs::addSongToPlaylist,    this, &PlayerWindow::addSongToPlaylist);
 	connect(&dlg, &DlgSongs::insertSongToPlaylist, this, &PlayerWindow::insertSongToPlaylist);
 	dlg.showMaximized();
@@ -250,7 +244,7 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgTemplatesList dlg(m_DB, m_MetadataScanner, m_LengthHashCalculator, this);
+	DlgTemplatesList dlg(m_Components, this);
 	dlg.exec();
 
 	refreshQuickPlayer();
@@ -264,7 +258,7 @@ void PlayerWindow::showHistory(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	DlgHistory dlg(m_DB, this);
+	DlgHistory dlg(m_Components, this);
 	dlg.exec();
 }
 
@@ -290,7 +284,7 @@ void PlayerWindow::insertSongToPlaylist(SongPtr a_Song)
 		return addSongToPlaylist(a_Song);
 	}
 	auto row = sel[0].row() + 1;
-	m_Player.playlist().insertItem(row, std::make_shared<PlaylistItemSong>(a_Song, nullptr));
+	m_Components.get<Player>()->playlist().insertItem(row, std::make_shared<PlaylistItemSong>(a_Song, nullptr));
 	m_UI->tblPlaylist->selectionModel()->clearSelection();
 	m_UI->tblPlaylist->selectRow(row);
 }
@@ -301,7 +295,7 @@ void PlayerWindow::insertSongToPlaylist(SongPtr a_Song)
 
 void PlayerWindow::addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item)
 {
-	m_Player.playlist().addItem(a_Item);
+	m_Components.get<Player>()->playlist().addItem(a_Item);
 }
 
 
@@ -318,9 +312,10 @@ void PlayerWindow::deleteSelectedPlaylistItems()
 	}
 	std::sort(rows.begin(), rows.end());
 	int numErased = 0;
+	auto player = m_Components.get<Player>();
 	for (auto row: rows)
 	{
-		m_Player.playlist().deleteItem(row - numErased);
+		player->playlist().deleteItem(row - numErased);
 		numErased += 1;  // Each erased row shifts indices upwards by one
 	}
 }
@@ -332,7 +327,7 @@ void PlayerWindow::prevTrack(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player.prevTrack();
+	m_Components.get<Player>()->prevTrack();
 }
 
 
@@ -343,7 +338,7 @@ void PlayerWindow::playPause(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player.startPause();
+	m_Components.get<Player>()->startPausePlayback();
 }
 
 
@@ -354,7 +349,7 @@ void PlayerWindow::nextTrack(bool a_IsChecked)
 {
 	Q_UNUSED(a_IsChecked);
 
-	m_Player.nextTrack();
+	m_Components.get<Player>()->nextTrack();
 }
 
 
@@ -365,7 +360,7 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
 {
 	if (a_Track.isValid())
 	{
-		m_Player.jumpTo(a_Track.row());
+		m_Components.get<Player>()->jumpTo(a_Track.row());
 	}
 }
 
@@ -375,7 +370,7 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & a_Track)
 
 void PlayerWindow::volumeSliderMoved(int a_NewValue)
 {
-	m_Player.setVolume(static_cast<double>(a_NewValue) / 100);
+	m_Components.get<Player>()->setVolume(static_cast<double>(a_NewValue) / 100);
 }
 
 
@@ -384,7 +379,7 @@ void PlayerWindow::volumeSliderMoved(int a_NewValue)
 
 void PlayerWindow::addFromTemplate()
 {
-	DlgPickTemplate dlg(m_DB, this);
+	DlgPickTemplate dlg(m_Components, this);
 	if (dlg.exec() != QDialog::Accepted)
 	{
 		return;
@@ -394,7 +389,7 @@ void PlayerWindow::addFromTemplate()
 	{
 		return;
 	}
-	m_Player.playlist().addFromTemplate(m_DB, *tmpl);
+	m_Components.get<Player>()->playlist().addFromTemplate(*m_Components.get<Database>(), *tmpl);
 }
 
 
@@ -412,7 +407,7 @@ void PlayerWindow::tempoValueChanged(int a_NewValue)
 	{
 		m_UI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
 	}
-	m_Player.setTempo(static_cast<double>(percent + 100) / 100);
+	m_Components.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
 }
 
 
@@ -441,15 +436,16 @@ void PlayerWindow::showBackgroundTasks()
 void PlayerWindow::periodicUIUpdate()
 {
 	// Update the player UI:
-	auto position  = static_cast<int>(m_Player.currentPosition() + 0.5);
-	auto remaining = static_cast<int>(m_Player.remainingTime() + 0.5);
-	auto total     = static_cast<int>(m_Player.totalTime() + 0.5);
+	auto player = m_Components.get<Player>();
+	auto position  = static_cast<int>(player->currentPosition() + 0.5);
+	auto remaining = static_cast<int>(player->remainingTime() + 0.5);
+	auto total     = static_cast<int>(player->totalTime() + 0.5);
 	m_UI->lblPosition->setText( QString( "%1:%2").arg(position  / 60).arg(QString::number(position  % 60), 2, '0'));
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 
 	// Update the SongScan UI:
-	auto queueLength = m_LengthHashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	auto queueLength = m_Components.get<LengthHashCalculator>()->queueLength() * 2 + m_Components.get<MetadataScanner>()->queueLength();
 	if (m_LastLibraryRescanQueue != queueLength)
 	{
 		m_LastLibraryRescanQueue = queueLength;
@@ -463,7 +459,7 @@ void PlayerWindow::periodicUIUpdate()
 		}
 		else
 		{
-			auto numSongs = static_cast<int>(m_DB.songs().size() * 2);
+			auto numSongs = static_cast<int>(m_Components.get<Database>()->songs().size() * 2);
 			if (numSongs != m_LastLibraryRescanTotal)
 			{
 				m_UI->pbLibraryRescan->setMaximum(numSongs);
@@ -539,14 +535,14 @@ void PlayerWindow::showSongProperties()
 	assert(m_UI->tblPlaylist->selectionModel()->selectedRows().count() == 1);
 
 	auto row = m_UI->tblPlaylist->selectionModel()->selectedRows()[0].row();
-	auto item = m_Player.playlist().items()[static_cast<size_t>(row)];
+	auto item = m_Components.get<Player>()->playlist().items()[static_cast<size_t>(row)];
 	auto songItem = std::dynamic_pointer_cast<PlaylistItemSong>(item);
 	if (songItem == nullptr)
 	{
 		return;
 	}
 	auto song = songItem->song();
-	DlgSongProperties dlg(m_DB, song, this);
+	DlgSongProperties dlg(m_Components, song, this);
 	dlg.exec();
 }
 
@@ -581,7 +577,7 @@ void PlayerWindow::deleteSongsFromDisk()
 	// Remove from the DB, delete from disk:
 	for (const auto & song: songs)
 	{
-		m_DB.removeSong(*song, true);
+		m_Components.get<Database>()->removeSong(*song, true);
 	}
 }
 
@@ -616,7 +612,7 @@ void PlayerWindow::removeSongsFromLibrary()
 	// Remove from the DB:
 	for (const auto & song: songs)
 	{
-		m_DB.removeSong(*song, false);
+		m_Components.get<Database>()->removeSong(*song, false);
 	}
 }
 
@@ -631,7 +627,7 @@ void PlayerWindow::removeSongsFromPlaylist()
 	{
 		rows.push_back(idx.row());
 	}
-	m_Player.playlist().deleteItems(std::move(rows));
+	m_Components.get<Player>()->playlist().deleteItems(std::move(rows));
 }
 
 
@@ -645,12 +641,13 @@ void PlayerWindow::jumpToAndPlay()
 	{
 		return;
 	}
-	if (m_Player.playlist().currentItemIndex() == sel[0].row())
+	auto player = m_Components.get<Player>();
+	if (player->playlist().currentItemIndex() == sel[0].row())
 	{
 		// Already playing this track, bail out:
 		return;
 	}
-	m_Player.jumpTo(sel[0].row());
+	player->jumpTo(sel[0].row());
 }
 
 
@@ -664,16 +661,17 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 	{
 		return;
 	}
-	if (!m_Player.playlist().addFromTemplateItem(m_DB, item->shared_from_this()))
+	auto player = m_Components.get<Player>();
+	if (!player->playlist().addFromTemplateItem(*m_Components.get<Database>(), item->shared_from_this()))
 	{
 		qDebug() << ": Failed to add a template item to playlist.";
 		return;
 	}
 	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
 	{
-		m_Player.pause();
-		m_Player.playlist().setCurrentItem(static_cast<int>(m_Player.playlist().items().size() - 1));
-		m_Player.start();
+		player->pausePlayback();
+		player->playlist().setCurrentItem(static_cast<int>(player->playlist().items().size() - 1));
+		player->startPlayback();
 	}
 }
 
@@ -722,11 +720,12 @@ void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 {
 	// Is it a replace-able song:
 	auto idx = static_cast<size_t>(a_Index.row());
-	if (idx >= m_Player.playlist().items().size())
+	auto player = m_Components.get<Player>();
+	if (idx >= player->playlist().items().size())
 	{
 		return;
 	}
-	auto pli = m_Player.playlist().items()[idx];
+	auto pli = player->playlist().items()[idx];
 	auto pls = std::dynamic_pointer_cast<PlaylistItemSong>(pli);
 	if (pls == nullptr)
 	{
@@ -738,19 +737,19 @@ void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 	}
 
 	// Get a replacement:
-	auto song = m_DB.pickSongForTemplateItem(pls->templateItem(), pls->song());
+	auto song = m_Components.get<Database>()->pickSongForTemplateItem(pls->templateItem(), pls->song());
 	if (song == pls->song())
 	{
 		// No replacement available
 		return;
 	}
-	m_Player.playlist().replaceItem(idx, std::make_shared<PlaylistItemSong>(song, pls->templateItem()));
+	player->playlist().replaceItem(idx, std::make_shared<PlaylistItemSong>(song, pls->templateItem()));
 
 	// Special handling for replacing currently-played song:
-	if (m_Player.isPlaying() && a_Index.row() == m_Player.playlist().currentItemIndex())
+	if (player->isPlaying() && a_Index.row() == player->playlist().currentItemIndex())
 	{
 		// Replacing the currently played song, restart the playback of the new item:
-		m_Player.jumpTo(a_Index.row());
+		player->jumpTo(a_Index.row());
 	}
 }
 
@@ -760,6 +759,6 @@ void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 
 void PlayerWindow::showRemovedSongs()
 {
-	DlgRemovedSongs dlg(m_DB, this);
+	DlgRemovedSongs dlg(m_Components, this);
 	dlg.exec();
 }

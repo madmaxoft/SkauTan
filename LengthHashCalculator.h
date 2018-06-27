@@ -8,6 +8,7 @@
 #include <atomic>
 #include <QObject>
 #include "Song.h"
+#include "ComponentCollection.h"
 
 
 
@@ -18,7 +19,8 @@ The hash used is a SHA1 checksum of the raw audio data in the file's audio track
 against changes in the ID3 tag.
 The actual hashing takes place in a background task. */
 class LengthHashCalculator:
-	public QObject
+	public QObject,
+	public ComponentCollection::Component<ComponentCollection::ckLengthHashCalculator>
 {
 	using Super = QObject;
 

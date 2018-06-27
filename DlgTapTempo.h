@@ -15,7 +15,7 @@
 
 
 // fwd:
-class Database;
+class ComponentCollection;
 class Player;
 namespace Ui
 {
@@ -36,7 +36,11 @@ class DlgTapTempo:
 
 public:
 
-	explicit DlgTapTempo(Database & a_DB, SongPtr a_Song, QWidget * a_Parent = nullptr);
+	explicit DlgTapTempo(
+		ComponentCollection & a_Components,
+		SongPtr a_Song,
+		QWidget * a_Parent = nullptr
+	);
 
 	DlgTapTempo(const DlgTapTempo &) = delete;
 	DlgTapTempo(DlgTapTempo &&) = delete;
@@ -49,8 +53,8 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgTapTempo> m_UI;
 
-	/** The DB containing the song. */
-	Database & m_DB;
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The song to process. */
 	SongPtr m_Song;

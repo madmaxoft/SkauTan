@@ -9,10 +9,10 @@
 
 
 
-DlgRemovedSongs::DlgRemovedSongs(Database & a_DB, QWidget * a_Parent):
+DlgRemovedSongs::DlgRemovedSongs(ComponentCollection & a_Components, QWidget * a_Parent):
 	Super(a_Parent),
 	m_UI(new Ui::DlgRemovedSongs),
-	m_DB(a_DB)
+	m_Components(a_Components)
 {
 	m_UI->setupUi(this);
 
@@ -22,7 +22,8 @@ DlgRemovedSongs::DlgRemovedSongs(Database & a_DB, QWidget * a_Parent):
 	connect(m_UI->btnExport, &QPushButton::pressed, this, &DlgRemovedSongs::exportList);
 
 	// Fill in the data:
-	const auto & removed = m_DB.removedSongs();
+	auto db = m_Components.get<Database>();
+	const auto & removed = db->removedSongs();
 	m_UI->twRemoved->setRowCount(static_cast<int>(removed.size()));
 	int row = 0;
 	for (const auto & r: removed)
@@ -34,7 +35,7 @@ DlgRemovedSongs::DlgRemovedSongs(Database & a_DB, QWidget * a_Parent):
 		item->setCheckState(r->m_WasDeleted ? Qt::Checked : Qt::Unchecked);
 		m_UI->twRemoved->setItem(row, 2, item);
 		m_UI->twRemoved->setItem(row, 3, new QTableWidgetItem(QString::number(r->m_NumDuplicates)));
-		auto sharedData = m_DB.sharedDataFromHash(r->m_Hash);
+		auto sharedData = db->sharedDataFromHash(r->m_Hash);
 		if (sharedData != nullptr)
 		{
 			m_UI->twRemoved->setItem(row, 4, new QTableWidgetItem(QString::number(sharedData->duplicatesCount())));
@@ -73,7 +74,7 @@ void DlgRemovedSongs::clearDB()
 	{
 		return;
 	}
-	m_DB.clearRemovedSongs();
+	m_Components.get<Database>()->clearRemovedSongs();
 	m_UI->twRemoved->setRowCount(0);
 }
 
@@ -107,7 +108,8 @@ void DlgRemovedSongs::exportList()
 		return;
 	}
 	f.write("Date\tFilename\tWasDeleted\tDuplicatesThen\tDuplicatesNow\n");
-	const auto & removed = m_DB.removedSongs();
+	auto db = m_Components.get<Database>();
+	const auto & removed = db->removedSongs();
 	for (const auto & r: removed)
 	{
 		f.write(r->m_DateRemoved.toString(Qt::ISODate).toUtf8());
@@ -118,7 +120,7 @@ void DlgRemovedSongs::exportList()
 		f.write("\t");
 		f.write(QString::number(r->m_NumDuplicates).toUtf8());
 		f.write("\t");
-		auto sharedData = m_DB.sharedDataFromHash(r->m_Hash);
+		auto sharedData = db->sharedDataFromHash(r->m_Hash);
 		if (sharedData != nullptr)
 		{
 			f.write(QString::number(sharedData->duplicatesCount()).toUtf8());

@@ -20,10 +20,14 @@ static QString formatMPM(double a_MPM)
 
 
 
-DlgTapTempo::DlgTapTempo(Database & a_DB, SongPtr a_Song, QWidget * a_Parent):
+DlgTapTempo::DlgTapTempo(
+	ComponentCollection & a_Components,
+	SongPtr a_Song,
+	QWidget * a_Parent
+):
 	Super(a_Parent),
 	m_UI(new Ui::DlgTapTempo),
-	m_DB(a_DB),
+	m_Components(a_Components),
 	m_Song(a_Song)
 {
 	m_UI->setupUi(this);
@@ -37,7 +41,7 @@ DlgTapTempo::DlgTapTempo(Database & a_DB, SongPtr a_Song, QWidget * a_Parent):
 	// Start the playback:
 	m_Player.reset(new Player);
 	m_Player->playlist().addItem(std::make_shared<PlaylistItemSong>(m_Song, nullptr));
-	m_Player->startPause();
+	m_Player->startPlayback();
 }
 
 
@@ -126,7 +130,7 @@ void DlgTapTempo::saveAndClose()
 	if (!m_TimePoints.empty())
 	{
 		m_Song->setManualMeasuresPerMinute(detectMPM());
-		m_DB.saveSong(m_Song);
+		m_Components.get<Database>()->saveSong(m_Song);
 	}
 	reject();
 }

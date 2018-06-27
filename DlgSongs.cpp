@@ -35,20 +35,16 @@ static const int TICKS_UNTIL_SET_SEARCH_TEXT = 3;
 // DlgSongs:
 
 DlgSongs::DlgSongs(
-	Database & a_DB,
-	MetadataScanner & a_Scanner,
-	LengthHashCalculator & a_Hasher,
+	ComponentCollection & a_Components,
 	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
 	bool a_ShowManipulators,
 	QWidget * a_Parent
 ):
 	Super(a_Parent),
-	m_DB(a_DB),
-	m_MetadataScanner(a_Scanner),
-	m_LengthHashCalculator(a_Hasher),
+	m_Components(a_Components),
 	m_UI(new Ui::DlgSongs),
 	m_FilterModel(std::move(a_FilterModel)),
-	m_SongModel(a_DB),
+	m_SongModel(*a_Components.get<Database>()),
 	m_SongModelFilter(m_SongModel),
 	m_IsLibraryRescanShown(true),
 	m_LastLibraryRescanTotal(0),
@@ -84,6 +80,7 @@ DlgSongs::DlgSongs(
 	});
 
 	// Connect the signals:
+	auto db = m_Components.get<Database>();
 	connect(m_UI->btnAddFile,            &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
 	connect(m_UI->btnAddFolder,          &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
 	connect(m_UI->btnRemove,             &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
@@ -92,8 +89,8 @@ DlgSongs::DlgSongs(
 	connect(m_UI->btnRescanMetadata,     &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
 	connect(&m_SongModel,                &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
 	connect(&m_SongModel,                &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                       &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
-	connect(&m_DB,                       &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
+	connect(db.get(),                    &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
+	connect(db.get(),                    &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
 	connect(&m_PeriodicUiUpdate,         &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
 	connect(m_UI->tblSongs,              &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
 	connect(m_UI->actAddToPlaylist,      &QAction::triggered,                     this, &DlgSongs::addSelectedToPlaylist);
@@ -150,7 +147,7 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 		return;
 	}
 	qDebug() << ": Adding " << songs.size() << " song files";
-	m_DB.addSongFiles(songs);
+	m_Components.get<Database>()->addSongFiles(songs);
 }
 
 
@@ -179,7 +176,7 @@ void DlgSongs::addFolderRecursive(const QString & a_Path)
 		return;
 	}
 	qDebug() << ": Adding " << songs.size() << " songs from folder " << a_Path;
-	m_DB.addSongFiles(songs);
+	m_Components.get<Database>()->addSongFiles(songs);
 }
 
 
@@ -189,7 +186,7 @@ void DlgSongs::addFolderRecursive(const QString & a_Path)
 void DlgSongs::updateSongStats()
 {
 	auto numFiltered = static_cast<size_t>(m_FilterModel->rowCount());
-	auto numTotal = m_DB.songs().size();
+	auto numTotal = m_Components.get<Database>()->songs().size();
 	if (numFiltered == numTotal)
 	{
 		m_UI->lblStats->setText(tr("Total songs: %1").arg(numTotal));
@@ -220,7 +217,7 @@ void DlgSongs::initFilterSearch()
 	connect(m_UI->cbFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChosen(int)));
 	connect(m_UI->leSearch, &QLineEdit::textEdited,           this, &DlgSongs::searchTextEdited);
 
-	m_SongModelFilter.setFavoriteTemplateItems(m_DB.getFavoriteTemplateItems());
+	m_SongModelFilter.setFavoriteTemplateItems(m_Components.get<Database>()->getFavoriteTemplateItems());
 }
 
 
@@ -269,6 +266,7 @@ SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
 
 void DlgSongs::rateSelectedSongs(double a_Rating)
 {
+	auto db = m_Components.get<Database>();
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
@@ -279,7 +277,7 @@ void DlgSongs::rateSelectedSongs(double a_Rating)
 		}
 		song->setLocalRating(a_Rating);
 		emit m_SongModel.songEdited(song);
-		m_DB.saveSong(song);
+		db->saveSong(song);
 	}
 }
 
@@ -352,9 +350,10 @@ void DlgSongs::removeSelected()
 	}
 
 	// Remove from the DB:
+	auto db = m_Components.get<Database>();
 	for (const auto & song: songs)
 	{
-		m_DB.removeSong(*song, false);
+		db->removeSong(*song, false);
 	}
 }
 
@@ -391,9 +390,10 @@ void DlgSongs::deleteFromDisk()
 	}
 
 	// Remove from the DB and delete files from disk:
+	auto db = m_Components.get<Database>();
 	for (const auto & song: songs)
 	{
-		m_DB.removeSong(*song, true);
+		db->removeSong(*song, true);
 	}
 }
 
@@ -433,10 +433,11 @@ void DlgSongs::insertSelectedToPlaylist()
 
 void DlgSongs::rescanMetadata()
 {
+	auto scanner = m_Components.get<MetadataScanner>();
 	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
-		m_MetadataScanner.queueScanSong(song);
+		scanner->queueScanSong(song);
 	}
 }
 
@@ -446,7 +447,7 @@ void DlgSongs::rescanMetadata()
 
 void DlgSongs::modelSongEdited(SongPtr a_Song)
 {
-	m_DB.saveSong(a_Song);
+	m_Components.get<Database>()->saveSong(a_Song);
 }
 
 
@@ -458,7 +459,7 @@ void DlgSongs::periodicUiUpdate()
 	// Update the LibraryRescan UI:
 	// Hash calc is calculated twice for the queue length, because after calculating the hash,
 	// songs will go to metadata updater anyway.
-	auto queueLength = m_LengthHashCalculator.queueLength() * 2 + m_MetadataScanner.queueLength();
+	auto queueLength = m_Components.get<LengthHashCalculator>()->queueLength() * 2 + m_Components.get<MetadataScanner>()->queueLength();
 	if (m_LastLibraryRescanQueue != queueLength)
 	{
 		m_LastLibraryRescanQueue = queueLength;
@@ -472,7 +473,7 @@ void DlgSongs::periodicUiUpdate()
 		}
 		else
 		{
-			auto numSongs = static_cast<int>(m_DB.songs().size() * 2);
+			auto numSongs = static_cast<int>(m_Components.get<Database>()->songs().size() * 2);
 			if (numSongs != m_LastLibraryRescanTotal)
 			{
 				m_UI->pbLibraryRescan->setMaximum(numSongs);
@@ -554,7 +555,7 @@ void DlgSongs::showProperties()
 		return;
 	}
 	auto song = songFromIndex(sel[0]);
-	DlgSongProperties dlg(m_DB, song, this);
+	DlgSongProperties dlg(m_Components, song, this);
 	dlg.exec();
 }
 
@@ -579,6 +580,7 @@ void DlgSongs::rateSelected()
 
 	// Apply the rating:
 	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	auto db = m_Components.get<Database>();
 	for (const auto & idx: sel)
 	{
 		auto song = songFromIndex(idx);
@@ -589,7 +591,7 @@ void DlgSongs::rateSelected()
 		}
 		song->setLocalRating(rating);
 		emit m_SongModel.songEdited(song);
-		m_DB.saveSong(song);
+		db->saveSong(song);
 	}
 }
 
@@ -606,7 +608,7 @@ void DlgSongs::showTempoDetector()
 	}
 	auto song = songFromIndex(sel[0]);
 	assert(song != nullptr);
-	DlgTempoDetect dlg(m_DB, song, this);
+	DlgTempoDetect dlg(m_Components, song, this);
 	dlg.exec();
 }
 
@@ -623,6 +625,6 @@ void DlgSongs::showTapTempo()
 	}
 	auto song = songFromIndex(sel[0]);
 	assert(song != nullptr);
-	DlgTapTempo dlg(m_DB, song, this);
+	DlgTapTempo dlg(m_Components, song, this);
 	dlg.exec();
 }
