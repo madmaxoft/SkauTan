@@ -156,6 +156,22 @@ public:
 		}
 	}
 
+
+	/** Returns the stored value if it is present, or the specified value if not present. */
+	T valueOr(const T & a_Default) const
+	{
+		if (m_IsPresent)
+		{
+			return m_Value;
+		}
+		else
+		{
+			return a_Default;
+		}
+	}
+
+
+	/** Returns the stored value if it is present, or the default-contructed value if not present. */
 	T valueOrDefault() const
 	{
 		if (m_IsPresent)
