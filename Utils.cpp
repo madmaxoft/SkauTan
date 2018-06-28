@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QListWidget>
 #include <QByteArray>
+#include <cmath>
 
 
 

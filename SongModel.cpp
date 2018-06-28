@@ -4,6 +4,7 @@
 #include <QSize>
 #include <QComboBox>
 #include <QLineEdit>
+#include <cmath>
 #include "Database.h"
 #include "MetadataScanner.h"
 #include "Stopwatch.h"
@@ -21,7 +22,7 @@ static QString formatLength(const Song & a_Song)
 	{
 		return SongModel::tr("<unknown>", "Length");
 	}
-	auto len = static_cast<int>(floor(a_Song.length().toDouble() + 0.5));
+	auto len = static_cast<int>(std::round(a_Song.length().toDouble()));
 	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, QChar('0'));
 }
 

@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QApplication>
 #include <QPainter>
+#include <cmath>
 #include "Utils.h"
 #include "PlaylistItemSong.h"
 
@@ -24,7 +25,7 @@ static QString formatLength(double a_Length)
 	{
 		return PlaylistItemModel::tr("<unknown>", "Length");
 	}
-	auto len = static_cast<int>(floor(a_Length + 0.5));
+	auto len = static_cast<int>(std::round(a_Length));
 	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, '0');
 }
 
