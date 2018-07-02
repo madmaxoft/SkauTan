@@ -662,17 +662,31 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 		return;
 	}
 	auto player = m_Components.get<Player>();
-	if (!player->playlist().addFromTemplateItem(*m_Components.get<Database>(), item->shared_from_this()))
+	auto & playlist = player->playlist();
+	auto itemSh = item->shared_from_this();
+	auto chosen = m_Components.get<Database>()->pickSongForTemplateItem(itemSh);
+	if (chosen == nullptr)
 	{
 		qDebug() << ": Failed to add a template item to playlist.";
 		return;
 	}
+	auto idx = m_UI->tblPlaylist->currentIndex().row();
+	if (idx < 0)
+	{
+		idx = static_cast<int>(playlist.items().size());
+	}
+	else
+	{
+		idx += 1;
+	}
+	playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, itemSh));
 	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
 	{
 		player->pausePlayback();
-		player->playlist().setCurrentItem(static_cast<int>(player->playlist().items().size() - 1));
+		playlist.setCurrentItem(idx);
 		player->startPlayback();
 	}
+	m_UI->tblPlaylist->selectRow(idx);
 }
 
 
