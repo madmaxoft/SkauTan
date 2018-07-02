@@ -19,37 +19,69 @@ LengthHashCalculator::LengthHashCalculator():
 
 
 
+std::pair<QByteArray, double> LengthHashCalculator::calculateSongHashAndLength(const QString & a_FileName)
+{
+	auto context = AVPP::Format::createContext(a_FileName);
+	if (context == nullptr)
+	{
+		qWarning() << ": Cannot open song file for hash calculation: " << a_FileName;
+		return std::make_pair(QByteArray(), -1);
+	}
+	QCryptographicHash ch(QCryptographicHash::Sha1);
+	double length = 0;
+	if (!context->feedRawAudioDataTo([&](const void * a_Data, int a_Size)
+		{
+			assert(a_Size >= 0);
+			ch.addData(reinterpret_cast<const char *>(a_Data), a_Size);
+		},
+		length
+	))
+	{
+		qWarning() << ": Cannot read song data for hash calculation: " << a_FileName;
+		return std::make_pair(QByteArray(), -1);
+	}
+	return std::make_pair(ch.result(), length);
+}
+
+
+
+
+
+double LengthHashCalculator::calculateSongLength(const QString & a_FileName)
+{
+	auto context = AVPP::Format::createContext(a_FileName);
+	if (context == nullptr)
+	{
+		qWarning() << ": Cannot open song file for length calculation: " << a_FileName;
+		return -1;
+	}
+	double length = 0;
+	if (!context->feedRawAudioDataTo([&](const void *, int) {}, length))
+	{
+		qWarning() << ": Cannot read song data for length calculation: " << a_FileName;
+		return -1;
+	}
+	return length;
+}
+
+
+
+
+
 void LengthHashCalculator::queueHashFile(const QString & a_FileName)
 {
 	m_QueueLength += 1;
 	QString fileName(a_FileName);
 	BackgroundTasks::enqueue(tr("Calculate hash: %1").arg(a_FileName), [this, fileName]()
 		{
-			auto context = AVPP::Format::createContext(fileName);
-			if (context == nullptr)
-			{
-				qWarning() << ": Cannot open song file for hash calculation: " << fileName;
-				m_QueueLength -= 1;
-				emit this->fileHashFailed(fileName);
-				return;
-			}
-			QCryptographicHash ch(QCryptographicHash::Sha1);
-			double length = 0;
-			if (!context->feedRawAudioDataTo([&](const void * a_Data, int a_Size)
-				{
-					assert(a_Size >= 0);
-					ch.addData(reinterpret_cast<const char *>(a_Data), a_Size);
-				},
-				length
-			))
-			{
-				qWarning() << ": Cannot read song data for hash calculation: " << fileName;
-				m_QueueLength -= 1;
-				emit this->fileHashFailed(fileName);
-				return;
-			}
+			auto hashAndLength = calculateSongHashAndLength(fileName);
 			m_QueueLength -= 1;
-			emit fileHashCalculated(fileName, ch.result(), length);
+			if (hashAndLength.first.isEmpty())
+			{
+				emit this->fileHashFailed(fileName);
+				return;
+			}
+			emit this->fileHashCalculated(fileName, hashAndLength.first, hashAndLength.second);
 		}
 	);
 }
@@ -68,6 +100,7 @@ void LengthHashCalculator::queueLengthSong(Song::SharedDataPtr a_SharedData)
 	m_QueueLength += 1;
 	BackgroundTasks::enqueue(tr("Calculate length: %1").arg(firstFileName), [this, a_SharedData, duplicates]()
 		{
+			// Pick the first duplicate that exists:
 			QString fileName;
 			for (const auto & d: duplicates)
 			{
@@ -84,24 +117,16 @@ void LengthHashCalculator::queueLengthSong(Song::SharedDataPtr a_SharedData)
 				emit this->songLengthFailed(a_SharedData);
 				return;
 			}
-			auto context = AVPP::Format::createContext(fileName);
-			if (context == nullptr)
-			{
-				qWarning() << ": Cannot open song file for length calculation: " << fileName;
-				m_QueueLength -= 1;
-				emit this->songLengthFailed(a_SharedData);
-				return;
-			}
-			double length = 0;
-			if (!context->feedRawAudioDataTo([&](const void *, int) {}, length))
-			{
-				qWarning() << ": Cannot read song data for length calculation: " << fileName;
-				m_QueueLength -= 1;
-				emit this->songLengthFailed(a_SharedData);
-				return;
-			}
+
+			// Calculate the length:
+			auto length = calculateSongLength(fileName);
 			m_QueueLength -= 1;
-			emit songLengthCalculated(a_SharedData, length);
+			if (length < 0)
+			{
+				emit this->songLengthFailed(a_SharedData);
+				return;
+			}
+			emit this->songLengthCalculated(a_SharedData, length);
 		}
 	);
 }
