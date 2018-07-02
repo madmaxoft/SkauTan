@@ -34,6 +34,15 @@ public:
 	/** Returns the number of songs that are queued for hashing. */
 	int queueLength() { return m_QueueLength.load(); }
 
+	/** Calculates the hash and length of the specified song file.
+	Returns the hash and length (in seconds).
+	If either cannot be calculated, returns an empty QByteArray / negative length. */
+	static std::pair<QByteArray, double> calculateSongHashAndLength(const QString & a_FileName);
+
+	/** Calculates the length of the specified song file, in seconds.
+	If the length cannot be calculated, returns a negative number. */
+	static double calculateSongLength(const QString & a_FileName);
+
 
 protected:
 
