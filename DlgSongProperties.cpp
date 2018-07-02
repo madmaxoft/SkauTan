@@ -1,12 +1,17 @@
 #include "DlgSongProperties.h"
 #include <assert.h>
+#include <ctime>
 #include <QDebug>
 #include <QMessageBox>
+#include <QFileInfo>
 #include "ui_DlgSongProperties.h"
 #include "Database.h"
 #include "Settings.h"
 #include "Utils.h"
 #include "ComponentCollection.h"
+#include "MetadataScanner.h"
+#include "BackgroundTasks.h"
+#include "LengthHashCalculator.h"
 
 
 
@@ -26,9 +31,10 @@ DlgSongProperties::DlgSongProperties(
 	// Initialize the ChangeSets:
 	m_TagManual = m_Song->tagManual();
 	m_Notes = m_Song->notes();
-	for (const auto & song: m_Duplicates)
+	// TODO: move this to a background thread
+	for (auto & song: m_Duplicates)
 	{
-		m_TagID3Changes[song] = song->tagId3();
+		m_OriginalID3[song] = MetadataScanner::readTagFromFile(song->fileName());
 	}
 
 	// Initialize the UI:
@@ -52,6 +58,11 @@ DlgSongProperties::DlgSongProperties(
 	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,          this, &DlgSongProperties::measuresPerMinuteTextEdited);
 	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,    this, &DlgSongProperties::notesChanged);
 	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged, this, &DlgSongProperties::switchDuplicate);
+	connect(m_UI->leId3Author,               &QLineEdit::textEdited,          this, &DlgSongProperties::id3AuthorEdited);
+	connect(m_UI->leId3Title,                &QLineEdit::textEdited,          this, &DlgSongProperties::id3TitleEdited);
+	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,          this, &DlgSongProperties::id3GenreEdited);
+	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,          this, &DlgSongProperties::id3CommentEdited);
+	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,          this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
 	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,             this, &DlgSongProperties::removeFromLibrary);
 	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,             this, &DlgSongProperties::deleteFromDisk);
 
@@ -61,10 +72,10 @@ DlgSongProperties::DlgSongProperties(
 	p.setColor(QPalette::Inactive, QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
 	m_UI->leHash->setPalette(p);
 	m_UI->leLength->setPalette(p);
-	m_UI->leId3Author->setPalette(p);
-	m_UI->leId3Title->setPalette(p);
-	m_UI->leId3Genre->setPalette(p);
-	m_UI->leId3MeasuresPerMinute->setPalette(p);
+	m_UI->lePid3Author->setPalette(p);
+	m_UI->lePid3Title->setPalette(p);
+	m_UI->lePid3Genre->setPalette(p);
+	m_UI->lePid3MeasuresPerMinute->setPalette(p);
 	m_UI->leFilenameAuthor->setPalette(p);
 	m_UI->leFilenameTitle->setPalette(p);
 	m_UI->leFilenameGenre->setPalette(p);
@@ -145,23 +156,62 @@ void DlgSongProperties::selectSong(const Song & a_Song)
 		}
 	}
 
-	const auto loc = QLocale::system();
-	m_UI->leId3Author->setText(a_Song.tagId3().m_Author.valueOrDefault());
-	m_UI->leId3Title->setText(a_Song.tagId3().m_Title.valueOrDefault());
-	m_UI->leId3Genre->setText(a_Song.tagId3().m_Genre.valueOrDefault());
-	if (a_Song.tagId3().m_MeasuresPerMinute.isPresent())
+	// Fill in the ID3 tag, including user-made changes:
+	const auto & orig = m_OriginalID3[&a_Song];
+	if (orig.first)
 	{
-		m_UI->leId3MeasuresPerMinute->setText(loc.toString(a_Song.tagId3().m_MeasuresPerMinute.value()));
+		auto itr = m_TagID3Changes.find(&a_Song);
+		auto tag = orig.second;
+		if (itr != m_TagID3Changes.end())
+		{
+			// The user made some changes, apply them into the tag:
+			tag = MetadataScanner::applyTagChanges(tag, itr->second);
+		}
+		m_UI->leId3Author->setText(tag.m_Author.valueOrDefault());
+		m_UI->leId3Title->setText(tag.m_Title.valueOrDefault());
+		m_UI->leId3Comment->setText(tag.m_Comment.valueOrDefault());
+		m_UI->leId3Genre->setText(tag.m_Genre.valueOrDefault());
+		if (tag.m_MeasuresPerMinute.isPresent())
+		{
+			const auto loc = QLocale::system();
+			m_UI->leId3MeasuresPerMinute->setText(loc.toString(tag.m_MeasuresPerMinute.value()));
+		}
+		else
+		{
+			m_UI->leId3MeasuresPerMinute->clear();
+		}
+		// TODO: Indicate changed fields by using a different bg color or font
 	}
 	else
 	{
+		m_UI->leId3Author->clear();
+		m_UI->leId3Title->clear();
+		m_UI->leId3Comment->clear();
+		m_UI->leId3Genre->clear();
 		m_UI->leId3MeasuresPerMinute->clear();
 	}
+	m_UI->leId3Author->setReadOnly(!orig.first);
+	m_UI->leId3Title->setReadOnly(!orig.first);
+	m_UI->leId3Comment->setReadOnly(!orig.first);
+	m_UI->leId3Genre->setReadOnly(!orig.first);
+	m_UI->leId3MeasuresPerMinute->setReadOnly(!orig.first);
+	auto pal = orig.first ? m_UI->leManualAuthor->palette() : m_UI->leFilenameAuthor->palette();
+	m_UI->leId3Author->setPalette(pal);
+	m_UI->leId3Title->setPalette(pal);
+	m_UI->leId3Comment->setPalette(pal);
+	m_UI->leId3Genre->setPalette(pal);
+	m_UI->leId3MeasuresPerMinute->setPalette(pal);
+
+	// Fill in the parsed ID3 values, updated with the user-made changes:
+	updateParsedId3();
+
+	// Fill in the filename-deduced values:
 	m_UI->leFilenameAuthor->setText(a_Song.tagFileName().m_Author.valueOrDefault());
 	m_UI->leFilenameTitle->setText(a_Song.tagFileName().m_Title.valueOrDefault());
 	m_UI->leFilenameGenre->setText(a_Song.tagFileName().m_Genre.valueOrDefault());
 	if (a_Song.tagFileName().m_MeasuresPerMinute.isPresent())
 	{
+		const auto loc = QLocale::system();
 		m_UI->leFilenameMeasuresPerMinute->setText(loc.toString(a_Song.tagFileName().m_MeasuresPerMinute.value()));
 	}
 	else
@@ -191,17 +241,117 @@ SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
 
 
 
+void DlgSongProperties::updateParsedId3()
+{
+	// If the ID3 tag is invalid, bail out:
+	const auto & orig = m_OriginalID3[m_Song.get()];
+	if (!orig.first)
+	{
+		m_UI->lePid3Author->clear();
+		m_UI->lePid3Title->clear();
+		m_UI->lePid3Genre->clear();
+		m_UI->lePid3MeasuresPerMinute->clear();
+		return;
+	}
+
+	// Create a merged tag value from the original and user-edits:
+	MetadataScanner::Tag toDisplay(orig.second);
+	auto itr = m_TagID3Changes.find(m_Song.get());
+	if (itr != m_TagID3Changes.end())
+	{
+		toDisplay = MetadataScanner::applyTagChanges(toDisplay, itr->second);
+	}
+
+	// Fill in the parsed values:
+	const auto parsedId3 = MetadataScanner::parseId3Tag(toDisplay);
+	m_UI->lePid3Author->setText(parsedId3.m_Author.valueOrDefault());
+	m_UI->lePid3Title->setText(parsedId3.m_Title.valueOrDefault());
+	m_UI->lePid3Genre->setText(parsedId3.m_Genre.valueOrDefault());
+	if (parsedId3.m_MeasuresPerMinute.isPresent())
+	{
+		const auto loc = QLocale::system();
+		m_UI->lePid3MeasuresPerMinute->setText(loc.toString(parsedId3.m_MeasuresPerMinute.value()));
+	}
+	else
+	{
+		m_UI->lePid3MeasuresPerMinute->clear();
+	}
+}
+
+
+
+
+
 void DlgSongProperties::applyAndClose()
 {
+	// Save the shared data:
 	m_Song->sharedData()->m_TagManual = m_TagManual;
 	m_Song->sharedData()->m_Notes = m_Notes;
-	m_Components.get<Database>()->saveSongSharedData(m_Song->sharedData());
-	for (const auto & song: m_Duplicates)
+	auto db = m_Components.get<Database>();
+	db->saveSongSharedData(m_Song->sharedData());
+
+	// Apply the tag changes:
+	for (auto song: m_Duplicates)
 	{
-		const auto & cs = m_TagID3Changes[song];
-		// TODO: Apply the tag changes (#128)
-		Q_UNUSED(cs);
-		// m_DB.saveSong(song);
+		const auto itr = m_TagID3Changes.find(song);
+		if (itr != m_TagID3Changes.cend())
+		{
+			assert(m_OriginalID3[song].first);  // The original tag must be valid
+			auto tag = MetadataScanner::applyTagChanges(m_OriginalID3[song].second, itr->second);
+
+			// Write the tag to a file after creating a backup:
+			QFileInfo fi(song->fileName());
+			auto backupName = tr("%3/backup-%2-%1", "Backup filename format")
+				.arg(fi.fileName())
+				.arg(std::time(nullptr))
+				.arg(fi.path());
+			if (!QFile::copy(song->fileName(), backupName))
+			{
+				qWarning() << "Cannot create backup file for " << song->fileName();
+				QMessageBox::warning(
+					this,
+					tr("SkauTan: Unable to write ID3"),
+					tr("SkauTan cannot create a backup copy of file %1 before writing the ID3 tag. "
+						"Without creating a backup the ID3 tag cannot be written. "
+						"Your changes to the ID3 tag were lost."
+					).arg(song->fileName()),
+					QMessageBox::Ok, QMessageBox::NoButton
+				);
+				return;
+			}
+			MetadataScanner::writeTagToSong(song->shared_from_this(), tag);
+
+			// Check that the song hash hasn't changed; if yes, restore the file from a backup
+			auto hashAndLength = LengthHashCalculator::calculateSongHashAndLength(song->fileName());
+			if (hashAndLength.first.isEmpty() || hashAndLength.first != song->hash())
+			{
+				qWarning() << "Song has a different hash after writing tag, reverting to backup: " << song->fileName();
+				if (!QFile::remove(song->fileName()))
+				{
+					qWarning() << "Cannot remove new song file before reverting to backup: " << song->fileName();
+				}
+				if (!QFile::rename(backupName, song->fileName()))
+				{
+					qWarning() << "Cannot rename backup back to original filename: " << song->fileName();
+				}
+				QMessageBox::warning(
+					this,
+					tr("SkauTan: Unable to write ID3"),
+					tr("SkauTan detected that the ID3 tag in file %1 is corrupt, "
+						"changing it damaged the file. The file has been restored from backup, "
+						"your changes to the ID3 tag were lost."
+					).arg(song->fileName()),
+					QMessageBox::Ok, QMessageBox::NoButton
+				);
+			}
+			else
+			{
+				QFile::remove(backupName);
+			}
+
+			// Save the song in the DB:
+			db->saveSong(song->shared_from_this());
+		}
 	}
 	accept();
 }
@@ -293,6 +443,89 @@ void DlgSongProperties::switchDuplicate(int a_Row)
 	}
 	auto song = m_Duplicates[static_cast<size_t>(a_Row)];
 	selectSong(*song);
+}
+
+
+
+
+
+void DlgSongProperties::id3AuthorEdited(const QString & a_NewText)
+{
+	if (!m_IsInternalChange)
+	{
+		m_TagID3Changes[m_Song.get()].m_Author = a_NewText;
+		updateParsedId3();
+	}
+}
+
+
+
+
+
+void DlgSongProperties::id3TitleEdited(const QString & a_NewText)
+{
+	if (!m_IsInternalChange)
+	{
+		m_TagID3Changes[m_Song.get()].m_Title = a_NewText;
+		updateParsedId3();
+	}
+}
+
+
+
+
+
+void DlgSongProperties::id3GenreEdited(const QString & a_NewText)
+{
+	if (!m_IsInternalChange)
+	{
+		m_TagID3Changes[m_Song.get()].m_Genre = a_NewText;
+		updateParsedId3();
+	}
+}
+
+
+
+
+
+void DlgSongProperties::id3CommentEdited(const QString & a_NewText)
+{
+	if (!m_IsInternalChange)
+	{
+		m_TagID3Changes[m_Song.get()].m_Comment = a_NewText;
+		updateParsedId3();
+	}
+}
+
+
+
+
+
+void DlgSongProperties::id3MeasuresPerMinuteEdited(const QString & a_NewText)
+{
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	if (a_NewText.isEmpty())
+	{
+		m_UI->leId3MeasuresPerMinute->setStyleSheet("");
+		m_TagID3Changes[m_Song.get()].m_MeasuresPerMinute.reset();
+		updateParsedId3();
+		return;
+	}
+	bool isOK;
+	auto mpm = QLocale::system().toDouble(a_NewText, &isOK);
+	if (isOK)
+	{
+		m_UI->leId3MeasuresPerMinute->setStyleSheet("");
+		m_TagID3Changes[m_Song.get()].m_MeasuresPerMinute = mpm;
+		updateParsedId3();
+	}
+	else
+	{
+		m_UI->leId3MeasuresPerMinute->setStyleSheet("background-color:#fcc");
+	}
 }
 
 
