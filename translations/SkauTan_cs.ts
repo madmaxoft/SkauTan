@@ -138,29 +138,29 @@
         <translation>&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="57"/>
+        <location filename="../DlgEditTemplate.cpp" line="53"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="58"/>
+        <location filename="../DlgEditTemplate.cpp" line="54"/>
         <source>Notes</source>
         <translation>Poznámky</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="59"/>
+        <location filename="../DlgEditTemplate.cpp" line="55"/>
         <source>Fav</source>
         <comment>Favorite</comment>
         <translation type="unfinished">Obl</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="60"/>
+        <location filename="../DlgEditTemplate.cpp" line="56"/>
         <source>Dur</source>
         <comment>Duration</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="61"/>
+        <location filename="../DlgEditTemplate.cpp" line="57"/>
         <source># Songs</source>
         <comment>Number of matching songs</comment>
         <translation type="unfinished">Skladeb</translation>
@@ -170,7 +170,7 @@
         <translation type="vanished">Obl</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="62"/>
+        <location filename="../DlgEditTemplate.cpp" line="58"/>
         <source>Filter</source>
         <translation>Filtr</translation>
     </message>
@@ -179,7 +179,7 @@
         <translation type="vanished">Skladeb</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="253"/>
+        <location filename="../DlgEditTemplate.cpp" line="249"/>
         <source>SkauTan: Remove items</source>
         <translation>SkauTan: Odebrat položky</translation>
     </message>
@@ -189,7 +189,7 @@
         <translation type="vanished">A</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="173"/>
+        <location filename="../DlgEditTemplate.cpp" line="169"/>
         <source>New item</source>
         <translation>Nová položka</translation>
     </message>
@@ -198,12 +198,12 @@
         <translation type="vanished">SkauTan: Odebrat položky</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="254"/>
+        <location filename="../DlgEditTemplate.cpp" line="250"/>
         <source>Are you sure you want to remove the selected items?</source>
         <translation>Opravdu odebrat označené položky?</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplate.cpp" line="329"/>
+        <location filename="../DlgEditTemplate.cpp" line="325"/>
         <source>SkauTan: Choose template color</source>
         <translation>SkauTan: Vybrat barvu šablony</translation>
     </message>
@@ -318,28 +318,28 @@
         <translation>Nebo</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="364"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="360"/>
         <source>Filter</source>
         <comment>FilterTree</comment>
         <translation>Filtr</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="619"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="615"/>
         <source>Really remove the selected filter, including its subtree?</source>
         <translation>Opravdu odebrat označenou část filtru, včetně podstromu?</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="623"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="619"/>
         <source>Really remove the selected filter?</source>
         <translation>Opravdu odebrat označenou část filtru?</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="627"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="623"/>
         <source>SkauTan - Remove filter?</source>
         <translation>SkauTan: Odebrat část filtru?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../DlgEditTemplateItem.cpp" line="701"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="697"/>
         <source>Matching songs: %n</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -348,7 +348,7 @@
         </translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="728"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="724"/>
         <source>SkauTan: Choose template item color</source>
         <translation>SkauTan: Vybrat barvu položky</translation>
     </message>
@@ -527,42 +527,42 @@
         <translation type="unfinished">&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="69"/>
+        <location filename="../DlgRemovedSongs.cpp" line="70"/>
         <source>SkauTan: Clear removed songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="70"/>
+        <location filename="../DlgRemovedSongs.cpp" line="71"/>
         <source>Are you sure you want to clear the history of removed songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="89"/>
+        <location filename="../DlgRemovedSongs.cpp" line="90"/>
         <source>SkauTan: Export list of removed songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="91"/>
+        <location filename="../DlgRemovedSongs.cpp" line="92"/>
         <source>Excel sheet (*.xls)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="104"/>
+        <location filename="../DlgRemovedSongs.cpp" line="105"/>
         <source>SkauTan: Cannot write to file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="105"/>
+        <location filename="../DlgRemovedSongs.cpp" line="106"/>
         <source>Cannot write to file %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="130"/>
+        <location filename="../DlgRemovedSongs.cpp" line="132"/>
         <source>SkauTan: Exported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgRemovedSongs.cpp" line="131"/>
+        <location filename="../DlgRemovedSongs.cpp" line="133"/>
         <source>The history of removed songs was exported to %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -575,127 +575,157 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="22"/>
+        <location filename="../DlgSongProperties.ui" line="36"/>
         <source>Hash:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="92"/>
+        <location filename="../DlgSongProperties.ui" line="96"/>
         <source>Length:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="75"/>
+        <location filename="../DlgSongProperties.ui" line="103"/>
         <source>Author [manual]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="85"/>
+        <location filename="../DlgSongProperties.ui" line="110"/>
         <source>Title [manual]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="179"/>
+        <location filename="../DlgSongProperties.ui" line="188"/>
         <source>Genre [manual]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="158"/>
+        <location filename="../DlgSongProperties.ui" line="167"/>
         <source>MPM [manual]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="106"/>
+        <location filename="../DlgSongProperties.ui" line="140"/>
         <source>Author [ID3]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="240"/>
+        <location filename="../DlgSongProperties.ui" line="215"/>
         <source>Title [ID3]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="196"/>
-        <source>Genre [ID3]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../DlgSongProperties.ui" line="120"/>
+        <location filename="../DlgSongProperties.ui" line="147"/>
         <source>MPM [ID3]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="226"/>
+        <location filename="../DlgSongProperties.ui" line="222"/>
         <source>Author [filename]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="189"/>
+        <location filename="../DlgSongProperties.ui" line="208"/>
         <source>Title [filename]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="151"/>
+        <location filename="../DlgSongProperties.ui" line="181"/>
         <source>Genre [filename]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="144"/>
+        <location filename="../DlgSongProperties.ui" line="157"/>
         <source>MPM [filename]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="65"/>
+        <location filename="../DlgSongProperties.ui" line="66"/>
         <source>Notes:</source>
         <translation type="unfinished">Poznámky:</translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="42"/>
+        <location filename="../DlgSongProperties.ui" line="49"/>
         <source>Duplicates:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="253"/>
+        <location filename="../DlgSongProperties.ui" line="22"/>
+        <source>Author [Parsed ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="29"/>
+        <source>Title [Parsed ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="126"/>
+        <source>Genre, as detected from the entire ID3 tag</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="245"/>
+        <source>Genre [ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="271"/>
         <source>Shared Data:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="284"/>
+        <location filename="../DlgSongProperties.ui" line="278"/>
+        <source>Comment [ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="285"/>
+        <source>Genre [Parsed ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="319"/>
+        <source>MPM [Parsed ID3]:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.ui" line="350"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished">&amp;Storno</translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="291"/>
+        <location filename="../DlgSongProperties.ui" line="357"/>
         <source>&amp;OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="303"/>
+        <location filename="../DlgSongProperties.ui" line="369"/>
         <source>Remove from library...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="306"/>
+        <location filename="../DlgSongProperties.ui" line="372"/>
         <source>Removes the song from the library, keeps the disk file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="309"/>
+        <location filename="../DlgSongProperties.ui" line="375"/>
         <source>Del</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="314"/>
+        <location filename="../DlgSongProperties.ui" line="380"/>
         <source>Delete from disk...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.ui" line="317"/>
+        <location filename="../DlgSongProperties.ui" line="383"/>
         <source>Removes song from library AND deletes the file from the disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../DlgSongProperties.cpp" line="79"/>
+        <location filename="../DlgSongProperties.cpp" line="91"/>
         <source>%1:%2 (%n seconds)</source>
         <comment>SongLength</comment>
         <translation type="unfinished">
@@ -705,20 +735,42 @@
         </translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.cpp" line="315"/>
-        <location filename="../DlgSongProperties.cpp" line="351"/>
+        <location filename="../DlgSongProperties.cpp" line="304"/>
+        <source>%3/backup-%2-%1</source>
+        <comment>Backup filename format</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.cpp" line="313"/>
+        <location filename="../DlgSongProperties.cpp" line="339"/>
+        <source>SkauTan: Unable to write ID3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.cpp" line="314"/>
+        <source>SkauTan cannot create a backup copy of file %1 before writing the ID3 tag. Without creating a backup the ID3 tag cannot be written. Your changes to the ID3 tag were lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.cpp" line="340"/>
+        <source>SkauTan detected that the ID3 tag in file %1 is corrupt, changing it damaged the file. The file has been restored from backup, your changes to the ID3 tag were lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgSongProperties.cpp" line="549"/>
+        <location filename="../DlgSongProperties.cpp" line="585"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.cpp" line="316"/>
+        <location filename="../DlgSongProperties.cpp" line="550"/>
         <source>Are you sure you want to remove the song %1 from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongProperties.cpp" line="352"/>
+        <location filename="../DlgSongProperties.cpp" line="586"/>
         <source>Are you sure you want to delete the file %1 from the disk? The file will be deleted and all its properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -878,96 +930,96 @@ This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="195"/>
+        <location filename="../DlgSongs.cpp" line="192"/>
         <source>Total songs: %1</source>
         <translation>Celkem skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="199"/>
+        <location filename="../DlgSongs.cpp" line="196"/>
         <source>Total songs: %1 (filtered out of %2)</source>
         <translation>Celkem skladeb: %1 (filtrováno z %2)</translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="209"/>
+        <location filename="../DlgSongs.cpp" line="206"/>
         <source>All songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="210"/>
+        <location filename="../DlgSongs.cpp" line="207"/>
         <source>Songs without ID3 tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="211"/>
+        <location filename="../DlgSongs.cpp" line="208"/>
         <source>Songs with no genre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="212"/>
+        <location filename="../DlgSongs.cpp" line="209"/>
         <source>Songs with no tempo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="213"/>
+        <location filename="../DlgSongs.cpp" line="210"/>
         <source>Songs with warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="214"/>
+        <location filename="../DlgSongs.cpp" line="211"/>
         <source>Songs not matching any template item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="215"/>
+        <location filename="../DlgSongs.cpp" line="212"/>
         <source>Songs with duplicates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="216"/>
+        <location filename="../DlgSongs.cpp" line="213"/>
         <source>Songs with skip-start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="294"/>
+        <location filename="../DlgSongs.cpp" line="292"/>
         <source>SkauTan: Choose files to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="312"/>
+        <location filename="../DlgSongs.cpp" line="310"/>
         <source>SkauTan: Choose folder to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="342"/>
+        <location filename="../DlgSongs.cpp" line="340"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="343"/>
+        <location filename="../DlgSongs.cpp" line="341"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="381"/>
+        <location filename="../DlgSongs.cpp" line="380"/>
         <source>SkauTan: Delete songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="382"/>
+        <location filename="../DlgSongs.cpp" line="381"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="570"/>
+        <location filename="../DlgSongs.cpp" line="571"/>
         <source>SkauTan: Rate songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="571"/>
+        <location filename="../DlgSongs.cpp" line="572"/>
         <source>Rating:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1022,7 +1074,7 @@ This operation cannot be undone!</source>
     </message>
     <message>
         <location filename="../DlgTapTempo.ui" line="89"/>
-        <location filename="../DlgTapTempo.cpp" line="60"/>
+        <location filename="../DlgTapTempo.cpp" line="64"/>
         <source>Detected MPM: --</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1037,7 +1089,7 @@ This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTapTempo.cpp" line="79"/>
+        <location filename="../DlgTapTempo.cpp" line="83"/>
         <source>Detected average MPM: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1090,19 +1142,19 @@ This operation cannot be undone!</source>
         <translation>&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="51"/>
-        <location filename="../DlgTemplatesList.cpp" line="55"/>
+        <location filename="../DlgTemplatesList.cpp" line="48"/>
+        <location filename="../DlgTemplatesList.cpp" line="52"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="51"/>
+        <location filename="../DlgTemplatesList.cpp" line="48"/>
         <source>#</source>
         <translation>Položek</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="51"/>
-        <location filename="../DlgTemplatesList.cpp" line="56"/>
+        <location filename="../DlgTemplatesList.cpp" line="48"/>
+        <location filename="../DlgTemplatesList.cpp" line="53"/>
         <source>Notes</source>
         <translation>Poznámky</translation>
     </message>
@@ -1111,53 +1163,53 @@ This operation cannot be undone!</source>
         <translation type="vanished">Obl</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="60"/>
+        <location filename="../DlgTemplatesList.cpp" line="57"/>
         <source>Filter</source>
         <translation>Filtr</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="57"/>
+        <location filename="../DlgTemplatesList.cpp" line="54"/>
         <source>Fav</source>
         <comment>Favorite</comment>
         <translation type="unfinished">Obl</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="58"/>
+        <location filename="../DlgTemplatesList.cpp" line="55"/>
         <source>Dur</source>
         <comment>Duration</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="59"/>
+        <location filename="../DlgTemplatesList.cpp" line="56"/>
         <source># Songs</source>
         <comment>Number of matching songs</comment>
         <translation type="unfinished">Skladeb</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="205"/>
-        <location filename="../DlgTemplatesList.cpp" line="528"/>
+        <location filename="../DlgTemplatesList.cpp" line="202"/>
+        <location filename="../DlgTemplatesList.cpp" line="527"/>
         <source>SkauTan: Export templates</source>
         <translation>SkauTan: Exportovat šablony</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="206"/>
+        <location filename="../DlgTemplatesList.cpp" line="203"/>
         <source>SkauTan could not export templates to the specified file, because the file cannot be written to.</source>
         <translation>SkauTan nemohl exportovat šablony, protože do zvoleného souboru nelze zapisovat.</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="230"/>
-        <location filename="../DlgTemplatesList.cpp" line="240"/>
-        <location filename="../DlgTemplatesList.cpp" line="552"/>
+        <location filename="../DlgTemplatesList.cpp" line="227"/>
+        <location filename="../DlgTemplatesList.cpp" line="237"/>
+        <location filename="../DlgTemplatesList.cpp" line="551"/>
         <source>SkauTan: Import templates</source>
         <translation>SkauTan: Import šablon</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="231"/>
+        <location filename="../DlgTemplatesList.cpp" line="228"/>
         <source>SkauTan could not import templates from &quot;%1&quot;, because the file cannot be read from.</source>
         <translation>SkauTan nemohl importovat šablony z &quot;%1&quot;, protože z tohoto souboru nelze číst.</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="241"/>
+        <location filename="../DlgTemplatesList.cpp" line="238"/>
         <source>There are no SkauTan templates in &quot;%1&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1166,22 +1218,22 @@ This operation cannot be undone!</source>
         <translation type="vanished">V souboru &quot;%1&quot; nejsou žádné šablony pro SkauTan.</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="281"/>
+        <location filename="../DlgTemplatesList.cpp" line="279"/>
         <source>SkauTan: Cannot add template</source>
         <translation>SkauTan: Nelze přidat šablonu</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="282"/>
+        <location filename="../DlgTemplatesList.cpp" line="280"/>
         <source>Cannot add template, possibly due to DB failure? Inspect the log.</source>
         <translation>Nelze přidat šablonu, možná kvůli chybě v databázi? Konzultujte log.</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="326"/>
+        <location filename="../DlgTemplatesList.cpp" line="324"/>
         <source>SkauTan: Remove templates?</source>
         <translation>SkauTan: Odebrat šablony?</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="327"/>
+        <location filename="../DlgTemplatesList.cpp" line="325"/>
         <source>Are you sure you want to remove the selected templates?</source>
         <translation>Opravdu chcete odebrat označené šablony?</translation>
     </message>
@@ -1191,18 +1243,18 @@ This operation cannot be undone!</source>
         <translation type="vanished">A</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="530"/>
-        <location filename="../DlgTemplatesList.cpp" line="554"/>
+        <location filename="../DlgTemplatesList.cpp" line="529"/>
+        <location filename="../DlgTemplatesList.cpp" line="553"/>
         <source>SkauTan templates (*.SkauTanTemplates)</source>
         <translation>Šablony pro SkauTan (*.SkauTanTemplates)</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="539"/>
+        <location filename="../DlgTemplatesList.cpp" line="538"/>
         <source>SkauTan: Export complete</source>
         <translation>SkauTan: Export hotov</translation>
     </message>
     <message>
-        <location filename="../DlgTemplatesList.cpp" line="540"/>
+        <location filename="../DlgTemplatesList.cpp" line="539"/>
         <source>Templates have been exported to &quot;%1&quot;.</source>
         <translation>Šablony byly vyexportovány do &quot;%1&quot;.</translation>
     </message>
@@ -1372,28 +1424,28 @@ This operation cannot be undone!</source>
         <translation type="unfinished">&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../DlgTempoDetect.cpp" line="58"/>
+        <location filename="../DlgTempoDetect.cpp" line="59"/>
         <source>Detection in progress...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTempoDetect.cpp" line="242"/>
+        <location filename="../DlgTempoDetect.cpp" line="243"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTempoDetect.cpp" line="330"/>
+        <location filename="../DlgTempoDetect.cpp" line="331"/>
         <source>SkauTan: Save debug audio with Beats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTempoDetect.cpp" line="332"/>
-        <location filename="../DlgTempoDetect.cpp" line="353"/>
+        <location filename="../DlgTempoDetect.cpp" line="333"/>
+        <location filename="../DlgTempoDetect.cpp" line="354"/>
         <source>RAW audio file (*.raw)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgTempoDetect.cpp" line="351"/>
+        <location filename="../DlgTempoDetect.cpp" line="352"/>
         <source>SkauTan: Save debug audio with Levels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1408,12 +1460,12 @@ This operation cannot be undone!</source>
 <context>
     <name>LengthHashCalculator</name>
     <message>
-        <location filename="../LengthHashCalculator.cpp" line="26"/>
+        <location filename="../LengthHashCalculator.cpp" line="75"/>
         <source>Calculate hash: %1</source>
         <translation type="unfinished">Výpočet hashe: %1</translation>
     </message>
     <message>
-        <location filename="../LengthHashCalculator.cpp" line="69"/>
+        <location filename="../LengthHashCalculator.cpp" line="101"/>
         <source>Calculate length: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1421,7 +1473,7 @@ This operation cannot be undone!</source>
 <context>
     <name>MetadataScanner</name>
     <message>
-        <location filename="../MetadataScanner.cpp" line="299"/>
+        <location filename="../MetadataScanner.cpp" line="342"/>
         <source>Scan metadata: %1</source>
         <translation>Čtení metadat: %1</translation>
     </message>
@@ -1493,146 +1545,151 @@ This operation cannot be undone!</source>
         <translation type="vanished">Úlohy na pozadí</translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="415"/>
+        <location filename="../PlayerWindow.ui" line="325"/>
+        <source>Upon completion append</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="449"/>
         <source>Background tasks...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="418"/>
+        <location filename="../PlayerWindow.ui" line="452"/>
         <source>Show the tasks running in the background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="421"/>
+        <location filename="../PlayerWindow.ui" line="455"/>
         <source>Ctrl+B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="426"/>
+        <location filename="../PlayerWindow.ui" line="460"/>
         <source>Song properties...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="429"/>
+        <location filename="../PlayerWindow.ui" line="463"/>
         <source>Alt+3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="434"/>
+        <location filename="../PlayerWindow.ui" line="468"/>
         <source>&amp;Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="437"/>
+        <location filename="../PlayerWindow.ui" line="471"/>
         <source>Play the selected song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="446"/>
+        <location filename="../PlayerWindow.ui" line="480"/>
         <source>Return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="451"/>
+        <location filename="../PlayerWindow.ui" line="485"/>
         <source>Rate:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="454"/>
+        <location filename="../PlayerWindow.ui" line="488"/>
         <source>Set the songs&apos; local rating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="457"/>
+        <location filename="../PlayerWindow.ui" line="491"/>
         <source>Ctrl+R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="462"/>
+        <location filename="../PlayerWindow.ui" line="496"/>
         <source>&amp;Remove from library...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="465"/>
+        <location filename="../PlayerWindow.ui" line="499"/>
         <source>Remove the songs from the library, but keep the files on the disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="470"/>
+        <location filename="../PlayerWindow.ui" line="504"/>
         <source>&amp;Delete from disk...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="473"/>
+        <location filename="../PlayerWindow.ui" line="507"/>
         <source>Delete the songs from both the library and the disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="478"/>
+        <location filename="../PlayerWindow.ui" line="512"/>
         <source>R&amp;emove from playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="481"/>
+        <location filename="../PlayerWindow.ui" line="515"/>
         <source>Remove the selected items from the playlist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="484"/>
+        <location filename="../PlayerWindow.ui" line="518"/>
         <source>Del</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="489"/>
+        <location filename="../PlayerWindow.ui" line="523"/>
         <source>Set duration limit:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="494"/>
+        <location filename="../PlayerWindow.ui" line="528"/>
         <source>Remove duration limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="499"/>
+        <location filename="../PlayerWindow.ui" line="533"/>
         <source>Removed songs...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="502"/>
+        <location filename="../PlayerWindow.ui" line="536"/>
         <source>Shows the list of songs that have been removed from the library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="569"/>
+        <location filename="../PlayerWindow.cpp" line="609"/>
         <source>SkauTan: Delete songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="570"/>
+        <location filename="../PlayerWindow.cpp" line="610"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="604"/>
+        <location filename="../PlayerWindow.cpp" line="644"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="605"/>
+        <location filename="../PlayerWindow.cpp" line="645"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="689"/>
+        <location filename="../PlayerWindow.cpp" line="745"/>
         <source>SkauTan: Set duration limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="690"/>
+        <location filename="../PlayerWindow.cpp" line="746"/>
         <source>New duration:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1719,12 +1776,12 @@ This operation cannot be undone!</source>
 %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="130"/>
+        <location filename="../main.cpp" line="131"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="131"/>
+        <location filename="../main.cpp" line="132"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
