@@ -24,7 +24,7 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 
 	// Detect:
 	cout << "Detecting..." << endl;
-	SongPtr song = std::make_shared<Song>(a_FileName, 1);
+	SongPtr song = std::make_shared<Song>(a_FileName, nullptr);
 	TempoDetector td;
 	auto res = td.scanSong(song, a_Options);
 

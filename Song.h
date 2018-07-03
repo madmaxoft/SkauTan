@@ -123,6 +123,9 @@ public:
 		QVariant && a_NumTagRescanAttempts
 	);
 
+	Song(const Song & a_Song) = delete;
+	Song(Song && a_Song) = delete;
+
 	~Song();
 
 	const QString & fileName() const { return m_FileName; }
