@@ -84,8 +84,16 @@ private:
 	/** Refreshes the items in lwQuickPlayer to match the favorite template items in the DB. */
 	void refreshQuickPlayer();
 
+	/** Refreshes the items in cbAppendUponCompletion to match the favorite templates in the DB. */
+	void refreshAppendUponCompletion();
+
 	/** Sets the specified duration limit for all playlist items selected in m_tblPlaylist. */
 	void setSelectedItemsDurationLimit(double a_NewDurationLimit);
+
+	/** Returns the template that the user has chosen to append upon playlist completion.
+	Returns a valid template even if the checkbox is unchecked (so that it can be used for preserving
+	the combobox selection when refreshing). */
+	TemplatePtr templateToAppendUponCompletion() const;
 
 
 private slots:
@@ -186,6 +194,10 @@ private slots:
 
 	/** Shows the DlgRemovedSongs. */
 	void showRemovedSongs();
+
+	/** Emitted by Player after starting playback of a new track.
+	Used to append another round from template in cbAppendUponCompletion, if at playlist end and allowed by the user. */
+	void playerStartedPlayback();
 };
 
 

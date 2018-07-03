@@ -94,6 +94,9 @@ public:
 	If the index is out of bounds, appends the item to the end of the playlist. */
 	void insertItem(int a_Index, IPlaylistItemPtr a_Item);
 
+	/** Returns true if the current item is the last in the playlist. */
+	bool isAtEnd() const;
+
 
 protected:
 

@@ -239,6 +239,15 @@ void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
 
 
 
+bool Playlist::isAtEnd() const
+{
+	return (m_CurrentItemIdx == static_cast<int>(m_Items.size()) - 1);
+}
+
+
+
+
+
 void Playlist::removeSong(SongPtr a_Song)
 {
 	int idx = 0;

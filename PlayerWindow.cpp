@@ -73,6 +73,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 
 	// Connect the signals:
 	auto db = m_Components.get<Database>();
+	auto player = m_Components.get<Player>();
 	connect(m_UI->btnSongs,               &QPushButton::clicked,      this, &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,      this, &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,      this, &PlayerWindow::showHistory);
@@ -98,6 +99,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this, &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this, &PlayerWindow::showPlaylistContextMenu);
 	connect(m_UI->waveform,               &WaveformDisplay::songChanged, db.get(), &Database::saveSong);
+	connect(player.get(),                 &Player::startedPlayback,   this, &PlayerWindow::playerStartedPlayback);
 
 	// Set up the header sections:
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -110,6 +112,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
 	Settings::loadHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 	m_UI->chbImmediatePlayback->setChecked(Settings::loadValue("PlayerWindow", "chbImmediatePlayback.isChecked", true).toBool());
+	m_UI->chbAppendUponCompletion->setChecked(Settings::loadValue("PlayerWindow", "chbAppendUponCompletion.isChecked", true).toBool());
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = m_UI->btnTempoReset->fontMetrics();
@@ -137,6 +140,10 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	});
 
 	refreshQuickPlayer();
+	refreshAppendUponCompletion();
+	auto lastCompletionTemplateName = Settings::loadValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", "").toString();
+	auto tmplIndex = m_UI->cbCompletionAppendTemplate->findText(lastCompletionTemplateName);
+	m_UI->cbCompletionAppendTemplate->setCurrentIndex(tmplIndex);
 
 	m_UpdateTimer.start(200);
 }
@@ -147,7 +154,9 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 
 PlayerWindow::~PlayerWindow()
 {
+	Settings::saveValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", m_UI->cbCompletionAppendTemplate->currentText());
 	Settings::saveValue("PlayerWindow", "chbImmediatePlayback.isChecked", m_UI->chbImmediatePlayback->isChecked());
+	Settings::saveValue("PlayerWindow", "chbAppendUponCompletion.isChecked", m_UI->chbAppendUponCompletion->isChecked());
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 	Settings::saveSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
 }
@@ -212,6 +221,31 @@ void PlayerWindow::refreshQuickPlayer()
 
 
 
+void PlayerWindow::refreshAppendUponCompletion()
+{
+	auto selTemplate = templateToAppendUponCompletion();
+	m_UI->cbCompletionAppendTemplate->clear();
+	auto tmpls = m_Components.get<Database>()->templates();
+	std::sort(tmpls.begin(), tmpls.end(),
+		[](TemplatePtr a_Tmpl1, TemplatePtr a_Tmpl2)
+		{
+			return (a_Tmpl1->displayName() < a_Tmpl2->displayName());
+		}
+	);
+	for (const auto & tmpl: tmpls)
+	{
+		m_UI->cbCompletionAppendTemplate->addItem(tmpl->displayName(), QVariant::fromValue(tmpl));
+		if (tmpl == selTemplate)
+		{
+			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
+		}
+	}
+}
+
+
+
+
+
 void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 {
 	const auto & items = m_Components.get<Player>()->playlist().items();
@@ -219,6 +253,15 @@ void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 	{
 		items[static_cast<size_t>(row.row())]->setDurationLimit(a_NewDurationLimit);
 	}
+}
+
+
+
+
+
+TemplatePtr PlayerWindow::templateToAppendUponCompletion() const
+{
+	return m_UI->cbCompletionAppendTemplate->currentData().value<TemplatePtr>();
 }
 
 
@@ -248,6 +291,7 @@ void PlayerWindow::showTemplates(bool a_IsChecked)
 	dlg.exec();
 
 	refreshQuickPlayer();
+	refreshAppendUponCompletion();
 }
 
 
@@ -775,4 +819,32 @@ void PlayerWindow::showRemovedSongs()
 {
 	DlgRemovedSongs dlg(m_Components, this);
 	dlg.exec();
+}
+
+
+
+
+
+void PlayerWindow::playerStartedPlayback()
+{
+	// Check if starting to play the last item:
+	if (!m_Components.get<Player>()->playlist().isAtEnd())
+	{
+		return;
+	}
+
+	// Check if the user agreed to appending:
+	if (!m_UI->chbAppendUponCompletion->isChecked())
+	{
+		return;
+	}
+
+	// Append:
+	auto selTemplate = templateToAppendUponCompletion();
+	if (selTemplate == nullptr)
+	{
+		qDebug() << "The user wants to append upon completion, but the template is not chosen";
+		return;
+	}
+	m_Components.get<Player>()->playlist().addFromTemplate(*m_Components.get<Database>(), *selTemplate);
 }
