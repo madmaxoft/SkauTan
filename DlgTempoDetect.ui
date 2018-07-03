@@ -465,6 +465,25 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leMpmManual</tabstop>
+  <tabstop>leMpmId3</tabstop>
+  <tabstop>leMpmFilename</tabstop>
+  <tabstop>lwLevelAlgorithm</tabstop>
+  <tabstop>lwWindowSize</tabstop>
+  <tabstop>lwStride</tabstop>
+  <tabstop>leLevelAvg</tabstop>
+  <tabstop>leLevelPeak</tabstop>
+  <tabstop>leHistogramCutoff</tabstop>
+  <tabstop>chbFoldHistogram</tabstop>
+  <tabstop>leFoldHistogramMin</tabstop>
+  <tabstop>leFoldHistogramMax</tabstop>
+  <tabstop>btnSaveDebugLevels</tabstop>
+  <tabstop>btnSaveDebugBeats</tabstop>
+  <tabstop>twDetectedResults</tabstop>
+  <tabstop>twDetectionHistory</tabstop>
+  <tabstop>btnClose</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

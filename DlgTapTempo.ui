@@ -126,6 +126,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>btnNow</tabstop>
+  <tabstop>twMeasures</tabstop>
+  <tabstop>btnCancel</tabstop>
+  <tabstop>btnSave</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

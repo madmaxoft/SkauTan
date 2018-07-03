@@ -546,6 +546,24 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>btnAddFromTemplate</tabstop>
+  <tabstop>btnSongs</tabstop>
+  <tabstop>btnTemplates</tabstop>
+  <tabstop>btnHistory</tabstop>
+  <tabstop>btnTools</tabstop>
+  <tabstop>lwQuickPlayer</tabstop>
+  <tabstop>chbImmediatePlayback</tabstop>
+  <tabstop>tblPlaylist</tabstop>
+  <tabstop>chbAppendUponCompletion</tabstop>
+  <tabstop>cbCompletionAppendTemplate</tabstop>
+  <tabstop>vsVolume</tabstop>
+  <tabstop>btnTempoReset</tabstop>
+  <tabstop>vsTempo</tabstop>
+  <tabstop>btnPrev</tabstop>
+  <tabstop>btnPlay</tabstop>
+  <tabstop>btnNext</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

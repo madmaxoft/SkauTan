@@ -215,6 +215,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leDisplayName</tabstop>
+  <tabstop>pteNotes</tabstop>
+  <tabstop>leBgColor</tabstop>
+  <tabstop>btnBgColor</tabstop>
+  <tabstop>btnAddItem</tabstop>
+  <tabstop>btnAddFavoriteItem</tabstop>
+  <tabstop>btnEditItem</tabstop>
+  <tabstop>btnRemoveItem</tabstop>
+  <tabstop>tblItems</tabstop>
+  <tabstop>btnClose</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

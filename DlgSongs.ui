@@ -301,6 +301,17 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>leSearch</tabstop>
+  <tabstop>cbFilter</tabstop>
+  <tabstop>tblSongs</tabstop>
+  <tabstop>btnAddFile</tabstop>
+  <tabstop>btnAddFolder</tabstop>
+  <tabstop>btnRemove</tabstop>
+  <tabstop>btnRescanMetadata</tabstop>
+  <tabstop>btnAddToPlaylist</tabstop>
+  <tabstop>btnClose</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
