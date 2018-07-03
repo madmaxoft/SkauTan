@@ -48,3 +48,10 @@ qmake SkauTan.pro
 echo -------------------------
 echo Running nmake...
 nmake
+
+echo -------------------------
+echo Building BeatDetectTest...
+mkdir bdt-build
+cd bdt-build
+qmake ../BeatDetectTest/BeatDetectTest.pro
+nmake
