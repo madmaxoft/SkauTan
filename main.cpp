@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 		// Create the main app objects:
 		ComponentCollection cc;
-		auto mainDB = cc.addNew<Database>("Bad string");
+		auto mainDB = cc.addNew<Database>();
 		auto scanner = cc.addNew<MetadataScanner>();
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
 		auto player = cc.addNew<Player>();
