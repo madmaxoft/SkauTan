@@ -34,6 +34,22 @@ if not exist c:\projects\lib\include\taglib\tag.h (
 		exit /b 1
 	)
 )
+
+rem Download the precompiled RtMidi:
+if not exist c:\projects\lib\include\RtMidi.h (
+	echo -------------------------
+	echo Downloading precompiled RtMidi libraries...
+	curl -o c:\projects\lib\RtMidi.7z http://xoft.cz/rtmidi-msvc2017-x64.7z
+	if errorlevel 1 (
+		echo Download unsuccessful
+		exit /b 1
+	)
+	7z x c:\projects\lib\rtmidi.7z -oc:\projects\lib
+	if errorlevel 1 (
+		echo Unzip unsuccessful
+		exit /b 1
+	)
+)
 echo -------------------------
 echo Libraries checked, compiling now...
 

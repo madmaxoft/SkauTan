@@ -25,10 +25,10 @@ DEFINES += TAGLIB_STATIC
 
 CONFIG += c++14
 
-win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib
-win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib
-win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib
-unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz
+win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib winmm.lib
+win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib rtmidid.lib
+win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib rtmidi.lib
+unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz -lrtmidi
 
 
 # Add the app icon:
