@@ -44,7 +44,20 @@ set INCLUDE=%INCLUDE%;c:\projects\lib\include
 echo -------------------------
 echo Running QMake...
 qmake SkauTan.pro
+if errorlevel 1 (
+	exit /b 1
+)
 
 echo -------------------------
 echo Running nmake...
+nmake
+if errorlevel 1 (
+	exit /b 1
+)
+
+echo -------------------------
+echo Building BeatDetectTest...
+mkdir bdt-build
+cd bdt-build
+qmake ../BeatDetectTest/BeatDetectTest.pro
 nmake
