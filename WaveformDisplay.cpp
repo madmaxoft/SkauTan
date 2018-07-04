@@ -35,7 +35,9 @@ void WaveformDisplay::setPlayer(Player & a_Player)
 	m_Player = &a_Player;
 	connect(m_Player, &Player::startedPlayback,  this, &WaveformDisplay::playerStartedPlayback);
 	connect(m_Player, &Player::finishedPlayback, this, &WaveformDisplay::playerFinishedPlayback);
-	if (m_Player->isPlaying())
+
+	// If the player has a track loaded, display it in the widget:
+	if (m_Player->isTrackLoaded())
 	{
 		playerStartedPlayback(m_Player->currentTrack(), m_Player->playbackBuffer());
 	}

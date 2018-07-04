@@ -98,17 +98,14 @@ private:
 
 private slots:
 
-	/** Shows the Songs dialog.
-	Signature must match QPushButton::clicked(). */
-	void showSongs(bool a_IsChecked);
+	/** Shows the Songs dialog. */
+	void showSongs();
 
-	/** Shows the TemplateList dialog.
-	Signature must match QPushButton::clicked(). */
-	void showTemplates(bool a_IsChecked);
+	/** Shows the TemplateList dialog. */
+	void showTemplates();
 
-	/** Shows the History dialog.
-	Signature must match QPushButton::clicked(). */
-	void showHistory(bool a_IsChecked);
+	/** Shows the History dialog. */
+	void showHistory();
 
 	/** Adds the specified song to the playlist.
 	The song is assumed to be present in m_DB (but not checked). */
@@ -123,18 +120,6 @@ private slots:
 
 	/** Deletes the selected items from the playlist. */
 	void deleteSelectedPlaylistItems();
-
-	/** Advances the playlist backwards.
-	Signature must match QPushButton::clicked(). */
-	void prevTrack(bool a_IsChecked);
-
-	/** Starts or stops the playback.
-	Signature must match QPushButton::clicked(). */
-	void playPause(bool a_IsChecked);
-
-	/** Advances the playlist forward.
-	Signature must match QPushButton::clicked(). */
-	void nextTrack(bool a_IsChecked);
 
 	/** Emitted by tblPlaylist when the user dblclicks a track. */
 	void trackDoubleClicked(const QModelIndex & a_Track);

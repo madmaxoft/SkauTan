@@ -185,6 +185,7 @@ IPlaylistItemPtr Player::currentTrack()
 		case psPlaying:
 		case psFadeOutToStop:
 		case psFadeOutToTrack:
+		case psPaused:
 		{
 			return m_Playlist->currentItem();
 		}
@@ -208,6 +209,31 @@ bool Player::isPlaying() const
 		case psPlaying:
 		case psFadeOutToStop:
 		case psFadeOutToTrack:
+		{
+			return true;
+		}
+		case psStopped:
+		case psPaused:
+		{
+			return false;
+		}
+	}
+	assert(!"Invalid state");
+	return false;
+}
+
+
+
+
+
+bool Player::isTrackLoaded() const
+{
+	switch (m_State)
+	{
+		case psPlaying:
+		case psFadeOutToStop:
+		case psFadeOutToTrack:
+		case psPaused:
 		{
 			return true;
 		}
@@ -257,6 +283,7 @@ void Player::nextTrack()
 	switch (m_State)
 	{
 		case psStopped:
+		case psPaused:
 		{
 			return;
 		}
@@ -293,6 +320,7 @@ void Player::prevTrack()
 	switch (m_State)
 	{
 		case psStopped:
+		case psPaused:
 		{
 			return;
 		}
@@ -324,6 +352,7 @@ void Player::startPausePlayback()
 	switch (m_State)
 	{
 		case psStopped:
+		case psPaused:
 		{
 			startPlayback();
 			return;
@@ -381,6 +410,12 @@ void Player::startPlayback()
 			qDebug() << "Player: Starting playback of track " << track->displayName();
 			m_Elapsed.start();
 			emit startingPlayback(track);
+			return;
+		}
+		case psPaused:
+		{
+			m_OutputThread->m_Output->resume();
+			return;
 		}
 	}
 }
@@ -395,7 +430,19 @@ void Player::pausePlayback()
 	{
 		return;
 	}
+	m_OutputThread->m_Output->suspend();
+}
 
+
+
+
+
+void Player::stopPlayback()
+{
+	if (m_State != psPlaying)
+	{
+		return;
+	}
 	fadeOut(psFadeOutToStop);
 }
 
@@ -418,6 +465,7 @@ void Player::jumpTo(int a_ItemIdx)
 			break;
 		}
 		case psStopped:
+		case psPaused:
 		{
 			startPlayback();
 			break;
@@ -458,51 +506,79 @@ void Player::deletePlaylistItem(IPlaylistItem * a_Item)
 
 void Player::outputStateChanged(QAudio::State a_NewState)
 {
-	if (a_NewState == QAudio::IdleState)
+	switch (a_NewState)
 	{
-		// The playe has become idle, which means there's no more audio to play.
-		// Either the song finished, or the fadeout was completed.
-		switch (m_State)
+		case QAudio::StoppedState:
+		case QAudio::IdleState:
 		{
-			case psPlaying:
+			// The player has become idle, which means there's no more audio to play.
+			// Either the song finished, or the fadeout was completed.
+			switch (m_State)
 			{
-				// Play the next song in the playlist, if any:
-				m_State = psStopped;
-				emit finishedPlayback(m_AudioDataSource);
-				m_AudioDataSource.reset();
-				m_CurrentTrack.reset();
-				if (m_Playlist->nextItem())
+				case psPlaying:
 				{
-					startPlayback();
+					// Play the next song in the playlist, if any:
+					m_State = psStopped;
+					emit finishedPlayback(m_AudioDataSource);
+					m_AudioDataSource.reset();
+					m_CurrentTrack.reset();
+					if (m_Playlist->nextItem())
+					{
+						startPlayback();
+					}
+					return;
 				}
-				return;
+				case psFadeOutToStop:
+				case psPaused:
+				{
+					// Stop playing completely:
+					m_State = psStopped;
+					emit finishedPlayback(m_AudioDataSource);
+					m_AudioDataSource.reset();
+					m_CurrentTrack.reset();
+					return;
+				}
+				case psFadeOutToTrack:
+				{
+					// Start playing the next scheduled track:
+					m_State = psStopped;
+					emit finishedPlayback(m_AudioDataSource);
+					m_AudioDataSource.reset();
+					m_CurrentTrack.reset();
+					startPlayback();
+					return;
+				}
+				case psStopped:
+				{
+					// Nothing needed
+					break;
+				}
 			}
-			case psFadeOutToStop:
-			{
-				// Stop playing completely:
-				m_State = psStopped;
-				emit finishedPlayback(m_AudioDataSource);
-				m_AudioDataSource.reset();
-				m_CurrentTrack.reset();
-				return;
-			}
-			case psFadeOutToTrack:
-			{
-				// Start playing the next scheduled track:
-				m_State = psStopped;
-				emit finishedPlayback(m_AudioDataSource);
-				m_AudioDataSource.reset();
-				m_CurrentTrack.reset();
-				startPlayback();
-				return;
-			}
-			case psStopped:
-			{
-				// Nothing needed
-				break;
-			}
+			return;
 		}
-		return;
+
+		case QAudio::SuspendedState:
+		{
+			m_State = psPaused;
+			return;
+		}
+
+		case QAudio::ActiveState:
+		{
+			if (m_State == psPaused)
+			{
+				m_State = psPlaying;
+			}
+			return;
+		}
+
+		#if (QT_VERSION >= 0x050900)
+			case QAudio::InterruptedState:  // Seems to be added in Qt 5.9; 883df8dfda760fdbe850303383ba098887abbf62
+			{
+				// No processing needed
+				return;
+			}
+		#endif
 	}
 }
 

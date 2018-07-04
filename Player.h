@@ -75,8 +75,12 @@ public:
 	Mainly used for visualisation. */
 	PlaybackBufferPtr playbackBuffer() const { return m_PlaybackBuffer; }
 
-	/** Returns true iff the player is currently playing back a track. */
+	/** Returns true iff the player is currently playing back a track.
+	If the player is paused, returns false. */
 	bool isPlaying() const;
+
+	/** Returns true iff the player currently has a track loaded (is playing it, or is paused while playing it) */
+	bool isTrackLoaded() const;
 
 
 protected:
@@ -88,6 +92,7 @@ protected:
 		psPlaying,         ///< The player is playing a track
 		psFadeOutToTrack,  ///< The player is fading out a track and will start playing m_Playlist's CurrentTrack once done.
 		psFadeOutToStop,   ///< The player is fading out a track and will stop playing once done.
+		psPaused,          ///< Playback has started and then been paused, can continue
 	};
 
 
@@ -162,18 +167,23 @@ public slots:
 	Ignored if the player is not playing anything. */
 	void prevTrack();
 
-	/** Starts playing the current track (in m_Playlist), if currently stopped.
-	Stops playing if the player is already playing something. */
+	/** Starts playing the current track (in m_Playlist), if currently stopped / paused.
+	Pause playing (with no fadeout) if the player is already playing something. */
 	void startPausePlayback();
 
-	/** Starts playing the current track (in m_Playlist), if currently stopped.
+	/** Starts playing the current track (in m_Playlist), if currently stopped / paused.
 	Ignored if the player is already playing something. */
 	void startPlayback();
 
 	/** Pauses the current playback.
-	Fades the current track out first.
+	Doesn't fade out, pauses immediately.
 	Ignored is the player is not playing anything. */
 	void pausePlayback();
+
+	/** Stops the current playback.
+	Fades the current track out first.
+	Ignored is the player is not playing anything. */
+	void stopPlayback();
 
 	/** Starts playing back the playlist item at the specified index.
 	Fades the current track first, if playing.

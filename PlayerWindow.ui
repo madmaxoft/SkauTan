@@ -407,21 +407,43 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Previous track (with fade-out)</string>
+          </property>
           <property name="text">
            <string notr="true">|&lt;</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="btnPlay">
+         <widget class="QPushButton" name="btnPlayPause">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Start playback / pause playback (NO fade-out)</string>
+          </property>
           <property name="text">
            <string notr="true">|&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btnStop">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Stop the playback (with fade-out)</string>
+          </property>
+          <property name="text">
+           <string notr="true">[ ]</string>
           </property>
          </widget>
         </item>
@@ -432,6 +454,9 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Next track (with fade-out)</string>
           </property>
           <property name="text">
            <string notr="true">&gt;|</string>
@@ -561,7 +586,8 @@
   <tabstop>btnTempoReset</tabstop>
   <tabstop>vsTempo</tabstop>
   <tabstop>btnPrev</tabstop>
-  <tabstop>btnPlay</tabstop>
+  <tabstop>btnPlayPause</tabstop>
+  <tabstop>btnStop</tabstop>
   <tabstop>btnNext</tabstop>
  </tabstops>
  <resources/>
