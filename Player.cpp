@@ -572,8 +572,8 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 			return;
 		}
 
-		#if (QT_VERSION >= 0x050900)
-			case QAudio::InterruptedState:  // Seems to be added in Qt 5.9; 883df8dfda760fdbe850303383ba098887abbf62
+		#if (QT_VERSION >= 0x050a00)
+			case QAudio::InterruptedState:  // Added in Qt 5.10
 			{
 				// No processing needed
 				return;
