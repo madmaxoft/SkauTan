@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFile>
+#include <RtMidi.h>
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"
@@ -15,6 +16,7 @@
 #include "Template.h"
 #include "Settings.h"
 #include "TempoDetector.h"
+#include "Utils.h"
 
 
 
@@ -66,6 +68,33 @@ void importDefaultTemplates(Database & a_DB)
 
 
 
+void midiInCallback(double a_TimeStamp, std::vector<unsigned char> * a_Message, void * a_UserData)
+{
+	Q_UNUSED(a_TimeStamp);
+	Q_UNUSED(a_UserData);
+	qDebug() << "Midi IN: " << Utils::toHex(QByteArray(reinterpret_cast<const char *>(a_Message->data()), static_cast<int>(a_Message->size())));
+}
+
+
+
+
+
+void testMidi()
+{
+	RtMidiIn midiIn;
+	midiIn.openPort(0);
+	midiIn.setCallback(midiInCallback, &midiIn);
+	RtMidiOut midiOut;
+	midiOut.openPort(1);
+	std::vector<unsigned char> msg{0xf0, 0x7e, 0x00, 0x06, 0x01, 0xf7};  // SysEx - device query
+	midiOut.sendMessage(&msg);
+	QThread::sleep(10);
+}
+
+
+
+
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -81,6 +110,9 @@ int main(int argc, char *argv[])
 		qRegisterMetaType<Song::SharedDataPtr>();
 		qRegisterMetaType<TempoDetector::ResultPtr>();
 		Settings::init("SkauTan.ini");
+
+		// DEBUG: Test the MIDI interface:
+		// testMidi();
 
 		// Create the main app objects:
 		ComponentCollection cc;
