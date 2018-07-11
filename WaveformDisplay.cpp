@@ -219,7 +219,7 @@ QSize WaveformDisplay::sizeHint() const
 
 void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
 {
-	if (m_PlaybackBuffer == nullptr)
+	if ((m_PlaybackBuffer == nullptr) || (m_Player == nullptr))
 	{
 		return;
 	}
@@ -229,10 +229,7 @@ void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
 		return;
 	}
 	qint64 x = std::max(std::min(a_Event->pos().x(), width()), 0);  // clamp x between 0 and width()
-	auto limit = static_cast<qint64>(m_PlaybackBuffer->bufferLimit());
-	auto bpf = static_cast<qint64>(m_PlaybackBuffer->format().bytesPerFrame());
-	int frame = static_cast<int>(x * limit / width() / bpf);
-	m_PlaybackBuffer->seekToFrame(frame);
+	m_Player->seekTo(m_PlaybackBuffer->duration() * x / width());
 }
 
 

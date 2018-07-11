@@ -69,6 +69,7 @@ PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 	connect(&m_Playlist, &Playlist::itemReplaced,       this, &PlaylistItemModel::playlistItemReplaced);
 	connect(&m_Playlist, &Playlist::itemInserted,       this, &PlaylistItemModel::playlistItemInserted);
 	connect(&m_Playlist, &Playlist::currentItemChanged, this, &PlaylistItemModel::playlistCurrentChanged);
+	connect(&m_Playlist, &Playlist::itemTimesChanged,   this, &PlaylistItemModel::playlistItemTimesChanged);
 }
 
 
@@ -246,6 +247,22 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colAuthor:            return item->displayAuthor();
 				case colTitle:             return item->displayTitle();
 				case colDisplayName:       return item->displayName();
+				case colTimeStart:
+				{
+					if (!item->m_PlaybackStarted.isNull())
+					{
+						return item->m_PlaybackStarted.toLocalTime().time().toString(Qt::ISODate);
+					}
+					return QVariant();
+				}
+				case colTimeEnd:
+				{
+					if (!item->m_PlaybackEnded.isNull())
+					{
+						return item->m_PlaybackEnded.toLocalTime().time().toString(Qt::ISODate);
+					}
+					return QVariant();
+				}
 			}
 			return QVariant();
 		}  // case Qt::DisplayRole
@@ -314,6 +331,8 @@ QVariant PlaylistItemModel::headerData(int a_Section, Qt::Orientation a_Orientat
 				case colTitle:             return tr("Title");
 				case colDisplayName:       return tr("Name");
 				case colReplace:           return tr("Rplc", "Replace");
+				case colTimeStart:         return tr("Start", "Time when playback started / will start");
+				case colTimeEnd:           return tr("End", "Time when playback ended / will end");
 			}
 			return QVariant();
 		}  // case Qt::DisplayRole
@@ -402,6 +421,16 @@ void PlaylistItemModel::playlistCurrentChanged(int a_CurrentItemIdx)
 		auto bottomRight = createIndex(oldItemIdx, colMax);
 		emit dataChanged(topLeft, bottomRight);
 	}
+}
+
+
+
+
+
+void PlaylistItemModel::playlistItemTimesChanged(int a_ItemIdx, IPlaylistItem * a_Item)
+{
+	Q_UNUSED(a_Item);
+	emit dataChanged(index(a_ItemIdx, 0), index(a_ItemIdx, colMax));
 }
 
 

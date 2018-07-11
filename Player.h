@@ -152,6 +152,10 @@ signals:
 	a_Source is the AudioDataSource chain that was playing. Used for proper termination (#118). */
 	void finishedPlayback(AudioDataSourcePtr a_Source);
 
+	/** Emitted after playback has completely stopped, either running out of playlist, or after psFadeOutToStop.
+	Note that this is different from finishedPlayback(), which is called after each track finishes playing. */
+	void stoppedPlayback();
+
 
 public slots:
 
