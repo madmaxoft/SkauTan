@@ -248,6 +248,44 @@ bool Playlist::isAtEnd() const
 
 
 
+bool Playlist::isValidIndex(int a_Index) const
+{
+	return (a_Index >= 0) && (a_Index < static_cast<int>(m_Items.size()));
+}
+
+
+
+
+
+void Playlist::updateItemsStartEndTimes(int a_StartIdx)
+{
+	assert(isValidIndex(a_StartIdx));
+	assert(a_StartIdx > m_CurrentItemIdx);  // Can only update track start times after the currently-playing track
+
+	auto started = (a_StartIdx > 0) ?
+		m_Items[static_cast<size_t>(a_StartIdx) - 1]->m_PlaybackEnded :
+		QDateTime::currentDateTimeUtc();
+	auto idx = a_StartIdx;
+	for (auto itr = m_Items.begin() + a_StartIdx, end = m_Items.end(); itr != end; ++itr, ++idx)
+	{
+		auto item = *itr;
+		auto dur = static_cast<int>(std::round(item->totalPlaybackDuration() * 1000));
+		auto ended = started.addMSecs(dur);
+		if ((started != item->m_PlaybackStarted) || (ended != item->m_PlaybackEnded))
+		{
+			// There's a change in this item, save it and emit it:
+			item->m_PlaybackStarted = started;
+			item->m_PlaybackEnded = ended;
+			emit itemTimesChanged(idx, item.get());
+		}
+		started = ended;
+	}
+}
+
+
+
+
+
 void Playlist::removeSong(SongPtr a_Song)
 {
 	int idx = 0;
@@ -270,3 +308,45 @@ void Playlist::removeSong(SongPtr a_Song)
 		itr = m_Items.erase(itr);
 	}
 }
+
+
+
+
+
+void Playlist::updateItemTimesFromCurrent()
+{
+	auto idx = m_CurrentItemIdx;
+	assert(isValidIndex(idx));
+	auto item = m_Items[static_cast<size_t>(idx)];
+	assert(item != nullptr);
+	// The current item's times have already been set in the Player, just emit the update signal now:
+	emit itemTimesChanged(idx, item.get());
+	if (isValidIndex(idx + 1))
+	{
+		updateItemsStartEndTimes(idx + 1);
+	}
+}
+
+
+
+
+
+void Playlist::eraseItemTimesAfterCurrent()
+{
+	if (!isValidIndex(m_CurrentItemIdx))
+	{
+		return;
+	}
+	auto idx = m_CurrentItemIdx + 1;
+	for (auto itr = m_Items.begin() + idx, end = m_Items.end(); itr != end; ++itr, ++idx)
+	{
+		auto item = *itr;
+		item->m_PlaybackStarted = QDateTime();
+		item->m_PlaybackEnded = QDateTime();
+		emit itemTimesChanged(idx, item.get());
+	}
+}
+
+
+
+

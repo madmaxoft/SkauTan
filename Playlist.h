@@ -97,6 +97,9 @@ public:
 	/** Returns true if the current item is the last in the playlist. */
 	bool isAtEnd() const;
 
+	/** Returns true iff the specified index is valid (there are at least that many tracks + 1 in the playlist). */
+	bool isValidIndex(int a_Index) const;
+
 
 protected:
 
@@ -108,6 +111,11 @@ protected:
 
 	/** If true, m_CurrentItem is being played back. */
 	bool m_IsPlaying;
+
+
+	/** Updates each items' start and end times, starting with the item at the specified index.
+	Emits the itemTimeChanged for each item for which the times changed. */
+	void updateItemsStartEndTimes(int a_StartIdx);
 
 
 signals:
@@ -127,11 +135,26 @@ signals:
 	/** Emitted after the index for the current item is changed. */
 	void currentItemChanged(int a_CurrentItemIdx);
 
+	/** Emitted after the specified item's start or end time changes. */
+	void itemTimesChanged(int a_Index, IPlaylistItem * a_Item);
+
 
 public slots:
 
 	/** Removes any playlist entries relevant to the specified song. */
 	void removeSong(SongPtr a_Song);
+
+	/** Emitted by the player when it starts playing this playlist's current item,
+	the currently-played item changes tempo (and hence playback end),
+	the user seeks in the current item,
+	or the user changed the item's duration limit.
+	Updates the items' start and end times, beginning with the one after the current item.
+	NOTE: The current item is expected to have its times updated by the caller before calling this slot. */
+	void updateItemTimesFromCurrent();
+
+	/** Emitted by the player when it stops playing at all.
+	Erases the items' start and end times for all items after the current one. */
+	void eraseItemTimesAfterCurrent();
 };
 
 using PlaylistPtr = std::shared_ptr<Playlist>;

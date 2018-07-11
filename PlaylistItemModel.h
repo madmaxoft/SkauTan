@@ -30,6 +30,8 @@ public:
 		colAuthor,
 		colTitle,
 		colDisplayName,
+		colTimeStart,
+		colTimeEnd,
 
 		colMax,
 	};
@@ -66,6 +68,9 @@ protected slots:
 
 	/** Emitted by m_Playlist when its index of the current item changes. */
 	void playlistCurrentChanged(int a_CurrentItemIdx);
+
+	/** Emitted by m_Playlist when an item's start or end time changed. */
+	void playlistItemTimesChanged(int a_ItemIdx, IPlaylistItem * a_Item);
 };
 
 

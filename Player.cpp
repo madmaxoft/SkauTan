@@ -84,7 +84,9 @@ Player::Player(QObject * a_Parent):
 	m_OutputThread = std::make_unique<OutputThread>(*this, m_Format);
 	m_OutputThread->start(QThread::HighPriority);
 
-	connect(m_Playlist.get(), &Playlist::itemDeleting, this, &Player::deletePlaylistItem);
+	connect(m_Playlist.get(), &Playlist::itemDeleting,  this,             &Player::deletePlaylistItem);
+	connect(this,             &Player::startedPlayback, m_Playlist.get(), &Playlist::updateItemTimesFromCurrent);
+	connect(this,             &Player::stoppedPlayback, m_Playlist.get(), &Playlist::eraseItemTimesAfterCurrent);
 }
 
 
@@ -172,6 +174,10 @@ void Player::seekTo(double a_Time)
 		return;
 	}
 	m_AudioDataSource->seekTo(a_Time);
+	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
+	{
+		m_Playlist->updateItemTimesFromCurrent();
+	}
 }
 
 
@@ -267,6 +273,12 @@ void Player::setTempo(qreal a_NewTempo)
 		return;
 	}
 	m_AudioDataSource->setTempo(a_NewTempo);
+	assert(m_CurrentTrack != nullptr);
+	m_CurrentTrack->setTempoCoeff(a_NewTempo);
+	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
+	{
+		m_Playlist->updateItemTimesFromCurrent();
+	}
 }
 
 
@@ -513,6 +525,10 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 		{
 			// The player has become idle, which means there's no more audio to play.
 			// Either the song finished, or the fadeout was completed.
+			if (m_CurrentTrack != nullptr)
+			{
+				m_CurrentTrack->m_PlaybackEnded = QDateTime::currentDateTimeUtc();
+			}
 			switch (m_State)
 			{
 				case psPlaying:
@@ -526,6 +542,10 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 					{
 						startPlayback();
 					}
+					else
+					{
+						emit stoppedPlayback();
+					}
 					return;
 				}
 				case psFadeOutToStop:
@@ -536,6 +556,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 					emit finishedPlayback(m_AudioDataSource);
 					m_AudioDataSource.reset();
 					m_CurrentTrack.reset();
+					emit stoppedPlayback();
 					return;
 				}
 				case psFadeOutToTrack:
@@ -664,7 +685,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 		std::make_shared<AudioTempoChange>(
 		m_Player.m_PlaybackBuffer
 	));
-	audioDataSource->setTempo(m_Player.m_Tempo);
+	audioDataSource->setTempo(a_Track->tempoCoeff());
 	m_Player.m_AudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
 	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;
@@ -672,6 +693,9 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 	m_Output->start(m_Player.m_AudioDataSource.get());
 	m_Output->setNotifyInterval(100);
 	m_Player.m_State = psPlaying;
+	a_Track->m_PlaybackStarted = QDateTime::currentDateTimeUtc();
+	auto dur = static_cast<qint64>(audioDataSource->remainingTime() * 1000);
+	a_Track->m_PlaybackEnded = a_Track->m_PlaybackStarted.addMSecs(dur);
 	QMetaObject::invokeMethod(
 		&m_Player, "startedPlayback",
 		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, m_Player.m_PlaybackBuffer)
