@@ -743,13 +743,13 @@ void PlayerWindow::removeDurationLimit()
 void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 {
 	// Is it a replace-able song:
-	auto idx = static_cast<size_t>(a_Index.row());
+	auto idx = a_Index.row();
 	auto player = m_Components.get<Player>();
-	if (idx >= player->playlist().items().size())
+	if (!player->playlist().isValidIndex(idx))
 	{
 		return;
 	}
-	auto pli = player->playlist().items()[idx];
+	auto pli = player->playlist().items()[static_cast<size_t>(idx)];
 	auto pls = std::dynamic_pointer_cast<PlaylistItemSong>(pli);
 	if (pls == nullptr)
 	{

@@ -88,7 +88,7 @@ public:
 
 	/** Replaces the item at the specified index with the specified item.
 	If the index is invalid, does nothing. */
-	void replaceItem(size_t a_Index, IPlaylistItemPtr a_Item);
+	void replaceItem(int a_Index, IPlaylistItemPtr a_Item);
 
 	/** Inserts the specified item so that it is on the specified index.
 	If the index is out of bounds, appends the item to the end of the playlist. */
