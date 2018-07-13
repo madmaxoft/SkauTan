@@ -27,6 +27,7 @@ void Playlist::addItem(IPlaylistItemPtr a_Item)
 {
 	m_Items.push_back(a_Item);
 	emit itemAdded(a_Item.get());
+	updateItemTimesFromCurrent();
 }
 
 
@@ -211,14 +212,18 @@ bool Playlist::addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_It
 
 
 
-void Playlist::replaceItem(size_t a_Index, IPlaylistItemPtr a_Item)
+void Playlist::replaceItem(int a_Index, IPlaylistItemPtr a_Item)
 {
-	if (a_Index >= m_Items.size())
+	if (!isValidIndex(a_Index))
 	{
 		return;
 	}
-	m_Items[a_Index] = a_Item;
+	m_Items[static_cast<size_t>(a_Index)] = a_Item;
 	emit itemReplaced(static_cast<int>(a_Index), a_Item.get());
+	if (a_Index > m_CurrentItemIdx)
+	{
+		updateItemTimesFromCurrent();
+	}
 }
 
 
@@ -233,6 +238,10 @@ void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
 	}
 	m_Items.insert(m_Items.begin() + a_Index, a_Item);
 	emit itemInserted(a_Index, a_Item.get());
+	if (a_Index > m_CurrentItemIdx)
+	{
+		updateItemTimesFromCurrent();
+	}
 }
 
 
