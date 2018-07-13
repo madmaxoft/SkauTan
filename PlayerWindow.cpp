@@ -249,11 +249,15 @@ void PlayerWindow::refreshAppendUponCompletion()
 
 void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 {
-	const auto & items = m_Components.get<Player>()->playlist().items();
+	auto player = m_Components.get<Player>();
+	const auto & items = player->playlist().items();
 	for (const auto & row: m_UI->tblPlaylist->selectionModel()->selectedRows())
 	{
 		items[static_cast<size_t>(row.row())]->setDurationLimit(a_NewDurationLimit);
 	}
+	// Update the items, starting with the current one:
+	// (No changes to historic data)
+	player->updateCurrentTrackEndTime();
 }
 
 
