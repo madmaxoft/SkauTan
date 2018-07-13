@@ -156,9 +156,6 @@ private slots:
 	/** Removes the selected songs from the library; removes from playlist. */
 	void removeSongsFromLibrary();
 
-	/** Removes the selected songs from the playlist. */
-	void removeSongsFromPlaylist();
-
 	/** Jumps to the first selected playlist item and starts playing it.
 	If the item is already playing, ignored.
 	If another item is already playing, fades it out first. */

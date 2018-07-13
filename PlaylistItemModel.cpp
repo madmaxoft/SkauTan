@@ -133,7 +133,7 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 	while (!rows.empty())
 	{
 		auto row = rows.back();
-		m_Playlist.moveItem(static_cast<size_t>(row), static_cast<size_t>(a_Row));
+		m_Playlist.moveItem(row, a_Row);
 		if (minRow > row)
 		{
 			minRow = row;
@@ -148,6 +148,7 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 			a_Row -= 1;  // Moving an item down the list means the destination index moved as well.
 		}
 	}
+	m_Playlist.updateItemTimesFromCurrent();
 	emit dataChanged(createIndex(minRow, 0), createIndex(maxRow, colMax - 1));
 	return true;
 }

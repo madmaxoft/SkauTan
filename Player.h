@@ -197,10 +197,10 @@ public slots:
 	/** If the specified track is currently playing, stops playback. */
 	void deletePlaylistItem(IPlaylistItem * a_Track);
 
-	/** Updates the current playlist item's PlaybackEnded time based on the remaining time.
-	Ignored if not playing anything.
-	If the time was changed, updates also the following items on the playlist. */
-	void updateCurrentTrackEndTime();
+	/** Updates the current playlist item's PlaybackEnded time based on the remaining time,
+	and all subsequent tracks' PlaybackStarted and PlaybackEnded times.
+	Ignored if not playing anything. */
+	void updateTrackTimesFromCurrent();
 
 
 protected slots:

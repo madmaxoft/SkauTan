@@ -34,13 +34,13 @@ void Playlist::addItem(IPlaylistItemPtr a_Item)
 
 
 
-void Playlist::moveItem(size_t a_FromIdx, size_t a_ToIdx)
+void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 {
-	assert(a_FromIdx < m_Items.size());
+	assert(a_FromIdx < static_cast<int>(m_Items.size()));
 	assert(
-		(a_ToIdx < m_Items.size()) ||
+		(a_ToIdx < static_cast<int>(m_Items.size())) ||
 		(
-			(a_ToIdx == m_Items.size()) &&
+			(a_ToIdx == static_cast<int>(m_Items.size())) &&
 			(a_FromIdx < a_ToIdx)
 		)
 	);
@@ -49,25 +49,56 @@ void Playlist::moveItem(size_t a_FromIdx, size_t a_ToIdx)
 	{
 		// No action needed
 	}
-	auto stash = m_Items[a_FromIdx];
+	auto stash = m_Items[static_cast<size_t>(a_FromIdx)];
 	if (a_FromIdx > a_ToIdx)
 	{
 		// Item moving up the list
-		for (size_t i = a_FromIdx; i > a_ToIdx; --i)
+		for (int i = a_FromIdx; i > a_ToIdx; --i)
 		{
-			m_Items[i] = m_Items[i - 1];
+			m_Items[static_cast<size_t>(i)] = m_Items[static_cast<size_t>(i - 1)];
 		}
 	}
 	else
 	{
 		// Item moving down the list:
 		a_ToIdx -= 1;
-		for (size_t i = a_FromIdx; i < a_ToIdx; ++i)
+		for (int i = a_FromIdx; i < a_ToIdx; ++i)
 		{
-			m_Items[i] = m_Items[i + 1];
+			m_Items[static_cast<size_t>(i)] = m_Items[static_cast<size_t>(i + 1)];
 		}
 	}
-	m_Items[a_ToIdx] = stash;
+	m_Items[static_cast<size_t>(a_ToIdx)] = stash;
+
+	// If crossing the m_CurrentIdx, adjust it for the change:
+	if (m_CurrentItemIdx >= 0)
+	{
+		auto oldIdx = m_CurrentItemIdx;
+		if (m_CurrentItemIdx == a_FromIdx)
+		{
+			// Moving the current item
+			m_CurrentItemIdx = a_ToIdx;
+		}
+		else if ((m_CurrentItemIdx > a_FromIdx) && (m_CurrentItemIdx < a_ToIdx))
+		{
+			m_CurrentItemIdx -= 1;
+		}
+		else if ((m_CurrentItemIdx < a_FromIdx) && (m_CurrentItemIdx >= a_ToIdx))
+		{
+			m_CurrentItemIdx += 1;
+		}
+		if (oldIdx != m_CurrentItemIdx)
+		{
+			emit currentItemChanged(m_CurrentItemIdx);
+		}
+	}
+
+	// If the item was moved above the currently-playing one, remove the item's playback times:
+	if (a_ToIdx < m_CurrentItemIdx)
+	{
+		stash->m_PlaybackStarted = QDateTime();
+		stash->m_PlaybackEnded = QDateTime();
+		emit itemTimesChanged(a_ToIdx, stash.get());
+	}
 }
 
 

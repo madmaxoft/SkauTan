@@ -91,7 +91,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(&m_UpdateTimer,               &QTimer::timeout,                     this,         &PlayerWindow::periodicUIUpdate);
 	connect(m_UI->actDeleteFromDisk,      &QAction::triggered,                  this,         &PlayerWindow::deleteSongsFromDisk);
 	connect(m_UI->actRemoveFromLibrary,   &QAction::triggered,                  this,         &PlayerWindow::removeSongsFromLibrary);
-	connect(m_UI->actRemoveFromPlaylist,  &QAction::triggered,                  this,         &PlayerWindow::removeSongsFromPlaylist);
+	connect(m_UI->actRemoveFromPlaylist,  &QAction::triggered,                  this,         &PlayerWindow::deleteSelectedPlaylistItems);
 	connect(m_UI->actPlay,                &QAction::triggered,                  this,         &PlayerWindow::jumpToAndPlay);
 	connect(m_UI->actSetDurationLimit,    &QAction::triggered,                  this,         &PlayerWindow::setDurationLimit);
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                  this,         &PlayerWindow::removeDurationLimit);
@@ -257,7 +257,7 @@ void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 	}
 	// Update the items, starting with the current one:
 	// (No changes to historic data)
-	player->updateCurrentTrackEndTime();
+	player->updateTrackTimesFromCurrent();
 }
 
 
@@ -361,6 +361,7 @@ void PlayerWindow::deleteSelectedPlaylistItems()
 		player->playlist().deleteItem(row - numErased);
 		numErased += 1;  // Each erased row shifts indices upwards by one
 	}
+	player->updateTrackTimesFromCurrent();
 }
 
 
@@ -624,20 +625,6 @@ void PlayerWindow::removeSongsFromLibrary()
 	{
 		m_Components.get<Database>()->removeSong(*song, false);
 	}
-}
-
-
-
-
-
-void PlayerWindow::removeSongsFromPlaylist()
-{
-	std::vector<int> rows;
-	for (const auto & idx: m_UI->tblPlaylist->selectionModel()->selectedRows())
-	{
-		rows.push_back(idx.row());
-	}
-	m_Components.get<Player>()->playlist().deleteItems(std::move(rows));
 }
 
 
