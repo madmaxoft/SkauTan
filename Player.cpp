@@ -516,6 +516,24 @@ void Player::deletePlaylistItem(IPlaylistItem * a_Item)
 
 
 
+void Player::updateCurrentTrackEndTime()
+{
+	if ((m_CurrentTrack == nullptr) || (m_AudioDataSource == nullptr))
+	{
+		return;
+	}
+	qDebug() << "Updating track end time";
+	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
+	{
+		qDebug() << "Updating following track times";
+		m_Playlist->updateItemTimesFromCurrent();
+	}
+}
+
+
+
+
+
 void Player::outputStateChanged(QAudio::State a_NewState)
 {
 	switch (a_NewState)
@@ -694,8 +712,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 	m_Output->setNotifyInterval(100);
 	m_Player.m_State = psPlaying;
 	a_Track->m_PlaybackStarted = QDateTime::currentDateTimeUtc();
-	auto dur = static_cast<qint64>(audioDataSource->remainingTime() * 1000);
-	a_Track->m_PlaybackEnded = a_Track->m_PlaybackStarted.addMSecs(dur);
+	QMetaObject::invokeMethod(&m_Player, "updateCurrentTrackEndTime");
 	QMetaObject::invokeMethod(
 		&m_Player, "startedPlayback",
 		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, m_Player.m_PlaybackBuffer)

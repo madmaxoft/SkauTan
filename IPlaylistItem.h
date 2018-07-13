@@ -112,9 +112,13 @@ public:
 		auto end = QDateTime::currentDateTimeUtc().addMSecs(remainingMSecs);
 		auto lim = durationLimit();
 		if (
-			(lim <= 0) ||
-			(m_PlaybackStarted.msecsTo(end) < lim * 1000)
+			(lim > 0) &&
+			(m_PlaybackStarted.msecsTo(end) > lim * 1000)
 		)
+		{
+			end = m_PlaybackStarted.addMSecs(static_cast<qint64>(lim * 1000));
+		}
+		if (m_PlaybackEnded != end)
 		{
 			m_PlaybackEnded = end;
 			return true;
