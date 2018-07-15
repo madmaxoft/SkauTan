@@ -499,6 +499,26 @@ void Player::jumpTo(int a_ItemIdx)
 
 
 
+
+
+void Player::setKeepTempo(bool a_KeepTempo)
+{
+	m_ShouldKeepTempo = a_KeepTempo;
+}
+
+
+
+
+
+void Player::setKeepVolume(bool a_KeepVolume)
+{
+	m_ShouldKeepVolume = a_KeepVolume;
+}
+
+
+
+
+
 void Player::deletePlaylistItem(IPlaylistItem * a_Item)
 {
 	if (m_State != psPlaying)
@@ -699,7 +719,19 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 		std::make_shared<AudioTempoChange>(
 		m_Player.m_PlaybackBuffer
 	));
-	audioDataSource->setTempo(a_Track->tempoCoeff());
+	if (m_Player.m_ShouldKeepTempo.load())
+	{
+		audioDataSource->setTempo(m_Player.m_Tempo);
+	}
+	else
+	{
+		auto tempoCoeff = a_Track->tempoCoeff();
+		audioDataSource->setTempo(tempoCoeff);
+		QMetaObject::invokeMethod(
+			&m_Player, "tempoCoeffChanged",
+			Q_ARG(qreal, tempoCoeff)
+		);
+	}
 	m_Player.m_AudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
 	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;

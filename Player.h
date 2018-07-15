@@ -132,6 +132,14 @@ protected:
 	/** The track that is currently playing. */
 	IPlaylistItemPtr m_CurrentTrack;
 
+	/** If true, the tempo in m_Tempo is set for all tracks played.
+	If false, the tempo is reset to each track's default tempo on playback start. */
+	std::atomic<bool> m_ShouldKeepTempo;
+
+	/** If true, the tempo in m_Volume is set for all tracks played.
+	If false, the volume is reset to each track's default volume on playback start. */
+	std::atomic<bool> m_ShouldKeepVolume;
+
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
 	Must not be fading out already. */
@@ -155,6 +163,10 @@ signals:
 	/** Emitted after playback has completely stopped, either running out of playlist, or after psFadeOutToStop.
 	Note that this is different from finishedPlayback(), which is called after each track finishes playing. */
 	void stoppedPlayback();
+
+	/** Emitted when the current tempo is changed from within the player,
+	such as loading a new track with pre-set default tempo and KeepTempo turned off. */
+	void tempoCoeffChanged(qreal a_TempoCoeff);
 
 
 public slots:
@@ -201,6 +213,12 @@ public slots:
 	and all subsequent tracks' PlaybackStarted and PlaybackEnded times.
 	Ignored if not playing anything. */
 	void updateTrackTimesFromCurrent();
+
+	/** Sets the KeepTempo feature on or off. */
+	void setKeepTempo(bool a_KeepTempo);
+
+	/** Sets the KeepVolume feature on or off. */
+	void setKeepVolume(bool a_KeepVolume);
 
 
 protected slots:

@@ -75,6 +75,11 @@ private:
 	Used for detecting whether to change the UI. */
 	int m_LastLibraryRescanQueue;
 
+	/** Set to true while updating the UI as a reaction to an internal event.
+	If true, the changes in the UI shouldn't be propagated further. */
+	bool m_IsInternalChange;
+
+
 	/** Sets the local rating for the selected songs. */
 	void rateSelectedSongs(double a_LocalRating);
 
@@ -180,6 +185,11 @@ private slots:
 	/** Emitted by Player after starting playback of a new track.
 	Used to append another round from template in cbAppendUponCompletion, if at playlist end and allowed by the user. */
 	void playerStartedPlayback();
+
+	/** Emitted by Player after changing the tempo from within the player,
+	such as loading a new track with pre-set default tempo and KeepTempo turned off.
+	Updates the Tempo UI. */
+	void tempoCoeffChanged(qreal a_TempoCoeff);
 };
 
 

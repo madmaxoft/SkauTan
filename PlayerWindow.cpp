@@ -101,6 +101,9 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this,         &PlayerWindow::showPlaylistContextMenu);
 	connect(m_UI->waveform,               &WaveformDisplay::songChanged,        db.get(),     &Database::saveSong);
 	connect(player.get(),                 &Player::startedPlayback,             this,         &PlayerWindow::playerStartedPlayback);
+	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                  player.get(), &Player::setKeepTempo);
+	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                  player.get(), &Player::setKeepVolume);
+	connect(player.get(),                 &Player::tempoCoeffChanged,           this,         &PlayerWindow::tempoCoeffChanged);
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -112,8 +115,16 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
 	m_UI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
 	Settings::loadHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
+
+	// Load checkboxes from the last session:
 	m_UI->chbImmediatePlayback->setChecked(Settings::loadValue("PlayerWindow", "chbImmediatePlayback.isChecked", true).toBool());
 	m_UI->chbAppendUponCompletion->setChecked(Settings::loadValue("PlayerWindow", "chbAppendUponCompletion.isChecked", true).toBool());
+	auto keepTempo = Settings::loadValue("PlayerWindow", "chbKeepTempo.isChecked", false).toBool();
+	auto keepVolume = Settings::loadValue("PlayerWindow", "chbKeepVolume.isChecked", false).toBool();
+	m_UI->chbKeepTempo->setChecked(keepTempo);
+	m_UI->chbKeepVolume->setChecked(keepVolume);
+	player->setKeepTempo(keepTempo);
+	player->setKeepVolume(keepVolume);
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = m_UI->btnTempoReset->fontMetrics();
@@ -156,6 +167,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 PlayerWindow::~PlayerWindow()
 {
 	Settings::saveValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", m_UI->cbCompletionAppendTemplate->currentText());
+	Settings::saveValue("PlayerWindow", "chbKeepVolume.isChecked", m_UI->chbKeepVolume->isChecked());
+	Settings::saveValue("PlayerWindow", "chbKeepTempo.isChecked", m_UI->chbKeepTempo->isChecked());
 	Settings::saveValue("PlayerWindow", "chbImmediatePlayback.isChecked", m_UI->chbImmediatePlayback->isChecked());
 	Settings::saveValue("PlayerWindow", "chbAppendUponCompletion.isChecked", m_UI->chbAppendUponCompletion->isChecked());
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
@@ -418,7 +431,10 @@ void PlayerWindow::tempoValueChanged(int a_NewValue)
 	{
 		m_UI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
 	}
-	m_Components.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
+	if (!m_IsInternalChange)
+	{
+		m_Components.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
+	}
 }
 
 
@@ -800,4 +816,16 @@ void PlayerWindow::playerStartedPlayback()
 		return;
 	}
 	m_Components.get<Player>()->playlist().addFromTemplate(*m_Components.get<Database>(), *selTemplate);
+}
+
+
+
+
+
+void PlayerWindow::tempoCoeffChanged(qreal a_TempoCoeff)
+{
+	auto value = static_cast<int>((a_TempoCoeff * 100 - 100) * 3);
+	m_IsInternalChange = true;
+	m_UI->vsTempo->setValue(value);
+	m_IsInternalChange = false;
 }
