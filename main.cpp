@@ -81,10 +81,25 @@ void midiInCallback(double a_TimeStamp, std::vector<unsigned char> * a_Message, 
 
 void testMidi()
 {
+	// List input ports:
 	RtMidiIn midiIn;
+	auto countIn = midiIn.getPortCount();
+	for (unsigned i = 0; i < countIn; ++i)
+	{
+		qDebug() << "Midi IN " << i << ": " << midiIn.getPortName(i).c_str();
+	}
+
+	// List output ports:
+	RtMidiOut midiOut;
+	auto countOut = midiOut.getPortCount();
+	for (unsigned i = 0; i < countOut; ++i)
+	{
+		qDebug() << "Midi OUT " << i << ": " << midiOut.getPortName(i).c_str();
+	}
+
+	// Try detecting a MIDI controller:
 	midiIn.openPort(0);
 	midiIn.setCallback(midiInCallback, &midiIn);
-	RtMidiOut midiOut;
 	midiOut.openPort(1);
 	std::vector<unsigned char> msg{0xf0, 0x7e, 0x00, 0x06, 0x01, 0xf7};  // SysEx - device query
 	midiOut.sendMessage(&msg);
