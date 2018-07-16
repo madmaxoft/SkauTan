@@ -471,7 +471,7 @@ void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
 		{
 			bool isOK;
 			auto durationLimit = Utils::parseTime(a_Item->text(), isOK);
-			if (isOK)
+			if (isOK && !a_Item->text().isEmpty())
 			{
 				item->setDurationLimit(durationLimit);
 				m_IsInternalChange = true;

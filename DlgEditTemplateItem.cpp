@@ -403,14 +403,22 @@ void DlgEditTemplateItem::save()
 		m_Item.setBgColor(c);
 	}
 	bool isOK;
-	auto durationLimit = Utils::parseTime(m_UI->leDurationLimit->text(), isOK);
-	if (isOK)
+	auto dur = m_UI->leDurationLimit->text();
+	if (dur.isEmpty())
 	{
-		m_Item.setDurationLimit(durationLimit);
+		m_Item.resetDurationLimit();
 	}
 	else
 	{
-		m_Item.resetDurationLimit();
+		auto durationLimit = Utils::parseTime(dur, isOK);
+		if (isOK)
+		{
+			m_Item.setDurationLimit(durationLimit);
+		}
+		else
+		{
+			m_Item.resetDurationLimit();
+		}
 	}
 }
 
