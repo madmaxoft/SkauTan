@@ -95,10 +95,10 @@ private:
 	/** Sets the specified duration limit for all playlist items selected in m_tblPlaylist. */
 	void setSelectedItemsDurationLimit(double a_NewDurationLimit);
 
-	/** Returns the template that the user has chosen to append upon playlist completion.
-	Returns a valid template even if the checkbox is unchecked (so that it can be used for preserving
+	/** Returns the template or template item that the user has chosen to append upon playlist completion.
+	Returns a valid template / item even if the checkbox is unchecked (so that it can be used for preserving
 	the combobox selection when refreshing). */
-	TemplatePtr templateToAppendUponCompletion() const;
+	QVariant objectToAppendUponCompletion() const;
 
 
 private slots:

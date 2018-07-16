@@ -382,6 +382,7 @@ protected:
 using TemplatePtr = std::shared_ptr<Template>;
 
 Q_DECLARE_METATYPE(TemplatePtr);
+Q_DECLARE_METATYPE(Template::ItemPtr);
 
 
 

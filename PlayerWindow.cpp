@@ -229,7 +229,12 @@ void PlayerWindow::refreshQuickPlayer()
 
 void PlayerWindow::refreshAppendUponCompletion()
 {
-	auto selTemplate = templateToAppendUponCompletion();
+	// Store the current selection:
+	auto selObj = objectToAppendUponCompletion();
+	auto selTemplate = selObj.value<TemplatePtr>();
+	auto selItem = selObj.value<Template::ItemPtr>();
+
+	// Insert templates:
 	m_UI->cbCompletionAppendTemplate->clear();
 	auto tmpls = m_Components.get<Database>()->templates();
 	std::sort(tmpls.begin(), tmpls.end(),
@@ -242,6 +247,23 @@ void PlayerWindow::refreshAppendUponCompletion()
 	{
 		m_UI->cbCompletionAppendTemplate->addItem(tmpl->displayName(), QVariant::fromValue(tmpl));
 		if (tmpl == selTemplate)
+		{
+			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
+		}
+	}
+
+	// Insert favorite template items:
+	auto items = m_Components.get<Database>()->getFavoriteTemplateItems();
+	std::sort(items.begin(), items.end(),
+		[](Template::ItemPtr a_Item1, Template::ItemPtr a_Item2)
+		{
+			return (a_Item1->displayName() < a_Item2->displayName());
+		}
+	);
+	for (const auto & item: items)
+	{
+		m_UI->cbCompletionAppendTemplate->addItem(item->displayName(), QVariant::fromValue(item));
+		if (item == selItem)
 		{
 			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
 		}
@@ -269,9 +291,9 @@ void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 
 
 
-TemplatePtr PlayerWindow::templateToAppendUponCompletion() const
+QVariant PlayerWindow::objectToAppendUponCompletion() const
 {
-	return m_UI->cbCompletionAppendTemplate->currentData().value<TemplatePtr>();
+	return m_UI->cbCompletionAppendTemplate->currentData();
 }
 
 
@@ -803,13 +825,17 @@ void PlayerWindow::playerStartedPlayback()
 	}
 
 	// Append:
-	auto selTemplate = templateToAppendUponCompletion();
-	if (selTemplate == nullptr)
+	auto selObj = objectToAppendUponCompletion();
+	auto player = m_Components.get<Player>();
+	auto db = m_Components.get<Database>();
+	if (selObj.value<TemplatePtr>() != nullptr)
 	{
-		qDebug() << "The user wants to append upon completion, but the template is not chosen";
-		return;
+		player->playlist().addFromTemplate(*db, *selObj.value<TemplatePtr>());
 	}
-	m_Components.get<Player>()->playlist().addFromTemplate(*m_Components.get<Database>(), *selTemplate);
+	else if (selObj.value<Template::ItemPtr>() != nullptr)
+	{
+		player->playlist().addFromTemplateItem(*db, selObj.value<Template::ItemPtr>());
+	}
 }
 
 
