@@ -45,23 +45,11 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->tblPlaylist->setItemDelegate(m_PlaylistDelegate.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_UI->waveform->setPlayer(*m_Components.get<Player>());
-	QFont fnt(m_UI->lblPosition->font());
-	if (fnt.pixelSize() > 0)
-	{
-		fnt.setPixelSize(fnt.pixelSize() * 2);
-	}
-	else
-	{
-		fnt.setPointSize(fnt.pointSize() * 2);
-	}
-	m_UI->lblTotalTime->setFont(fnt);
-	m_UI->lblPosition->setFont(fnt);
-	m_UI->lblRemaining->setFont(fnt);
-	/*
-	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("000:00"));
-	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("000:00"));
-	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
-	*/
+
+	// Set labels' minimum width to avoid layout changes in runtime:
+	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("00:00"));
+	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("00:00"));
+	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-00:00"));
 
 	// Decorate the splitter handle with 3 sunken lines:
 	auto lay = new QVBoxLayout(m_UI->splitter->handle(1));
