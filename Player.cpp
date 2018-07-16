@@ -99,7 +99,11 @@ Player::~Player()
 	if (outputThread != nullptr)
 	{
 		outputThread->quit();
-		outputThread->wait();
+		if (!outputThread->wait(5000))
+		{
+			assert(!"Player output thread cannot be terminated, abandoning.");
+			qWarning("Player output thread cannot be terminated, abandoning.");
+		}
 	}
 }
 
