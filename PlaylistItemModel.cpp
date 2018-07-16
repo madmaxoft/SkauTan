@@ -279,6 +279,15 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			return font;
 		}
 
+		case Qt::BackgroundRole:
+		{
+			if (a_Index.row() != m_CurrentItemIdx)
+			{
+				return QVariant();
+			}
+			return QBrush(QColor(0xdf, 0xdf, 0xdf));  // TODO: Some color from the platform style?
+		}
+
 		case Qt::DecorationRole:
 		{
 			if (
