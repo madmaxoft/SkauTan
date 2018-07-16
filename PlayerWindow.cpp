@@ -55,9 +55,13 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		fnt.setPointSize(fnt.pointSize() * 2);
 	}
 	m_UI->lblTotalTime->setFont(fnt);
+	m_UI->lblPosition->setFont(fnt);
+	m_UI->lblRemaining->setFont(fnt);
+	/*
 	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("000:00"));
 	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("000:00"));
 	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-000:00"));
+	*/
 
 	// Decorate the splitter handle with 3 sunken lines:
 	auto lay = new QVBoxLayout(m_UI->splitter->handle(1));
@@ -695,9 +699,11 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 	playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, itemSh));
 	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
 	{
-		player->pausePlayback();
-		playlist.setCurrentItem(idx);
-		player->startPlayback();
+		player->jumpTo(idx);
+		if (!player->isPlaying())
+		{
+			player->startPlayback();
+		}
 	}
 	m_UI->tblPlaylist->selectRow(idx);
 }
