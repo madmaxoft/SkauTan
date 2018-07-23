@@ -197,6 +197,22 @@ private slots:
 	/** Emitted when the user selects Save Playlist from the Tools menu.
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();
+
+	/** The user has connected a recognized midi controller. */
+	void midiControllerConnected(const QString & a_PortName);
+
+	/** The midi controller was disconnected. */
+	void midiControllerRemoved();
+
+	/** The midi controller's tempo slider was moved. */
+	void midiControllerSetTempoCoeff(qreal a_TempoCoeff);
+
+	/** The mii controller's volume slider was moved. */
+	void midiControllerSetVolume(qreal a_Volume);
+
+	void midiControllerNavigateUp();
+
+	void midiControllerNavigateDown();
 };
 
 

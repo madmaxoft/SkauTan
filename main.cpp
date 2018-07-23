@@ -17,6 +17,7 @@
 #include "Settings.h"
 #include "TempoDetector.h"
 #include "Utils.h"
+#include "MidiControllers.h"
 
 
 
@@ -79,37 +80,6 @@ void midiInCallback(double a_TimeStamp, std::vector<unsigned char> * a_Message, 
 
 
 
-void testMidi()
-{
-	// List input ports:
-	RtMidiIn midiIn;
-	auto countIn = midiIn.getPortCount();
-	for (unsigned i = 0; i < countIn; ++i)
-	{
-		qDebug() << "Midi IN " << i << ": " << midiIn.getPortName(i).c_str();
-	}
-
-	// List output ports:
-	RtMidiOut midiOut;
-	auto countOut = midiOut.getPortCount();
-	for (unsigned i = 0; i < countOut; ++i)
-	{
-		qDebug() << "Midi OUT " << i << ": " << midiOut.getPortName(i).c_str();
-	}
-
-	// Try detecting a MIDI controller:
-	midiIn.openPort(0);
-	midiIn.setCallback(midiInCallback, &midiIn);
-	midiOut.openPort(1);
-	std::vector<unsigned char> msg{0xf0, 0x7e, 0x00, 0x06, 0x01, 0xf7};  // SysEx - device query
-	midiOut.sendMessage(&msg);
-	QThread::sleep(10);
-}
-
-
-
-
-
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -126,15 +96,13 @@ int main(int argc, char *argv[])
 		qRegisterMetaType<TempoDetector::ResultPtr>();
 		Settings::init("SkauTan.ini");
 
-		// DEBUG: Test the MIDI interface:
-		// testMidi();
-
 		// Create the main app objects:
 		ComponentCollection cc;
 		auto mainDB = cc.addNew<Database>();
 		auto scanner = cc.addNew<MetadataScanner>();
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
 		auto player = cc.addNew<Player>();
+		auto midiControllers = cc.addNew<MidiControllers>();
 
 		// Connect the main objects together:
 		app.connect(mainDB.get(),  &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);

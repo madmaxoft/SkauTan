@@ -97,6 +97,7 @@ SOURCES += \
 	LengthHashCalculator.cpp \
 	DlgRemovedSongs.cpp \
 	ComponentCollection.cpp \
+	MidiControllers.cpp \
 	DlgImportDB.cpp \
 	DatabaseImport.cpp \
 
@@ -141,6 +142,7 @@ HEADERS += \
 	LengthHashCalculator.h \
 	DlgRemovedSongs.h \
 	ComponentCollection.h \
+	MidiControllers.h \
 	DlgImportDB.h \
 	DatabaseImport.h \
 

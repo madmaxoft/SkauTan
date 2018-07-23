@@ -36,6 +36,7 @@ public:
 		ckMetadataScanner,
 		ckLengthHashCalculator,
 		ckPlayer,
+		ckMidiControllers,
 	};
 
 
