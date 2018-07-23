@@ -23,6 +23,7 @@
 #include "DlgSongProperties.h"
 #include "Utils.h"
 #include "DlgRemovedSongs.h"
+#include "MidiControllers.h"
 #include "DlgImportDB.h"
 #include "DatabaseImport.h"
 
@@ -69,38 +70,46 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	// Connect the signals:
 	auto db = m_Components.get<Database>();
 	auto player = m_Components.get<Player>();
-	connect(m_UI->btnSongs,               &QPushButton::clicked,                this,         &PlayerWindow::showSongs);
-	connect(m_UI->btnTemplates,           &QPushButton::clicked,                this,         &PlayerWindow::showTemplates);
-	connect(m_UI->btnHistory,             &QPushButton::clicked,                this,         &PlayerWindow::showHistory);
-	connect(m_UI->btnAddFromTemplate,     &QPushButton::clicked,                this,         &PlayerWindow::addFromTemplate);
-	connect(m_UI->btnPrev,                &QPushButton::clicked,                player.get(), &Player::prevTrack);
-	connect(m_UI->btnPlayPause,           &QPushButton::clicked,                player.get(), &Player::startPausePlayback);
-	connect(m_UI->btnStop,                &QPushButton::clicked,                player.get(), &Player::stopPlayback);
-	connect(m_UI->btnNext,                &QPushButton::clicked,                player.get(), &Player::nextTrack);
-	connect(m_UI->tblPlaylist,            &QTableView::doubleClicked,           this,         &PlayerWindow::trackDoubleClicked);
-	connect(m_UI->vsVolume,               &QSlider::sliderMoved,                this,         &PlayerWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,                &QSlider::valueChanged,               this,         &PlayerWindow::tempoValueChanged);
-	connect(m_UI->btnTempoReset,          &QToolButton::clicked,                this,         &PlayerWindow::resetTempo);
-	connect(m_UI->actBackgroundTasks,     &QAction::triggered,                  this,         &PlayerWindow::showBackgroundTasks);
-	connect(m_UI->actSongProperties,      &QAction::triggered,                  this,         &PlayerWindow::showSongProperties);
-	connect(&m_UpdateTimer,               &QTimer::timeout,                     this,         &PlayerWindow::periodicUIUpdate);
-	connect(m_UI->actDeleteFromDisk,      &QAction::triggered,                  this,         &PlayerWindow::deleteSongsFromDisk);
-	connect(m_UI->actRemoveFromLibrary,   &QAction::triggered,                  this,         &PlayerWindow::removeSongsFromLibrary);
-	connect(m_UI->actRemoveFromPlaylist,  &QAction::triggered,                  this,         &PlayerWindow::deleteSelectedPlaylistItems);
-	connect(m_UI->actPlay,                &QAction::triggered,                  this,         &PlayerWindow::jumpToAndPlay);
-	connect(m_UI->actSetDurationLimit,    &QAction::triggered,                  this,         &PlayerWindow::setDurationLimit);
-	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                  this,         &PlayerWindow::removeDurationLimit);
-	connect(m_UI->actRemovedSongs,        &QAction::triggered,                  this,         &PlayerWindow::showRemovedSongs);
-	connect(m_UI->actImportDB,            &QAction::triggered,                  this,         &PlayerWindow::importDB);
-	connect(m_UI->actSavePlaylist,        &QAction::triggered,                  this,         &PlayerWindow::savePlaylist);
-	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,            this,         &PlayerWindow::quickPlayerItemClicked);
-	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this,         &PlayerWindow::replaceSong);
-	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this,         &PlayerWindow::showPlaylistContextMenu);
-	connect(m_UI->waveform,               &WaveformDisplay::songChanged,        db.get(),     &Database::saveSong);
-	connect(player.get(),                 &Player::startedPlayback,             this,         &PlayerWindow::playerStartedPlayback);
-	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                  player.get(), &Player::setKeepTempo);
-	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                  player.get(), &Player::setKeepVolume);
-	connect(player.get(),                 &Player::tempoCoeffChanged,           this,         &PlayerWindow::tempoCoeffChanged);
+	auto mc = m_Components.get<MidiControllers>();
+	connect(m_UI->btnSongs,               &QPushButton::clicked,                 this,         &PlayerWindow::showSongs);
+	connect(m_UI->btnTemplates,           &QPushButton::clicked,                 this,         &PlayerWindow::showTemplates);
+	connect(m_UI->btnHistory,             &QPushButton::clicked,                 this,         &PlayerWindow::showHistory);
+	connect(m_UI->btnAddFromTemplate,     &QPushButton::clicked,                 this,         &PlayerWindow::addFromTemplate);
+	connect(m_UI->btnPrev,                &QPushButton::clicked,                 player.get(), &Player::prevTrack);
+	connect(m_UI->btnPlayPause,           &QPushButton::clicked,                 player.get(), &Player::startPausePlayback);
+	connect(m_UI->btnStop,                &QPushButton::clicked,                 player.get(), &Player::stopPlayback);
+	connect(m_UI->btnNext,                &QPushButton::clicked,                 player.get(), &Player::nextTrack);
+	connect(m_UI->tblPlaylist,            &QTableView::doubleClicked,            this,         &PlayerWindow::trackDoubleClicked);
+	connect(m_UI->vsVolume,               &QSlider::sliderMoved,                 this,         &PlayerWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,                &QSlider::valueChanged,                this,         &PlayerWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,          &QToolButton::clicked,                 this,         &PlayerWindow::resetTempo);
+	connect(m_UI->actBackgroundTasks,     &QAction::triggered,                   this,         &PlayerWindow::showBackgroundTasks);
+	connect(m_UI->actSongProperties,      &QAction::triggered,                   this,         &PlayerWindow::showSongProperties);
+	connect(&m_UpdateTimer,               &QTimer::timeout,                      this,         &PlayerWindow::periodicUIUpdate);
+	connect(m_UI->actDeleteFromDisk,      &QAction::triggered,                   this,         &PlayerWindow::deleteSongsFromDisk);
+	connect(m_UI->actRemoveFromLibrary,   &QAction::triggered,                   this,         &PlayerWindow::removeSongsFromLibrary);
+	connect(m_UI->actRemoveFromPlaylist,  &QAction::triggered,                   this,         &PlayerWindow::deleteSelectedPlaylistItems);
+	connect(m_UI->actPlay,                &QAction::triggered,                   this,         &PlayerWindow::jumpToAndPlay);
+	connect(m_UI->actSetDurationLimit,    &QAction::triggered,                   this,         &PlayerWindow::setDurationLimit);
+	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                   this,         &PlayerWindow::removeDurationLimit);
+	connect(m_UI->actRemovedSongs,        &QAction::triggered,                   this,         &PlayerWindow::showRemovedSongs);
+	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
+	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
+	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayerItemClicked);
+	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
+	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
+	connect(m_UI->waveform,               &WaveformDisplay::songChanged,         db.get(),     &Database::saveSong);
+	connect(player.get(),                 &Player::startedPlayback,              this,         &PlayerWindow::playerStartedPlayback);
+	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                   player.get(), &Player::setKeepTempo);
+	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                   player.get(), &Player::setKeepVolume);
+	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
+	connect(mc.get(),                     &MidiControllers::controllerConnected, this,         &PlayerWindow::midiControllerConnected);
+	connect(mc.get(),                     &MidiControllers::controllerRemoved,   this,         &PlayerWindow::midiControllerRemoved);
+	connect(mc.get(),                     &MidiControllers::setTempoCoeff,       this,         &PlayerWindow::midiControllerSetTempoCoeff);
+	connect(mc.get(),                     &MidiControllers::setVolume,           this,         &PlayerWindow::midiControllerSetVolume);
+	connect(mc.get(),                     &MidiControllers::playPause,           player.get(), &Player::startPausePlayback);
+	connect(mc.get(),                     &MidiControllers::navigateUp,          this,         &PlayerWindow::midiControllerNavigateUp);
+	connect(mc.get(),                     &MidiControllers::navigateDown,        this,         &PlayerWindow::midiControllerNavigateDown);
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -927,4 +936,68 @@ void PlayerWindow::savePlaylist()
 		f.write(si->song()->fileName().toUtf8());
 		f.write("\n\n");
 	}
+}
+
+
+
+
+
+void PlayerWindow::midiControllerConnected(const QString & a_PortName)
+{
+	Q_UNUSED(a_PortName);
+	auto mc = m_Components.get<MidiControllers>();
+	// TODO
+	mc->setLedPlay(true);
+}
+
+
+
+
+
+void PlayerWindow::midiControllerRemoved()
+{
+	// TODO
+}
+
+
+
+
+
+void PlayerWindow::midiControllerSetTempoCoeff(qreal a_TempoCoeff)
+{
+	m_UI->vsTempo->setValue(static_cast<int>(100 * a_TempoCoeff) - 50);
+}
+
+
+
+
+
+void PlayerWindow::midiControllerSetVolume(qreal a_Volume)
+{
+	m_UI->vsVolume->setValue(static_cast<int>(100 * a_Volume));
+}
+
+
+
+
+
+void PlayerWindow::midiControllerNavigateUp()
+{
+	if (m_UI->tblPlaylist->currentIndex().row() > 0)
+	{
+		m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() - 1);
+	}
+	else
+	{
+		m_UI->tblPlaylist->selectRow(0);
+	}
+}
+
+
+
+
+
+void PlayerWindow::midiControllerNavigateDown()
+{
+	m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() + 1);
 }
