@@ -574,6 +574,7 @@ int Database::numSongsMatchingFilter(Template::Filter & a_Filter) const
 SongPtr Database::pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Avoid) const
 {
 	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
+	std::set<Song::SharedDataPtr> sharedDatas;  // SharedDatas of songs added to "songs", to avoid dupes
 	int totalWeight = 0;
 	for (const auto & song: m_Songs)
 	{
@@ -581,11 +582,17 @@ SongPtr Database::pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Av
 		{
 			continue;
 		}
+		if (sharedDatas.find(song->sharedData()) != sharedDatas.cend())
+		{
+			// Already present, through another Song, with the same hash
+			continue;
+		}
 		if (a_Item->filter()->isSatisfiedBy(*song))
 		{
 			auto weight = getSongWeight(*song);
 			songs.push_back(std::make_pair(song, weight));
 			totalWeight += weight;
+			sharedDatas.insert(song->sharedData());
 		}
 	}
 
