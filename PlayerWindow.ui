@@ -414,17 +414,31 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="lblPosition">
-            <property name="toolTip">
-             <string>Current position within the song</string>
-            </property>
-            <property name="text">
-             <string notr="true">0:00</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QLabel" name="lblWallClockTime">
+              <property name="toolTip">
+               <string>Current wall-clock time</string>
+              </property>
+              <property name="text">
+               <string notr="true">18:31:56</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblPosition">
+              <property name="toolTip">
+               <string>Current position within the song</string>
+              </property>
+              <property name="text">
+               <string notr="true">0:00</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
