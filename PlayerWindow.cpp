@@ -883,6 +883,7 @@ void PlayerWindow::savePlaylist()
 		);
 		return;
 	}
+	f.write("#EXTM3U\n");
 	for (const auto & i: m_Components.get<Player>()->playlist().items())
 	{
 		auto si = std::dynamic_pointer_cast<PlaylistItemSong>(i);
