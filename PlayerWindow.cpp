@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QInputDialog>
+#include <QFileDialog>
 #include "ui_PlayerWindow.h"
 #include "Database.h"
 #include "DlgSongs.h"
@@ -88,6 +89,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actSetDurationLimit,    &QAction::triggered,                  this,         &PlayerWindow::setDurationLimit);
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                  this,         &PlayerWindow::removeDurationLimit);
 	connect(m_UI->actRemovedSongs,        &QAction::triggered,                  this,         &PlayerWindow::showRemovedSongs);
+	connect(m_UI->actSavePlaylist,        &QAction::triggered,                  this,         &PlayerWindow::savePlaylist);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,            this,         &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested, this,         &PlayerWindow::showPlaylistContextMenu);
@@ -128,6 +130,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	auto menu = new QMenu(this);
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addAction(m_UI->actRemovedSongs);
+	menu->addSeparator();
+	menu->addAction(m_UI->actSavePlaylist);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -141,6 +145,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	});
 	m_UI->btnTools->addActions({
 		m_UI->actBackgroundTasks,
+		m_UI->actRemovedSongs,
+		m_UI->actSavePlaylist,
 	});
 
 	refreshQuickPlayer();
@@ -849,4 +855,53 @@ void PlayerWindow::tempoCoeffChanged(qreal a_TempoCoeff)
 	m_IsInternalChange = true;
 	m_UI->vsTempo->setValue(value);
 	m_IsInternalChange = false;
+}
+
+
+
+
+
+void PlayerWindow::savePlaylist()
+{
+	auto fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("SkauTan: Save playlist:"),
+		QString(),
+		tr("M3U playlist (*.m3u)")
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+	QFile f(fileName);
+	if (!f.open(QFile::ReadWrite))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Cannot write file"),
+			tr("Cannot write to file %1, playlist NOT saved.").arg(fileName)
+		);
+		return;
+	}
+	f.write("#EXTM3U\n");
+	for (const auto & i: m_Components.get<Player>()->playlist().items())
+	{
+		auto si = std::dynamic_pointer_cast<PlaylistItemSong>(i);
+		if (si == nullptr)
+		{
+			continue;
+		}
+		auto item = si->templateItem();
+		if (item != nullptr)
+		{
+			f.write(tr("#SKAUTAN:TMPL:%1:%2\n")
+				.arg(QString::fromUtf8(item->hash().toHex()))
+				.arg(item->displayName())
+				.toUtf8()
+			);
+		}
+		f.write(tr("#SKAUTAN:HASH:%1\n").arg(QString::fromUtf8(si->song()->hash().toHex())).toUtf8());
+		f.write(si->song()->fileName().toUtf8());
+		f.write("\n\n");
+	}
 }

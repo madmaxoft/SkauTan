@@ -236,6 +236,10 @@ public:
 		Asserts if this filter is not a fkComparison. */
 		bool isDateComparisonSatisfiedBy(QDateTime a_Value) const;
 
+		/** Returns the hash of the filter (including children),
+		trying to identify the filter uniquely (-enough). */
+		QByteArray hash() const;
+
 
 	private:
 
@@ -296,6 +300,9 @@ public:
 
 		/** Checks the entire filter chain for consistency in its parent fields. */
 		void checkFilterConsistency() const;
+
+		/** Returns the hash of the item, trying to identify the item uniquely (-enough). */
+		QByteArray hash() const;
 
 
 	protected:

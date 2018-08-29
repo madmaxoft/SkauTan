@@ -190,6 +190,10 @@ private slots:
 	such as loading a new track with pre-set default tempo and KeepTempo turned off.
 	Updates the Tempo UI. */
 	void tempoCoeffChanged(qreal a_TempoCoeff);
+
+	/** Emitted when the user selects Save Playlist from the Tools menu.
+	Asks for filename, then saves the current playlist into the file. */
+	void savePlaylist();
 };
 
 
