@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <QLocale>
 #include <QDebug>
+#include <QCryptographicHash>
 #include "Song.h"
 
 
@@ -677,6 +678,36 @@ bool Template::Filter::isDateComparisonSatisfiedBy(QDateTime a_Value) const
 
 
 
+QByteArray Template::Filter::hash() const
+{
+	QCryptographicHash h(QCryptographicHash::Sha1);
+	h.addData(reinterpret_cast<const char *>(&m_Kind), sizeof(m_Kind));
+	switch (m_Kind)
+	{
+		case fkComparison:
+		{
+			h.addData(reinterpret_cast<const char *>(&m_SongProperty), sizeof(m_SongProperty));
+			h.addData(reinterpret_cast<const char *>(&m_Comparison), sizeof(m_Comparison));
+			h.addData(m_Value.toString().toUtf8());
+			break;
+		}
+		case fkAnd:
+		case fkOr:
+		{
+			for (const auto & ch: m_Children)
+			{
+				h.addData(ch->hash());
+			}
+			break;
+		}
+	}
+	return h.result();
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Template::Item:
 
@@ -729,6 +760,27 @@ void Template::Item::checkFilterConsistency() const
 	}
 	assert(m_Filter->parent() == nullptr);
 	m_Filter->checkConsistency();
+}
+
+
+
+
+
+QByteArray Template::Item::hash() const
+{
+	QCryptographicHash h(QCryptographicHash::Sha1);
+	h.addData(m_DisplayName.toUtf8());
+	h.addData(m_Notes.toUtf8());
+	h.addData(m_IsFavorite ? "F" : "N", 1);
+	h.addData(m_Filter->hash());
+	h.addData(m_BgColor.name().toUtf8());
+	h.addData(m_DurationLimit.isPresent() ? "L" : "N", 1);
+	if (m_DurationLimit.isPresent())
+	{
+		auto lim = m_DurationLimit.value();
+		h.addData(reinterpret_cast<const char *>(&lim), sizeof(lim));
+	}
+	return h.result();
 }
 
 

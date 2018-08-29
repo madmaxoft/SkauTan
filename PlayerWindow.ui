@@ -617,6 +617,14 @@
     <string>Shows the list of songs that have been removed from the library</string>
    </property>
   </action>
+  <action name="actSavePlaylist">
+   <property name="text">
+    <string>&amp;Save playlist...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current playlist into a file</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
