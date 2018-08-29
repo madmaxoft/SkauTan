@@ -598,7 +598,7 @@ SongPtr Database::pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Av
 
 	if (songs.empty())
 	{
-		if (a_Item->filter()->isSatisfiedBy(*a_Avoid))
+		if ((a_Avoid != nullptr) && (a_Item->filter()->isSatisfiedBy(*a_Avoid)))
 		{
 			return a_Avoid;
 		}
