@@ -23,7 +23,7 @@
 #include "DlgSongProperties.h"
 #include "Utils.h"
 #include "DlgRemovedSongs.h"
-#include "MidiControllers.h"
+#include "DJControllers.h"
 #include "DlgImportDB.h"
 #include "DatabaseImport.h"
 
@@ -70,7 +70,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	// Connect the signals:
 	auto db = m_Components.get<Database>();
 	auto player = m_Components.get<Player>();
-	auto mc = m_Components.get<MidiControllers>();
+	auto mc = m_Components.get<DJControllers>();
 	connect(m_UI->btnSongs,               &QPushButton::clicked,                 this,         &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,                 this,         &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,                 this,         &PlayerWindow::showHistory);
@@ -103,13 +103,13 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                   player.get(), &Player::setKeepTempo);
 	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                   player.get(), &Player::setKeepVolume);
 	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
-	connect(mc.get(),                     &MidiControllers::controllerConnected, this,         &PlayerWindow::midiControllerConnected);
-	connect(mc.get(),                     &MidiControllers::controllerRemoved,   this,         &PlayerWindow::midiControllerRemoved);
-	connect(mc.get(),                     &MidiControllers::setTempoCoeff,       this,         &PlayerWindow::midiControllerSetTempoCoeff);
-	connect(mc.get(),                     &MidiControllers::setVolume,           this,         &PlayerWindow::midiControllerSetVolume);
-	connect(mc.get(),                     &MidiControllers::playPause,           player.get(), &Player::startPausePlayback);
-	connect(mc.get(),                     &MidiControllers::navigateUp,          this,         &PlayerWindow::midiControllerNavigateUp);
-	connect(mc.get(),                     &MidiControllers::navigateDown,        this,         &PlayerWindow::midiControllerNavigateDown);
+	connect(mc.get(),                     &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
+	connect(mc.get(),                     &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
+	connect(mc.get(),                     &DJControllers::setTempoCoeff,         this,         &PlayerWindow::djControllerSetTempoCoeff);
+	connect(mc.get(),                     &DJControllers::setVolume,             this,         &PlayerWindow::djControllerSetVolume);
+	connect(mc.get(),                     &DJControllers::playPause,             player.get(), &Player::startPausePlayback);
+	connect(mc.get(),                     &DJControllers::navigateUp,            this,         &PlayerWindow::djControllerNavigateUp);
+	connect(mc.get(),                     &DJControllers::navigateDown,          this,         &PlayerWindow::djControllerNavigateDown);
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -942,11 +942,11 @@ void PlayerWindow::savePlaylist()
 
 
 
-void PlayerWindow::midiControllerConnected(const QString & a_PortName)
+void PlayerWindow::djControllerConnected(const QString & a_Name)
 {
-	Q_UNUSED(a_PortName);
-	auto mc = m_Components.get<MidiControllers>();
-	// TODO
+	Q_UNUSED(a_Name);
+	auto mc = m_Components.get<DJControllers>();
+	// TODO: Nicer LED control - only light up if there's something to play
 	mc->setLedPlay(true);
 }
 
@@ -954,16 +954,16 @@ void PlayerWindow::midiControllerConnected(const QString & a_PortName)
 
 
 
-void PlayerWindow::midiControllerRemoved()
+void PlayerWindow::djControllerRemoved()
 {
-	// TODO
+	// Nothing needed yet
 }
 
 
 
 
 
-void PlayerWindow::midiControllerSetTempoCoeff(qreal a_TempoCoeff)
+void PlayerWindow::djControllerSetTempoCoeff(qreal a_TempoCoeff)
 {
 	m_UI->vsTempo->setValue(static_cast<int>(100 * a_TempoCoeff) - 50);
 }
@@ -972,16 +972,18 @@ void PlayerWindow::midiControllerSetTempoCoeff(qreal a_TempoCoeff)
 
 
 
-void PlayerWindow::midiControllerSetVolume(qreal a_Volume)
+void PlayerWindow::djControllerSetVolume(qreal a_Volume)
 {
-	m_UI->vsVolume->setValue(static_cast<int>(100 * a_Volume));
+	auto volume = static_cast<int>(100 * a_Volume);
+	m_UI->vsVolume->setValue(volume);
+	volumeSliderMoved(volume);
 }
 
 
 
 
 
-void PlayerWindow::midiControllerNavigateUp()
+void PlayerWindow::djControllerNavigateUp()
 {
 	if (m_UI->tblPlaylist->currentIndex().row() > 0)
 	{
@@ -997,7 +999,7 @@ void PlayerWindow::midiControllerNavigateUp()
 
 
 
-void PlayerWindow::midiControllerNavigateDown()
+void PlayerWindow::djControllerNavigateDown()
 {
 	m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() + 1);
 }
