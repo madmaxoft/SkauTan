@@ -198,21 +198,23 @@ private slots:
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();
 
-	/** The user has connected a recognized midi controller. */
-	void midiControllerConnected(const QString & a_PortName);
+	/** The user has connected a recognized DJ controller. */
+	void djControllerConnected(const QString & a_Name);
 
-	/** The midi controller was disconnected. */
-	void midiControllerRemoved();
+	/** A DJ controller was disconnected. */
+	void djControllerRemoved();
 
-	/** The midi controller's tempo slider was moved. */
-	void midiControllerSetTempoCoeff(qreal a_TempoCoeff);
+	/** A DJ controller's tempo slider was moved. */
+	void djControllerSetTempoCoeff(qreal a_TempoCoeff);
 
-	/** The mii controller's volume slider was moved. */
-	void midiControllerSetVolume(qreal a_Volume);
+	/** A DJ controller's volume slider was moved. */
+	void djControllerSetVolume(qreal a_Volume);
 
-	void midiControllerNavigateUp();
+	/** A DJ controller's navigation wheel has been moved upwards. */
+	void djControllerNavigateUp();
 
-	void midiControllerNavigateDown();
+	/** A DJ controller's navigation wheel has been moved downwards. */
+	void djControllerNavigateDown();
 };
 
 

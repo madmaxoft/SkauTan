@@ -17,7 +17,7 @@
 #include "Settings.h"
 #include "TempoDetector.h"
 #include "Utils.h"
-#include "MidiControllers.h"
+#include "DJControllers.h"
 
 
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 		auto scanner = cc.addNew<MetadataScanner>();
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
 		auto player = cc.addNew<Player>();
-		auto midiControllers = cc.addNew<MidiControllers>();
+		auto midiControllers = cc.addNew<DJControllers>();
 
 		// Connect the main objects together:
 		app.connect(mainDB.get(),  &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);
