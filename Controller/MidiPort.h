@@ -34,6 +34,12 @@ public:
 	unsigned portNumber() const { return m_PortNumber; }
 	const std::string & portName() const { return m_PortName; }
 
+	/** Returns the number of MIDI OUT ports available to the system. */
+	static unsigned getNumOutPorts();
+
+	/** Returns the number of MIDI IN ports available to the system. */
+	static unsigned getNumInPorts();
+
 protected:
 
 	/** The port number (index) of the MIDI port.
@@ -65,12 +71,18 @@ class MidiPortIn:
 
 public:
 
-	MidiPortIn() = default;
+	/** Constructor needs to be explicitly declared, and defined in CPP file,
+	otherwise compiler complains about missing type for the contained RtMidiIn. */
+	MidiPortIn();
+
+	/** Destructor needs to be explicitly declared, and defined in CPP file,
+	otherwise compiler complains about missing type for the contained RtMidiIn. */
+	~MidiPortIn();
 
 	/** Opens the specified MIDI IN port.
 	Returns true on success, false on failure.
 	If the port is already open, closes it and reopens. */
-	bool open(unsigned a_PortNumber, const std::string & a_PortName);
+	bool open(unsigned a_PortNumber);
 
 	/** Returns true if the port is valid (open). */
 	bool isValid() const { return (m_MidiIn != nullptr); }
@@ -114,12 +126,18 @@ class MidiPortOut:
 
 public:
 
-	MidiPortOut() = default;
+	/** Constructor needs to be explicitly declared, and defined in CPP file,
+	otherwise compiler complains about missing type for the contained RtMidiOut. */
+	MidiPortOut();
+
+	/** Destructor needs to be explicitly declared, and defined in CPP file,
+	otherwise compiler complains about missing type for the contained RtMidiOut. */
+	~MidiPortOut();
 
 	/** Opens the specified MIDI IN port.
 	Returns true on success, false on failure.
 	If the port is already open, closes it and reopens. */
-	bool open(unsigned a_PortNumber, const std::string & a_PortName);
+	bool open(unsigned a_PortNumber);
 
 	/** Returns true if the port is valid (open). */
 	bool isValid() const { return (m_MidiOut != nullptr); }

@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFile>
-#include <RtMidi.h>
 #include "BackgroundTasks.h"
 #include "Database.h"
 #include "MetadataScanner.h"

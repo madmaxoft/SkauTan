@@ -1,6 +1,5 @@
 #include "MidiEnumerator.h"
 #include <set>
-#include <RtMidi.h>
 #include <QDebug>
 #include <QSemaphore>
 #include <QRegularExpression>
@@ -152,11 +151,9 @@ MidiEnumerator::MidiEnumerator(QObject * a_Parent):
 
 void MidiEnumerator::periodicUpdate()
 {
-	RtMidiIn dummyIn;
-	RtMidiOut dummyOut;
 	if (
-		(m_LastNumPortsIn  != dummyIn.getPortCount()) ||
-		(m_LastNumPortsOut != dummyOut.getPortCount())
+		(m_LastNumPortsIn  != MidiPort::getNumInPorts()) ||
+		(m_LastNumPortsOut != MidiPort::getNumOutPorts())
 	)
 	{
 		qDebug() << "MIDI Port counts differ, rescanning...";
@@ -201,13 +198,11 @@ void MidiEnumerator::rescanPorts()
 
 	// Open all IN ports:
 	std::vector<MidiPortInPtr> portsIn;
-	RtMidiIn dummyIn;
-	auto numPorts = dummyIn.getPortCount();
+	auto numPorts = MidiPort::getNumInPorts();
 	for (unsigned i = 0; i < numPorts; ++i)
 	{
 		auto port = std::make_unique<MidiPortIn>();
-		auto portName = dummyIn.getPortName(i);
-		if (port->open(i, portName))
+		if (port->open(i))
 		{
 			portsIn.push_back(std::move(port));
 		}
@@ -224,9 +219,8 @@ void MidiEnumerator::rescanPorts()
 	}
 
 	// Update the last port counts:
-	RtMidiOut dummyOut;
-	m_LastNumPortsIn = dummyIn.getPortCount();
-	m_LastNumPortsOut = dummyOut.getPortCount();
+	m_LastNumPortsIn = numPorts;
+	m_LastNumPortsOut = MidiPort::getNumOutPorts();
 }
 
 
@@ -298,13 +292,12 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std
 
 	// Send a MMC query through each OUT port (assign to portOut), wait for responses:
 	// Cycle through each MIDI OUT port, try sending the MMC device enquiry msg:
-	RtMidiOut dummy;
-	auto numPorts = dummy.getPortCount();
+	auto numPorts = MidiPort::getNumOutPorts();
 	static const std::vector<unsigned char> msg{0xf0, 0x7e, 0x00, 0x06, 0x01, 0xf7};  // SysEx - MMC device query
 	for (unsigned i = 0; i < numPorts; ++i)
 	{
 		portOut.reset(new MidiPortOut);
-		if (!portOut->open(i, dummy.getPortName(i)))
+		if (!portOut->open(i))
 		{
 			continue;
 		}
