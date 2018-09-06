@@ -26,13 +26,18 @@ DEFINES += TAGLIB_STATIC
 CONFIG += c++14
 
 win32:LIBS += avformat.lib avutil.lib avcodec.lib swresample.lib winmm.lib
-win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib rtmidid.lib
-win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib rtmidi.lib
-unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz -lrtmidi
+win32:CONFIG(debug, debug|release):LIBS += tagd.lib zlibd.lib
+win32:CONFIG(release, debug|release):LIBS += tag.lib zlib.lib
+unix:LIBS += -lavformat -lavutil -lavcodec -lswresample -ltag -lz -lasound
 
 
 # Add the app icon:
 win32:RC_ICONS = res/img/SkauTan.ico
+
+
+# RtMidi: Activate the per-platform audio backend:
+win32:DEFINES += __WINDOWS_MM__
+unix:DEFINES += __LINUX_ALSA__
 
 
 # Turn on warnings-as-errors and extra warnings
@@ -101,6 +106,7 @@ SOURCES += \
 	Controller/MidiEnumerator.cpp \
 	Controller/MidiController.cpp \
 	Controller/MidiPort.cpp \
+	lib/RtMidi.cpp \
 	DlgImportDB.cpp \
 	DatabaseImport.cpp \
 
@@ -151,6 +157,7 @@ HEADERS += \
 	Controller/MidiEnumerator.h \
 	Controller/MidiController.h \
 	Controller/MidiPort.h \
+	lib/RtMidi.h \
 	DlgImportDB.h \
 	DatabaseImport.h \
 

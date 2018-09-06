@@ -7,7 +7,6 @@
 
 #include <QThread>
 #include <QTimer>
-#include <RtMidi.h>
 #include "ComponentCollection.h"
 #include "Controller/AbstractController.h"
 

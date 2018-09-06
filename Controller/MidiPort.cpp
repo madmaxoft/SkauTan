@@ -1,5 +1,5 @@
 #include "MidiPort.h"
-#include <RtMidi.h>
+#include "../lib/RtMidi.h"
 #include <QDebug>
 
 
@@ -34,10 +34,56 @@ MidiPort::MidiPort(QObject * a_Parent):
 
 
 
+unsigned MidiPort::getNumOutPorts()
+{
+	RtMidiOut out;
+	return out.getPortCount();
+}
+
+
+
+
+
+unsigned MidiPort::getNumInPorts()
+{
+	RtMidiIn in;
+	return in.getPortCount();
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // MidiPortIn:
 
-bool MidiPortIn::open(unsigned a_PortNumber, const std::string & a_PortName)
+MidiPortIn::MidiPortIn()
+{
+	// Nothing explicit needed
+	/*
+	The constructor needs to be defined in CPP file, otherwise the compiler complains
+	about missing type for the contained RtMidiIn.
+	*/
+}
+
+
+
+
+
+MidiPortIn::~MidiPortIn()
+{
+	// Nothing explicit needed
+	/*
+	The destructor needs to be defined in CPP file, otherwise the compiler complains
+	about missing type for the contained RtMidiIn.
+	*/
+}
+
+
+
+
+
+bool MidiPortIn::open(unsigned a_PortNumber)
 {
 	if (m_MidiIn != nullptr)
 	{
@@ -45,10 +91,11 @@ bool MidiPortIn::open(unsigned a_PortNumber, const std::string & a_PortName)
 		m_MidiIn.reset(nullptr);
 	}
 
+	auto portName = m_MidiIn->getPortName(a_PortNumber);
 	m_MidiIn.reset(new RtMidiIn);
 	try
 	{
-		m_MidiIn->openPort(a_PortNumber, a_PortName);
+		m_MidiIn->openPort(a_PortNumber, portName);
 		m_MidiIn->setCallback(&MidiPortIn::midiPortCallback, this);
 		m_MidiIn->ignoreTypes(false, true, false);
 		m_MidiIn->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
@@ -56,13 +103,13 @@ bool MidiPortIn::open(unsigned a_PortNumber, const std::string & a_PortName)
 	catch (const RtMidiError & a_Error)
 	{
 		qWarning() << "Error while opening MIDI IN port "
-			<< a_PortNumber << " (" << a_PortName.c_str() << "): "
+			<< a_PortNumber << " (" << portName.c_str() << "): "
 			<< a_Error.what();
 		m_MidiIn.reset(nullptr);
 		return false;
 	}
 	m_PortNumber = a_PortNumber;
-	m_PortName = a_PortName;
+	m_PortName = portName;
 	return true;
 }
 
@@ -73,7 +120,33 @@ bool MidiPortIn::open(unsigned a_PortNumber, const std::string & a_PortName)
 ////////////////////////////////////////////////////////////////////////////////
 // MidiPortOut:
 
-bool MidiPortOut::open(unsigned a_PortNumber, const std::string & a_PortName)
+MidiPortOut::MidiPortOut()
+{
+	// Nothing explicit needed
+	/*
+	The constructor needs to be defined in CPP file, otherwise the compiler complains
+	about missing type for the contained RtMidiOut.
+	*/
+}
+
+
+
+
+
+MidiPortOut::~MidiPortOut()
+{
+	// Nothing explicit needed
+	/*
+	The destructor needs to be defined in CPP file, otherwise the compiler complains
+	about missing type for the contained RtMidiOut.
+	*/
+}
+
+
+
+
+
+bool MidiPortOut::open(unsigned a_PortNumber)
 {
 	if (m_MidiOut != nullptr)
 	{
@@ -82,21 +155,22 @@ bool MidiPortOut::open(unsigned a_PortNumber, const std::string & a_PortName)
 	}
 
 	m_MidiOut.reset(new RtMidiOut);
+	auto portName = m_MidiOut->getPortName(a_PortNumber);
 	try
 	{
-		m_MidiOut->openPort(a_PortNumber, a_PortName);
+		m_MidiOut->openPort(a_PortNumber, portName);
 		m_MidiOut->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
 	}
 	catch (const RtMidiError & a_Error)
 	{
 		qWarning() << "Error while opening MIDI OUT port "
-			<< a_PortNumber << " (" << a_PortName.c_str() << "): "
+			<< a_PortNumber << " (" << portName.c_str() << "): "
 			<< a_Error.what();
 		m_MidiOut.reset(nullptr);
 		return false;
 	}
 	m_PortNumber = a_PortNumber;
-	m_PortName = a_PortName;
+	m_PortName = portName;
 	return true;
 }
 
