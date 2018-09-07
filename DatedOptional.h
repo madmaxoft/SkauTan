@@ -259,6 +259,22 @@ public:
 	}
 
 
+	/** If the data in the parameter is newer than what is contained, updates self with that data. */
+	void updateIfNewer(const DatedOptional<T> & a_Other)
+	{
+		if (a_Other.m_LastModification.isNull())
+		{
+			return;
+		}
+		if (m_LastModification > a_Other.m_LastModification)
+		{
+			return;
+		}
+		m_IsPresent = true;
+		m_Value = a_Other.m_Value;
+		m_LastModification = a_Other.m_LastModification;
+	}
+
 protected:
 
 	/** If true, the value in m_Value is valid.

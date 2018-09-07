@@ -40,6 +40,12 @@ public:
 		int m_NumDuplicates;  // ... at the time of removal
 	};
 
+	struct HistoryItem
+	{
+		QDateTime m_Timestamp;
+		QByteArray m_Hash;
+	};
+
 	using RemovedSongPtr = std::shared_ptr<RemovedSong>;
 
 
@@ -114,6 +120,24 @@ public:
 	/** Returns the SharedData for the specified song hash.
 	Returns nullptr if no such SharedData was found. */
 	Song::SharedDataPtr sharedDataFromHash(const QByteArray & a_Hash) const;
+
+	/** Saves all songs and SharedData from the internal arrays to the DB. */
+	void saveAllSongSharedData();
+
+	/** Returns a map of all SongHash -> SongSharedData in the DB. */
+	const std::map<QByteArray, Song::SharedDataPtr> songSharedDataMap() const { return m_SongSharedData; }
+
+	/** Returns the entire playback history.
+	Returns by-value, since the history is not normally kept in memory, so it needs to be read from DB in this call. */
+	std::vector<HistoryItem> playbackHistory() const;
+
+	/** Adds the items in a_History to the playback history.
+	Used primarily by the import. */
+	void addPlaybackHistory(const std::vector<HistoryItem> & a_History);
+
+	/** Adds the items in a_History to the song removal history in the DB.
+	Used primarily by the import. */
+	void addSongRemovalHistory(const std::vector<RemovedSongPtr> & a_History);
 
 
 protected:

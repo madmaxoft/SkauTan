@@ -617,6 +617,14 @@
     <string>Shows the list of songs that have been removed from the library</string>
    </property>
   </action>
+  <action name="actImportDB">
+   <property name="text">
+    <string>Import data...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import data from another database</string>
+   </property>
+  </action>
   <action name="actSavePlaylist">
    <property name="text">
     <string>&amp;Save playlist...</string>

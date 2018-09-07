@@ -682,7 +682,14 @@ static const std::vector<VersionScript> g_VersionScripts =
 			"WasFileDeleted INTEGER,"
 			"NumDuplicates  INTEGER"
 		")",
-	}),
+	}),  // Version 10 to Version 11
+
+
+	// Version 11 to Version 12
+	// Add a last modification date tracking for LastPlayed
+	VersionScript({
+		"ALTER TABLE SongSharedData ADD COLUMN LastPlayedLM DATETIME",
+	}),  // Version 11 to Version 12
 };
 
 

@@ -97,6 +97,8 @@ SOURCES += \
 	LengthHashCalculator.cpp \
 	DlgRemovedSongs.cpp \
 	ComponentCollection.cpp \
+	DlgImportDB.cpp \
+	DatabaseImport.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -139,6 +141,8 @@ HEADERS += \
 	LengthHashCalculator.h \
 	DlgRemovedSongs.h \
 	ComponentCollection.h \
+	DlgImportDB.h \
+	DatabaseImport.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -155,6 +159,7 @@ FORMS += \
 	DlgTempoDetect.ui \
 	DlgTapTempo.ui \
 	DlgRemovedSongs.ui \
+	DlgImportDB.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

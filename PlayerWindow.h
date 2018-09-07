@@ -191,6 +191,9 @@ private slots:
 	Updates the Tempo UI. */
 	void tempoCoeffChanged(qreal a_TempoCoeff);
 
+	/** Shows DlgImportDB, then imports the data from the DB. */
+	void importDB();
+
 	/** Emitted when the user selects Save Playlist from the Tools menu.
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();

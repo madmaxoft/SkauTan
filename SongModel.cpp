@@ -17,11 +17,11 @@
 a_Length is the length in seconds. */
 static QString formatLength(const Song & a_Song)
 {
-	if (!a_Song.length().isValid())
+	if (!a_Song.length().isPresent())
 	{
 		return SongModel::tr("<unknown>", "Length");
 	}
-	auto len = static_cast<int>(floor(a_Song.length().toDouble() + 0.5));
+	auto len = static_cast<int>(floor(a_Song.length().value() + 0.5));
 	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, QChar('0'));
 }
 
@@ -44,11 +44,11 @@ static QString formatMPM(const DatedOptional<double> & a_SongMPM)
 
 static QString formatLastPlayed(const Song & a_Song)
 {
-	if (!a_Song.lastPlayed().isValid())
+	if (!a_Song.lastPlayed().isPresent())
 	{
 		return SongModel::tr("<never>", "LastPlayed");
 	}
-	return a_Song.lastPlayed().toDateTime().toString("yyyy-MM-dd HH:mm:ss");
+	return a_Song.lastPlayed().value().toString("yyyy-MM-dd HH:mm:ss");
 }
 
 
