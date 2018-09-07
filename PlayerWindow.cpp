@@ -23,6 +23,8 @@
 #include "DlgSongProperties.h"
 #include "Utils.h"
 #include "DlgRemovedSongs.h"
+#include "DlgImportDB.h"
+#include "DatabaseImport.h"
 
 
 
@@ -89,6 +91,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actSetDurationLimit,    &QAction::triggered,                  this,         &PlayerWindow::setDurationLimit);
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                  this,         &PlayerWindow::removeDurationLimit);
 	connect(m_UI->actRemovedSongs,        &QAction::triggered,                  this,         &PlayerWindow::showRemovedSongs);
+	connect(m_UI->actImportDB,            &QAction::triggered,                  this,         &PlayerWindow::importDB);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                  this,         &PlayerWindow::savePlaylist);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,            this,         &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,   this,         &PlayerWindow::replaceSong);
@@ -131,6 +134,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addAction(m_UI->actRemovedSongs);
 	menu->addSeparator();
+	menu->addAction(m_UI->actImportDB);
+	menu->addSeparator();
 	menu->addAction(m_UI->actSavePlaylist);
 	m_UI->btnTools->setMenu(menu);
 
@@ -146,6 +151,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->btnTools->addActions({
 		m_UI->actBackgroundTasks,
 		m_UI->actRemovedSongs,
+		m_UI->actImportDB,
 		m_UI->actSavePlaylist,
 	});
 
@@ -855,6 +861,23 @@ void PlayerWindow::tempoCoeffChanged(qreal a_TempoCoeff)
 	m_IsInternalChange = true;
 	m_UI->vsTempo->setValue(value);
 	m_IsInternalChange = false;
+}
+
+
+
+
+
+void PlayerWindow::importDB()
+{
+	DlgImportDB dlg(this);
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+
+	Database fromDB;
+	fromDB.open(dlg.m_FileName);
+	DatabaseImport import(fromDB, *m_Components.get<Database>(), dlg.m_Options);
 }
 
 

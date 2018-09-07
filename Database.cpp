@@ -189,7 +189,8 @@ void Database::open(const QString & a_DBFileName)
 {
 	assert(!m_Database.isOpen());  // Opening another DB is not allowed
 
-	m_Database = QSqlDatabase::addDatabase("QSQLITE");
+	static std::atomic<int> counter(0);
+	m_Database = QSqlDatabase::addDatabase("QSQLITE", QString::fromUtf8("DB%1").arg(counter.fetch_add(1)));
 	m_Database.setDatabaseName(a_DBFileName);
 	if (!m_Database.open())
 	{
@@ -659,7 +660,7 @@ std::vector<Database::RemovedSongPtr> Database::removedSongs() const
 	}
 	if (!query.exec())
 	{
-		qWarning() << "Cannot prepare query: " << query.lastError();
+		qWarning() << "Cannot exec query: " << query.lastError();
 		qDebug() << query.lastQuery();
 		assert(!"DB error");
 		return res;
@@ -714,6 +715,111 @@ Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & a_Hash) cons
 
 
 
+void Database::saveAllSongSharedData()
+{
+	for (const auto & sd: m_SongSharedData)
+	{
+		saveSongSharedData(sd.second);
+	}
+}
+
+
+
+
+
+std::vector<Database::HistoryItem> Database::playbackHistory() const
+{
+	std::vector<Database::HistoryItem> res;
+
+	QSqlQuery query(m_Database);
+	if (!query.exec("SELECT * FROM PlaybackHistory"))
+	{
+		qWarning() << "Cannot query playback history: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return res;
+	}
+	auto fiTimestamp = query.record().indexOf("Timestamp");
+	auto fiHash      = query.record().indexOf("SongHash");
+	while (query.next())
+	{
+		assert(query.isValid());
+		res.push_back({
+			query.value(fiTimestamp).toDateTime(),
+			query.value(fiHash).toByteArray()
+		});
+	}
+	return res;
+}
+
+
+
+
+
+void Database::addPlaybackHistory(const std::vector<Database::HistoryItem> & a_History)
+{
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT INTO PlaybackHistory (Timestamp, SongHash) VALUES(?, ?)"))
+	{
+		qWarning() << "Cannot prepare query: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return;
+	}
+	for (const auto & item: a_History)
+	{
+		query.addBindValue(item.m_Timestamp);
+		query.addBindValue(item.m_Hash);
+		if (!query.exec())
+		{
+			qWarning() << "Cannot store playback history item "
+				<< item.m_Timestamp << ", "
+				<< item.m_Hash << ": "
+				<< query.lastError();
+			assert(!"DB error");
+		}
+	}
+}
+
+
+
+
+
+void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr> & a_History)
+{
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT INTO RemovedSongs "
+		"(Filename, Hash, DateRemoved, WasFileDeleted, NumDuplicates) VALUES "
+		"(?, ?, ?, ?, ?)"))
+	{
+		qWarning() << "Cannot prepare query: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return;
+	}
+	for (const auto & item: a_History)
+	{
+		query.addBindValue(item->m_FileName);
+		query.addBindValue(item->m_Hash);
+		query.addBindValue(item->m_DateRemoved);
+		query.addBindValue(item->m_WasDeleted);
+		query.addBindValue(item->m_NumDuplicates);
+		if (!query.exec())
+		{
+			qWarning() << "Cannot store removal history item "
+				<< item->m_FileName << ", "
+				<< item->m_Hash << ", "
+				<< item->m_DateRemoved << ": "
+				<< query.lastError();
+			assert(!"DB error");
+		}
+	}
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:
@@ -722,12 +828,25 @@ void Database::loadSongs()
 	loadNewFiles();
 
 	// Enqueue songs with unknown length for length calc (#141):
+	int numForRescan = 0;
 	for (const auto & sd: m_SongSharedData)
 	{
-		if (!sd.second->m_Length.isValid())
+		if (
+			!sd.second->m_Length.isPresent() &&  // Unknown length
+			!sd.second->duplicates().empty()     // There is at least one file for the hash
+		)
 		{
+			qDebug()
+				<< "Song with hash " << sd.first << " (" << sd.second->duplicates()[0]->fileName()
+				<< ") needs length, queueing for rescan.";
 			emit needSongLength(sd.second);
+			numForRescan += 1;
 		}
+	}
+	if (numForRescan > 0)
+	{
+		qWarning() << "Number of songs without length that were queued for rescan: "
+			<< numForRescan << " out of " << m_SongSharedData.size();
 	}
 }
 
@@ -824,6 +943,7 @@ void Database::loadSongSharedData()
 	auto fiHash                    = query.record().indexOf("Hash");
 	auto fiLength                  = query.record().indexOf("Length");
 	auto fiLastPlayed              = query.record().indexOf("LastPlayed");
+	auto fiLastPlayedLM            = query.record().indexOf("LastPlayedLM");
 	auto fiLocalRating             = query.record().indexOf("LocalRating");
 	auto fiLocalRatingLM           = query.record().indexOf("LocalRatingLM");
 	auto fiRatingRhythmClarity     = query.record().indexOf("RatingRhythmClarity");
@@ -858,8 +978,8 @@ void Database::loadSongSharedData()
 		auto hash = query.value(fiHash).toByteArray();
 		auto data = std::make_shared<Song::SharedData>(
 			hash,
-			fieldValue(rec.field(fiLength)),
-			fieldValue(rec.field(fiLastPlayed)),
+			datedOptionalFromFields<double>(rec, fiLength, -1),
+			datedOptionalFromFields<QDateTime>(rec, fiLastPlayed, fiLastPlayedLM),
 			Song::Rating({
 				datedOptionalFromFields<double>(rec, fiRatingRhythmClarity,   fiRatingRhythmClarityLM),
 				datedOptionalFromFields<double>(rec, fiRatingGenreTypicality, fiRatingGenreTypicalityLM),
@@ -1333,9 +1453,9 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 
 	// Penalize the last played date:
 	auto lastPlayed = a_Song.lastPlayed();
-	if (lastPlayed.isValid())
+	if (lastPlayed.isPresent())
 	{
-		auto numDays = lastPlayed.toDateTime().daysTo(QDateTime::currentDateTime());
+		auto numDays = lastPlayed.value().daysTo(QDateTime::currentDateTime());
 		res = res * (numDays + 1) / (numDays + 2);  // The more days have passed, the less penalty
 	}
 
@@ -1573,7 +1693,7 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 {
 	QSqlQuery query(m_Database);
 	if (!query.prepare("UPDATE SongSharedData SET "
-		"Length = ?, LastPlayed = ?,"
+		"Length = ?, LastPlayed = ?, LastPlayedLM = ?, "
 		"LocalRating = ?, LocalRatingLM = ?,"
 		"RatingRhythmClarity = ?,   RatingRhythmClarityLM = ?, "
 		"RatingGenreTypicality = ?, RatingGenreTypicalityLM = ?, "
@@ -1591,8 +1711,9 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_SharedData->m_Length);
-	query.addBindValue(a_SharedData->m_LastPlayed);
+	query.addBindValue(a_SharedData->m_Length.toVariant());
+	query.addBindValue(a_SharedData->m_LastPlayed.toVariant());
+	query.addBindValue(a_SharedData->m_LastPlayed.lastModification());
 	query.addBindValue(a_SharedData->m_Rating.m_Local.toVariant());
 	query.addBindValue(a_SharedData->m_Rating.m_Local.lastModification());
 	query.addBindValue(a_SharedData->m_Rating.m_RhythmClarity.toVariant());

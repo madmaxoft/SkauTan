@@ -63,8 +63,8 @@ public:
 	struct SharedData
 	{
 		QByteArray m_Hash;
-		QVariant m_Length;
-		QVariant m_LastPlayed;
+		DatedOptional<double> m_Length;
+		DatedOptional<QDateTime> m_LastPlayed;
 		Rating m_Rating;
 		Tag m_TagManual;
 		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
@@ -74,8 +74,8 @@ public:
 
 		SharedData(
 			const QByteArray & a_Hash,
-			QVariant && a_Length,
-			QVariant && a_LastPlayed,
+			DatedOptional<double> && a_Length,
+			DatedOptional<QDateTime> && a_LastPlayed,
 			Rating && a_Rating,
 			Tag && a_TagManual,
 			DatedOptional<double> && a_SkipStart,
@@ -145,8 +145,8 @@ public:
 	const DatedOptional<double>  & primaryMeasuresPerMinute() const;
 
 	// These return values from the shared data, if available:
-	const QVariant & length()     const { return m_SharedData->m_Length; }
-	const QVariant & lastPlayed() const { return m_SharedData->m_LastPlayed; }
+	const DatedOptional<double> &    length()     const { return m_SharedData->m_Length; }
+	const DatedOptional<QDateTime> & lastPlayed() const { return m_SharedData->m_LastPlayed; }
 	const Rating &   rating()     const { return m_SharedData->m_Rating; }
 	const DatedOptional<double> skipStart() const;
 

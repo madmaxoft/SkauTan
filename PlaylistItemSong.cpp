@@ -50,11 +50,7 @@ QString PlaylistItemSong::displayTitle() const
 
 double PlaylistItemSong::displayLength() const
 {
-	if (m_Song->length().isValid())
-	{
-		return m_Song->length().toDouble();
-	}
-	return -1;
+	return m_Song->length().valueOr(-1);
 }
 
 

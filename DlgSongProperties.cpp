@@ -85,9 +85,9 @@ DlgSongProperties::DlgSongProperties(
 	m_IsInternalChange = true;
 	m_UI->leHash->setText(Utils::toHex(a_Song->hash()));
 	auto length = m_Song->length();
-	if (length.isValid())
+	if (length.isPresent())
 	{
-		auto numSeconds = static_cast<int>(length.toDouble() + 0.5);
+		auto numSeconds = static_cast<int>(std::floor(length.value() + 0.5));
 		m_UI->leLength->setText(tr("%1:%2 (%n seconds)", "SongLength", numSeconds)
 			.arg(QString::number(numSeconds / 60))
 			.arg(QString::number(numSeconds % 60), 2, '0')

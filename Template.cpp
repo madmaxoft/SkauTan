@@ -530,7 +530,7 @@ bool Template::Filter::isComparisonSatisfiedBy(const Song & a_Song) const
 		case fspId3Title:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title);
 		case fspId3Genre:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre);
 		case fspId3MeasuresPerMinute:      return isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute);
-		case fspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().toDateTime());
+		case fspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().valueOrDefault());
 		case fspLength:                    return isNumberComparisonSatisfiedBy(a_Song.length());
 		case fspLocalRating:               return isNumberComparisonSatisfiedBy(a_Song.rating().m_Local);
 		case fspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor());
