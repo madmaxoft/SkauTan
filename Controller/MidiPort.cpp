@@ -91,8 +91,8 @@ bool MidiPortIn::open(unsigned a_PortNumber)
 		m_MidiIn.reset(nullptr);
 	}
 
-	auto portName = m_MidiIn->getPortName(a_PortNumber);
 	m_MidiIn.reset(new RtMidiIn);
+	auto portName = m_MidiIn->getPortName(a_PortNumber);
 	try
 	{
 		m_MidiIn->openPort(a_PortNumber, portName);
