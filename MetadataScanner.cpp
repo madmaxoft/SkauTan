@@ -208,9 +208,9 @@ void MetadataScanner::writeTagToSong(SongPtr a_Song, const Tag & a_Tag)
 		return;
 	}
 	auto props = fr.file()->properties();
-	setOrClearProp(props, "AUTHOR", a_Tag.m_Author);
-	setOrClearProp(props, "TITLE",  a_Tag.m_Title);
-	setOrClearProp(props, "GENRE",  a_Tag.m_Genre);
+	setOrClearProp(props, "ARTIST",  a_Tag.m_Author);
+	setOrClearProp(props, "TITLE",   a_Tag.m_Title);
+	setOrClearProp(props, "GENRE",   a_Tag.m_Genre);
 	setOrClearProp(props, "COMMENT", a_Tag.m_Comment);
 	if (a_Tag.m_MeasuresPerMinute.isPresent())
 	{
