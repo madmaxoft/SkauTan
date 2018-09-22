@@ -207,6 +207,13 @@ protected:
 	If a_Playlist is given, songs on the playlist are further reduced. */
 	int getSongWeight(const Song & a_Song, const Playlist * a_Playlist = nullptr) const;
 
+	void addVote(
+		const QByteArray & a_SongHash,
+		int a_VoteValue,
+		const QString & a_TableName,
+		DatedOptional<double> Song::Rating::* a_DstRating
+	);
+
 
 signals:
 
@@ -266,6 +273,18 @@ public slots:
 	/** Emitted by m_MetadataScanner after metadata is updated for the specified song.
 	Writes the whole updated song to the DB. */
 	void songScanned(SongPtr a_Song);
+
+	/** Adds a new RhythmClarity vote for the specified song hash into the DB
+	Updates the aggregated rating in Song::SharedData and in the DB. */
+	void addVoteRhythmClarity(QByteArray a_SongHash, int a_VoteValue);
+
+	/** Adds a new GenreTypicality vote for the specified song hash into the DB
+	Updates the aggregated rating in Song::SharedData and in the DB. */
+	void addVoteGenreTypicality(QByteArray a_SongHash, int a_VoteValue);
+
+	/** Adds a new Popularity vote for the specified song hash into the DB
+	Updates the aggregated rating in Song::SharedData and in the DB. */
+	void addVotePopularity(QByteArray a_SongHash, int a_VoteValue);
 
 
 protected slots:

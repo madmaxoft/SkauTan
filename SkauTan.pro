@@ -109,6 +109,15 @@ SOURCES += \
 	lib/RtMidi.cpp \
 	DlgImportDB.cpp \
 	DatabaseImport.cpp \
+	LocalVoteServer.cpp \
+	lib/HTTP/EnvelopeParser.cpp \
+	lib/HTTP/MultipartParser.cpp \
+	lib/HTTP/NameValueParser.cpp \
+	lib/HTTP/TransferEncodingParser.cpp \
+	lib/HTTP/StringUtils.cpp \
+	lib/HTTP/FormParser.cpp \
+	lib/HTTP/Message.cpp \
+	lib/HTTP/MessageParser.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -160,6 +169,15 @@ HEADERS += \
 	lib/RtMidi.h \
 	DlgImportDB.h \
 	DatabaseImport.h \
+	LocalVoteServer.h \
+	lib/HTTP/EnvelopeParser.h \
+	lib/HTTP/MultipartParser.h \
+	lib/HTTP/NameValueParser.h \
+	lib/HTTP/TransferEncodingParser.h \
+	lib/HTTP/StringUtils.h \
+	lib/HTTP/FormParser.h \
+	lib/HTTP/Message.h \
+	lib/HTTP/MessageParser.h \
 
 FORMS += \
 	PlayerWindow.ui \

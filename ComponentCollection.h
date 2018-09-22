@@ -37,6 +37,7 @@ public:
 		ckLengthHashCalculator,
 		ckPlayer,
 		ckDJControllers,
+		ckLocalVoteServer,
 	};
 
 

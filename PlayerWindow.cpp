@@ -26,6 +26,7 @@
 #include "DJControllers.h"
 #include "DlgImportDB.h"
 #include "DatabaseImport.h"
+#include "LocalVoteServer.h"
 
 
 
@@ -68,9 +69,9 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	}
 
 	// Connect the signals:
-	auto db = m_Components.get<Database>();
+	auto db     = m_Components.get<Database>();
 	auto player = m_Components.get<Player>();
-	auto mc = m_Components.get<DJControllers>();
+	auto mc     = m_Components.get<DJControllers>();
 	connect(m_UI->btnSongs,               &QPushButton::clicked,                 this,         &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,                 this,         &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,                 this,         &PlayerWindow::showHistory);
@@ -95,6 +96,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actRemovedSongs,        &QAction::triggered,                   this,         &PlayerWindow::showRemovedSongs);
 	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
+	connect(m_UI->actToggleVoteServer,    &QAction::triggered,                   this,         &PlayerWindow::toggleVoteServer);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
@@ -139,6 +141,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	);
 
 	// Set up the Tools button:
+	auto lvs = m_Components.get<LocalVoteServer>();
+	m_UI->actToggleVoteServer->setChecked(lvs->isStarted());
 	auto menu = new QMenu(this);
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addAction(m_UI->actRemovedSongs);
@@ -146,6 +150,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addAction(m_UI->actImportDB);
 	menu->addSeparator();
 	menu->addAction(m_UI->actSavePlaylist);
+	menu->addSeparator();
+	menu->addAction(m_UI->actToggleVoteServer);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -162,6 +168,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actRemovedSongs,
 		m_UI->actImportDB,
 		m_UI->actSavePlaylist,
+		m_UI->actToggleVoteServer,
 	});
 
 	refreshQuickPlayer();
@@ -935,6 +942,23 @@ void PlayerWindow::savePlaylist()
 		f.write(tr("#SKAUTAN:HASH:%1\n").arg(QString::fromUtf8(si->song()->hash().toHex())).toUtf8());
 		f.write(si->song()->fileName().toUtf8());
 		f.write("\n\n");
+	}
+}
+
+
+
+
+
+void PlayerWindow::toggleVoteServer()
+{
+	auto lvs = m_Components.get<LocalVoteServer>();
+	if (lvs->isStarted())
+	{
+		lvs->stopServer();
+	}
+	else
+	{
+		lvs->startServer();
 	}
 }
 

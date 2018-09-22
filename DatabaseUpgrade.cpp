@@ -690,6 +690,27 @@ static const std::vector<VersionScript> g_VersionScripts =
 	VersionScript({
 		"ALTER TABLE SongSharedData ADD COLUMN LastPlayedLM DATETIME",
 	}),  // Version 11 to Version 12
+
+
+	// Version 12 to Version 13
+	// Add a community voting
+	VersionScript({
+		"CREATE TABLE VotesRhythmClarity ("
+			"SongHash BLOB,"
+			"VoteValue INTEGER,"
+			"DateAdded DATETIME"
+		")",
+		"CREATE TABLE VotesGenreTypicality ("
+			"SongHash BLOB,"
+			"VoteValue INTEGER,"
+			"DateAdded DATETIME"
+		")",
+		"CREATE TABLE VotesPopularity ("
+			"SongHash BLOB,"
+			"VoteValue INTEGER,"
+			"DateAdded DATETIME"
+		")",
+	}),  // Version 12 to Version 13
 };
 
 
