@@ -1,7 +1,6 @@
 div
 {
 	padding: 2px;
-	/* border: 1px solid lightgray; */
 }
 
 .songContainer
@@ -15,6 +14,11 @@ div
 		"voteRCHdr  voteGTHdr  votePopHdr"
 		"voteRCBtns voteGTBtns votePopBtns";
 	grid-template-columns: 1fr 1fr 1fr;
+}
+
+.songContainer:first-child
+{
+	background-color: #cfffff;
 }
 
 .songInfoContainer
