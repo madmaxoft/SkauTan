@@ -3,5 +3,14 @@
         <file>img/play.png</file>
         <file>img/replace.png</file>
         <file>other/STT-LAT.SkauTanTemplates</file>
+        <file>VoteServer/index.html</file>
+        <file>VoteServer/static/logo-48.png</file>
+        <file>VoteServer/static/lvs.css</file>
+        <file>VoteServer/static/lvs.js</file>
+        <file>VoteServer/static/voteButton1.png</file>
+        <file>VoteServer/static/voteButton2.png</file>
+        <file>VoteServer/static/voteButton3.png</file>
+        <file>VoteServer/static/voteButton4.png</file>
+        <file>VoteServer/static/voteButton5.png</file>
     </qresource>
 </RCC>

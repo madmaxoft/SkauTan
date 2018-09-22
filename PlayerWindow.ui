@@ -633,6 +633,14 @@
     <string>Save the current playlist into a file</string>
    </property>
   </action>
+  <action name="actToggleVoteServer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Local voting server</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

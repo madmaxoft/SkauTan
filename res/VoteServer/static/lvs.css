@@ -1,0 +1,82 @@
+div
+{
+	padding: 2px;
+	/* border: 1px solid lightgray; */
+}
+
+.songContainer
+{
+	border: 3px solid black;
+	margin: 3px;
+	margin-bottom: 10px;
+	display: grid;
+	grid-template-areas:
+		"si         si         si"
+		"voteRCHdr  voteGTHdr  votePopHdr"
+		"voteRCBtns voteGTBtns votePopBtns";
+	grid-template-columns: 1fr 1fr 1fr;
+}
+
+.songInfoContainer
+{
+	display: grid;
+	grid-area: si;
+	grid-template-areas:
+		"genre at    at"
+		"genre mpm   fileName";
+	grid-template-columns: auto auto 1fr;
+}
+
+/* Author - Title */
+.at
+{
+	grid-area: at;
+	font-size: 250%;
+}
+
+.genre
+{
+	grid-area: genre;
+	font-size: 400%;
+	padding-right: 0.2em;
+}
+
+.voteContainerRC
+{
+	grid-area: voteRCBtns;
+}
+
+.voteLabelRC
+{
+	grid-area: voteRCHdr;
+}
+
+.voteContainerGT
+{
+	grid-area: voteGTBtns;
+}
+
+.voteLabelGT
+{
+	grid-area: voteGTHdr;
+}
+
+.voteContainerPop
+{
+	grid-area: votePopBtns;
+}
+
+.voteLabelPop
+{
+	grid-area: votePopHdr;
+}
+
+.mpm
+{
+	grid-area: mpm;
+}
+
+.fileName
+{
+	grid-area: fileName;
+}

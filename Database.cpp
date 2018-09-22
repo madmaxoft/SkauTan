@@ -1497,6 +1497,62 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 
 
 
+void Database::addVote(
+	const QByteArray & a_SongHash,
+	int a_VoteValue,
+	const QString & a_TableName,
+	DatedOptional<double> Song::Rating::* a_DstRating
+)
+{
+	qDebug() << "Adding community vote " << a_VoteValue << " for " << a_TableName << " to song " << a_SongHash;
+
+	// Store the vote in the DB:
+	{
+		QSqlQuery query(m_Database);
+		if (!query.prepare("INSERT INTO " + a_TableName + " (SongHash, VoteValue, DateAdded) VALUES(?, ?, ?)"))
+		{
+			qWarning() << "Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.addBindValue(a_SongHash);
+		query.addBindValue(a_VoteValue);
+		query.addBindValue(QDateTime::currentDateTimeUtc());
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+	}
+
+	// Update the song rating:
+	auto sharedData = m_SongSharedData.find(a_SongHash);
+	if (sharedData != m_SongSharedData.end())
+	{
+		QSqlQuery query(m_Database);
+		if (!query.prepare("SELECT AVG(VoteValue) FROM " + a_TableName + " WHERE SongHash = ?"))
+		{
+			qWarning() << "Cannot prepare statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		query.addBindValue(a_SongHash);
+		if (!query.exec())
+		{
+			qWarning() << ": Cannot exec statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		sharedData->second->m_Rating.*a_DstRating = query.value(0).toDouble();
+		saveSongSharedData(sharedData->second);
+	}
+}
+
+
+
+
+
 void Database::songPlaybackStarted(SongPtr a_Song)
 {
 	auto now = QDateTime::currentDateTimeUtc();
@@ -1757,6 +1813,33 @@ void Database::songScanned(SongPtr a_Song)
 {
 	a_Song->setLastTagRescanned(QDateTime::currentDateTimeUtc());
 	saveSongFileData(a_Song);
+}
+
+
+
+
+
+void Database::addVoteRhythmClarity(QByteArray a_SongHash, int a_VoteValue)
+{
+	addVote(a_SongHash, a_VoteValue, "VotesRhythmClarity", &Song::Rating::m_RhythmClarity);
+}
+
+
+
+
+
+void Database::addVoteGenreTypicality(QByteArray a_SongHash, int a_VoteValue)
+{
+	addVote(a_SongHash, a_VoteValue, "VotesGenreTypicality", &Song::Rating::m_GenreTypicality);
+}
+
+
+
+
+
+void Database::addVotePopularity(QByteArray a_SongHash, int a_VoteValue)
+{
+	addVote(a_SongHash, a_VoteValue, "VotesPopularity", &Song::Rating::m_Popularity);
 }
 
 

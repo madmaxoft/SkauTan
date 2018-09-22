@@ -198,6 +198,9 @@ private slots:
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();
 
+	/** Toggles the LocalVoteServer on or off. */
+	void toggleVoteServer();
+
 	/** The user has connected a recognized DJ controller. */
 	void djControllerConnected(const QString & a_Name);
 

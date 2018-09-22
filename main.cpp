@@ -17,6 +17,7 @@
 #include "TempoDetector.h"
 #include "Utils.h"
 #include "DJControllers.h"
+#include "LocalVoteServer.h"
 
 
 
@@ -102,16 +103,21 @@ int main(int argc, char *argv[])
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
 		auto player = cc.addNew<Player>();
 		auto midiControllers = cc.addNew<DJControllers>();
+		auto voteServer      = cc.addNew<LocalVoteServer>(cc);
 
 		// Connect the main objects together:
-		app.connect(mainDB.get(),  &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);
-		app.connect(mainDB.get(),  &Database::needSongLength,                   lhCalc.get(),        &LengthHashCalculator::queueLengthSong);
-		app.connect(lhCalc.get(),  &LengthHashCalculator::fileHashCalculated,   mainDB.get(),        &Database::songHashCalculated);
-		app.connect(lhCalc.get(),  &LengthHashCalculator::fileHashFailed,       mainDB.get(),        &Database::songHashFailed);
-		app.connect(lhCalc.get(),  &LengthHashCalculator::songLengthCalculated, mainDB.get(),        &Database::songLengthCalculated);
-		app.connect(mainDB.get(),  &Database::needSongTagRescan,                scanner.get(),       &MetadataScanner::queueScanSong);
-		app.connect(mainDB.get(),  &Database::songRemoved,                      &player->playlist(), &Playlist::removeSong);
-		app.connect(scanner.get(), &MetadataScanner::songScanned,               mainDB.get(),        &Database::songScanned);
+		app.connect(mainDB.get(),     &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);
+		app.connect(mainDB.get(),     &Database::needSongLength,                   lhCalc.get(),        &LengthHashCalculator::queueLengthSong);
+		app.connect(lhCalc.get(),     &LengthHashCalculator::fileHashCalculated,   mainDB.get(),        &Database::songHashCalculated);
+		app.connect(lhCalc.get(),     &LengthHashCalculator::fileHashFailed,       mainDB.get(),        &Database::songHashFailed);
+		app.connect(lhCalc.get(),     &LengthHashCalculator::songLengthCalculated, mainDB.get(),        &Database::songLengthCalculated);
+		app.connect(mainDB.get(),     &Database::needSongTagRescan,                scanner.get(),       &MetadataScanner::queueScanSong);
+		app.connect(mainDB.get(),     &Database::songRemoved,                      &player->playlist(), &Playlist::removeSong);
+		app.connect(scanner.get(),    &MetadataScanner::songScanned,               mainDB.get(),        &Database::songScanned);
+		app.connect(player.get(),     &Player::startedPlayback,                    voteServer.get(),    &LocalVoteServer::startedPlayback);
+		app.connect(voteServer.get(), &LocalVoteServer::addVoteRhythmClarity,      mainDB.get(),        &Database::addVoteRhythmClarity);
+		app.connect(voteServer.get(), &LocalVoteServer::addVoteGenreTypicality,    mainDB.get(),        &Database::addVoteGenreTypicality);
+		app.connect(voteServer.get(), &LocalVoteServer::addVotePopularity,         mainDB.get(),        &Database::addVotePopularity);
 		app.connect(player.get(),  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
 				// Update the "last played" value in the DB:
@@ -132,11 +138,23 @@ int main(int argc, char *argv[])
 			importDefaultTemplates(*mainDB);
 		}
 
+		// If the server was started the last time, start it again:
+		if (Settings::loadValue("LocalVoteServer", "isStarted").toBool())
+		{
+			voteServer->startServer();
+		}
+
 		// Show the UI:
 		PlayerWindow w(cc);
 		w.showMaximized();
 
-		return app.exec();
+		// Run the app:
+		auto res = app.exec();
+
+		// Save the server state:
+		Settings::saveValue("LocalVoteServer", "isStarted", voteServer->isStarted());
+
+		return res;
 	}
 	catch (const std::runtime_error & exc)
 	{
