@@ -196,6 +196,7 @@ IPlaylistItemPtr Player::currentTrack()
 		case psFadeOutToStop:
 		case psFadeOutToTrack:
 		case psPaused:
+		case psStartingPlayback:
 		{
 			return m_Playlist->currentItem();
 		}
@@ -219,6 +220,7 @@ bool Player::isPlaying() const
 		case psPlaying:
 		case psFadeOutToStop:
 		case psFadeOutToTrack:
+		case psStartingPlayback:
 		{
 			return true;
 		}
@@ -244,6 +246,7 @@ bool Player::isTrackLoaded() const
 		case psFadeOutToStop:
 		case psFadeOutToTrack:
 		case psPaused:
+		case psStartingPlayback:
 		{
 			return true;
 		}
@@ -304,6 +307,7 @@ void Player::nextTrack()
 			return;
 		}
 		case psPlaying:
+		case psStartingPlayback:
 		{
 			fadeOut(psFadeOutToTrack);
 			return;
@@ -341,6 +345,7 @@ void Player::prevTrack()
 			return;
 		}
 		case psPlaying:
+		case psStartingPlayback:
 		{
 			fadeOut(psFadeOutToTrack);
 			return;
@@ -374,6 +379,7 @@ void Player::startPausePlayback()
 			return;
 		}
 		case psPlaying:
+		case psStartingPlayback:
 		{
 			pausePlayback();
 			return;
@@ -416,6 +422,7 @@ void Player::startPlayback()
 			return;
 		}
 		case psPlaying:
+		case psStartingPlayback:
 		{
 			// We're already playing, ignore the request
 			return;
@@ -426,6 +433,7 @@ void Player::startPlayback()
 			qDebug() << "Player: Starting playback of track " << track->displayName();
 			m_Elapsed.start();
 			emit startingPlayback(track);
+			m_State = psStartingPlayback;
 			return;
 		}
 		case psPaused:
@@ -442,7 +450,7 @@ void Player::startPlayback()
 
 void Player::pausePlayback()
 {
-	if (m_State != psPlaying)
+	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
 	{
 		return;
 	}
@@ -455,7 +463,7 @@ void Player::pausePlayback()
 
 void Player::stopPlayback()
 {
-	if (m_State != psPlaying)
+	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
 	{
 		return;
 	}
@@ -476,6 +484,7 @@ void Player::jumpTo(int a_ItemIdx)
 	switch (m_State)
 	{
 		case psPlaying:
+		case psStartingPlayback:
 		{
 			fadeOut(psFadeOutToTrack);
 			break;
@@ -525,7 +534,7 @@ void Player::setKeepVolume(bool a_KeepVolume)
 
 void Player::deletePlaylistItem(IPlaylistItem * a_Item)
 {
-	if (m_State != psPlaying)
+	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
 	{
 		return;
 	}
@@ -608,6 +617,7 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 					return;
 				}
 				case psStopped:
+				case psStartingPlayback:
 				{
 					// Nothing needed
 					break;
@@ -668,7 +678,7 @@ void Player::OutputThread::run()
 	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged, Qt::BlockingQueuedConnection);
 	connect(m_Output.get(), &QAudioOutput::notify, [this]()
 		{
-			if (m_Player.m_State != psPlaying)
+			if ((m_Player.m_State != psPlaying) && (m_Player.m_State != psStartingPlayback))
 			{
 				return;
 			}

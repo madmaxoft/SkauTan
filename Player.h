@@ -75,7 +75,7 @@ public:
 	Mainly used for visualisation. */
 	PlaybackBufferPtr playbackBuffer() const { return m_PlaybackBuffer; }
 
-	/** Returns true iff the player is currently playing back a track.
+	/** Returns true iff the player is currently playing back a track (or psStartingPlayback).
 	If the player is paused, returns false. */
 	bool isPlaying() const;
 
@@ -88,11 +88,12 @@ protected:
 	/** The internal state of the player. */
 	enum State
 	{
-		psStopped,         ///< The player is not playing anything
-		psPlaying,         ///< The player is playing a track
-		psFadeOutToTrack,  ///< The player is fading out a track and will start playing m_Playlist's CurrentTrack once done.
-		psFadeOutToStop,   ///< The player is fading out a track and will stop playing once done.
-		psPaused,          ///< Playback has started and then been paused, can continue
+		psStopped,           ///< The player is not playing anything
+		psPlaying,           ///< The player is playing a track
+		psFadeOutToTrack,    ///< The player is fading out a track and will start playing m_Playlist's CurrentTrack once done.
+		psFadeOutToStop,     ///< The player is fading out a track and will stop playing once done.
+		psPaused,            ///< Playback has started and then been paused, can continue
+		psStartingPlayback,  ///< The player has been asked to play a song, but it's not playing yet (preparing the song in a background thread)
 	};
 
 
