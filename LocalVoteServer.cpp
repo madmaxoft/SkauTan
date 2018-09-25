@@ -298,7 +298,7 @@ void LocalVoteServer::apiPlaylist(
 		entry["fileName"]  = song->fileName();
 		entry["genre"]     = song->primaryGenre().valueOrDefault();
 		entry["mpm"]       = song->primaryMeasuresPerMinute().valueOr(-1);
-		entry["index"]     = QString::number(index);
+		entry["index"]     = static_cast<qlonglong>(index);
 		entry["ratingRC"]  = song->rating().m_RhythmClarity.valueOr(2.5);
 		entry["ratingGT"]  = song->rating().m_GenreTypicality.valueOr(2.5);
 		entry["ratingPop"] = song->rating().m_Popularity.valueOr(2.5);

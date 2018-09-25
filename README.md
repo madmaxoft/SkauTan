@@ -6,7 +6,7 @@ quickly create a playlist consisting of semi-random choice of songs, based on th
 LRU- and rating-weighted random choice, SkauTan makes sure that no song is over-played over the sessions, while still
 playing favorite songs more often.
 
-It also has a special mode for dance lessons, with a dialog for quick playback of a song of a specified genre.
+It also has a special mode for dance lessons, with a single-click access for quick playback of a song of a specified genre.
 
 
 NOTE: The software is currently being developed, it doesn't yet have all the features advertised!
