@@ -5,7 +5,9 @@
 
 
 
-class Database;
+#include <QString>
+#include "Database.h"
+#include "DatedOptional.h"
 
 
 
@@ -50,6 +52,16 @@ private:
 	void importPlaybackHistory();
 	void importSkipStart();
 	void importDeletionHistory();
+
+	/** Imports the votes from a_From to a_To, regarding the specified votes DB table. */
+	void importVotes(const QString & a_TableName);
+
+	/** Returns an average of the votes that are for the specified song hash.
+	If no votes are for the hash, returns an empty DatedOptional. */
+	DatedOptional<double> averageVotes(
+		const std::vector<Database::Vote> & a_Votes,
+		const QByteArray & a_SongHash
+	);
 };
 
 

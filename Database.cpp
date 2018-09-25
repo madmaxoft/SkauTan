@@ -820,6 +820,64 @@ void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr>
 
 
 
+std::vector<Database::Vote> Database::loadVotes(const QString & a_TableName) const
+{
+	std::vector<Database::Vote> res;
+
+	QSqlQuery query(m_Database);
+	if (!query.exec("SELECT * FROM " + a_TableName + " ORDER BY DateAdded"))
+	{
+		qWarning() << "Cannot query vote history: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return res;
+	}
+	auto fiDateAdded = query.record().indexOf("DateAdded");
+	auto fiSongHash  = query.record().indexOf("SongHash");
+	auto fiVoteValue = query.record().indexOf("VoteValue");
+	while (query.next())
+	{
+		assert(query.isValid());
+		res.push_back({
+			query.value(fiSongHash).toByteArray(),
+			query.value(fiDateAdded).toDateTime(),
+			query.value(fiVoteValue).toInt()
+		});
+	}
+	return res;
+}
+
+
+
+
+
+void Database::addVotes(const QString & a_TableName, const std::vector<Database::Vote> & a_Votes)
+{
+	QSqlQuery query(m_Database);
+	if (!query.prepare("INSERT INTO " + a_TableName + " (SongHash, DateAdded, VoteValue) VALUES(?, ?, ?)"))
+	{
+		qWarning() << "Cannot prepare query: " << query.lastError();
+		qDebug() << query.lastQuery();
+		assert(!"DB error");
+		return;
+	}
+	for (const auto & item: a_Votes)
+	{
+		query.addBindValue(item.m_SongHash);
+		query.addBindValue(item.m_DateAdded);
+		query.addBindValue(item.m_VoteValue);
+		if (!query.exec())
+		{
+			qWarning() << "Cannot store vote item: " << query.lastError();
+			assert(!"DB error");
+		}
+	}
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:
@@ -1540,11 +1598,18 @@ void Database::addVote(
 		query.addBindValue(a_SongHash);
 		if (!query.exec())
 		{
-			qWarning() << ": Cannot exec statement: " << query.lastError();
+			qWarning() << "Cannot exec statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		sharedData->second->m_Rating.*a_DstRating = query.value(0).toDouble();
+		if (!query.first())
+		{
+			qWarning() << "Cannot move to first value in statement: " << query.lastError();
+			assert(!"DB error");
+			return;
+		}
+		auto avg = query.value(0).toDouble();
+		sharedData->second->m_Rating.*a_DstRating = avg;
 		saveSongSharedData(sharedData->second);
 	}
 }

@@ -101,17 +101,22 @@ void DatabaseImport::importLocalRating()
 
 void DatabaseImport::importCommunityRating()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	// Copy the individual votes:
+	importVotes("VotesRhythmClarity");
+	importVotes("VotesGenreTypicality");
+	importVotes("VotesPopularity");
+
+	// Update the aggregated ratings:
+	auto votesRC  = m_To.loadVotes("VotesRhythmClarity");
+	auto votesGT  = m_To.loadVotes("VotesGenreTypicality");
+	auto votesPop = m_To.loadVotes("VotesPopularity");
+	for (auto & sd: m_To.songSharedDataMap())
 	{
-		auto dest = m_To.sharedDataFromHash(sd.first);
-		if (dest == nullptr)
-		{
-			continue;
-		}
-		dest->m_Rating.m_RhythmClarity.updateIfNewer(sd.second->m_Rating.m_GenreTypicality);
-		dest->m_Rating.m_GenreTypicality.updateIfNewer(sd.second->m_Rating.m_GenreTypicality);
-		dest->m_Rating.m_Popularity.updateIfNewer(sd.second->m_Rating.m_GenreTypicality);
+		sd.second->m_Rating.m_RhythmClarity.updateIfNewer  (averageVotes(votesRC, sd.first));
+		sd.second->m_Rating.m_GenreTypicality.updateIfNewer(averageVotes(votesRC, sd.first));
+		sd.second->m_Rating.m_Popularity.updateIfNewer     (averageVotes(votesRC, sd.first));
 	}
+	m_To.saveAllSongSharedData();
 }
 
 
@@ -258,4 +263,90 @@ void DatabaseImport::importDeletionHistory()
 		}
 	}
 	m_To.addSongRemovalHistory(toAdd);
+}
+
+
+
+
+
+void DatabaseImport::importVotes(const QString & a_TableName)
+{
+	auto fromVotes = m_From.loadVotes(a_TableName);
+	auto toVotes   = m_To.loadVotes(a_TableName);
+	if (fromVotes.empty())
+	{
+		return;
+	}
+	if (toVotes.empty())
+	{
+		m_To.addVotes(a_TableName, fromVotes);
+		return;
+	}
+
+	// Compare each item by date (we assume there aren't votes with the same timestamp):
+	std::vector<Database::Vote> toAdd;
+	auto itrF = fromVotes.cbegin(), endF = fromVotes.cend();
+	auto itrT = toVotes.cbegin(),   endT = toVotes.cend();
+	for (; itrF != endF;)
+	{
+		if (itrF->m_DateAdded == itrT->m_DateAdded)
+		{
+			itrF++;
+			itrT++;
+			if (itrT == endT)
+			{
+				break;
+			}
+		}
+		else if (itrF->m_DateAdded > itrT->m_DateAdded)
+		{
+			++itrT;
+			if (itrT == endT)
+			{
+				break;
+			}
+			continue;
+		}
+		else
+		{
+			// itrF->m_DateAdded < itrT->m_DateAdded
+			toAdd.push_back(*itrF);
+			++itrF;
+		}
+	}
+	if (itrF != endF)
+	{
+		// Leftover items in From, add them all:
+		for (; itrF != endF; ++itrF)
+		{
+			toAdd.push_back(*itrF);
+		}
+	}
+	m_To.addVotes(a_TableName, toAdd);
+}
+
+
+
+
+
+DatedOptional<double> DatabaseImport::averageVotes(
+	const std::vector<Database::Vote> & a_Votes,
+	const QByteArray & a_SongHash
+)
+{
+	int sum = 0;
+	int count = 0;
+	for (const auto & v: a_Votes)
+	{
+		if (v.m_SongHash == a_SongHash)
+		{
+			sum += v.m_VoteValue;
+			count += 1;
+		}
+	}
+	if (count > 0)
+	{
+		return static_cast<double>(sum) / count;
+	}
+	return DatedOptional<double>();
 }
