@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QCryptographicHash>
 #include "lib/HTTP/StringUtils.h"
 #include "lib/HTTP/Message.h"
 #include "lib/HTTP/FormParser.h"
@@ -147,7 +148,8 @@ protected:
 
 LocalVoteServer::LocalVoteServer(ComponentCollection & a_Components, QObject * a_Parent):
 	Super(a_Parent),
-	m_Components(a_Components)
+	m_Components(a_Components),
+	m_HashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length())
 {
 	connect(&m_Server, &QTcpServer::newConnection, this, &LocalVoteServer::onNewConnection);
 }
@@ -339,7 +341,7 @@ void LocalVoteServer::apiVote(
 
 	// Extract and check the parameters:
 	auto songHash = parser.find("songHash");
-	if (songHash == parser.end())
+	if ((songHash == parser.end()) || (songHash->second.size() != static_cast<size_t>(2 * m_HashLength)))
 	{
 		return send404(a_Socket);
 	}
@@ -358,19 +360,24 @@ void LocalVoteServer::apiVote(
 	{
 		return send404(a_Socket);
 	}
+	auto hash = QByteArray::fromHex(QByteArray::fromStdString(songHash->second));
+	if (hash.length() != m_HashLength)
+	{
+		return send404(a_Socket);
+	}
 
 	// Dispatch the vote according to type:
 	if (voteType->second == "rhythmClarity")
 	{
-		emit addVoteRhythmClarity(QByteArray::fromStdString(songHash->second), value);
+		emit addVoteRhythmClarity(hash, value);
 	}
 	else if (voteType->second == "genreTypicality")
 	{
-		emit addVoteGenreTypicality(QByteArray::fromStdString(songHash->second), value);
+		emit addVoteGenreTypicality(hash, value);
 	}
 	else if (voteType->second == "popularity")
 	{
-		emit addVotePopularity(QByteArray::fromStdString(songHash->second), value);
+		emit addVotePopularity(hash, value);
 	}
 	else
 	{

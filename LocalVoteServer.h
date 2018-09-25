@@ -62,6 +62,10 @@ protected:
 	The most recent song is the last one in the vector. */
 	std::vector<SongPtr> m_History;
 
+	/** The expected length of the song hash.
+	Pre-calculated by SHA1-ing empty data, to avoid having to use crypto hash on each songHash length verification. */
+	int m_HashLength;
+
 
 	/** Processes the specified data incoming from the specified socket. */
 	void processIncomingData(QTcpSocket & a_Socket, const QByteArray & a_Data);
