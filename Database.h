@@ -46,6 +46,16 @@ public:
 		QByteArray m_Hash;
 	};
 
+
+	/** Container for individual local community votes.
+	Used for syncing. */
+	struct Vote
+	{
+		QByteArray m_SongHash;
+		QDateTime  m_DateAdded;
+		int        m_VoteValue;
+	};
+
 	using RemovedSongPtr = std::shared_ptr<RemovedSong>;
 
 
@@ -138,6 +148,14 @@ public:
 	/** Adds the items in a_History to the song removal history in the DB.
 	Used primarily by the import. */
 	void addSongRemovalHistory(const std::vector<RemovedSongPtr> & a_History);
+
+	/** Loads all votes from the specified table and returns them, ordered by their DateAdded.
+	Returns by-value, since the data is not normally kept in memory, so it needs to be read from the DB in this call. */
+	std::vector<Vote> loadVotes(const QString & a_TableName) const;
+
+	/** Adds the specified votes into the specified DB table.
+	Used primarily by the import. */
+	void addVotes(const QString & a_TableName, const std::vector<Vote> & a_Votes);
 
 
 protected:
