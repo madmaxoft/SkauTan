@@ -29,7 +29,7 @@ function appendVoteButtons(a_Parent, a_SongHash, a_RatingCategory, a_Class)
 	var div = document.createElement("div");
 	div.setAttribute("class", "voteContainer" + a_Class);
 	var i;
-	for (i = 1; i <= 5; ++i)
+	for (i = 5; i >= 1; --i)
 	{
 		var btn = document.createElement("button");
 		btn.setAttribute("class", "voteButton");
