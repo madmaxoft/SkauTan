@@ -119,6 +119,9 @@ SOURCES += \
 	lib/HTTP/Message.cpp \
 	lib/HTTP/MessageParser.cpp \
 	DlgLvsStatus.cpp \
+	lib/QrCodeGen/BitBuffer.cpp \
+	lib/QrCodeGen/QrCode.cpp \
+	lib/QrCodeGen/QrSegment.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -180,6 +183,9 @@ HEADERS += \
 	lib/HTTP/Message.h \
 	lib/HTTP/MessageParser.h \
 	DlgLvsStatus.h \
+	lib/QrCodeGen/BitBuffer.hpp \
+	lib/QrCodeGen/QrCode.hpp \
+	lib/QrCodeGen/QrSegment.hpp \
 
 FORMS += \
 	PlayerWindow.ui \

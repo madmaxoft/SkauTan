@@ -1,0 +1,3 @@
+[submodule "lib/QrCodeGen"]
+	path = lib/QrCodeGen
+	url = https://github.com/madmaxoft/QrCodeGen
