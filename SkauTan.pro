@@ -118,6 +118,7 @@ SOURCES += \
 	lib/HTTP/FormParser.cpp \
 	lib/HTTP/Message.cpp \
 	lib/HTTP/MessageParser.cpp \
+	DlgLvsStatus.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -178,6 +179,7 @@ HEADERS += \
 	lib/HTTP/FormParser.h \
 	lib/HTTP/Message.h \
 	lib/HTTP/MessageParser.h \
+	DlgLvsStatus.h \
 
 FORMS += \
 	PlayerWindow.ui \
@@ -195,6 +197,7 @@ FORMS += \
 	DlgTapTempo.ui \
 	DlgRemovedSongs.ui \
 	DlgImportDB.ui \
+	DlgVoteServer.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc

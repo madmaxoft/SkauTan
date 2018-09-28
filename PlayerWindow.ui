@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>716</width>
-    <height>529</height>
+    <height>597</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -633,12 +633,26 @@
     <string>Save the current playlist into a file</string>
    </property>
   </action>
-  <action name="actToggleVoteServer">
+  <action name="actToggleLvs">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Local voting server</string>
+   </property>
+   <property name="toolTip">
+    <string>Turns Local voting server on or off</string>
+   </property>
+  </action>
+  <action name="actLvsDetails">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>  Details...</string>
+   </property>
+   <property name="toolTip">
+    <string>Displays detailed information on the Local Vote Server</string>
    </property>
   </action>
  </widget>

@@ -41,13 +41,17 @@ public:
 	explicit LocalVoteServer(ComponentCollection & a_Components, QObject * a_Parent = nullptr);
 
 	/** Returns true if the server is started / listening. */
-	bool isStarted() const { return m_Server.isListening(); }
+	bool isStarted() const { return m_IsStarted; }
 
 	void handleRequest(
 		QTcpSocket * a_Socket,
 		const Http::IncomingRequest & a_Request,
 		const std::string & a_RequestBody
 	);
+
+	/** Returns the port on which the server is reachable.
+	Throws if not started. */
+	quint16 port() const;
 
 
 protected:
@@ -65,6 +69,14 @@ protected:
 	/** The expected length of the song hash.
 	Pre-calculated by SHA1-ing empty data, to avoid having to use crypto hash on each songHash length verification. */
 	int m_HashLength;
+
+	/** Specifies whether the server is started.
+	Note that QTcpServer's isListening() returns false shortly after starting and returns true shortly after stopping,
+	hence we need a proper status stored here. */
+	bool m_IsStarted;
+
+	/** The port on which the server is listening. Only valid when started. */
+	quint16 m_Port;
 
 
 	/** Processes the specified data incoming from the specified socket. */

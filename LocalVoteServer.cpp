@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QCryptographicHash>
+#include <QNetworkInterface>
 #include "lib/HTTP/StringUtils.h"
 #include "lib/HTTP/Message.h"
 #include "lib/HTTP/FormParser.h"
@@ -149,7 +150,8 @@ protected:
 LocalVoteServer::LocalVoteServer(ComponentCollection & a_Components, QObject * a_Parent):
 	Super(a_Parent),
 	m_Components(a_Components),
-	m_HashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length())
+	m_HashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length()),
+	m_IsStarted(false)
 {
 	connect(&m_Server, &QTcpServer::newConnection, this, &LocalVoteServer::onNewConnection);
 }
@@ -191,6 +193,19 @@ void LocalVoteServer::handleRequest(
 
 	// Nothing matched, send a 404:
 	return send404(a_Socket);
+}
+
+
+
+
+
+quint16 LocalVoteServer::port() const
+{
+	if (!m_IsStarted)
+	{
+		throw std::logic_error("Server not running");
+	}
+	return m_Port;
 }
 
 
@@ -410,6 +425,8 @@ void LocalVoteServer::startServer(quint16 a_Port)
 {
 	m_Server.close();
 	m_Server.listen(QHostAddress::Any, a_Port);
+	m_Port = a_Port;
+	m_IsStarted = true;
 }
 
 
@@ -418,6 +435,8 @@ void LocalVoteServer::startServer(quint16 a_Port)
 
 void LocalVoteServer::stopServer()
 {
+	m_IsStarted = false;
+	m_Port = 0;
 	m_Server.close();
 }
 
