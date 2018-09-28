@@ -27,6 +27,8 @@
 #include "DlgImportDB.h"
 #include "DatabaseImport.h"
 #include "LocalVoteServer.h"
+#include "DlgLvsStatus.h"
+
 
 
 
@@ -96,7 +98,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actRemovedSongs,        &QAction::triggered,                   this,         &PlayerWindow::showRemovedSongs);
 	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
-	connect(m_UI->actToggleVoteServer,    &QAction::triggered,                   this,         &PlayerWindow::toggleVoteServer);
+	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
+	connect(m_UI->actLvsDetails,          &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
@@ -142,7 +145,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 
 	// Set up the Tools button:
 	auto lvs = m_Components.get<LocalVoteServer>();
-	m_UI->actToggleVoteServer->setChecked(lvs->isStarted());
+	m_UI->actToggleLvs->setChecked(lvs->isStarted());
+	m_UI->actLvsDetails->setEnabled(lvs->isStarted());
 	auto menu = new QMenu(this);
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addAction(m_UI->actRemovedSongs);
@@ -151,7 +155,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addSeparator();
 	menu->addAction(m_UI->actSavePlaylist);
 	menu->addSeparator();
-	menu->addAction(m_UI->actToggleVoteServer);
+	menu->addAction(m_UI->actToggleLvs);
+	menu->addAction(m_UI->actLvsDetails);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -168,7 +173,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actRemovedSongs,
 		m_UI->actImportDB,
 		m_UI->actSavePlaylist,
-		m_UI->actToggleVoteServer,
+		m_UI->actToggleLvs,
+		m_UI->actLvsDetails,
 	});
 
 	refreshQuickPlayer();
@@ -949,16 +955,18 @@ void PlayerWindow::savePlaylist()
 
 
 
-void PlayerWindow::toggleVoteServer()
+void PlayerWindow::toggleLvs()
 {
 	auto lvs = m_Components.get<LocalVoteServer>();
 	if (lvs->isStarted())
 	{
 		lvs->stopServer();
+		m_UI->actLvsDetails->setEnabled(false);
 	}
 	else
 	{
 		lvs->startServer();
+		m_UI->actLvsDetails->setEnabled(true);
 	}
 }
 
@@ -1026,4 +1034,14 @@ void PlayerWindow::djControllerNavigateUp()
 void PlayerWindow::djControllerNavigateDown()
 {
 	m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() + 1);
+}
+
+
+
+
+
+void PlayerWindow::showLvsStatus()
+{
+	DlgLvsStatus dlg(m_Components, this);
+	dlg.exec();
 }

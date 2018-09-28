@@ -199,7 +199,7 @@ private slots:
 	void savePlaylist();
 
 	/** Toggles the LocalVoteServer on or off. */
-	void toggleVoteServer();
+	void toggleLvs();
 
 	/** The user has connected a recognized DJ controller. */
 	void djControllerConnected(const QString & a_Name);
@@ -218,6 +218,9 @@ private slots:
 
 	/** A DJ controller's navigation wheel has been moved downwards. */
 	void djControllerNavigateDown();
+
+	/** Shows the status dialog for the LocalVoteServer. */
+	void showLvsStatus();
 };
 
 
