@@ -1,5 +1,8 @@
 @echo off
 
+rem Get the submodules:
+git submodule update --init
+
 rem Download the ffmpeg's LibAV for Windows, version 3.4.1:
 if not exist c:\projects\lib\include\avformat\avformat.h (
 	echo -------------------------
