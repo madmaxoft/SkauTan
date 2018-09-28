@@ -1,5 +1,5 @@
-#ifndef DLGVOTESERVER_H
-#define DLGVOTESERVER_H
+#ifndef DLGLVSSTATUS_H
+#define DLGLVSSTATUS_H
 
 
 
@@ -16,7 +16,7 @@
 class ComponentCollection;
 namespace Ui
 {
-	class DlgVoteServer;
+	class DlgLvsStatus;
 }
 
 
@@ -40,7 +40,7 @@ public:
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgVoteServer> m_UI;
+	std::unique_ptr<Ui::DlgLvsStatus> m_UI;
 
 	/** All the components of the app. */
 	ComponentCollection & m_Components;
@@ -51,6 +51,13 @@ private slots:
 	/** Handles doubleclicks in the address list.
 	Opens the browser on the dblclicked address. */
 	void cellDblClicked(const QModelIndex & a_Index);
+
+	/** Shows the QR code for the URL in the current row of the address list. */
+	void displayQrCode();
 };
 
-#endif // DLGVOTESERVER_H
+
+
+
+
+#endif // DLGLVSSTATUS_H

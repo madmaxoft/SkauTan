@@ -203,7 +203,7 @@ FORMS += \
 	DlgTapTempo.ui \
 	DlgRemovedSongs.ui \
 	DlgImportDB.ui \
-	DlgVoteServer.ui \
+	DlgLvsStatus.ui \
 
 RESOURCES += \
 	res/SkauTan.qrc
