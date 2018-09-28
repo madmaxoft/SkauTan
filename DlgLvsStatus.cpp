@@ -1,10 +1,31 @@
 #include "DlgLvsStatus.h"
-#include "ui_DlgVoteServer.h"
+#include "ui_DlgLvsStatus.h"
 #include <QNetworkInterface>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QPixmap>
 #include "Settings.h"
 #include "LocalVoteServer.h"
+#include "lib/QrCodeGen/QrCode.hpp"
+
+
+
+
+
+static QPixmap renderQrCode(const QString & a_Text)
+{
+	auto qr = qrcodegen::QrCode::encodeText(a_Text.toUtf8().constData(), qrcodegen::QrCode::Ecc::HIGH);
+	auto size = qr.getSize();
+	QImage img(size, size, QImage::Format_Mono);
+	for (int x = 0; x < size; ++x)
+	{
+		for (int y = 0; y < size; ++y)
+		{
+			img.setPixel(x, y, qr.getModule(x, y) ? 0 : 1);
+		}
+	}
+	return QPixmap::fromImage(img).scaled(size * 4, size * 4);
+}
 
 
 
@@ -12,7 +33,7 @@
 
 DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Parent):
 	Super(a_Parent),
-	m_UI(new Ui::DlgVoteServer),
+	m_UI(new Ui::DlgLvsStatus),
 	m_Components(a_Components)
 {
 	m_UI->setupUi(this);
@@ -56,8 +77,9 @@ DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Paren
 	tw->resizeColumnsToContents();
 
 	// Connect signals and slots:
-	connect(m_UI->btnClose, &QPushButton::pressed,        this, &QDialog::close);
-	connect(tw,             &QTableWidget::doubleClicked, this, &DlgLvsStatus::cellDblClicked);
+	connect(m_UI->btnClose, &QPushButton::pressed,             this, &QDialog::close);
+	connect(tw,             &QTableWidget::doubleClicked,      this, &DlgLvsStatus::cellDblClicked);
+	connect(tw,             &QTableWidget::currentCellChanged, this, &DlgLvsStatus::displayQrCode);
 }
 
 
@@ -83,5 +105,31 @@ void DlgLvsStatus::cellDblClicked(const QModelIndex & a_Index)
 			auto url = QUrl(cellData);
 			QDesktopServices::openUrl(url);
 		}
+	}
+}
+
+
+
+
+
+void DlgLvsStatus::displayQrCode()
+{
+	QString url;
+	auto curRow = m_UI->twAddresses->currentRow();
+	if (curRow >= 0)
+	{
+		auto item = m_UI->twAddresses->item(curRow, 0);
+		if (item != nullptr)
+		{
+			url = item->data(Qt::DisplayRole).toString();
+		}
+	}
+	if (url.isEmpty())
+	{
+		m_UI->lblQrCode->setPixmap(QPixmap());
+	}
+	else
+	{
+		m_UI->lblQrCode->setPixmap(renderQrCode(url));
 	}
 }
