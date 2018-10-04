@@ -99,7 +99,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
 	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
-	connect(m_UI->actLvsDetails,          &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
+	connect(m_UI->actLvsStatus,           &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
 	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayerItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
@@ -146,7 +146,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	// Set up the Tools button:
 	auto lvs = m_Components.get<LocalVoteServer>();
 	m_UI->actToggleLvs->setChecked(lvs->isStarted());
-	m_UI->actLvsDetails->setEnabled(lvs->isStarted());
+	m_UI->actLvsStatus->setEnabled(lvs->isStarted());
 	auto menu = new QMenu(this);
 	menu->addAction(m_UI->actBackgroundTasks);
 	menu->addAction(m_UI->actRemovedSongs);
@@ -156,7 +156,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addAction(m_UI->actSavePlaylist);
 	menu->addSeparator();
 	menu->addAction(m_UI->actToggleLvs);
-	menu->addAction(m_UI->actLvsDetails);
+	menu->addAction(m_UI->actLvsStatus);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -174,7 +174,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actImportDB,
 		m_UI->actSavePlaylist,
 		m_UI->actToggleLvs,
-		m_UI->actLvsDetails,
+		m_UI->actLvsStatus,
 	});
 
 	refreshQuickPlayer();
@@ -961,12 +961,12 @@ void PlayerWindow::toggleLvs()
 	if (lvs->isStarted())
 	{
 		lvs->stopServer();
-		m_UI->actLvsDetails->setEnabled(false);
+		m_UI->actLvsStatus->setEnabled(false);
 	}
 	else
 	{
 		lvs->startServer();
-		m_UI->actLvsDetails->setEnabled(true);
+		m_UI->actLvsStatus->setEnabled(true);
 	}
 }
 

@@ -644,15 +644,15 @@
     <string>Turns Local voting server on or off</string>
    </property>
   </action>
-  <action name="actLvsDetails">
+  <action name="actLvsStatus">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>  Details...</string>
+    <string>  Status...</string>
    </property>
    <property name="toolTip">
-    <string>Displays detailed information on the Local Vote Server</string>
+    <string>Displays detailed status information on the Local Vote Server</string>
    </property>
   </action>
  </widget>
