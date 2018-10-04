@@ -6,6 +6,7 @@
 
 
 #include <set>
+#include <atomic>
 #include <QObject>
 #include <QTcpServer>
 #include "ComponentCollection.h"
@@ -53,6 +54,9 @@ public:
 	Throws if not started. */
 	quint16 port() const;
 
+	/** Returns the number of votes that were cast since the program start. */
+	unsigned numVotes() const { return m_NumVotes.load(); }
+
 
 protected:
 
@@ -77,6 +81,9 @@ protected:
 
 	/** The port on which the server is listening. Only valid when started. */
 	quint16 m_Port;
+
+	/** Number of votes that were cast within this app run. */
+	std::atomic<unsigned> m_NumVotes;
 
 
 	/** Processes the specified data incoming from the specified socket. */

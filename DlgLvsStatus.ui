@@ -59,6 +59,16 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="lblVoteCount">
+     <property name="toolTip">
+      <string>Number of votes cast since the program started.</string>
+     </property>
+     <property name="text">
+      <string notr="true"/>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">

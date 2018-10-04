@@ -54,6 +54,9 @@ private slots:
 
 	/** Shows the QR code for the URL in the current row of the address list. */
 	void displayQrCode();
+
+	/** Updates the GUI counter of votes within the current session. */
+	void updateVoteCount();
 };
 
 

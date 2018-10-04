@@ -31,6 +31,9 @@ static QPixmap renderQrCode(const QString & a_Text)
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+// DlgLvsStatus:
+
 DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Parent):
 	Super(a_Parent),
 	m_UI(new Ui::DlgLvsStatus),
@@ -38,6 +41,7 @@ DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Paren
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgVoteServer", *this);
+	updateVoteCount();
 
 	// Fill in the addresses:
 	auto lvs = m_Components.get<LocalVoteServer>();
@@ -77,9 +81,12 @@ DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Paren
 	tw->resizeColumnsToContents();
 
 	// Connect signals and slots:
-	connect(m_UI->btnClose, &QPushButton::pressed,             this, &QDialog::close);
-	connect(tw,             &QTableWidget::doubleClicked,      this, &DlgLvsStatus::cellDblClicked);
-	connect(tw,             &QTableWidget::currentCellChanged, this, &DlgLvsStatus::displayQrCode);
+	connect(m_UI->btnClose, &QPushButton::pressed,                    this, &QDialog::close);
+	connect(tw,             &QTableWidget::doubleClicked,             this, &DlgLvsStatus::cellDblClicked);
+	connect(tw,             &QTableWidget::currentCellChanged,        this, &DlgLvsStatus::displayQrCode);
+	connect(lvs.get(),      &LocalVoteServer::addVoteRhythmClarity,   this, &DlgLvsStatus::updateVoteCount);
+	connect(lvs.get(),      &LocalVoteServer::addVoteGenreTypicality, this, &DlgLvsStatus::updateVoteCount);
+	connect(lvs.get(),      &LocalVoteServer::addVotePopularity,      this, &DlgLvsStatus::updateVoteCount);
 }
 
 
@@ -132,4 +139,14 @@ void DlgLvsStatus::displayQrCode()
 	{
 		m_UI->lblQrCode->setPixmap(renderQrCode(url));
 	}
+}
+
+
+
+
+
+void DlgLvsStatus::updateVoteCount()
+{
+	auto lvs = m_Components.get<LocalVoteServer>();
+	m_UI->lblVoteCount->setText(tr("Number of votes: %1").arg(lvs->numVotes()));
 }

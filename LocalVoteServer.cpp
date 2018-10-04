@@ -148,11 +148,15 @@ protected:
 
 
 
+////////////////////////////////////////////////////////////////////////////////
+// LocalVoteServer:
+
 LocalVoteServer::LocalVoteServer(ComponentCollection & a_Components, QObject * a_Parent):
 	Super(a_Parent),
 	m_Components(a_Components),
 	m_HashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length()),
-	m_IsStarted(false)
+	m_IsStarted(false),
+	m_NumVotes(0)
 {
 	connect(&m_Server, &QTcpServer::newConnection, this, &LocalVoteServer::onNewConnection);
 }
@@ -397,14 +401,17 @@ void LocalVoteServer::apiVote(
 	// Dispatch the vote according to type:
 	if (voteType->second == "rhythmClarity")
 	{
+		m_NumVotes += 1;
 		emit addVoteRhythmClarity(hash, value);
 	}
 	else if (voteType->second == "genreTypicality")
 	{
+		m_NumVotes += 1;
 		emit addVoteGenreTypicality(hash, value);
 	}
 	else if (voteType->second == "popularity")
 	{
+		m_NumVotes += 1;
 		emit addVotePopularity(hash, value);
 	}
 	else
