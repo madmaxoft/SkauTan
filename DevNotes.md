@@ -42,8 +42,15 @@ executable:
 
 | URL            | Notes |
 |----------------|-------|
-| /              | Special built-in case for the main page, serves the VoteServer/index.html file |
-| /static/{file} | Sends a static file, VoteServer/static/{file} |
+| /              | Special built-in case for the main page, serves the VoteServer/index.html file (or in a language-specific subfolder, like in the `static` subgroup). |
+| /static/{file} | Sends a static file, the first existing of: |
+|                |   - VoteServer/static/{$SKAUTAN_WEB_LANGUAGE}/{file} |
+|                |   - VoteServer/static/{$LANG}/{file} |
+|                |   - VoteServer/static/{file} |
+|                |   - :/VoteServer/static/{$SKAUTAN_WEB_LANGUAGE}/{file}  _(from internal resources)_ |
+|                |   - :/VoteServer/static/{$LANG}/{file}   _(from internal resources)_ |
+|                |   - :/VoteServer/static/{file}   _(from internal resources)_ |
+|                |   - _404 error_
 | /api/{fn}      | Calls the specified API function |
 
 ### API functions

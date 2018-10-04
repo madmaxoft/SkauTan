@@ -12,5 +12,8 @@
         <file>VoteServer/static/voteButton3.png</file>
         <file>VoteServer/static/voteButton4.png</file>
         <file>VoteServer/static/voteButton5.png</file>
+        <file>VoteServer/cz/index.html</file>
+        <file>VoteServer/cz/static/lang.js</file>
+        <file>VoteServer/static/lang.js</file>
     </qresource>
 </RCC>
