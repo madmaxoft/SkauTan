@@ -68,7 +68,7 @@ function addSong(a_Desc)
 	{
 		return;
 	}
-	console.log("Adding song ", a_Desc);
+	// console.log("Adding song ", a_Desc);
 	var fragment = document.createDocumentFragment();
 	var container = document.createElement("div");
 	container.setAttribute("class", "songContainer");
@@ -86,12 +86,13 @@ function addSong(a_Desc)
 	appendTextDiv(cInfo, "genre",        a_Desc.genre);
 	if (a_Desc.mpm > 0)
 	{
-		appendTextDiv(cInfo, "mpm",          a_Desc.mpm + " MPM | ");
+		var mpm = Math.floor(a_Desc.mpm * 10) / 10;
+		appendTextDiv(cInfo, "mpm", mpm + " MPM | ");
 	}
 
-	appendTextDiv(container, "voteLabelRC",  "Rhythm clarity:");
-	appendTextDiv(container, "voteLabelGT",  "Genre typicality:");
-	appendTextDiv(container, "voteLabelPop", "Popularity:");
+	appendTextDiv(container, "voteLabelRC",  gText["Rhythm clarity:"]);
+	appendTextDiv(container, "voteLabelGT",  gText["Genre typicality:"]);
+	appendTextDiv(container, "voteLabelPop", gText["Popularity:"]);
 	appendVoteButtons(container, a_Desc.hash, "rhythmClarity",   "RC");
 	appendVoteButtons(container, a_Desc.hash, "genreTypicality", "GT");
 	appendVoteButtons(container, a_Desc.hash, "popularity",      "Pop");

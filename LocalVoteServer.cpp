@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QCryptographicHash>
 #include <QNetworkInterface>
+#include <QProcessEnvironment>
 #include "lib/HTTP/StringUtils.h"
 #include "lib/HTTP/Message.h"
 #include "lib/HTTP/FormParser.h"
@@ -215,28 +216,40 @@ quint16 LocalVoteServer::port() const
 void LocalVoteServer::sendFile(QTcpSocket * a_Socket, const std::string & a_RelativePath)
 {
 	std::string contents;
-	QFile f(QString::fromStdString("VoteServer/" + a_RelativePath));
-	if (f.open(QIODevice::ReadOnly))
+	auto webLang = QProcessEnvironment::systemEnvironment().value("SKAUTAN_WEB_LANGUAGE", "").toStdString();
+	auto progLang = QProcessEnvironment::systemEnvironment().value("LANG", "").toStdString();
+	std::vector<std::string> prefixes;
+	if (!webLang.empty())
 	{
-		// Disk file present
-		contents = f.readAll().toStdString();
+		prefixes.push_back("VoteServer/" + webLang + "/");
 	}
-	else
+	if (!progLang.empty())
 	{
-		// Disk file not found, try resources:
-		QFile f2(QString::fromStdString(":/VoteServer/" + a_RelativePath));
-		if (f2.open(QIODevice::ReadOnly))
+		prefixes.push_back("VoteServer/" + progLang + "/");
+	}
+	prefixes.push_back("VoteServer/");
+	if (!webLang.empty())
+	{
+		prefixes.push_back(":/VoteServer/" + webLang + "/");
+	}
+	if (!progLang.empty())
+	{
+		prefixes.push_back(":/VoteServer/" + progLang + "/");
+	}
+	prefixes.push_back(":/VoteServer/");
+	for (const auto & prefix: prefixes)
+	{
+		QFile f(QString::fromStdString(prefix + a_RelativePath));
+		if (f.open(QIODevice::ReadOnly))
 		{
-			contents = f2.readAll().toStdString();
-		}
-		else
-		{
-			// Resources not present either, bail out:
-			return send404(a_Socket);
+			contents = f.readAll().toStdString();
+			auto resp = Http::SimpleOutgoingResponse::serialize(200, "OK", contents);
+			a_Socket->write(QByteArray::fromStdString(resp));
+			return;
 		}
 	}
-	auto resp = Http::SimpleOutgoingResponse::serialize(200, "OK", contents);
-	a_Socket->write(QByteArray::fromStdString(resp));
+	// File not found, send a 404 error:
+	return send404(a_Socket);
 }
 
 
