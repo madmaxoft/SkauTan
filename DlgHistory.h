@@ -78,6 +78,9 @@ private slots:
 
 	/** Displays the song properties dialog for the currently highlighted song. */
 	void showProperties();
+
+	/** Displays file save dlg, then saves the (selected) history into the file. */
+	void exportToFile();
 };
 
 
