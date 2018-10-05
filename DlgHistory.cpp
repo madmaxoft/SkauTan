@@ -1,35 +1,242 @@
 #include "DlgHistory.h"
 #include "ui_DlgHistory.h"
-#include <QSqlQueryModel>
-#include <QSqlError>
 #include <QDebug>
+#include <QMenu>
 #include "Database.h"
 #include "Settings.h"
+#include "DlgSongProperties.h"
 
 
 
 
+
+/** Returns the string representation of the song's tempo.
+Returns empty string if tempo not available. */
+static QString formatMPM(const DatedOptional<double> & a_SongMPM)
+{
+	if (!a_SongMPM.isPresent())
+	{
+		return {};
+	}
+	return QLocale().toString(a_SongMPM.value(), 'f', 1);
+}
+
+
+
+
+
+/** Returns the string representation of the date (and time). */
+static QString formatDate(const QDateTime a_DateTime)
+{
+	return a_DateTime.toString("yyyy-MM-dd HH:mm:ss");
+}
+
+
+
+
+
+class HistoryModel:
+	public QAbstractTableModel
+{
+	using Super = QAbstractTableModel;
+
+
+public:
+
+	enum Column
+	{
+		colDate,
+		colGenre,
+		colMPM,
+		colAuthor,
+		colTitle,
+
+		colMax,
+	};
+
+
+	enum
+	{
+		roleSharedData = Qt::UserRole + 1,
+	};
+
+
+	HistoryModel(Database & a_DB):
+		m_DB(a_DB),
+		m_SongSharedDataMap(a_DB.songSharedDataMap()),
+		m_Items(a_DB.playbackHistory())
+	{
+		// Sort the history by datetime, most recent at the top:
+		std::sort(m_Items.begin(), m_Items.end(),
+			[](auto a_Item1, auto a_Item2)
+			{
+				return (a_Item1.m_Timestamp > a_Item2.m_Timestamp);
+			}
+		);
+	}
+
+
+
+
+
+	virtual int rowCount(const QModelIndex & a_Parent) const override
+	{
+		if (a_Parent.isValid())
+		{
+			return 0;
+		}
+		return static_cast<int>(m_Items.size());
+	}
+
+
+
+
+
+	virtual int columnCount(const QModelIndex & a_Parent) const override
+	{
+		if (a_Parent.isValid())
+		{
+			return 0;
+		}
+		return colMax;
+	}
+
+
+
+
+
+	virtual QVariant data(const QModelIndex & a_Index, int a_Role) const override
+	{
+		if (!a_Index.isValid())
+		{
+			return QVariant();
+		}
+
+		auto row = a_Index.row();
+		if ((row < 0) || (static_cast<size_t>(row) > m_Items.size()))
+		{
+			return QVariant();
+		}
+		const auto & item = m_Items[static_cast<size_t>(row)];
+
+		// If requesting the pointer to the shared data, return it:
+		if (a_Role == roleSharedData)
+		{
+			const auto sdItr = m_SongSharedDataMap.find(item.m_Hash);
+			if (sdItr == m_SongSharedDataMap.end())
+			{
+				return QVariant();
+			}
+			return QVariant::fromValue(sdItr->second);
+		}
+
+		// Only process display data from now on:
+		if (a_Role != Qt::DisplayRole)
+		{
+			return QVariant();
+		}
+
+		const auto col = a_Index.column();
+		if (col == colDate)  // Special case - doesn't need hash->song lookup
+		{
+			return formatDate(item.m_Timestamp);
+		}
+		const auto sdItr = m_SongSharedDataMap.find(item.m_Hash);
+		if (sdItr == m_SongSharedDataMap.end())
+		{
+			// Song hash is not in the DB at all
+			return QVariant();
+		}
+
+		// If the song hash is in the DB, but no actual file is present, use the manual tag only:
+		if (sdItr->second->duplicates().empty())
+		{
+			switch (col)
+			{
+				case colGenre:  return sdItr->second->m_TagManual.m_Genre.valueOrDefault();
+				case colMPM:    return formatMPM(sdItr->second->m_TagManual.m_MeasuresPerMinute);
+				case colAuthor: return sdItr->second->m_TagManual.m_Author.valueOrDefault();
+				case colTitle:  return sdItr->second->m_TagManual.m_Title.valueOrDefault();
+			}
+			return QVariant();
+		}
+
+		// Use the info from the first file for the song hash:
+		const auto & song = *(sdItr->second->duplicates()[0]);
+		switch (col)
+		{
+			case colGenre:  return song.primaryGenre().valueOrDefault();
+			case colMPM:    return formatMPM(song.primaryMeasuresPerMinute());
+			case colAuthor: return song.primaryAuthor().valueOrDefault();
+			case colTitle:  return song.primaryTitle().valueOrDefault();
+		}
+		return QVariant();
+	}
+
+
+
+
+	virtual QVariant headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const override
+	{
+		if ((a_Orientation != Qt::Horizontal) || (a_Role != Qt::DisplayRole))
+		{
+			return QVariant();
+		}
+		switch (a_Section)
+		{
+			case colDate:   return DlgHistory::tr("Date and time");
+			case colGenre:  return DlgHistory::tr("Genre");
+			case colMPM:    return DlgHistory::tr("MPM", "MeasuresPerMinute");
+			case colAuthor: return DlgHistory::tr("Author");
+			case colTitle:  return DlgHistory::tr("Title");
+		}
+		return QVariant();
+	}
+
+
+
+protected:
+
+	/** The Database from which to query the data. */
+	Database & m_DB;
+
+	using SongSharedDataMap = decltype(m_DB.songSharedDataMap());
+	const SongSharedDataMap & m_SongSharedDataMap;
+
+	/** The entire playback history, as read from the DB. */
+	std::vector<Database::HistoryItem> m_Items;
+};
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// DlgHistory:
 
 DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 	Super(a_Parent),
+	m_Components(a_Components),
 	m_UI(new Ui::DlgHistory)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgHistory", *this);
-	auto model = new QSqlQueryModel(this);
-	model->setQuery(a_Components.get<Database>()->playbackHistorySqlQuery());
-	if (model->lastError().type() != QSqlError::NoError)
-	{
-		qWarning() << ": LastError: " << model->lastError();
-	}
-	/*
-	model->setHeaderData(0, Qt::Horizontal, tr("Last played"));
-	model->setHeaderData(1, Qt::Horizontal, tr("Genre"));
-	model->setHeaderData(2, Qt::Horizontal, tr("Author"));
-	model->setHeaderData(3, Qt::Horizontal, tr("Title"));
-	model->setHeaderData(4, Qt::Horizontal, tr("FileName"));
-	*/
+	auto model = new HistoryModel(*(a_Components.get<Database>()));
 	m_UI->tblHistory->setModel(model);
+
+	// Create the context menu:
+	auto tbl = m_UI->tblHistory;
+	// Create the context menu:
+	m_ContextMenu.reset(new QMenu());
+	m_ContextMenu->addAction(m_UI->actAppendToPlaylist);
+	m_ContextMenu->addAction(m_UI->actInsertIntoPlaylist);
+	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actProperties);
+	tbl->addActions({
+		m_UI->actAppendToPlaylist,
+		m_UI->actInsertIntoPlaylist,
+		m_UI->actProperties
+	});
 
 	// Stretch the columns to fit in the headers / data:
 	QFontMetrics fmHdr(m_UI->tblHistory->horizontalHeader()->font());
@@ -38,8 +245,14 @@ DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 	m_UI->tblHistory->setColumnWidth(1, fmHdr.width("WGenreW"));
 	Settings::loadHeaderView("DlgHistory", "tblHistory", *m_UI->tblHistory->horizontalHeader());
 
-	connect(m_UI->btnClose, &QPushButton::clicked, this, &DlgHistory::closeClicked);
+	// Connect the signals / slots:
+	connect(m_UI->btnClose,              &QPushButton::clicked,                this, &DlgHistory::close);
+	connect(tbl,                         &QWidget::customContextMenuRequested, this, &DlgHistory::showHistoryContextMenu);
+	connect(m_UI->actAppendToPlaylist,   &QAction::triggered,                  this, &DlgHistory::appendToPlaylist);
+	connect(m_UI->actInsertIntoPlaylist, &QAction::triggered,                  this, &DlgHistory::insertIntoPlaylist);
+	connect(m_UI->actProperties,         &QAction::triggered,                  this, &DlgHistory::showProperties);
 
+	// Allow the window to be maximized:
 	setWindowFlags(Qt::Window);
 }
 
@@ -57,9 +270,77 @@ DlgHistory::~DlgHistory()
 
 
 
-void DlgHistory::closeClicked(bool a_IsChecked)
+SongPtr DlgHistory::songFromIndex(const QModelIndex & a_Index)
 {
-	Q_UNUSED(a_IsChecked);
+	auto sd = m_UI->tblHistory->model()->data(a_Index, HistoryModel::roleSharedData).value<Song::SharedDataPtr>();
+	if ((sd == nullptr) || sd->duplicates().empty())
+	{
+		return nullptr;
+	}
+	return sd->duplicates()[0]->shared_from_this();
+}
 
-	close();
+
+
+
+
+void DlgHistory::showHistoryContextMenu(const QPoint & a_Pos)
+{
+	// Update the actions based on the selection:
+	const auto & sel = m_UI->tblHistory->selectionModel()->selectedRows();
+	m_UI->actAppendToPlaylist->setEnabled(!sel.isEmpty());
+	m_UI->actInsertIntoPlaylist->setEnabled(!sel.isEmpty());
+	m_UI->actProperties->setEnabled(sel.count() == 1);
+
+	// Show the context menu:
+	auto widget = dynamic_cast<QWidget *>(sender());
+	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
+	m_ContextMenu->exec(pos, nullptr);
+}
+
+
+
+
+
+void DlgHistory::appendToPlaylist()
+{
+	foreach(const auto & idx, m_UI->tblHistory->selectionModel()->selectedRows())
+	{
+		auto song = songFromIndex(idx);
+		if (song != nullptr)
+		{
+			emit appendSongToPlaylist(song);
+		}
+	}
+}
+
+void DlgHistory::insertIntoPlaylist()
+{
+	std::vector<SongPtr> songs;
+	foreach(const auto & idx, m_UI->tblHistory->selectionModel()->selectedRows())
+	{
+		auto song = songFromIndex(idx);
+		if (song != nullptr)
+		{
+			songs.push_back(song);
+		}
+	}
+	for (auto itr = songs.crbegin(), end = songs.crend(); itr != end; ++itr)
+	{
+		emit insertSongToPlaylist(*itr);
+	}
+}
+
+
+
+
+
+void DlgHistory::showProperties()
+{
+	auto song = songFromIndex(m_UI->tblHistory->currentIndex());
+	if (song != nullptr)
+	{
+		DlgSongProperties dlg(m_Components, song, this);
+		dlg.exec();
+	}
 }
