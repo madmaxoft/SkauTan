@@ -525,36 +525,6 @@ std::vector<Template::ItemPtr> Database::getFavoriteTemplateItems() const
 
 
 
-QSqlQuery Database::playbackHistorySqlQuery()
-{
-	QSqlQuery res(m_Database);
-	if (!res.prepare("SELECT "
-		"PlaybackHistory.Timestamp, "
-		"SongFiles.ID3Genre, "
-		"SongFiles.ID3Author, "
-		"SongFiles.ID3Title, "
-		"SongFiles.FileName "
-		"FROM PlaybackHistory "
-		"LEFT JOIN SongFiles ON PlaybackHistory.SongHash == SongFiles.Hash"
-	))
-	{
-		qWarning() << "Cannot prep playback history query: " << res.lastError();
-		return QSqlQuery();
-	}
-
-	if (!res.exec())
-	{
-		qWarning() << "Cannot exec playback history query: " << res.lastError();
-		return QSqlQuery();
-	}
-
-	return res;
-}
-
-
-
-
-
 int Database::numSongsMatchingFilter(Template::Filter & a_Filter) const
 {
 	int res = 0;

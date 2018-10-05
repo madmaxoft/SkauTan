@@ -111,9 +111,6 @@ public:
 	/** Returns all template items from all templates that have been marked as "favorite". */
 	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
 
-	/** Returns the SQL query that fetches the playback history data from the DB. */
-	QSqlQuery playbackHistorySqlQuery();
-
 	/** Returns the number of songs that match the specified filter. */
 	int numSongsMatchingFilter(Template::Filter & a_Filter) const;
 
@@ -135,7 +132,7 @@ public:
 	void saveAllSongSharedData();
 
 	/** Returns a map of all SongHash -> SongSharedData in the DB. */
-	const std::map<QByteArray, Song::SharedDataPtr> songSharedDataMap() const { return m_SongSharedData; }
+	const std::map<QByteArray, Song::SharedDataPtr> & songSharedDataMap() const { return m_SongSharedData; }
 
 	/** Returns the entire playback history.
 	Returns by-value, since the history is not normally kept in memory, so it needs to be read from DB in this call. */

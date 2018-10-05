@@ -36,7 +36,7 @@ static QString formatTempo(double a_Tempo)
 {
 	if (a_Tempo < 0)
 	{
-		return PlaylistItemModel::tr("<unknown>", "Tempo");
+		return PlaylistItemModel::tr("", "Tempo");
 	}
 	return QString::number(a_Tempo, 'f', 1);
 }

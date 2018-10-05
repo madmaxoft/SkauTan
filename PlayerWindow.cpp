@@ -363,6 +363,8 @@ void PlayerWindow::showTemplates()
 void PlayerWindow::showHistory()
 {
 	DlgHistory dlg(m_Components, this);
+	connect(&dlg, &DlgHistory::appendSongToPlaylist, this, &PlayerWindow::addSongToPlaylist);
+	connect(&dlg, &DlgHistory::insertSongToPlaylist, this, &PlayerWindow::insertSongToPlaylist);
 	dlg.exec();
 }
 
