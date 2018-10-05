@@ -2,6 +2,8 @@
 #include "ui_DlgHistory.h"
 #include <QDebug>
 #include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "Database.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
@@ -247,6 +249,7 @@ DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 
 	// Connect the signals / slots:
 	connect(m_UI->btnClose,              &QPushButton::clicked,                this, &DlgHistory::close);
+	connect(m_UI->btnExport,             &QPushButton::clicked,                this, &DlgHistory::exportToFile);
 	connect(tbl,                         &QWidget::customContextMenuRequested, this, &DlgHistory::showHistoryContextMenu);
 	connect(m_UI->actAppendToPlaylist,   &QAction::triggered,                  this, &DlgHistory::appendToPlaylist);
 	connect(m_UI->actInsertIntoPlaylist, &QAction::triggered,                  this, &DlgHistory::insertIntoPlaylist);
@@ -314,8 +317,13 @@ void DlgHistory::appendToPlaylist()
 	}
 }
 
+
+
+
+
 void DlgHistory::insertIntoPlaylist()
 {
+	// Collect all the songs:
 	std::vector<SongPtr> songs;
 	foreach(const auto & idx, m_UI->tblHistory->selectionModel()->selectedRows())
 	{
@@ -325,6 +333,8 @@ void DlgHistory::insertIntoPlaylist()
 			songs.push_back(song);
 		}
 	}
+
+	// Emit the signal, reverse the songs:
 	for (auto itr = songs.crbegin(), end = songs.crend(); itr != end; ++itr)
 	{
 		emit insertSongToPlaylist(*itr);
@@ -343,4 +353,74 @@ void DlgHistory::showProperties()
 		DlgSongProperties dlg(m_Components, song, this);
 		dlg.exec();
 	}
+}
+
+
+
+
+
+void DlgHistory::exportToFile()
+{
+	// Get the file name:
+	auto fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("SkauTan: Export selected history"),
+		QString(),
+		tr("CSV file (*.csv)")
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+
+	// Open the file:
+	QFile f(fileName);
+	if (!f.open(QIODevice::WriteOnly))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Cannot write file"),
+			tr("Cannot write to file %1, export aborted.").arg(fileName)
+		);
+		return;
+	}
+
+	// Export:
+	auto tbl = m_UI->tblHistory;
+	auto model = tbl->model();
+	if (tbl->selectionModel()->selection().isEmpty())
+	{
+		// Empty selection -> export everything:
+		auto numRows = model->rowCount();
+		for (int row = 0; row < numRows; ++row)
+		{
+			for (int col = 0; col < HistoryModel::colMax; ++col)
+			{
+				f.write("\"");
+				f.write(model->data(model->index(row, col)).toString().replace("\"", "\\\"").toUtf8());
+				f.write("\",");
+			}
+			f.write("\r\n");
+		}
+	}
+	else
+	{
+		// Export selection only:
+		foreach(const auto & idx, tbl->selectionModel()->selectedRows())
+		{
+			for (int col = 0; col < HistoryModel::colMax; ++col)
+			{
+				f.write("\"");
+				f.write(model->data(model->index(idx.row(), col)).toString().replace("\"", "\\\"").toUtf8());
+				f.write("\",");
+			}
+			f.write("\r\n");
+		}
+	}
+	f.close();
+	QMessageBox::information(
+		this,
+		tr("SkauTan: Export finished"),
+		tr("The history was exported successfully.")
+	);
 }
