@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <QDialog>
+#include <QTimer>
 #include "Song.h"
 
 
@@ -16,6 +17,7 @@
 // fwd:
 class ComponentCollection;
 class QMenu;
+class QAbstractItemModel;
 namespace Ui
 {
 	class DlgHistory;
@@ -59,6 +61,24 @@ private:
 	/** The context menu for the history view. */
 	std::unique_ptr<QMenu> m_ContextMenu;
 
+	/** The model adapter that performs the filtering.
+	The actual class used is HistoryModelFilter, declared within the CPP file; it is a descendant
+	of QAbstractItemModel so it can be up-cast when needed. */
+	QAbstractItemModel * m_ModelFilter;
+
+	/** The new search text to be set into m_SongModelFilter in periodic UI update.
+	The text isn't set immediately to avoid slowdowns while still typing the string. */
+	QString m_NewSearchText;
+
+	/** Number of ticks until m_NewSearchText is set into the filter in the periodic UI update.
+	The text isn't set immediately to avoid slowdowns while still typing the string,
+	this counter goes from a fixed value down to zero on each periodic UI update and only when reaching zero
+	is the search text applied. */
+	int m_TicksUntilSetSearchText;
+
+	/** Timer for updating the UI periodically with background-generated information. */
+	QTimer m_PeriodicUiUpdate;
+
 
 	/** Returns the song represented in the specified table cell.
 	Returns nullptr if no such song. */
@@ -81,6 +101,13 @@ private slots:
 
 	/** Displays file save dlg, then saves the (selected) history into the file. */
 	void exportToFile();
+
+	/** Called periodically to update the UI. */
+	void periodicUiUpdate();
+
+	/** Called when the user edits the search text.
+	Schedules an update in the m_FilterModel. */
+	void searchTextEdited(const QString & a_NewText);
 };
 
 
