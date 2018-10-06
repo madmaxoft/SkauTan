@@ -489,6 +489,7 @@ void DlgSongs::periodicUiUpdate()
 		}
 	}
 
+	// Update the search filter, if appropriate:
 	if (m_TicksUntilSetSearchText > 0)
 	{
 		m_TicksUntilSetSearchText -= 1;

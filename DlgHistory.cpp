@@ -4,10 +4,18 @@
 #include <QMenu>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
 #include "Database.h"
 #include "Settings.h"
 #include "DlgSongProperties.h"
 
+
+
+
+
+/** The number of ticks (periodic UI updates) to wait between the user changing the search text
+and applying it to the filter. This is to avoid slowdowns while typing the search text. */
+static const int TICKS_UNTIL_SET_SEARCH_TEXT = 3;
 
 
 
@@ -213,22 +221,81 @@ protected:
 
 
 
+class HistoryModelFilter:
+	public QSortFilterProxyModel
+{
+	using Super = QSortFilterProxyModel;
+
+public:
+
+	HistoryModelFilter(QObject * a_Parent):
+		Super(a_Parent)
+	{
+	}
+
+
+	/** Sets the text to filter by.
+	Only items containing the specified text are shown in the model.
+	If the text is empty, all items are shown. */
+	void setSearchText(const QString & a_SearchText)
+	{
+		m_SearchText = a_SearchText;
+		invalidateFilter();
+	}
+
+
+protected:
+
+	/** The text to be searched within the items. */
+	QString m_SearchText;
+
+
+	// QSortFilterProxyModel overrides:
+	virtual bool filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcParent) const override
+	{
+		// Empty search text matches everything:
+		if (m_SearchText.isEmpty())
+		{
+			return true;
+		}
+
+		// Search for the text in the whole row:
+		auto numCols = sourceModel()->columnCount(a_SrcParent);
+		for (int col = 0; col < numCols; ++col)
+		{
+			auto txt = sourceModel()->data(sourceModel()->index(a_SrcRow, col, a_SrcParent)).toString();
+			if (txt.contains(m_SearchText, Qt::CaseInsensitive))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+};
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // DlgHistory:
 
 DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 	Super(a_Parent),
 	m_Components(a_Components),
-	m_UI(new Ui::DlgHistory)
+	m_UI(new Ui::DlgHistory),
+	m_TicksUntilSetSearchText(0)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgHistory", *this);
 	auto model = new HistoryModel(*(a_Components.get<Database>()));
-	m_UI->tblHistory->setModel(model);
+	auto modelFilter = new HistoryModelFilter(this);
+	modelFilter->setSourceModel(model);
+	m_ModelFilter = modelFilter;
+	m_UI->tblHistory->setModel(m_ModelFilter);
 
 	// Create the context menu:
 	auto tbl = m_UI->tblHistory;
-	// Create the context menu:
 	m_ContextMenu.reset(new QMenu());
 	m_ContextMenu->addAction(m_UI->actAppendToPlaylist);
 	m_ContextMenu->addAction(m_UI->actInsertIntoPlaylist);
@@ -254,9 +321,13 @@ DlgHistory::DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent) :
 	connect(m_UI->actAppendToPlaylist,   &QAction::triggered,                  this, &DlgHistory::appendToPlaylist);
 	connect(m_UI->actInsertIntoPlaylist, &QAction::triggered,                  this, &DlgHistory::insertIntoPlaylist);
 	connect(m_UI->actProperties,         &QAction::triggered,                  this, &DlgHistory::showProperties);
+	connect(m_UI->leSearch,              &QLineEdit::textEdited,               this, &DlgHistory::searchTextEdited);
+	connect(&m_PeriodicUiUpdate,         &QTimer::timeout,                     this, &DlgHistory::periodicUiUpdate);
 
 	// Allow the window to be maximized:
 	setWindowFlags(Qt::Window);
+
+	m_PeriodicUiUpdate.start(100);
 }
 
 
@@ -423,4 +494,31 @@ void DlgHistory::exportToFile()
 		tr("SkauTan: Export finished"),
 		tr("The history was exported successfully.")
 	);
+}
+
+
+
+
+
+void DlgHistory::periodicUiUpdate()
+{
+	// Update the search filter, if appropriate:
+	if (m_TicksUntilSetSearchText > 0)
+	{
+		m_TicksUntilSetSearchText -= 1;
+		if (m_TicksUntilSetSearchText == 0)
+		{
+			reinterpret_cast<HistoryModelFilter *>(m_ModelFilter)->setSearchText(m_NewSearchText);
+		}
+	}
+}
+
+
+
+
+
+void DlgHistory::searchTextEdited(const QString & a_NewText)
+{
+	m_NewSearchText = a_NewText;
+	m_TicksUntilSetSearchText = TICKS_UNTIL_SET_SEARCH_TEXT;
 }
