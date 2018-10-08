@@ -171,6 +171,8 @@ void LocalVoteServer::handleRequest(
 	const std::string & a_RequestBody
 )
 {
+	qDebug() << "Request: " << a_Request.method().c_str() << " " << a_Request.url().c_str();
+
 	Q_UNUSED(a_RequestBody);
 
 	// If the request is for the root, return the root page contents:
@@ -249,6 +251,7 @@ void LocalVoteServer::sendFile(QTcpSocket * a_Socket, const std::string & a_Rela
 			contents = f.readAll().toStdString();
 			auto resp = Http::SimpleOutgoingResponse::serialize(200, "OK", contents);
 			a_Socket->write(QByteArray::fromStdString(resp));
+			qDebug() << "  Sending file " << f.fileName();
 			return;
 		}
 	}
@@ -267,6 +270,7 @@ void LocalVoteServer::send404(QTcpSocket * a_Socket)
 			404, "Not found", "text/plain", "The specified resource was not found"
 		)
 	));
+	qDebug() << "  Sending 404";
 }
 
 
@@ -314,6 +318,7 @@ void LocalVoteServer::apiPlaylist(
 		a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 			200, "OK", "application/json", "[]"
 		)));
+		qDebug() << "  Sending empty json";
 		return;
 	}
 
@@ -342,6 +347,7 @@ void LocalVoteServer::apiPlaylist(
 	a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 		200, "OK", "application/json", out.toStdString()
 	)));
+	qDebug() << "  Sending playlist json";
 }
 
 
@@ -424,6 +430,7 @@ void LocalVoteServer::apiVote(
 	a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 		200, "OK", "text/plain", ""
 	)));
+	qDebug() << "  Sending empty OK";
 }
 
 
