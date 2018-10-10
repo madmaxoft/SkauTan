@@ -285,6 +285,7 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 		auto song = *itr;
 		emit songRemoving(song, idx);
 		m_Songs.erase(itr);
+		song->sharedData()->delDuplicate(&a_Song);
 
 		// Remove from the DB:
 		{
