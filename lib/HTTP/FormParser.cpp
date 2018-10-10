@@ -1,6 +1,7 @@
 #include "FormParser.h"
 #include <vector>
 #include <cassert>
+#include <cstring>
 #include "StringUtils.h"
 #include "Message.h"
 #include "MultipartParser.h"

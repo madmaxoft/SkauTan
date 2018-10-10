@@ -170,7 +170,7 @@ int noCaseCompare(const std::string & s1, const std::string & s2)
 		return _stricmp(s1.c_str(), s2.c_str());
 	#else
 		// Do it the hard way - convert both strings to lowercase:
-		return StrToLower(s1).compare(StrToLower(s2));
+		return strToLower(s1).compare(strToLower(s2));
 	#endif  // else _MSC_VER
 }
 

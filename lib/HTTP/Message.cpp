@@ -1,4 +1,5 @@
 #include "Message.h"
+#include <cstring>
 #include "StringUtils.h"
 
 
