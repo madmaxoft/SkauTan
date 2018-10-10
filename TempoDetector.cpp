@@ -612,7 +612,7 @@ void TempoDetector::queueScanSong(SongPtr a_Song, const TempoDetector::Options &
 {
 	TempoDetector::Options options(a_Options);
 	m_QueueLength += 1;
-	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song, options]()
+	BackgroundTasks::enqueue(tr("Detect tempo: %1").arg(a_Song->fileName()), [this, a_Song, options]()
 		{
 			Detector d(a_Song, options);
 			auto result = d.process();

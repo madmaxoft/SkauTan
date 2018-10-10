@@ -151,7 +151,7 @@
         <location filename="../DlgEditTemplate.cpp" line="55"/>
         <source>Fav</source>
         <comment>Favorite</comment>
-        <translation type="unfinished">Obl</translation>
+        <translation>Obl</translation>
     </message>
     <message>
         <location filename="../DlgEditTemplate.cpp" line="56"/>
@@ -163,7 +163,7 @@
         <location filename="../DlgEditTemplate.cpp" line="57"/>
         <source># Songs</source>
         <comment>Number of matching songs</comment>
-        <translation type="unfinished">Skladeb</translation>
+        <translation>Skladeb</translation>
     </message>
     <message>
         <source>Fav</source>
@@ -324,22 +324,22 @@
         <translation>Filtr</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="615"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="623"/>
         <source>Really remove the selected filter, including its subtree?</source>
         <translation>Opravdu odebrat označenou část filtru, včetně podstromu?</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="619"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="627"/>
         <source>Really remove the selected filter?</source>
         <translation>Opravdu odebrat označenou část filtru?</translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="623"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="631"/>
         <source>SkauTan - Remove filter?</source>
         <translation>SkauTan: Odebrat část filtru?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../DlgEditTemplateItem.cpp" line="697"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="705"/>
         <source>Matching songs: %n</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -348,7 +348,7 @@
         </translation>
     </message>
     <message>
-        <location filename="../DlgEditTemplateItem.cpp" line="724"/>
+        <location filename="../DlgEditTemplateItem.cpp" line="732"/>
         <source>SkauTan: Choose template item color</source>
         <translation>SkauTan: Vybrat barvu položky</translation>
     </message>
@@ -360,16 +360,60 @@
         <translation type="vanished">Hráno naposled</translation>
     </message>
     <message>
+        <location filename="../DlgHistory.cpp" line="197"/>
+        <source>Date and time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="198"/>
         <source>Genre</source>
-        <translation type="vanished">Žánr</translation>
+        <translation>Žánr</translation>
     </message>
     <message>
+        <location filename="../DlgHistory.cpp" line="199"/>
+        <source>MPM</source>
+        <comment>MeasuresPerMinute</comment>
+        <translation>t/min</translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="200"/>
         <source>Author</source>
-        <translation type="vanished">Autor</translation>
+        <translation>Autor</translation>
     </message>
     <message>
+        <location filename="../DlgHistory.cpp" line="201"/>
         <source>Title</source>
-        <translation type="vanished">Název</translation>
+        <translation>Název</translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="438"/>
+        <source>SkauTan: Export selected history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="440"/>
+        <source>CSV file (*.csv)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="453"/>
+        <source>SkauTan: Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="454"/>
+        <source>Cannot write to file %1, export aborted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="494"/>
+        <source>SkauTan: Export finished</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.cpp" line="495"/>
+        <source>The history was exported successfully.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>FileName</source>
@@ -381,9 +425,175 @@
         <translation>SkauTan: Historie</translation>
     </message>
     <message>
-        <location filename="../DlgHistory.ui" line="112"/>
+        <location filename="../DlgHistory.ui" line="22"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="84"/>
+        <source>&amp;Export...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="111"/>
         <source>&amp;Close</source>
         <translation>&amp;Zavřít</translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="122"/>
+        <source>Append to playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="125"/>
+        <source>Adds the selected songs to the end of the playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="130"/>
+        <source>Insert into playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="133"/>
+        <source>Inserts the selected songs into the playlist, after the current selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="138"/>
+        <source>Properties...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="141"/>
+        <source>Displays the selected song&apos;s properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgHistory.ui" line="144"/>
+        <source>Alt+3</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DlgImportDB</name>
+    <message>
+        <location filename="../DlgImportDB.ui" line="14"/>
+        <source>SkauTan: Import from DB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="26"/>
+        <source>Source:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="35"/>
+        <source>Filename:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="48"/>
+        <source>&amp;Browse...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="70"/>
+        <source>Items to import:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="77"/>
+        <source>Manual tags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="87"/>
+        <source>Last played date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="97"/>
+        <source>Complete playback history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="104"/>
+        <source>Local rating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="111"/>
+        <source>Community rating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="118"/>
+        <source>Skip-start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="128"/>
+        <source>Song deletion history</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="166"/>
+        <source>&amp;Cancel</source>
+        <translation>&amp;Storno</translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.ui" line="176"/>
+        <source>&amp;Import</source>
+        <translation>&amp;Importovat</translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.cpp" line="76"/>
+        <source>SkauTan: Import data from DB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgImportDB.cpp" line="78"/>
+        <source>SkauTan Database (*.sqlite)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DlgLvsStatus</name>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="20"/>
+        <source>The VoteServer is running on the following addresses:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="42"/>
+        <source>Address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="47"/>
+        <source>Adapter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="64"/>
+        <source>Number of votes cast since the program started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.ui" line="89"/>
+        <source>&amp;Close</source>
+        <translation>&amp;Zavřít</translation>
+    </message>
+    <message>
+        <location filename="../DlgLvsStatus.cpp" line="151"/>
+        <source>Number of votes: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -524,7 +734,7 @@
     <message>
         <location filename="../DlgRemovedSongs.ui" line="115"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Zavřít</translation>
+        <translation>&amp;Zavřít</translation>
     </message>
     <message>
         <location filename="../DlgRemovedSongs.cpp" line="70"/>
@@ -642,7 +852,7 @@
     <message>
         <location filename="../DlgSongProperties.ui" line="66"/>
         <source>Notes:</source>
-        <translation type="unfinished">Poznámky:</translation>
+        <translation>Poznámky:</translation>
     </message>
     <message>
         <location filename="../DlgSongProperties.ui" line="49"/>
@@ -692,7 +902,7 @@
     <message>
         <location filename="../DlgSongProperties.ui" line="350"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Storno</translation>
+        <translation>&amp;Storno</translation>
     </message>
     <message>
         <location filename="../DlgSongProperties.ui" line="357"/>
@@ -1014,12 +1224,12 @@ This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="571"/>
+        <location filename="../DlgSongs.cpp" line="572"/>
         <source>SkauTan: Rate songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../DlgSongs.cpp" line="572"/>
+        <location filename="../DlgSongs.cpp" line="573"/>
         <source>Rating:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1065,12 +1275,12 @@ This operation cannot be undone!</source>
     <message>
         <location filename="../DlgTapTempo.ui" line="76"/>
         <source>Tempo</source>
-        <translation type="unfinished">Tempo</translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <location filename="../DlgTapTempo.ui" line="81"/>
         <source>MPM</source>
-        <translation type="unfinished">t/min</translation>
+        <translation>t/min</translation>
     </message>
     <message>
         <location filename="../DlgTapTempo.ui" line="89"/>
@@ -1171,7 +1381,7 @@ This operation cannot be undone!</source>
         <location filename="../DlgTemplatesList.cpp" line="54"/>
         <source>Fav</source>
         <comment>Favorite</comment>
-        <translation type="unfinished">Obl</translation>
+        <translation>Obl</translation>
     </message>
     <message>
         <location filename="../DlgTemplatesList.cpp" line="55"/>
@@ -1183,7 +1393,7 @@ This operation cannot be undone!</source>
         <location filename="../DlgTemplatesList.cpp" line="56"/>
         <source># Songs</source>
         <comment>Number of matching songs</comment>
-        <translation type="unfinished">Skladeb</translation>
+        <translation>Skladeb</translation>
     </message>
     <message>
         <location filename="../DlgTemplatesList.cpp" line="202"/>
@@ -1355,7 +1565,7 @@ This operation cannot be undone!</source>
         <location filename="../DlgTempoDetect.ui" line="323"/>
         <location filename="../DlgTempoDetect.ui" line="411"/>
         <source>Tempo</source>
-        <translation type="unfinished">Tempo</translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <location filename="../DlgTempoDetect.ui" line="331"/>
@@ -1411,7 +1621,7 @@ This operation cannot be undone!</source>
     <message>
         <location filename="../DlgTempoDetect.ui" line="422"/>
         <source>MPM</source>
-        <translation type="unfinished">t/min</translation>
+        <translation>t/min</translation>
     </message>
     <message>
         <location filename="../DlgTempoDetect.ui" line="437"/>
@@ -1421,7 +1631,7 @@ This operation cannot be undone!</source>
     <message>
         <location filename="../DlgTempoDetect.ui" line="460"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Zavřít</translation>
+        <translation>&amp;Zavřít</translation>
     </message>
     <message>
         <location filename="../DlgTempoDetect.cpp" line="59"/>
@@ -1535,7 +1745,13 @@ This operation cannot be undone!</source>
         <translation>Nastavit původní tempo</translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="253"/>
+        <location filename="../PlayerWindow.ui" line="195"/>
+        <location filename="../PlayerWindow.ui" line="202"/>
+        <source>Keep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="267"/>
         <source>Start playing immediately</source>
         <comment>QuickPlayer</comment>
         <translation type="unfinished"></translation>
@@ -1545,152 +1761,264 @@ This operation cannot be undone!</source>
         <translation type="vanished">Úlohy na pozadí</translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="325"/>
+        <location filename="../PlayerWindow.ui" line="339"/>
         <source>Upon completion append</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="449"/>
-        <source>Background tasks...</source>
+        <location filename="../PlayerWindow.ui" line="382"/>
+        <source>How long has this song been playing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="452"/>
-        <source>Show the tasks running in the background</source>
+        <location filename="../PlayerWindow.ui" line="404"/>
+        <source>Remaining playback time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="455"/>
-        <source>Ctrl+B</source>
+        <location filename="../PlayerWindow.ui" line="421"/>
+        <source>Current wall-clock time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="460"/>
-        <source>Song properties...</source>
+        <location filename="../PlayerWindow.ui" line="431"/>
+        <source>Current position within the song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="463"/>
-        <source>Alt+3</source>
+        <location filename="../PlayerWindow.ui" line="467"/>
+        <source>Previous track (with fade-out)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="468"/>
-        <source>&amp;Play</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="471"/>
-        <source>Play the selected song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="480"/>
-        <source>Return</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="485"/>
-        <source>Rate:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="488"/>
-        <source>Set the songs&apos; local rating</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="491"/>
-        <source>Ctrl+R</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="496"/>
-        <source>&amp;Remove from library...</source>
+        <location filename="../PlayerWindow.ui" line="483"/>
+        <source>Start playback / pause playback (NO fade-out)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerWindow.ui" line="499"/>
-        <source>Remove the songs from the library, but keep the files on the disk</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="504"/>
-        <source>&amp;Delete from disk...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="507"/>
-        <source>Delete the songs from both the library and the disk</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="512"/>
-        <source>R&amp;emove from playlist</source>
+        <source>Stop the playback (with fade-out)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerWindow.ui" line="515"/>
-        <source>Remove the selected items from the playlist</source>
+        <source>Next track (with fade-out)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.ui" line="518"/>
-        <source>Del</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="523"/>
-        <source>Set duration limit:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../PlayerWindow.ui" line="528"/>
-        <source>Remove duration limit</source>
+        <location filename="../PlayerWindow.ui" line="530"/>
+        <source>Background tasks...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerWindow.ui" line="533"/>
-        <source>Removed songs...</source>
+        <source>Show the tasks running in the background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../PlayerWindow.ui" line="536"/>
+        <source>Ctrl+B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="541"/>
+        <source>Song properties...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="544"/>
+        <source>Alt+3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="549"/>
+        <source>&amp;Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="552"/>
+        <source>Play the selected song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="561"/>
+        <source>Return</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="566"/>
+        <source>Rate:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="569"/>
+        <source>Set the songs&apos; local rating</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="572"/>
+        <source>Ctrl+R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="577"/>
+        <source>&amp;Remove from library...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="580"/>
+        <source>Remove the songs from the library, but keep the files on the disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="585"/>
+        <source>&amp;Delete from disk...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="588"/>
+        <source>Delete the songs from both the library and the disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="593"/>
+        <source>R&amp;emove from playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="596"/>
+        <source>Remove the selected items from the playlist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="599"/>
+        <source>Del</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="604"/>
+        <source>Set duration limit:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="609"/>
+        <source>Remove duration limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="614"/>
+        <source>Removed songs...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="617"/>
         <source>Shows the list of songs that have been removed from the library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="609"/>
+        <location filename="../PlayerWindow.ui" line="622"/>
+        <source>Import data...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="625"/>
+        <source>Import data from another database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="630"/>
+        <source>&amp;Save playlist...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="633"/>
+        <source>Save the current playlist into a file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="641"/>
+        <source>Local voting server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="644"/>
+        <source>Turns Local voting server on or off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="652"/>
+        <source>  Status...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.ui" line="655"/>
+        <source>Displays detailed status information on the Local Vote Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="643"/>
         <source>SkauTan: Delete songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="610"/>
+        <location filename="../PlayerWindow.cpp" line="644"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="644"/>
+        <location filename="../PlayerWindow.cpp" line="678"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="645"/>
+        <location filename="../PlayerWindow.cpp" line="679"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="745"/>
+        <location filename="../PlayerWindow.cpp" line="767"/>
         <source>SkauTan: Set duration limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlayerWindow.cpp" line="746"/>
+        <location filename="../PlayerWindow.cpp" line="768"/>
         <source>New duration:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="915"/>
+        <source>SkauTan: Save playlist:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="917"/>
+        <source>M3U playlist (*.m3u)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="928"/>
+        <source>SkauTan: Cannot write file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="929"/>
+        <source>Cannot write to file %1, playlist NOT saved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="944"/>
+        <source>#SKAUTAN:TMPL:%1:%2
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlayerWindow.cpp" line="950"/>
+        <source>#SKAUTAN:HASH:%1
+</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1703,60 +2031,71 @@ This operation cannot be undone!</source>
         <translation>&lt;neznámá&gt;</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="39"/>
         <source>&lt;unknown&gt;</source>
         <comment>Tempo</comment>
-        <translation>&lt;neznámé&gt;</translation>
+        <translation type="vanished">&lt;neznámé&gt;</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="309"/>
+        <location filename="../PlaylistItemModel.cpp" line="336"/>
         <source>Genre</source>
         <translation>Žánr</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="310"/>
+        <location filename="../PlaylistItemModel.cpp" line="337"/>
         <source>Length</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="311"/>
+        <location filename="../PlaylistItemModel.cpp" line="338"/>
         <source>Dur</source>
         <comment>Duration (limit)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="312"/>
+        <location filename="../PlaylistItemModel.cpp" line="339"/>
         <source>MPM</source>
         <translation>t/min</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="313"/>
+        <location filename="../PlaylistItemModel.cpp" line="340"/>
         <source>Author</source>
         <translation>Autor</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="314"/>
+        <location filename="../PlaylistItemModel.cpp" line="341"/>
         <source>Title</source>
         <translation>Název</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="315"/>
+        <location filename="../PlaylistItemModel.cpp" line="342"/>
         <source>Name</source>
         <translation>Jméno</translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="316"/>
+        <location filename="../PlaylistItemModel.cpp" line="343"/>
         <source>Rplc</source>
         <comment>Replace</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="325"/>
+        <location filename="../PlaylistItemModel.cpp" line="344"/>
+        <source>Start</source>
+        <comment>Time when playback started / will start</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlaylistItemModel.cpp" line="345"/>
+        <source>End</source>
+        <comment>Time when playback ended / will end</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../PlaylistItemModel.cpp" line="354"/>
         <source>Duration (limit)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PlaylistItemModel.cpp" line="326"/>
+        <location filename="../PlaylistItemModel.cpp" line="355"/>
         <source>Click to replace the song with another one matching the template item</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1764,24 +2103,24 @@ This operation cannot be undone!</source>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../main.cpp" line="51"/>
+        <location filename="../main.cpp" line="54"/>
         <source>SkauTan: Error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="52"/>
+        <location filename="../main.cpp" line="55"/>
         <source>Cannot import default templates, the definition file is inaccessible.
 %1</source>
         <translation>Nelze importovat vestavěné šablony, definice není přístupná.
 %1</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="131"/>
+        <location filename="../main.cpp" line="163"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="132"/>
+        <location filename="../main.cpp" line="164"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
@@ -1961,25 +2300,25 @@ Last modified: %2</source>
 <context>
     <name>Template</name>
     <message>
-        <location filename="../Template.cpp" line="283"/>
+        <location filename="../Template.cpp" line="284"/>
         <source>And</source>
         <comment>FilterCaption</comment>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="284"/>
+        <location filename="../Template.cpp" line="285"/>
         <source>Or</source>
         <comment>FilterCaption</comment>
         <translation>Nebo</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="306"/>
+        <location filename="../Template.cpp" line="307"/>
         <source> and </source>
         <comment>FilterConcatString</comment>
         <translation> a </translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="307"/>
+        <location filename="../Template.cpp" line="308"/>
         <source> or </source>
         <comment>FilterConcatString</comment>
         <translation> nebo </translation>
@@ -2000,7 +2339,7 @@ Last modified: %2</source>
         <translation type="vanished">Žánr (kdekoliv)</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="400"/>
+        <location filename="../Template.cpp" line="401"/>
         <source>Length</source>
         <comment>SongPropertyCaption</comment>
         <translation>Délka</translation>
@@ -2016,7 +2355,7 @@ Last modified: %2</source>
         <translation type="vanished">Hodnocení</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="403"/>
+        <location filename="../Template.cpp" line="404"/>
         <source>LastPlayed</source>
         <comment>SongPropertyCaption</comment>
         <translation>Hráno naposled</translation>
@@ -2082,205 +2421,205 @@ Last modified: %2</source>
         <translation type="vanished">t/min (T)</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="397"/>
+        <location filename="../Template.cpp" line="398"/>
         <source>Author [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="398"/>
+        <location filename="../Template.cpp" line="399"/>
         <source>Title [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="399"/>
+        <location filename="../Template.cpp" line="400"/>
         <source>Genre [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="401"/>
+        <location filename="../Template.cpp" line="402"/>
         <source>MPM [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="402"/>
+        <location filename="../Template.cpp" line="403"/>
         <source>Local Rating</source>
         <comment>SongPropertyCaption</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="404"/>
+        <location filename="../Template.cpp" line="405"/>
         <source>Author [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [M]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="405"/>
+        <location filename="../Template.cpp" line="406"/>
         <source>Title [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [M]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="406"/>
+        <location filename="../Template.cpp" line="407"/>
         <source>Genre [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [M]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="407"/>
+        <location filename="../Template.cpp" line="408"/>
         <source>MPM [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [M]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="408"/>
+        <location filename="../Template.cpp" line="409"/>
         <source>Author [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [S]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="409"/>
+        <location filename="../Template.cpp" line="410"/>
         <source>Title [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [S]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="410"/>
+        <location filename="../Template.cpp" line="411"/>
         <source>Genre [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [S]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="411"/>
+        <location filename="../Template.cpp" line="412"/>
         <source>MPM [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [S]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="412"/>
+        <location filename="../Template.cpp" line="413"/>
         <source>Author [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [T]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="413"/>
+        <location filename="../Template.cpp" line="414"/>
         <source>Title [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [T]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="414"/>
+        <location filename="../Template.cpp" line="415"/>
         <source>Genre [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [T]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="415"/>
+        <location filename="../Template.cpp" line="416"/>
         <source>MPM [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [T]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="416"/>
+        <location filename="../Template.cpp" line="417"/>
         <source>Author [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [primární]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="417"/>
+        <location filename="../Template.cpp" line="418"/>
         <source>Title [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [primární]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="418"/>
+        <location filename="../Template.cpp" line="419"/>
         <source>Genre [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [primární]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="419"/>
+        <location filename="../Template.cpp" line="420"/>
         <source>MPM [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [primární]</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="420"/>
+        <location filename="../Template.cpp" line="421"/>
         <source>Warning count</source>
         <comment>SongPropertyCaption</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="421"/>
+        <location filename="../Template.cpp" line="422"/>
         <source>Rhythm clarity rating</source>
         <comment>SongPropertyCaption</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="422"/>
+        <location filename="../Template.cpp" line="423"/>
         <source>Genre typicality rating</source>
         <comment>SongPropertyCaption</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="423"/>
+        <location filename="../Template.cpp" line="424"/>
         <source>Popularity rating</source>
         <comment>SongPropertyCaption</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="424"/>
+        <location filename="../Template.cpp" line="425"/>
         <source>Notes</source>
         <comment>SongPropertyCaption</comment>
-        <translation type="unfinished">Poznámky</translation>
+        <translation>Poznámky</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="438"/>
+        <location filename="../Template.cpp" line="439"/>
         <source>==</source>
         <comment>Comparison</comment>
         <translation>==</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="439"/>
+        <location filename="../Template.cpp" line="440"/>
         <source>!=</source>
         <comment>Comparison</comment>
         <translation>!=</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="440"/>
+        <location filename="../Template.cpp" line="441"/>
         <source>contains</source>
         <comment>Comparison</comment>
         <translation>obsahuje</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="441"/>
+        <location filename="../Template.cpp" line="442"/>
         <source>doesn&apos;t contain</source>
         <comment>Comparison</comment>
         <translation>neobsahuje</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="442"/>
+        <location filename="../Template.cpp" line="443"/>
         <source>&gt;</source>
         <comment>Comparison</comment>
         <translation>&gt;</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="443"/>
+        <location filename="../Template.cpp" line="444"/>
         <source>&gt;=</source>
         <comment>Comparison</comment>
         <translation>&gt;=</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="444"/>
+        <location filename="../Template.cpp" line="445"/>
         <source>&lt;</source>
         <comment>Comparison</comment>
         <translation>&lt;</translation>
     </message>
     <message>
-        <location filename="../Template.cpp" line="445"/>
+        <location filename="../Template.cpp" line="446"/>
         <source>&lt;=</source>
         <comment>Comparison</comment>
         <translation>&lt;=</translation>
@@ -2289,20 +2628,24 @@ Last modified: %2</source>
 <context>
     <name>TempoDetector</name>
     <message>
-        <location filename="../TempoDetector.cpp" line="615"/>
         <source>Scan metadata: %1</source>
-        <translation type="unfinished">Čtení metadat: %1</translation>
+        <translation type="obsolete">Čtení metadat: %1</translation>
+    </message>
+    <message>
+        <location filename="../TempoDetector.cpp" line="615"/>
+        <source>Detect tempo: %1</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>WaveformDisplay</name>
     <message>
-        <location filename="../WaveformDisplay.cpp" line="244"/>
+        <location filename="../WaveformDisplay.cpp" line="243"/>
         <source>Set skip-start here</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../WaveformDisplay.cpp" line="245"/>
+        <location filename="../WaveformDisplay.cpp" line="244"/>
         <source>Remove skip-start</source>
         <translation type="unfinished"></translation>
     </message>
