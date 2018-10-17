@@ -108,7 +108,7 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 		for (const auto & item: tmpl->items())
 		{
 			auto favDesc = item->isFavorite() ? tr("Y", "IsFavorite") : QString();
-			auto filterDesc = item->filter()->getDescription();
+			auto filterDesc = item->rootNode()->getDescription();
 			m_UI->tblItems->setItem(idx, 0, new QTableWidgetItem(item->displayName()));
 			m_UI->tblItems->setItem(idx, 1, new QTableWidgetItem(item->notes()));
 			m_UI->tblItems->setItem(idx, 2, new QTableWidgetItem(favDesc));

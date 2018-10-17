@@ -711,6 +711,63 @@ static const std::vector<VersionScript> g_VersionScripts =
 			"DateAdded DATETIME"
 		")",
 	}),  // Version 12 to Version 13
+
+
+	// Version 13 to Version 14
+	// #177: Reorganize templates into reusable items
+	// [Templates, TemplateItems, TemplateFilters] -> [Templates, TemplateItems, Filters, FilterNodes]
+	VersionScript({
+		"CREATE TABLE FilterNodes ("
+			"RowID        INTEGER PRIMARY KEY,"
+			"FilterID     INTEGER,"  // RowID of the Filter that owns this Node
+			"ParentID     INTEGER,"  // RowID of this Node's parent Node, or -1 if root
+			"Kind         INTEGER,"  // Numeric representation of the Template::Filter::Kind enum
+			"SongProperty INTEGER,"  // Numeric representation of the Template::Filter::SongProperty enum
+			"Comparison   INTEGER,"  // Numeric representation of the Template::Filter::Comparison enum
+			"Value        TEXT"      // The value against which to compare
+		")",
+		"INSERT INTO FilterNodes ("
+			"RowID, FilterID, ParentID, Kind, SongProperty, Comparison, Value"
+		") SELECT "
+			"RowID, ItemID, ParentID, Kind, SongProperty, Comparison, Value "
+		"FROM TemplateFilters",
+		"DROP TABLE TemplateFilters",
+
+
+		"CREATE TABLE Filters ("
+			"RowID         INTEGER PRIMARY KEY,"
+			"DisplayName   TEXT,"
+			"Notes         TEXT,"
+			"IsFavorite    INTEGER,"
+			"BgColor       TEXT,"
+			"DurationLimit INTEGER,"
+			"Position      INTEGER"
+		")",
+		"INSERT INTO Filters ("
+			"RowID, DisplayName, Notes, IsFavorite, BgColor, DurationLimit, Position"
+		") SELECT "
+			"RowID, DisplayName, Notes, IsFavorite, BgColor, DurationLimit, "
+			"( SELECT COUNT(RowID) FROM TemplateItems as ti2 WHERE ti2.RowID < TemplateItems.RowID ) "
+		"FROM TemplateItems",
+
+
+		"ALTER TABLE TemplateItems RENAME TO TemplateItems_Old",
+		"CREATE TABLE TemplateItems ("
+			"TemplateID      INTEGER REFERENCES Templates(RowID),"
+			"IndexInTemplate INTEGER,"
+			"FilterID        INTEGER REFERENCES Filters(RowID)"
+		")",
+		"INSERT INTO TemplateItems ("
+			"TemplateID, IndexInTemplate, FilterID"
+		") SELECT "
+			"TemplateID, IndexInParent, RowID "
+		"FROM TemplateItems_Old",
+		"DROP TABLE TemplateItems_Old",
+
+
+		"ALTER TABLE Templates ADD COLUMN Position INTEGER",
+		"UPDATE Templates SET Position = ( SELECT COUNT(RowID) FROM Templates as t2 WHERE t2.RowID < Templates.RowID )",
+	}),  // Version 13 to Version 14
 };
 
 

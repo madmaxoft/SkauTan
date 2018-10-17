@@ -81,9 +81,8 @@ SOURCES += \
 	DlgHistory.cpp \
 	Template.cpp \
 	DlgTemplatesList.cpp \
-	DlgEditTemplate.cpp \
-	DlgEditTemplateItem.cpp \
-	DlgPickTemplateFavoriteItem.cpp \
+	DlgEditFilter.cpp \
+	DlgManageFilters.cpp \
 	DlgPickTemplate.cpp \
 	RingBuffer.cpp \
 	AudioEffects.cpp \
@@ -122,6 +121,7 @@ SOURCES += \
 	lib/QrCodeGen/BitBuffer.cpp \
 	lib/QrCodeGen/QrCode.cpp \
 	lib/QrCodeGen/QrSegment.cpp \
+	Filter.cpp \
 	InstallConfiguration.cpp \
 	DatabaseBackup.cpp \
 
@@ -143,9 +143,8 @@ HEADERS += \
 	DlgHistory.h \
 	Template.h \
 	DlgTemplatesList.h \
-	DlgEditTemplate.h \
-	DlgEditTemplateItem.h \
-	DlgPickTemplateFavoriteItem.h \
+	DlgEditFilter.h \
+	DlgManageFilters.h \
 	DlgPickTemplate.h \
 	RingBuffer.h \
 	AudioDataSource.h \
@@ -188,6 +187,7 @@ HEADERS += \
 	lib/QrCodeGen/BitBuffer.hpp \
 	lib/QrCodeGen/QrCode.hpp \
 	lib/QrCodeGen/QrSegment.hpp \
+	Filter.h \
 	InstallConfiguration.h \
 	DatabaseBackup.h \
 	Exception.h \
@@ -197,9 +197,8 @@ FORMS += \
 	DlgSongs.ui \
 	DlgHistory.ui \
 	DlgTemplatesList.ui \
-	DlgEditTemplate.ui \
-	DlgEditTemplateItem.ui \
-	DlgPickTemplateFavoriteItem.ui \
+	DlgEditFilter.ui \
+	DlgManageFilters.ui \
 	DlgPickTemplate.ui \
 	DlgChooseImportTemplates.ui \
 	DlgBackgroundTaskList.ui \

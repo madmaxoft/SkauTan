@@ -220,7 +220,7 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 {
 	for (const auto & item: a_Template.items())
 	{
-		addFromTemplateItem(a_DB, item);
+		addFromFilter(a_DB, *item);
 	}
 }
 
@@ -228,14 +228,14 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 
 
 
-bool Playlist::addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item)
+bool Playlist::addFromFilter(const Database & a_DB, Filter & a_Filter)
 {
-	auto song = a_DB.pickSongForTemplateItem(a_Item);
+	auto song = a_DB.pickSongForFilter(a_Filter);
 	if (song == nullptr)
 	{
 		return false;
 	}
-	addItem(std::make_shared<PlaylistItemSong>(song, a_Item));
+	addItem(std::make_shared<PlaylistItemSong>(song, a_Filter.shared_from_this()));
 	return true;
 }
 

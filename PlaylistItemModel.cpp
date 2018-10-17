@@ -311,7 +311,7 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			}
 			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
 			auto ps = std::dynamic_pointer_cast<PlaylistItemSong>(item);
-			return (ps != nullptr) && (ps->templateItem() != nullptr);
+			return (ps != nullptr) && (ps->filter() != nullptr);
 		}
 	}
 	return QVariant();

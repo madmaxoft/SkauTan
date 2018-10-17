@@ -83,8 +83,9 @@ public:
 	/** Adds new random songs based on the specified template, using songs from the specified DB. */
 	void addFromTemplate(const Database & a_DB, const Template & a_Template);
 
-	/** Adds a new random song based on the specified template item, using songs from the specified DB. */
-	bool addFromTemplateItem(const Database & a_DB, Template::ItemPtr a_Item);
+	/** Adds a new random song based on the specified filter, using songs from the specified DB.
+	Returns true if successful, false if no song added (no match). */
+	bool addFromFilter(const Database & a_DB, Filter & a_Filter);
 
 	/** Replaces the item at the specified index with the specified item.
 	If the index is invalid, does nothing. */

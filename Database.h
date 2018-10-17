@@ -12,6 +12,7 @@
 #include <QSqlQuery>
 #include "Song.h"
 #include "Template.h"
+#include "Filter.h"
 #include "ComponentCollection.h"
 
 
@@ -86,18 +87,26 @@ public:
 	Note that the SongSharedData entry is kept, in case there are duplicates or the song is re-added later on. */
 	void removeSong(const Song & a_Song, bool a_DeleteDiskFile);
 
-	/** Returns all templates stored in the DB. */
+	/** Returns all templates stored in the DB, in the order dictated by their Position. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
+
+	/** Returns all filters stored in the DB, in the order dictated by their Position. */
+	const std::vector<FilterPtr> & filters() const { return m_Filters; }
 
 	/** Creates a new empty template, adds it to the DB and returns it.
 	Note that changes aren't saved automatically, you need to call saveTemplate() to save. */
 	TemplatePtr createTemplate();
 
 	/** Adds the specified template to the DB.
-	Used for importing templates, assumes that the template has no DB RowID assigned to it yet.
+	Used for importing templates, asserts that the template has no DB RowID assigned to it yet.
 	Modifies a_Template - assigns a new DB RowID.
 	Note that changes aren't saved automatically, you need to call saveTemplate() to save. */
 	void addTemplate(TemplatePtr a_Template);
+
+	/** Swaps the positions of the two filters specified by the indices.
+	Updates the new order in the DB.
+	Asserts that the indices are valid. */
+	void swapTemplatesByIdx(size_t a_Idx1, size_t a_Idx2);
 
 	/** Removes the specified template from the DB. */
 	void delTemplate(const TemplatePtr a_Template) { delTemplate(a_Template.get()); }
@@ -108,15 +117,41 @@ public:
 	/** Saves the changes in the specified template to the DB. */
 	void saveTemplate(const Template & a_Template);
 
-	/** Returns all template items from all templates that have been marked as "favorite". */
-	std::vector<Template::ItemPtr> getFavoriteTemplateItems() const;
+	/** Creates a new empty filter, adds it in the DB and returns it.
+	Note that changes aren't saved automatically, you need to call saveFilter() to save. */
+	FilterPtr createFilter();
+
+	/** Adds the specified filter to the DB.
+	Used for importing filters, asserts that the filter has no DB RowID assigned to it yet.
+	Modifies a_Filter - assigns a new DB RowID.
+	Note that changes aren't saved automatically, you need to call saveFilter() to save. */
+	void addFilter(FilterPtr a_Filter);
+
+	/** Swaps the positions of the two filters specified by the indices.
+	Updates the new order in the DB.
+	Asserts that the indices are valid. */
+	void swapFiltersByIdx(size_t a_Idx1, size_t a_Idx2);
+
+	/** Removes the filter at the specified index from the DB.
+	Ignored if index is invalid. */
+	void delFilter(size_t a_Index);
+
+	/** Saves the specified filter into the DB. */
+	void saveFilter(const Filter & a_Filter);
+
+	/** Returns all the filters that have been marked as "favorite". */
+	std::vector<FilterPtr> getFavoriteFilters() const;
 
 	/** Returns the number of songs that match the specified filter. */
-	int numSongsMatchingFilter(Template::Filter & a_Filter) const;
+	int numSongsMatchingFilter(const Filter & a_Filter) const;
 
-	/** Picks a random song matching the specified template item.
-	If possible, avoids a_Avoid from being picked (picks it only if it is the only song matching the template item). */
-	SongPtr pickSongForTemplateItem(Template::ItemPtr a_Item, SongPtr a_Avoid = nullptr) const;
+	/** Picks a random song matching the specified filter.
+	If possible, avoids a_Avoid from being picked (picks it only if it is the only song matching the filter). */
+	SongPtr pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid = nullptr) const;
+
+	/** Picks random songs matching the specified template.
+	Returns pairs of {song, filter} for all matches in the template. */
+	std::vector<std::pair<SongPtr, FilterPtr>> pickSongsForTemplate(const Template & a_Template);
 
 	/** Reads and returns all the songs that have been removed from the library. */
 	std::vector<RemovedSongPtr> removedSongs() const;
@@ -172,6 +207,9 @@ protected:
 	/** The data shared among songs with equal hash. */
 	std::map<QByteArray, Song::SharedDataPtr> m_SongSharedData;
 
+	/** All the filters that can be used for building templates. */
+	std::vector<FilterPtr> m_Filters;
+
 	/** All the templates that can be used for filling the playlist. */
 	std::vector<TemplatePtr> m_Templates;
 
@@ -191,29 +229,31 @@ protected:
 	/** The new files stored in the DB are enqueued for hash calculation. */
 	void loadNewFiles();
 
+	/** Loads all the filters in the DB into m_Filters. */
+	void loadFilters();
+
+	/** Loads the nodes belonging to the specified filter. */
+	void loadFilterNodes(Filter & a_Filter);
+
+	/** Returns the filter corresponding to the specified DB RowId.
+	Returns nullptr if no such filter. */
+	FilterPtr filterFromRowId(qlonglong a_RowId);
+
 	/** Loads all the templates in the DB into m_Templates. */
 	void loadTemplates();
 
 	/** Loads the specified template from the DB.
-	The template has its direct members initialized, this loads its items and their filters. */
-	void loadTemplate(TemplatePtr a_Template);
+	The template has its direct members initialized, this loads its items, matching from the available m_Filters.
+	If any filter is not found, the item is skipped. */
+	void loadTemplateItems(Template & a_Template);
 
-	/**	Loads the specified Template Item's filters from the DB. */
-	void loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId, Template::Item & a_Item);
-
-	/** Saves or updates the specified template item in the DB.
-	a_Index is the item's index within a_Template. */
-	void saveTemplateItem(const Template & a_Template, int a_Index, const Template::Item & a_Item);
-
-	/** Recursively saves (inserts) the filter subtree from a_Filter.
-	a_TemplateRowId is the RowID of the template to which the filter belongs, through its template item
-	a_TemplateItemRowId is the RowID of the template item to which the filter belongs
-	a_ParentFilterRowId is the RowID of the filter that is the parent of a_Filter, -1 for root filter. */
-	void saveTemplateFilters(
-		qlonglong a_TemplateRowId,
-		qlonglong a_TemplateItemRowId,
-		const Template::Filter & a_Filter,
-		qlonglong a_ParentFilterRowId
+	/** Recursively saves (inserts) the node subtree from a_Node.
+	a_FilterRowId is the RowID of the filter to which the node belongs
+	a_ParentNodeRowId is the RowID of the node that is the parent of a_Node, -1 for root node. */
+	void saveFilterNodes(
+		qlonglong a_FilterRowId,
+		const Filter::Node & a_Node,
+		qlonglong a_ParentNodeRowId
 	);
 
 	/** Returns the internal Qt DB object.

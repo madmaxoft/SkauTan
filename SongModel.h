@@ -180,7 +180,7 @@ public:
 		fltNoGenre,                //< Songs with an empty / missing primary genre
 		fltNoMeasuresPerMinute,    //< Songs missing their MPM
 		fltWarnings,               //< Songs with warnings
-		fltNoTemplateFilterMatch,  //< Songs matching no Template filter
+		fltNoFilterMatch,          //< Songs matching no Filter
 		fltDuplicates,             //< Songs that have duplicates
 		fltSkipStart,              //< Songs that have a skip-start defined
 	};
@@ -194,8 +194,8 @@ public:
 	/** Sets the search string to be used for filtering. */
 	void setSearchString(const QString & a_SearchString);
 
-	/** Sets the template items that are considered for fltNoTemplateFilter filtering. */
-	void setFavoriteTemplateItems(const std::vector<Template::ItemPtr> & a_FavoriteTemplateItems);
+	/** Sets the Filters that are considered for fltNoFilterMatch filtering. */
+	void setFavoriteFilters(const std::vector<FilterPtr> & a_FavoriteFilters);
 
 
 protected:
@@ -209,8 +209,8 @@ protected:
 	/** The string to search for when filtering. */
 	QRegularExpression m_SearchString;
 
-	/** The template items that are considered for fltNoTemplateFilter. */
-	std::vector<Template::ItemPtr> m_FavoriteTemplateItems;
+	/** The template items that are considered for fltNoFilterMatch. */
+	std::vector<FilterPtr> m_FavoriteFilters;
 
 
 	// QSortFilterProxyModel overrides:
