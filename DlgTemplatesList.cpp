@@ -3,14 +3,16 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QDebug>
+#include <QMenu>
 #include "ui_DlgTemplatesList.h"
-#include "DlgEditTemplate.h"
 #include "DlgChooseImportTemplates.h"
 #include "Database.h"
-#include "DlgEditTemplateItem.h"
 #include "Settings.h"
 #include "Utils.h"
 #include "ComponentCollection.h"
+#include "Filter.h"
+#include "DlgManageFilters.h"
+#include "DlgEditFilter.h"
 
 
 
@@ -29,17 +31,18 @@ DlgTemplatesList::DlgTemplatesList(
 	Settings::loadWindowPos("DlgTemplatesList", *this);
 
 	// Connect the signals:
-	connect(m_UI->btnClose,          &QPushButton::clicked,               this, &DlgTemplatesList::close);
-	connect(m_UI->btnAddTemplate,    &QPushButton::clicked,               this, &DlgTemplatesList::addTemplate);
-	connect(m_UI->btnEditTemplate,   &QPushButton::clicked,               this, &DlgTemplatesList::editTemplate);
-	connect(m_UI->btnRemoveTemplate, &QPushButton::clicked,               this, &DlgTemplatesList::removeTemplates);
-	connect(m_UI->tblTemplates,      &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateAt);
-	connect(m_UI->tblTemplates,      &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
-	connect(m_UI->tblTemplates,      &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
-	connect(m_UI->tblItems,          &QTableWidget::itemChanged,          this, &DlgTemplatesList::itemChanged);
-	connect(m_UI->tblItems,          &QTableWidget::doubleClicked,        this, &DlgTemplatesList::editTemplateItemAt);
-	connect(m_UI->btnExport,         &QPushButton::clicked,               this, &DlgTemplatesList::exportTemplates);
-	connect(m_UI->btnImport,         &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
+	connect(m_UI->btnClose,             &QPushButton::clicked,               this, &DlgTemplatesList::close);
+	connect(m_UI->btnAddTemplate,       &QPushButton::clicked,               this, &DlgTemplatesList::addTemplate);
+	connect(m_UI->btnRemoveTemplate,    &QPushButton::clicked,               this, &DlgTemplatesList::removeTemplates);
+	connect(m_UI->btnMoveTemplatesUp,   &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplatesUp);
+	connect(m_UI->btnMoveTemplatesDown, &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplatesDown);
+	connect(m_UI->btnImport,            &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
+	connect(m_UI->btnExport,            &QPushButton::clicked,               this, &DlgTemplatesList::exportTemplates);
+	connect(m_UI->btnManageFilters,     &QPushButton::clicked,               this, &DlgTemplatesList::manageFilters);
+	connect(m_UI->tblTemplates,         &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
+	connect(m_UI->tblTemplates,         &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
+	connect(m_UI->tblItems,             &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::itemSelectionChanged);
+	connect(m_UI->tblItems,             &QTableWidget::cellDoubleClicked,    this, &DlgTemplatesList::itemDoubleClicked);
 
 	// Update the UI state:
 	const auto & templates = m_Components.get<Database>()->templates();
@@ -47,11 +50,10 @@ DlgTemplatesList::DlgTemplatesList(
 	m_UI->tblTemplates->setColumnCount(3);
 	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
 	m_UI->tblItems->setRowCount(0);
-	m_UI->tblItems->setColumnCount(6);
+	m_UI->tblItems->setColumnCount(5);
 	m_UI->tblItems->setHorizontalHeaderLabels({
 		tr("Name"),
 		tr("Notes"),
-		tr("Fav", "Favorite"),
 		tr("Dur", "Duration"),
 		tr("# Songs", "Number of matching songs"),
 		tr("Filter")
@@ -64,6 +66,10 @@ DlgTemplatesList::DlgTemplatesList(
 		const auto & tmpl = templates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
+	templateSelectionChanged();
+
+	// Insert all the filters into the Add menu:
+	updateFilterMenu();
 
 	Settings::loadHeaderView("DlgTemplatesList", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
 	Settings::loadHeaderView("DlgTemplatesList", "tblItems",     *m_UI->tblItems->horizontalHeader());
@@ -104,27 +110,6 @@ TemplatePtr DlgTemplatesList::templateFromRow(int a_Row)
 
 
 
-Template::ItemPtr DlgTemplatesList::templateItemFromRow(TemplatePtr a_Template, int a_ItemRow)
-{
-	assert(a_Template != nullptr);
-	if (a_ItemRow < 0)
-	{
-		assert(!"Invalid row");
-		return nullptr;
-	}
-	auto row = static_cast<size_t>(a_ItemRow);
-	if (row >= a_Template->items().size())
-	{
-		assert(!"Invalid row");
-		return nullptr;
-	}
-	return a_Template->items()[row];
-}
-
-
-
-
-
 void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 {
 	m_IsInternalChange = true;
@@ -149,42 +134,34 @@ void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 
 
 
-void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Template::Item & a_Item)
+void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Filter & a_Item)
 {
 	m_IsInternalChange = true;
 	auto wi = new QTableWidgetItem(a_Item.displayName());
-	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 0, wi);
 
 	wi = new QTableWidgetItem(a_Item.notes());
-	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
 	m_UI->tblItems->setItem(a_Row, 1, wi);
-
-	wi = new QTableWidgetItem();
-	wi->setFlags(wi->flags() | Qt::ItemIsUserCheckable);
-	wi->setCheckState(a_Item.isFavorite() ? Qt::Checked : Qt::Unchecked);
-	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 2, wi);
 
 	const auto & durationLimit = a_Item.durationLimit();
 	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
 	wi->setBackgroundColor(a_Item.bgColor());
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_UI->tblItems->setItem(a_Row, 2, wi);
 
-	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(*a_Item.filter());
+	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(a_Item);
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-	m_UI->tblItems->setItem(a_Row, 4, wi);
+	m_UI->tblItems->setItem(a_Row, 3, wi);
 
-	wi = new QTableWidgetItem(a_Item.filter()->getDescription());
+	wi = new QTableWidgetItem(a_Item.getFilterDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 5, wi);
+	m_UI->tblItems->setItem(a_Row, 4, wi);
 	m_IsInternalChange = false;
 }
 
@@ -269,6 +246,84 @@ void DlgTemplatesList::importTemplatesFrom(const QString & a_FileName)
 
 
 
+void DlgTemplatesList::updateFilterMenu()
+{
+	auto menu = new QMenu(this);
+	auto size = menu->style()->pixelMetric(QStyle::PM_SmallIconSize);
+	for (const auto & filter: m_Components.get<Database>()->filters())
+	{
+		auto action = new QAction(filter->displayName(), this);
+		QPixmap pixmap(size, size);
+		pixmap.fill(filter->bgColor());
+		action->setIcon(QIcon(pixmap));
+		menu->addAction(action);
+		connect(action, &QAction::triggered, [this, filter]() { this->insertFilter(filter); });
+	}
+	auto oldMenu = m_UI->btnAddItem->menu();
+	m_UI->btnAddItem->setMenu(menu);
+	oldMenu->deleteLater();
+}
+
+
+
+
+
+void DlgTemplatesList::insertFilter(FilterPtr a_Filter)
+{
+	auto tmpl = currentTemplate();
+	if (tmpl == nullptr)
+	{
+		return;
+	}
+
+	const auto & selection = m_UI->tblItems->selectionModel()->selectedRows();
+	int idxInsertAfter;
+	if (selection.isEmpty())
+	{
+		idxInsertAfter = m_UI->tblItems->rowCount();
+	}
+	else
+	{
+		idxInsertAfter = selection.last().row();
+	}
+
+	tmpl->insertItem(a_Filter, idxInsertAfter);
+	m_UI->tblItems->insertRow(idxInsertAfter);
+	updateTemplateItemRow(idxInsertAfter, *a_Filter);
+}
+
+
+
+
+
+TemplatePtr DlgTemplatesList::currentTemplate()
+{
+	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
+	if (selection.size() != 1)
+	{
+		return nullptr;
+	}
+	return templateFromRow(selection[0].row());
+}
+
+
+
+
+
+void DlgTemplatesList::swapTemplatesAndSelectSecond(int a_Row1, int a_Row2)
+{
+	auto db = m_Components.get<Database>();
+	db->swapTemplatesByIdx(static_cast<size_t>(a_Row1), static_cast<size_t>(a_Row2));
+	const auto & templates = db->templates();
+	updateTemplateRow(a_Row1, *templates[static_cast<size_t>(a_Row1)]);
+	updateTemplateRow(a_Row2, *templates[static_cast<size_t>(a_Row2)]);
+	m_UI->tblTemplates->selectRow(a_Row2);
+}
+
+
+
+
+
 void DlgTemplatesList::addTemplate()
 {
 	auto tmpl = m_Components.get<Database>()->createTemplate();
@@ -281,29 +336,11 @@ void DlgTemplatesList::addTemplate()
 		);
 		return;
 	}
-	DlgEditTemplate dlg(m_Components, *tmpl, this);
-	dlg.exec();
-	m_Components.get<Database>()->saveTemplate(*tmpl);
 
 	// Update the UI:
 	int idx = static_cast<int>(m_Components.get<Database>()->templates().size()) - 1;
 	m_UI->tblTemplates->setRowCount(idx + 1);
 	updateTemplateRow(idx, *tmpl);
-}
-
-
-
-
-
-void DlgTemplatesList::editTemplate()
-{
-	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
-	if (selection.size() != 1)
-	{
-		// No selection, or too many selected
-		return;
-	}
-	editTemplateAt(selection[0]);
 }
 
 
@@ -348,22 +385,40 @@ void DlgTemplatesList::removeTemplates()
 
 
 
-
-void DlgTemplatesList::editTemplateAt(const QModelIndex & a_Index)
+void DlgTemplatesList::moveTemplatesUp()
 {
-	auto tmpl = templateFromRow(a_Index.row());
-	if (tmpl == nullptr)
+	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
+	if (selection.size() != 1)
 	{
 		return;
 	}
-	DlgEditTemplate dlg(m_Components, *tmpl, this);
-	dlg.exec();
-	m_Components.get<Database>()->saveTemplate(*tmpl);
-
-	// Update the UI after the changes:
-	updateTemplateRow(a_Index.row(), *tmpl);
-	templateSelectionChanged();
+	auto row = selection[0].row();
+	if (row < 1)
+	{
+		return;
+	}
+	swapTemplatesAndSelectSecond(row, row - 1);
 }
+
+
+
+
+
+void DlgTemplatesList::moveTemplatesDown()
+{
+	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
+	if (selection.size() != 1)
+	{
+		return;
+	}
+	auto row = selection[0].row();
+	if (row + 1 >= m_UI->tblTemplates->rowCount())
+	{
+		return;
+	}
+	swapTemplatesAndSelectSecond(row, row + 1);
+}
+
 
 
 
@@ -373,12 +428,14 @@ void DlgTemplatesList::templateSelectionChanged()
 {
 	m_IsInternalChange = true;
 	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
-	m_UI->btnEditTemplate->setEnabled(selection.size() == 1);
+	auto selSize = selection.size();
 	m_UI->btnRemoveTemplate->setEnabled(!selection.isEmpty());
 	m_UI->btnExport->setEnabled(!selection.isEmpty());
+	m_UI->btnAddItem->setEnabled(selSize == 1);
 
+	// Update the up / down controls:
 	// Update the list of items in a template:
-	if (selection.size() == 1)
+	if (selSize == 1)
 	{
 		const auto & tmpl = templateFromRow(selection[0].row());
 		m_UI->tblItems->setRowCount(static_cast<int>(tmpl->items().size()));
@@ -388,9 +445,14 @@ void DlgTemplatesList::templateSelectionChanged()
 			updateTemplateItemRow(idx, *item);
 			idx += 1;
 		}
+		auto numTemplates = static_cast<int>(m_Components.get<Database>()->templates().size());
+		m_UI->btnMoveTemplatesDown->setEnabled(selection[0].row() + 1 < numTemplates);
+		m_UI->btnMoveTemplatesUp->setEnabled(selection[0].row() > 0);
 	}
 	else
 	{
+		m_UI->btnMoveTemplatesDown->setEnabled(false);
+		m_UI->btnMoveTemplatesUp->setEnabled(false);
 		m_UI->tblItems->setRowCount(0);
 	}
 	m_IsInternalChange = false;
@@ -432,88 +494,53 @@ void DlgTemplatesList::templateChanged(QTableWidgetItem * a_Item)
 
 
 
-void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
+void DlgTemplatesList::itemSelectionChanged()
 {
-	if (m_IsInternalChange)
+	const auto & sel = m_UI->tblItems->selectionModel()->selectedRows();
+	m_UI->btnRemoveItem->setEnabled(!sel.isEmpty());
+
+	if (sel.size() == 1)
 	{
-		return;
+		auto row = sel[0].row();
+		m_UI->btnMoveItemUp->setEnabled(row > 0);
+		m_UI->btnMoveItemDown->setEnabled(row + 1 < m_UI->tblItems->rowCount());
 	}
-	auto tmpl = templateFromRow(m_UI->tblTemplates->currentRow());
-	if (tmpl == nullptr)
+	else
 	{
-		qWarning() << "Bad template pointer.";
-		return;
+		m_UI->btnMoveItemUp->setEnabled(false);
+		m_UI->btnMoveItemDown->setEnabled(false);
 	}
-	auto item = templateItemFromRow(tmpl, a_Item->row());
-	if (item == nullptr)
-	{
-		qWarning() << "Bad template item pointer in item " << a_Item->text();
-		return;
-	}
-	switch (a_Item->column())
-	{
-		case 0:
-		{
-			item->setDisplayName(a_Item->text());
-			break;
-		}
-		case 1:
-		{
-			item->setNotes(a_Item->text());
-			break;
-		}
-		case 2:
-		{
-			item->setIsFavorite(a_Item->checkState() == Qt::Checked);
-			break;
-		}
-		case 3:
-		{
-			bool isOK;
-			auto durationLimit = Utils::parseTime(a_Item->text(), isOK);
-			if (isOK && !a_Item->text().isEmpty())
-			{
-				item->setDurationLimit(durationLimit);
-				m_IsInternalChange = true;
-				a_Item->setText(Utils::formatTime(durationLimit));
-				m_IsInternalChange = false;
-			}
-			else
-			{
-				item->resetDurationLimit();
-				m_IsInternalChange = true;
-				a_Item->setText({});
-				m_IsInternalChange = false;
-			}
-			break;
-		}
-	}
-	m_Components.get<Database>()->saveTemplate(*tmpl);
 }
 
 
 
 
 
-void DlgTemplatesList::editTemplateItemAt(const QModelIndex & a_Index)
+void DlgTemplatesList::itemDoubleClicked(int a_Row, int a_Column)
 {
-	auto tmpl = templateFromRow(m_UI->tblTemplates->currentRow());
-	if (tmpl == nullptr)
-	{
-		qWarning() << "Bad template pointer.";
-		return;
-	}
-	auto item = templateItemFromRow(tmpl, a_Index.row());
-	if (item == nullptr)
-	{
-		qWarning() << "Bad template item pointer in item " << a_Index;
-		return;
-	}
+	Q_UNUSED(a_Column);
 
-	DlgEditTemplateItem dlg(m_Components, *item, this);
+	// Get the filter represented by the table cell:
+	const auto & selTemplate = currentTemplate();
+	if (selTemplate == nullptr)
+	{
+		assert(!"Template item is visible with no selected template");
+		return;
+	}
+	if ((a_Row < 0) || (static_cast<size_t>(a_Row) >= selTemplate->items().size()))
+	{
+		assert(!"Invalid template item index");
+		return;
+	}
+	auto item = selTemplate->items()[static_cast<size_t>(a_Row)];
+
+	// Edit the filter:
+	DlgEditFilter dlg(m_Components, *item);
 	dlg.exec();
-	m_Components.get<Database>()->saveTemplate(*tmpl);
-	updateTemplateItemRow(a_Index.row(), *item);
+
+	// Update the UI that may have been affected by a filter edit:
+	updateTemplateItemRow(a_Row, *item);
+	updateFilterMenu();
 }
 
 
@@ -557,4 +584,27 @@ void DlgTemplatesList::importTemplates()
 		return;
 	}
 	importTemplatesFrom(fileName);
+}
+
+
+
+
+void DlgTemplatesList::manageFilters()
+{
+	DlgManageFilters dlg(m_Components, this);
+	dlg.exec();
+
+	// Update the filters in the "Add" popup menu:
+	updateFilterMenu();
+
+	// Update the item counts in the template list (in case a filter was deleted):
+	const auto & templates = m_Components.get<Database>()->templates();
+	auto num = templates.size();
+	for (size_t i = 0; i < num; ++i)
+	{
+		updateTemplateRow(static_cast<int>(i), *templates[i]);
+	}
+
+	// Update the current template item list (in case a filter was deleted):
+	templateSelectionChanged();
 }

@@ -6,13 +6,10 @@
 
 
 
-PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, Template::ItemPtr a_TemplateItem):
+PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, FilterPtr a_Filter):
 	m_Song(a_Song),
-	m_TemplateItem(a_TemplateItem),
-	m_DurationLimit(
-		((a_TemplateItem != nullptr) && a_TemplateItem->durationLimit().isPresent()) ?
-		a_TemplateItem->durationLimit().value() : -1
-	)
+	m_Filter(a_Filter),
+	m_DurationLimit(a_Filter->durationLimit().valueOr(-1))
 {
 }
 

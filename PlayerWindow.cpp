@@ -248,11 +248,22 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 void PlayerWindow::refreshQuickPlayer()
 {
 	m_UI->lwQuickPlayer->clear();
-	auto favorites = m_Components.get<Database>()->getFavoriteTemplateItems();
+
+	// Insert the templates:
+	auto templates = m_Components.get<Database>()->templates();
+	for (const auto & tmpl: templates)
+	{
+		auto item = new QListWidgetItem(tmpl->displayName(), m_UI->lwQuickPlayer);
+		item->setData(Qt::UserRole, QVariant::fromValue(tmpl));
+		item->setBackgroundColor(tmpl->bgColor());
+	}
+
+	// Insert the favorite filters:
+	auto favorites = m_Components.get<Database>()->getFavoriteFilters();
 	for (const auto & fav: favorites)
 	{
 		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlayer);
-		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(fav.get()));
+		item->setData(Qt::UserRole, QVariant::fromValue(fav));
 		item->setBackgroundColor(fav->bgColor());
 	}
 }
@@ -266,17 +277,11 @@ void PlayerWindow::refreshAppendUponCompletion()
 	// Store the current selection:
 	auto selObj = objectToAppendUponCompletion();
 	auto selTemplate = selObj.value<TemplatePtr>();
-	auto selItem = selObj.value<Template::ItemPtr>();
+	auto selFilter = selObj.value<FilterPtr>();
 
 	// Insert templates:
 	m_UI->cbCompletionAppendTemplate->clear();
 	auto tmpls = m_Components.get<Database>()->templates();
-	std::sort(tmpls.begin(), tmpls.end(),
-		[](TemplatePtr a_Tmpl1, TemplatePtr a_Tmpl2)
-		{
-			return (a_Tmpl1->displayName() < a_Tmpl2->displayName());
-		}
-	);
 	for (const auto & tmpl: tmpls)
 	{
 		m_UI->cbCompletionAppendTemplate->addItem(tmpl->displayName(), QVariant::fromValue(tmpl));
@@ -286,18 +291,12 @@ void PlayerWindow::refreshAppendUponCompletion()
 		}
 	}
 
-	// Insert favorite template items:
-	auto items = m_Components.get<Database>()->getFavoriteTemplateItems();
-	std::sort(items.begin(), items.end(),
-		[](Template::ItemPtr a_Item1, Template::ItemPtr a_Item2)
-		{
-			return (a_Item1->displayName() < a_Item2->displayName());
-		}
-	);
-	for (const auto & item: items)
+	// Insert favorite filters:
+	auto filters = m_Components.get<Database>()->getFavoriteFilters();
+	for (const auto & filter: filters)
 	{
-		m_UI->cbCompletionAppendTemplate->addItem(item->displayName(), QVariant::fromValue(item));
-		if (item == selItem)
+		m_UI->cbCompletionAppendTemplate->addItem(filter->displayName(), QVariant::fromValue(filter));
+		if (filter == selFilter)
 		{
 			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
 		}
@@ -720,20 +719,9 @@ void PlayerWindow::jumpToAndPlay()
 
 void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 {
-	auto item = reinterpret_cast<Template::Item *>(a_Item->data(Qt::UserRole).toULongLong());
-	if (item == nullptr)
-	{
-		return;
-	}
+	// Find the position where to insert in the playlist:
 	auto player = m_Components.get<Player>();
 	auto & playlist = player->playlist();
-	auto itemSh = item->shared_from_this();
-	auto chosen = m_Components.get<Database>()->pickSongForTemplateItem(itemSh);
-	if (chosen == nullptr)
-	{
-		qDebug() << ": Failed to add a template item to playlist.";
-		return;
-	}
 	auto idx = m_UI->tblPlaylist->currentIndex().row();
 	if (idx < 0)
 	{
@@ -743,7 +731,41 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 	{
 		idx += 1;
 	}
-	playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, itemSh));
+
+	auto data = a_Item->data(Qt::UserRole);
+	auto tmpl = data.value<TemplatePtr>();
+	if (tmpl != nullptr)
+	{
+		// Insert songs by a template:
+		auto chosen = m_Components.get<Database>()->pickSongsForTemplate(*tmpl);
+		if (chosen.empty())
+		{
+			qDebug() << "Failed to add songs by template " << tmpl->displayName() << " to playlist.";
+			return;
+		}
+		for (auto itr = chosen.crbegin(), end = chosen.crend(); itr != end; ++itr)
+		{
+			playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(itr->first, itr->second));
+		}
+	}
+	else
+	{
+		// Insert a song by a filter:
+		auto filter = data.value<FilterPtr>();
+		if (filter == nullptr)
+		{
+			qDebug() << "Unknown object clicked in QuickPlayer";
+			assert(!"Unknown object clicked");
+			return;
+		}
+		auto chosen = m_Components.get<Database>()->pickSongForFilter(*filter);
+		if (chosen == nullptr)
+		{
+			qDebug() << ": Failed to add a song by filter " << filter->displayName() << " to playlist.";
+			return;
+		}
+		playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, filter));
+	}
 	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
 	{
 		player->jumpTo(idx);
@@ -811,19 +833,20 @@ void PlayerWindow::replaceSong(const QModelIndex & a_Index)
 	{
 		return;
 	}
-	if (pls->templateItem() == nullptr)
+	auto filter = pls->filter();
+	if (filter == nullptr)
 	{
 		return;
 	}
 
 	// Get a replacement:
-	auto song = m_Components.get<Database>()->pickSongForTemplateItem(pls->templateItem(), pls->song());
+	auto song = m_Components.get<Database>()->pickSongForFilter(*filter, pls->song());
 	if (song == pls->song())
 	{
 		// No replacement available
 		return;
 	}
-	player->playlist().replaceItem(idx, std::make_shared<PlaylistItemSong>(song, pls->templateItem()));
+	player->playlist().replaceItem(idx, std::make_shared<PlaylistItemSong>(song, filter));
 
 	// Special handling for replacing currently-played song:
 	if (player->isTrackLoaded() && a_Index.row() == player->playlist().currentItemIndex())
@@ -869,9 +892,9 @@ void PlayerWindow::playerStartedPlayback()
 	{
 		player->playlist().addFromTemplate(*db, *selObj.value<TemplatePtr>());
 	}
-	else if (selObj.value<Template::ItemPtr>() != nullptr)
+	else if (selObj.value<FilterPtr>() != nullptr)
 	{
-		player->playlist().addFromTemplateItem(*db, selObj.value<Template::ItemPtr>());
+		player->playlist().addFromFilter(*db, *selObj.value<FilterPtr>());
 	}
 }
 
@@ -938,12 +961,12 @@ void PlayerWindow::savePlaylist()
 		{
 			continue;
 		}
-		auto item = si->templateItem();
-		if (item != nullptr)
+		auto filter = si->filter();
+		if (filter != nullptr)
 		{
 			f.write(tr("#SKAUTAN:TMPL:%1:%2\n")
-				.arg(QString::fromUtf8(item->hash().toHex()))
-				.arg(item->displayName())
+				.arg(QString::fromUtf8(filter->hash().toHex()))
+				.arg(filter->displayName())
 				.toUtf8()
 			);
 		}

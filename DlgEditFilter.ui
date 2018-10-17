@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DlgEditTemplateItem</class>
- <widget class="QDialog" name="DlgEditTemplateItem">
+ <class>DlgEditFilter</class>
+ <widget class="QDialog" name="DlgEditFilter">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SkauTan: Template item</string>
+   <string>SkauTan: Filter</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
@@ -52,10 +52,10 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>F&amp;ilters:</string>
+        <string>Con&amp;ditions:</string>
        </property>
        <property name="buddy">
-        <cstring>twFilters</cstring>
+        <cstring>twNodes</cstring>
        </property>
       </widget>
      </item>
@@ -114,7 +114,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QTreeWidget" name="twFilters">
+        <widget class="QTreeWidget" name="twNodes">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
@@ -124,6 +124,9 @@
          <property name="editTriggers">
           <set>QAbstractItemView::CurrentChanged|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
          </property>
+         <attribute name="headerVisible">
+          <bool>false</bool>
+         </attribute>
          <column>
           <property name="text">
            <string notr="true">1</string>
@@ -146,7 +149,7 @@
      <item row="1" column="1">
       <widget class="QCheckBox" name="chbIsFavorite">
        <property name="text">
-        <string>(Favorite template items are shown in the main player's QuickPlay area)</string>
+        <string>(Favorite filters are shown in the main player's QuickPlay area)</string>
        </property>
       </widget>
      </item>
@@ -273,7 +276,7 @@
   <tabstop>pteNotes</tabstop>
   <tabstop>leBgColor</tabstop>
   <tabstop>btnBgColor</tabstop>
-  <tabstop>twFilters</tabstop>
+  <tabstop>twNodes</tabstop>
   <tabstop>btnAddSibling</tabstop>
   <tabstop>btnInsertCombinator</tabstop>
   <tabstop>btnRemoveFilter</tabstop>

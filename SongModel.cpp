@@ -405,9 +405,9 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 qulonglong SongModel::numMatchingFilters(SongPtr a_Song) const
 {
 	qulonglong res = 0;
-	for (const auto & item: m_DB.getFavoriteTemplateItems())
+	for (const auto & filter: m_DB.getFavoriteFilters())
 	{
-		if (item->filter()->isSatisfiedBy(*a_Song))
+		if (filter->rootNode()->isSatisfiedBy(*a_Song))
 		{
 			res += 1;
 		}
@@ -717,9 +717,9 @@ void SongModelFilter::setSearchString(const QString & a_SearchString)
 
 
 
-void SongModelFilter::setFavoriteTemplateItems(const std::vector<Template::ItemPtr> & a_FavoriteTemplateItems)
+void SongModelFilter::setFavoriteFilters(const std::vector<FilterPtr> & a_FavoriteFilters)
 {
-	m_FavoriteTemplateItems = a_FavoriteTemplateItems;
+	m_FavoriteFilters = a_FavoriteFilters;
 	STOPWATCH("setFavoriteTemplateItems");
 	invalidateFilter();
 }
@@ -786,11 +786,11 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 			break;
 		}  // case fltWarnings
 
-		case fltNoTemplateFilterMatch:
+		case fltNoFilterMatch:
 		{
-			for (const auto & item: m_FavoriteTemplateItems)
+			for (const auto & filter: m_FavoriteFilters)
 			{
-				if (item->filter()->isSatisfiedBy(*song))
+				if (filter->rootNode()->isSatisfiedBy(*song))
 				{
 					return false;  // Don't want songs matching a template filter
 				}
