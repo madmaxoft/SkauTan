@@ -17,7 +17,8 @@ DlgManageFilters::DlgManageFilters(
 ):
 	Super(a_Parent),
 	m_Components(a_Components),
-	m_UI(new Ui::DlgManageFilters)
+	m_UI(new Ui::DlgManageFilters),
+	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgManageFilters", *this);
@@ -31,6 +32,7 @@ DlgManageFilters::DlgManageFilters(
 	connect(m_UI->btnMoveDown, &QPushButton::pressed,               this, &DlgManageFilters::moveFilterDown);
 	connect(m_UI->btnClose,    &QPushButton::pressed,               this, &QDialog::close);
 	connect(m_UI->tblFilters,  &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
+	connect(m_UI->tblFilters,  &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
 
 	// Fill in the existing filters:
 	auto tbl = m_UI->tblFilters;
@@ -61,6 +63,8 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 {
 	assert(a_Row >= 0);
 	assert(a_Row < m_UI->tblFilters->rowCount());
+
+	m_IsInternalChange = true;
 
 	auto tbl = m_UI->tblFilters;
 	auto item = new QTableWidgetItem(a_Filter.displayName());
@@ -94,6 +98,8 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
 	tbl->setItem(a_Row, 5, item);
+
+	m_IsInternalChange = false;
 }
 
 
@@ -212,6 +218,7 @@ void DlgManageFilters::moveFilterUp()
 
 
 
+
 void DlgManageFilters::moveFilterDown()
 {
 	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
@@ -239,4 +246,32 @@ void DlgManageFilters::filterSelectionChanged()
 	m_UI->btnRemove->setEnabled(selSize > 0);
 	m_UI->btnMoveUp->setEnabled((selSize == 1) && (selection[0].row() > 0));
 	m_UI->btnMoveDown->setEnabled((selSize == 1) && (selection[0].row() + 1 < m_UI->tblFilters->rowCount()));
+}
+
+
+
+
+
+void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
+{
+	assert(a_Item != nullptr);
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	auto db = m_Components.get<Database>();
+	auto row = a_Item->row();
+	auto filter = db->filters()[static_cast<size_t>(row)];
+	switch (a_Item->column())
+	{
+		case 0: filter->setDisplayName(a_Item->text()); break;
+		case 1: filter->setNotes(a_Item->text()); break;
+		case 2: filter->setIsFavorite(a_Item->checkState() == Qt::Checked); break;
+		default:
+		{
+			assert(!"Editing a non-editable item");
+			break;
+		}
+	}
+	db->saveFilter(*filter);
 }

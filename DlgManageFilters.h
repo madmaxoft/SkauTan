@@ -15,6 +15,7 @@
 // fwd:
 class ComponentCollection;
 class Filter;
+class QTableWidgetItem;
 namespace Ui
 {
 	class DlgManageFilters;
@@ -50,6 +51,10 @@ private:
 	/** The Qt-managed UI. */
 	std::unique_ptr<Ui::DlgManageFilters> m_UI;
 
+	/** Set to true when updating the tblFilters' items programmatically.
+	Used in filterItemChanged to distinguish between user and program editing the item. */
+	bool m_IsInternalChange;
+
 
 	/** Updates the table row with the info from the specified filter. */
 	void updateFilterRow(int a_Row, const Filter & a_Filter);
@@ -82,6 +87,10 @@ private slots:
 
 	/** The selection in tblFilters has changed, update the UI to reflect the current selection size. */
 	void filterSelectionChanged();
+
+	/** The specified item was edited, either by the user or the program.
+	If the change was from the user, update the filter in the DB. */
+	void filterChanged(QTableWidgetItem * a_Item);
 };
 
 
