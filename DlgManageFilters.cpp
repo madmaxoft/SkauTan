@@ -79,10 +79,21 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 	item->setCheckState(a_Filter.isFavorite() ? Qt::Checked : Qt::Unchecked);
 	tbl->setItem(a_Row, 2, item);
 
-	item = new QTableWidgetItem(a_Filter.getFilterDescription());
+	auto db = m_Components.get<Database>();
+	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(a_Filter)));
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
 	tbl->setItem(a_Row, 3, item);
+
+	item = new QTableWidgetItem(QString("%1").arg(db->numTemplatesContaining(a_Filter)));
+	item->setBackground(a_Filter.bgColor());
+	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+	tbl->setItem(a_Row, 4, item);
+
+	item = new QTableWidgetItem(a_Filter.getFilterDescription());
+	item->setBackground(a_Filter.bgColor());
+	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+	tbl->setItem(a_Row, 5, item);
 }
 
 

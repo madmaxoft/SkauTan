@@ -65,6 +65,29 @@
            <attribute name="verticalHeaderMinimumSectionSize">
             <number>21</number>
            </attribute>
+           <column>
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>#</string>
+            </property>
+            <property name="toolTip">
+             <string>Number of items</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Color</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Notes</string>
+            </property>
+           </column>
           </widget>
          </item>
         </layout>
@@ -181,6 +204,34 @@
            <attribute name="verticalHeaderMinimumSectionSize">
             <number>21</number>
            </attribute>
+           <column>
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Notes</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Duration</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string># Songs</string>
+            </property>
+            <property name="toolTip">
+             <string>Number of matching songs</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Filter</string>
+            </property>
+           </column>
           </widget>
          </item>
         </layout>
@@ -192,8 +243,11 @@
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
+           <property name="toolTip">
+            <string>Insert a filter before the selected item</string>
+           </property>
            <property name="text">
-            <string>Add</string>
+            <string>Insert</string>
            </property>
           </widget>
          </item>

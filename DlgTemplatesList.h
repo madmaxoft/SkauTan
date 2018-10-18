@@ -84,6 +84,12 @@ private:
 	Asserts that the rows are valid. */
 	void swapTemplatesAndSelectSecond(int a_Row1, int a_Row2);
 
+	/** Swaps the template items on the specified rows both in the UI and in the DB,
+	and selects the new row a_Row2.
+	Asserts that the template and the rows are valid. */
+	void swapItemsAndSelectSecond(int a_Row1, int a_Row2);
+
+
 
 protected slots:
 
@@ -93,11 +99,13 @@ protected slots:
 	/** Removes the currently selected templates. */
 	void removeTemplates();
 
-	/** Moves all the currently selected templates up by one. */
-	void moveTemplatesUp();
+	/** Moves the current template up by one.
+	Ignored if multiple templates are selected. */
+	void moveTemplateUp();
 
-	/** Moves all the currently selected templates down by one. */
-	void moveTemplatesDown();
+	/** Moves the current template down by one.
+	Ignored if multiple templates are selected. */
+	void moveTemplateDown();
 
 	/** The selection in the template list has changed. */
 	void templateSelectionChanged();
@@ -124,6 +132,17 @@ protected slots:
 	/** The user clicked the Manage (filters) button.
 	Shows the filter list. */
 	void manageFilters();
+
+	/** Removes the currently selected template items, after confirmation. */
+	void removeItems();
+
+	/** Moves the current template up by one.
+	Ignored if multiple templates are selected. */
+	void moveItemUp();
+
+	/** Moves the current template down by one.
+	Ignored if multiple templates are selected. */
+	void moveItemDown();
 };
 
 
