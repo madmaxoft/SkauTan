@@ -18,6 +18,12 @@
 
 
 
+// TODO: Handle template colors
+
+
+
+
+
 DlgTemplatesList::DlgTemplatesList(
 	ComponentCollection & a_Components,
 	QWidget * a_Parent
@@ -34,30 +40,24 @@ DlgTemplatesList::DlgTemplatesList(
 	connect(m_UI->btnClose,             &QPushButton::clicked,               this, &DlgTemplatesList::close);
 	connect(m_UI->btnAddTemplate,       &QPushButton::clicked,               this, &DlgTemplatesList::addTemplate);
 	connect(m_UI->btnRemoveTemplate,    &QPushButton::clicked,               this, &DlgTemplatesList::removeTemplates);
-	connect(m_UI->btnMoveTemplatesUp,   &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplatesUp);
-	connect(m_UI->btnMoveTemplatesDown, &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplatesDown);
+	connect(m_UI->btnMoveTemplatesUp,   &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplateUp);
+	connect(m_UI->btnMoveTemplatesDown, &QPushButton::clicked,               this, &DlgTemplatesList::moveTemplateDown);
 	connect(m_UI->btnImport,            &QPushButton::clicked,               this, &DlgTemplatesList::importTemplates);
 	connect(m_UI->btnExport,            &QPushButton::clicked,               this, &DlgTemplatesList::exportTemplates);
+	connect(m_UI->btnRemoveItem,        &QPushButton::clicked,               this, &DlgTemplatesList::removeItems);
+	connect(m_UI->btnMoveItemUp,        &QPushButton::clicked,               this, &DlgTemplatesList::moveItemUp);
+	connect(m_UI->btnMoveItemDown,      &QPushButton::clicked,               this, &DlgTemplatesList::moveItemDown);
 	connect(m_UI->btnManageFilters,     &QPushButton::clicked,               this, &DlgTemplatesList::manageFilters);
 	connect(m_UI->tblTemplates,         &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::templateSelectionChanged);
 	connect(m_UI->tblTemplates,         &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
 	connect(m_UI->tblItems,             &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::itemSelectionChanged);
 	connect(m_UI->tblItems,             &QTableWidget::cellDoubleClicked,    this, &DlgTemplatesList::itemDoubleClicked);
+	// TODO: React to in-place editing
 
 	// Update the UI state:
 	const auto & templates = m_Components.get<Database>()->templates();
 	m_UI->tblTemplates->setRowCount(static_cast<int>(templates.size()));
-	m_UI->tblTemplates->setColumnCount(3);
-	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
 	m_UI->tblItems->setRowCount(0);
-	m_UI->tblItems->setColumnCount(5);
-	m_UI->tblItems->setHorizontalHeaderLabels({
-		tr("Name"),
-		tr("Notes"),
-		tr("Dur", "Duration"),
-		tr("# Songs", "Number of matching songs"),
-		tr("Filter")
-	});
 	templateSelectionChanged();
 
 	// Insert all the templates into the table view:
@@ -66,7 +66,6 @@ DlgTemplatesList::DlgTemplatesList(
 		const auto & tmpl = templates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
-	templateSelectionChanged();
 
 	// Insert all the filters into the Add menu:
 	updateFilterMenu();
@@ -120,6 +119,7 @@ void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 
 	auto numItems = QString::number(a_Template.items().size());
 	item = new QTableWidgetItem(numItems);
+	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
 	m_UI->tblTemplates->setItem(a_Row, 1, item);
 
@@ -277,19 +277,21 @@ void DlgTemplatesList::insertFilter(FilterPtr a_Filter)
 	}
 
 	const auto & selection = m_UI->tblItems->selectionModel()->selectedRows();
-	int idxInsertAfter;
+	int idxInsertBefore;
 	if (selection.isEmpty())
 	{
-		idxInsertAfter = m_UI->tblItems->rowCount();
+		idxInsertBefore = m_UI->tblItems->rowCount();
 	}
 	else
 	{
-		idxInsertAfter = selection.last().row();
+		idxInsertBefore = selection.last().row();
 	}
 
-	tmpl->insertItem(a_Filter, idxInsertAfter);
-	m_UI->tblItems->insertRow(idxInsertAfter);
-	updateTemplateItemRow(idxInsertAfter, *a_Filter);
+	tmpl->insertItem(a_Filter, idxInsertBefore);
+	m_UI->tblItems->insertRow(idxInsertBefore);
+	updateTemplateItemRow(idxInsertBefore, *a_Filter);
+	m_UI->tblItems->selectRow(idxInsertBefore);
+	m_Components.get<Database>()->saveTemplate(*tmpl);
 }
 
 
@@ -318,6 +320,26 @@ void DlgTemplatesList::swapTemplatesAndSelectSecond(int a_Row1, int a_Row2)
 	updateTemplateRow(a_Row1, *templates[static_cast<size_t>(a_Row1)]);
 	updateTemplateRow(a_Row2, *templates[static_cast<size_t>(a_Row2)]);
 	m_UI->tblTemplates->selectRow(a_Row2);
+}
+
+
+
+
+
+void DlgTemplatesList::swapItemsAndSelectSecond(int a_Row1, int a_Row2)
+{
+	auto tmpl = currentTemplate();
+	if (tmpl == nullptr)
+	{
+		assert(!"Invalid template");
+		return;
+	}
+	tmpl->swapItemsByIdx(static_cast<size_t>(a_Row1), static_cast<size_t>(a_Row2));
+	m_Components.get<Database>()->saveTemplate(*tmpl);
+	const auto & items = tmpl->items();
+	updateTemplateItemRow(a_Row1, *items[static_cast<size_t>(a_Row1)]);
+	updateTemplateItemRow(a_Row2, *items[static_cast<size_t>(a_Row2)]);
+	m_UI->tblItems->selectRow(a_Row2);
 }
 
 
@@ -385,7 +407,7 @@ void DlgTemplatesList::removeTemplates()
 
 
 
-void DlgTemplatesList::moveTemplatesUp()
+void DlgTemplatesList::moveTemplateUp()
 {
 	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
 	if (selection.size() != 1)
@@ -404,7 +426,7 @@ void DlgTemplatesList::moveTemplatesUp()
 
 
 
-void DlgTemplatesList::moveTemplatesDown()
+void DlgTemplatesList::moveTemplateDown()
 {
 	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
 	if (selection.size() != 1)
@@ -608,3 +630,85 @@ void DlgTemplatesList::manageFilters()
 	// Update the current template item list (in case a filter was deleted):
 	templateSelectionChanged();
 }
+
+
+
+
+
+void DlgTemplatesList::removeItems()
+{
+	const auto & selection = m_UI->tblItems->selectionModel()->selectedRows();
+	if (selection.isEmpty())
+	{
+		return;
+	}
+
+	// Ask the user if they're sure:
+	if (QMessageBox::Yes != QMessageBox::question(
+		this,  // parent
+		tr("SkauTan: Remove template items?"),
+		tr("Are you sure you want to remove the selected template items?"),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	))
+	{
+		return;
+	}
+
+	// Delete both from the UI and from the DB (starting from the last row):
+	auto rowsToRemove = selection;
+	std::sort(rowsToRemove.begin(), rowsToRemove.end(), [](const QModelIndex & a_Row1, const QModelIndex & a_Row2)
+		{
+			return (a_Row1.row() > a_Row2.row());
+		}
+	);
+	auto tmpl = currentTemplate();
+	for (const auto & row: rowsToRemove)
+	{
+		tmpl->delItem(row.row());
+		m_UI->tblItems->removeRow(row.row());
+	}
+	m_Components.get<Database>()->saveTemplate(*tmpl);
+}
+
+
+
+
+void DlgTemplatesList::moveItemUp()
+{
+	const auto & selection = m_UI->tblItems->selectionModel()->selectedRows();
+	if (selection.size() != 1)
+	{
+		return;
+	}
+	auto row = selection[0].row();
+	if (row < 1)
+	{
+		return;
+	}
+	swapItemsAndSelectSecond(row, row - 1);
+}
+
+
+
+
+
+void DlgTemplatesList::moveItemDown()
+{
+	const auto & selection = m_UI->tblItems->selectionModel()->selectedRows();
+	if (selection.size() != 1)
+	{
+		return;
+	}
+	auto row = selection[0].row();
+	if (row + 1 >= m_UI->tblItems->rowCount())
+	{
+		return;
+	}
+	swapItemsAndSelectSecond(row, row + 1);
+}
+
+
+
+
+
+

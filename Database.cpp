@@ -426,6 +426,17 @@ void Database::addTemplate(TemplatePtr a_Template)
 	// Insert into memory:
 	a_Template->setDbRowId(query.lastInsertId().toLongLong());
 	m_Templates.push_back(a_Template);
+
+	// Insert any items that are not yet stored in the DB:
+	a_Template->replaceSameFilters(m_Filters);
+	for (const auto & item: a_Template->items())
+	{
+		if (item->dbRowId() == -1)
+		{
+			addFilter(item);
+			saveFilter(*item);
+		}
+	}
 }
 
 
@@ -868,6 +879,27 @@ int Database::numSongsMatchingFilter(const Filter & a_Filter) const
 		if (a_Filter.rootNode()->isSatisfiedBy(*s))
 		{
 			res += 1;
+		}
+	}
+	return res;
+}
+
+
+
+
+
+int Database::numTemplatesContaining(const Filter & a_Filter) const
+{
+	int res = 0;
+	for (const auto & tmpl: m_Templates)
+	{
+		for (const auto & item: tmpl->items())
+		{
+			if (item.get() == &a_Filter)
+			{
+				res += 1;
+				break;
+			}
 		}
 	}
 	return res;

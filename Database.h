@@ -145,6 +145,10 @@ public:
 	/** Returns the number of songs that match the specified filter. */
 	int numSongsMatchingFilter(const Filter & a_Filter) const;
 
+	/** Returns the number of templates that contain the specified filter.
+	If a template contains the filter multiple times, only one usage is reported for that template. */
+	int numTemplatesContaining(const Filter & a_Filter) const;
+
 	/** Picks a random song matching the specified filter.
 	If possible, avoids a_Avoid from being picked (picks it only if it is the only song matching the filter). */
 	SongPtr pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid = nullptr) const;

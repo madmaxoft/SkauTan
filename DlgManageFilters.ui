@@ -45,6 +45,22 @@
      </column>
      <column>
       <property name="text">
+       <string># Songs</string>
+      </property>
+      <property name="toolTip">
+       <string>Number of songs matching this filter</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string># Templates</string>
+      </property>
+      <property name="toolTip">
+       <string>Number of templates containing this filter</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Filter</string>
       </property>
      </column>
