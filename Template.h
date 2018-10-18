@@ -63,7 +63,7 @@ public:
 	void appendItem(FilterPtr a_Item);
 
 	/** Inserts the specified filter at the specified position in the item list. */
-	void insertItem(FilterPtr a_Item, int a_InsertAfter);
+	void insertItem(FilterPtr a_Item, int a_DstIndex);
 
 	/** Moves an item from the specified source index to the specified destination index.
 	Asserts if the indices are not valid. */
@@ -79,6 +79,16 @@ public:
 	/** Appends the items to the specified playlist.
 	a_SongsDB is the song database from which to choose songs. */
 	void appendToPlaylist(Playlist & a_Dst, Database & a_SongsDB);
+
+	/** Replaces items (filters) in this templates with filters from a_KnownFilters that have the same hash.
+	If an item has no corresponding filter in a_KnownFilters, it is left untouched.
+	This is used mainly when importing templates, to unify with existing filters.
+	If there are multiple filters in a_KnownFilters with the same hash, (random) one of those is picked. */
+	void replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters);
+
+	/** Swaps the two specified items.
+	Asserts that the indices are valid. */
+	void swapItemsByIdx(size_t a_Index1, size_t a_Index2);
 
 
 protected:
@@ -102,7 +112,7 @@ Q_DECLARE_METATYPE(TemplatePtr);
 
 
 
-/** Helper class that implements exporting multiple templates into a XML format. */
+/** Helper class that implements exporting multiple templates into an XML format. */
 class TemplateXmlExport
 {
 public:
@@ -132,12 +142,15 @@ protected:
 
 
 
+/** Helper class that implements importing templates from an XML format. */
 class TemplateXmlImport
 {
 public:
 
 	/** Imports the templates from the specified XML-formatted data.
-	Returns an empty vector on error. */
+	Returns an empty vector on error.
+	Note that the caller should unify the contained filters with their own filters prior to merging
+	the returned templates into their Database. */
 	static std::vector<TemplatePtr> run(const QByteArray & a_XmlData);
 
 
@@ -159,7 +172,8 @@ protected:
 	TemplatePtr readTemplate(const QDomElement & a_TemplateXmlElement);
 
 	/** Reads and returns a FilterPtr from the specified XML element.
-	a_ItemXmlElement is supposed to represent the <item> element in the XML. */
+	a_ItemXmlElement is supposed to represent the <item> element in the XML.
+	The returned filter is always a new unique object. */
 	FilterPtr readTemplateItem(const QDomElement & a_ItemXmlElement);
 
 	/** Reads and returns a Node from the specified XML element.

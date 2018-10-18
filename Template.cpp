@@ -53,9 +53,9 @@ void Template::appendItem(FilterPtr a_Filter)
 
 
 
-void Template::insertItem(FilterPtr a_Item, int a_InsertAfter)
+void Template::insertItem(FilterPtr a_Item, int a_DstIndex)
 {
-	m_Items.insert(m_Items.begin() + a_InsertAfter, a_Item);
+	m_Items.insert(m_Items.begin() + a_DstIndex, a_Item);
 }
 
 
@@ -87,6 +87,42 @@ bool Template::removeAllFilterRefs(FilterPtr a_Filter)
 	}
 	m_Items.erase(itr, m_Items.end());
 	return true;
+}
+
+
+
+
+
+void Template::replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters)
+{
+	// Build a hash-map of the known filters:
+	std::map<QByteArray, FilterPtr> knownFiltersByHash;
+	for (const auto & filter: a_KnownFilters)
+	{
+		knownFiltersByHash[filter->hash()] = filter;
+	}
+
+	// Replace:
+	for (auto itr = m_Items.begin(), end = m_Items.end(); itr != end; ++itr)
+	{
+		auto knownItr = knownFiltersByHash.find((*itr)->hash());
+		if (knownItr != knownFiltersByHash.end())
+		{
+			*itr = knownItr->second;
+		}
+	}
+}
+
+
+
+
+
+void Template::swapItemsByIdx(size_t a_Index1, size_t a_Index2)
+{
+	assert(a_Index1 < m_Items.size());
+	assert(a_Index2 < m_Items.size());
+
+	std::swap(m_Items[a_Index1], m_Items[a_Index2]);
 }
 
 
@@ -201,11 +237,6 @@ void TemplateXmlExport::addNodeToDom(const Filter::NodePtr && a_Node, QDomElemen
 
 std::vector<TemplatePtr> TemplateXmlImport::run(const QByteArray & a_XmlData)
 {
-	Q_UNUSED(a_XmlData);
-	return {};
-}
-
-# if 0
 	TemplateXmlImport import;
 	return import.importAll(a_XmlData);
 }
@@ -229,14 +260,14 @@ std::vector<TemplatePtr> TemplateXmlImport::importAll(const QByteArray & a_XmlDa
 	int errLine, errColumn;
 	if (!m_Document.setContent(a_XmlData, false, &errMsg, &errLine, &errColumn))
 	{
-		qWarning() << ": Failed to parse the XML: Line "
+		qWarning() << "Failed to parse the XML: Line "
 			<< errLine << ", column " << errColumn << ", msg: " << errMsg;
 		return res;
 	}
 	auto docElement = m_Document.documentElement();
 	if (docElement.tagName() != "SkauTanTemplates")
 	{
-		qWarning() << ": The root element is not <SkauTanTemplates>. Got " << docElement.tagName();
+		qWarning() << "The root element is not <SkauTanTemplates>. Got " << docElement.tagName();
 		return res;
 	}
 	for (auto te = docElement.firstChildElement("SkauTanTemplate"); !te.isNull(); te = te.nextSiblingElement("SkauTanTemplate"))
@@ -285,7 +316,7 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 		auto item = readTemplateItem(ie);
 		if (item != nullptr)
 		{
-			res->appendExistingItem(item);
+			res->appendItem(item);
 		}
 	}
 	return res;
@@ -295,12 +326,15 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 
 
 
-Template::ItemPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlElement)
+FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlElement)
 {
-	auto res = std::make_shared<Template::Item>(
+	auto res = std::make_shared<Filter>(
+		-1,
 		a_ItemXmlElement.attribute("name"),
 		a_ItemXmlElement.attribute("notes"),
-		(a_ItemXmlElement.attribute("isFavorite", "0") == "1")
+		(a_ItemXmlElement.attribute("isFavorite", "0") == "1"),
+		QColor(),
+		DatedOptional<double>()
 	);
 	if (res == nullptr)
 	{
@@ -323,26 +357,26 @@ Template::ItemPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_Item
 		res->setDurationLimit(durationLimit);
 	}
 
-	// Read the item's filter:
+	// Read the item's filter nodes:
 	auto fe = a_ItemXmlElement.firstChildElement("filter");
 	if (fe.isNull())
 	{
-		qWarning() << ": There's no <filter> element in template item " << res->displayName();
+		qWarning() << "There's no <filter> element in filter " << res->displayName();
 		return nullptr;
 	}
 	auto fc = fe.firstChildElement();
 	if (fc.isNull())
 	{
-		qWarning() << ": The <filter> element contains no filter in template item " << res->displayName();
+		qWarning() << "The <filter> element contains no filter in filter " << res->displayName();
 		return nullptr;
 	}
-	auto filter = readTemplateFilter(fe.firstChildElement());
-	if (filter == nullptr)
+	auto node = readTemplateFilterNode(fe.firstChildElement());
+	if (node == nullptr)
 	{
-		qWarning() << ": Cannot read the filter for template item " << res->displayName();
+		qWarning() << "Cannot read the filter root node for filter " << res->displayName();
 		return nullptr;
 	}
-	res->setFilter(filter);
+	res->setRootNode(node);
 	return res;
 }
 
@@ -350,55 +384,53 @@ Template::ItemPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_Item
 
 
 
-Template::FilterPtr TemplateXmlImport::readTemplateFilter(const QDomElement & a_FilterXmlElement)
+Filter::NodePtr TemplateXmlImport::readTemplateFilterNode(const QDomElement & a_FilterXmlElement)
 {
-	// Read a comparison filter:
-	using TF = Template::Filter;
+	// Read a comparison filter node:
 	const auto & tagName = a_FilterXmlElement.tagName();
 	if (tagName == "comparison")
 	{
 		try
 		{
-			auto songProperty = TF::intToSongProperty(a_FilterXmlElement.attribute("songProperty").toInt());
-			auto comparison   = TF::intToComparison  (a_FilterXmlElement.attribute("comparison"  ).toInt());
+			auto songProperty = Filter::Node::intToSongProperty(a_FilterXmlElement.attribute("songProperty").toInt());
+			auto comparison   = Filter::Node::intToComparison  (a_FilterXmlElement.attribute("comparison"  ).toInt());
 			auto value = a_FilterXmlElement.attribute("value");
-			return std::make_shared<Template::Filter>(songProperty, comparison, value);
+			return std::make_shared<Filter::Node>(songProperty, comparison, value);
 		}
 		catch (const std::exception & exc)
 		{
-			qWarning() << ": Cannot read filter comparison: " << exc.what();
+			qWarning() << "Cannot read filter comparison: " << exc.what();
 			return nullptr;
 		}
 	}
 
-	// Read a combinator filter:
-	TF::Kind kind;
+	// Read a combinator filter node:
+	Filter::Node::Kind kind;
 	if (tagName == "and")
 	{
-		kind = TF::fkAnd;
+		kind = Filter::Node::nkAnd;
 	}
 	else if (tagName == "or")
 	{
-		kind = TF::fkOr;
+		kind = Filter::Node::nkOr;
 	}
 	else
 	{
-		qWarning() << ": Unknown filter kind: " << tagName;
+		qWarning() << "Unknown filter kind: " << tagName;
 		return nullptr;
 	}
-	auto res = std::make_shared<Template::Filter>(kind);
+	auto res = std::make_shared<Filter::Node>(kind);
 
-	// Read the children filters:
+	// Read the children nodes:
 	for (auto ce = a_FilterXmlElement.firstChildElement(); !ce.isNull(); ce = ce.nextSiblingElement())
 	{
-		auto child = readTemplateFilter(ce);
+		auto child = readTemplateFilterNode(ce);
 		if (child == nullptr)
 		{
-			qWarning() << ": Cannot read child filter, line " << ce.lineNumber();
+			qWarning() << "Cannot read child filter node, line " << ce.lineNumber();
 			return nullptr;
 		}
 		res->addChild(child);
 	}
 	return res;
 }
-#endif
