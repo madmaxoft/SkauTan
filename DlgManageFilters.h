@@ -85,6 +85,10 @@ private slots:
 	/** Moves the currently selected filter down. */
 	void moveFilterDown();
 
+	/** Duplicates the selected filter.
+	Ignored if multiple filters are selected. */
+	void duplicateFilter();
+
 	/** The selection in tblFilters has changed, update the UI to reflect the current selection size. */
 	void filterSelectionChanged();
 

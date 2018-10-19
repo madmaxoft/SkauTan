@@ -13,12 +13,6 @@
 
 
 
-// TODO: Duplicate filter
-
-
-
-
-
 /** Columns in tblFilters. */
 enum
 {
@@ -52,14 +46,15 @@ DlgManageFilters::DlgManageFilters(
 	m_UI->tblFilters->setItemDelegateForColumn(3, delegate);
 
 	// Connect the signals:
-	connect(m_UI->btnAdd,      &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
-	connect(m_UI->btnEdit,     &QPushButton::pressed,               this, &DlgManageFilters::editFilter);
-	connect(m_UI->btnRemove,   &QPushButton::pressed,               this, &DlgManageFilters::removeFilter);
-	connect(m_UI->btnMoveUp,   &QPushButton::pressed,               this, &DlgManageFilters::moveFilterUp);
-	connect(m_UI->btnMoveDown, &QPushButton::pressed,               this, &DlgManageFilters::moveFilterDown);
-	connect(m_UI->btnClose,    &QPushButton::pressed,               this, &QDialog::close);
-	connect(m_UI->tblFilters,  &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
-	connect(m_UI->tblFilters,  &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
+	connect(m_UI->btnAdd,       &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
+	connect(m_UI->btnEdit,      &QPushButton::pressed,               this, &DlgManageFilters::editFilter);
+	connect(m_UI->btnRemove,    &QPushButton::pressed,               this, &DlgManageFilters::removeFilter);
+	connect(m_UI->btnMoveUp,    &QPushButton::pressed,               this, &DlgManageFilters::moveFilterUp);
+	connect(m_UI->btnMoveDown,  &QPushButton::pressed,               this, &DlgManageFilters::moveFilterDown);
+	connect(m_UI->btnDuplicate, &QPushButton::pressed,               this, &DlgManageFilters::duplicateFilter);
+	connect(m_UI->btnClose,     &QPushButton::pressed,               this, &QDialog::close);
+	connect(m_UI->tblFilters,   &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
+	connect(m_UI->tblFilters,   &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
 
 	// Fill in the existing filters:
 	auto tbl = m_UI->tblFilters;
@@ -119,7 +114,7 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 	item = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colBgColor, item);
+	tbl->setItem(a_Row, colDurationLimit, item);
 
 	auto db = m_Components.get<Database>();
 	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(a_Filter)));
@@ -270,6 +265,32 @@ void DlgManageFilters::moveFilterDown()
 		return;
 	}
 	swapFiltersAndSelectSecond(row, row + 1);
+}
+
+
+
+
+
+void DlgManageFilters::duplicateFilter()
+{
+	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	if (selection.size() != 1)
+	{
+		return;
+	}
+	auto row = selection[0].row();
+	if (row + 1 >= m_UI->tblFilters->rowCount())
+	{
+		return;
+	}
+	auto db = m_Components.get<Database>();
+	auto filter = db->filters()[static_cast<size_t>(row)];
+	auto clone = std::make_shared<Filter>(*filter);  // Clone the entire filter
+	db->addFilter(clone);
+	auto newRow = m_UI->tblFilters->rowCount();
+	m_UI->tblFilters->setRowCount(newRow + 1);
+	updateFilterRow(newRow, *clone);
+	m_UI->tblFilters->selectRow(newRow);
 }
 
 

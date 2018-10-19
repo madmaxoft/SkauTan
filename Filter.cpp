@@ -732,6 +732,21 @@ Filter::Filter(
 
 
 
+Filter::Filter(const Filter & a_CopyFrom):
+	m_DbRowId(-1),
+	m_DisplayName(a_CopyFrom.m_DisplayName),
+	m_Notes(a_CopyFrom.m_Notes),
+	m_IsFavorite(a_CopyFrom.m_IsFavorite),
+	m_RootNode(a_CopyFrom.m_RootNode->clone()),
+	m_BgColor(a_CopyFrom.m_BgColor),
+	m_DurationLimit(a_CopyFrom.m_DurationLimit)
+{
+}
+
+
+
+
+
 void Filter::setNoopFilter()
 {
 	m_RootNode.reset(new Node(

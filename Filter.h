@@ -270,6 +270,10 @@ public:
 		const DatedOptional<double> & a_DurationLimit
 	);
 
+	/** Creates a new filter as a copy of the specified filter, with a clone of the node tree.
+	Doesn't copy the DB RowID, -1 is assigned instead. */
+	Filter(const Filter & a_CopyFrom);
+
 	qlonglong dbRowId() const { return m_DbRowId; }
 	const QString & displayName() const { return m_DisplayName; }
 	const QString & notes() const { return m_Notes; }
