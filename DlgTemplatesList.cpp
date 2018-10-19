@@ -13,12 +13,7 @@
 #include "Filter.h"
 #include "DlgManageFilters.h"
 #include "DlgEditFilter.h"
-
-
-
-
-
-// TODO: Handle template colors
+#include "ColorDelegate.h"
 
 
 
@@ -34,6 +29,8 @@ DlgTemplatesList::DlgTemplatesList(
 	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
+	auto delegate = new ColorDelegate(tr("SkauTan: Choose template item color"));
+	m_UI->tblTemplates->setItemDelegateForColumn(2, delegate);
 	Settings::loadWindowPos("DlgTemplatesList", *this);
 
 	// Connect the signals:
@@ -123,10 +120,16 @@ void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 	item->setBackgroundColor(a_Template.bgColor());
 	m_UI->tblTemplates->setItem(a_Row, 1, item);
 
-	item = new QTableWidgetItem(a_Template.notes());
+	item = new QTableWidgetItem(a_Template.bgColor().name());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
 	m_UI->tblTemplates->setItem(a_Row, 2, item);
+	m_IsInternalChange = false;
+
+	item = new QTableWidgetItem(a_Template.notes());
+	item->setFlags(item->flags() | Qt::ItemIsEditable);
+	item->setBackgroundColor(a_Template.bgColor());
+	m_UI->tblTemplates->setItem(a_Row, 3, item);
 	m_IsInternalChange = false;
 }
 
@@ -504,6 +507,16 @@ void DlgTemplatesList::templateChanged(QTableWidgetItem * a_Item)
 			break;
 		}
 		case 2:
+		{
+			QColor c(a_Item->text());
+			if (c.isValid())
+			{
+				tmpl->setBgColor(c);
+				updateTemplateRow(a_Item->row(), *tmpl);
+			}
+			break;
+		}
+		case 3:
 		{
 			tmpl->setNotes(a_Item->text());
 			break;
