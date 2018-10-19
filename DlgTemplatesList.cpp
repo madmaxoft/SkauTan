@@ -19,6 +19,32 @@
 
 
 
+/** The columns in tblTemplates. */
+enum
+{
+	colTemplateDisplayName = 0,
+	colTemplateNumItems,
+	colTemplateBgColor,
+	colTemplateNotes,
+};
+
+
+
+/** The columns in tblItems. */
+enum
+{
+	colItemDisplayName = 0,
+	colItemNotes,
+	colItemDurationLimit,
+	colItemBgColor,
+	colItemNumSongs,
+	colItemDescription,
+};
+
+
+
+
+
 DlgTemplatesList::DlgTemplatesList(
 	ComponentCollection & a_Components,
 	QWidget * a_Parent
@@ -29,8 +55,10 @@ DlgTemplatesList::DlgTemplatesList(
 	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
-	auto delegate = new ColorDelegate(tr("SkauTan: Choose template item color"));
-	m_UI->tblTemplates->setItemDelegateForColumn(2, delegate);
+	auto delegate = new ColorDelegate(tr("SkauTan: Choose template color"));
+	m_UI->tblTemplates->setItemDelegateForColumn(colTemplateBgColor, delegate);
+	delegate = new ColorDelegate(tr("SkauTan: Choose filter color"));
+	m_UI->tblItems->setItemDelegateForColumn(colItemBgColor, delegate);
 	Settings::loadWindowPos("DlgTemplatesList", *this);
 
 	// Connect the signals:
@@ -49,7 +77,7 @@ DlgTemplatesList::DlgTemplatesList(
 	connect(m_UI->tblTemplates,         &QTableWidget::itemChanged,          this, &DlgTemplatesList::templateChanged);
 	connect(m_UI->tblItems,             &QTableWidget::itemSelectionChanged, this, &DlgTemplatesList::itemSelectionChanged);
 	connect(m_UI->tblItems,             &QTableWidget::cellDoubleClicked,    this, &DlgTemplatesList::itemDoubleClicked);
-	// TODO: React to in-place editing
+	connect(m_UI->tblItems,             &QTableWidget::itemChanged,          this, &DlgTemplatesList::itemChanged);
 
 	// Update the UI state:
 	const auto & templates = m_Components.get<Database>()->templates();
@@ -112,24 +140,24 @@ void DlgTemplatesList::updateTemplateRow(int a_Row, const Template & a_Template)
 	auto item = new QTableWidgetItem(a_Template.displayName());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
-	m_UI->tblTemplates->setItem(a_Row, 0, item);
+	m_UI->tblTemplates->setItem(a_Row, colTemplateDisplayName, item);
 
 	auto numItems = QString::number(a_Template.items().size());
 	item = new QTableWidgetItem(numItems);
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
-	m_UI->tblTemplates->setItem(a_Row, 1, item);
+	m_UI->tblTemplates->setItem(a_Row, colTemplateNumItems, item);
 
 	item = new QTableWidgetItem(a_Template.bgColor().name());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
-	m_UI->tblTemplates->setItem(a_Row, 2, item);
+	m_UI->tblTemplates->setItem(a_Row, colTemplateBgColor, item);
 	m_IsInternalChange = false;
 
 	item = new QTableWidgetItem(a_Template.notes());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 	item->setBackgroundColor(a_Template.bgColor());
-	m_UI->tblTemplates->setItem(a_Row, 3, item);
+	m_UI->tblTemplates->setItem(a_Row, colTemplateNotes, item);
 	m_IsInternalChange = false;
 }
 
@@ -141,30 +169,38 @@ void DlgTemplatesList::updateTemplateItemRow(int a_Row, const Filter & a_Item)
 {
 	m_IsInternalChange = true;
 	auto wi = new QTableWidgetItem(a_Item.displayName());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 0, wi);
+	m_UI->tblItems->setItem(a_Row, colItemDisplayName, wi);
 
 	wi = new QTableWidgetItem(a_Item.notes());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 1, wi);
+	m_UI->tblItems->setItem(a_Row, colItemNotes, wi);
 
 	const auto & durationLimit = a_Item.durationLimit();
 	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-	m_UI->tblItems->setItem(a_Row, 2, wi);
+	m_UI->tblItems->setItem(a_Row, colItemDurationLimit, wi);
+
+	wi = new QTableWidgetItem(a_Item.bgColor().name());
+	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
+	wi->setBackgroundColor(a_Item.bgColor());
+	m_UI->tblItems->setItem(a_Row, colItemBgColor, wi);
 
 	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(a_Item);
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor((numMatching > 0) ? a_Item.bgColor() : QColor(255, 192, 192));
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-	m_UI->tblItems->setItem(a_Row, 3, wi);
+	m_UI->tblItems->setItem(a_Row, colItemNumSongs, wi);
 
 	wi = new QTableWidgetItem(a_Item.getFilterDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
 	wi->setBackgroundColor(a_Item.bgColor());
-	m_UI->tblItems->setItem(a_Row, 4, wi);
+	m_UI->tblItems->setItem(a_Row, colItemDescription, wi);
 	m_IsInternalChange = false;
 }
 
@@ -576,6 +612,83 @@ void DlgTemplatesList::itemDoubleClicked(int a_Row, int a_Column)
 	// Update the UI that may have been affected by a filter edit:
 	updateTemplateItemRow(a_Row, *item);
 	updateFilterMenu();
+}
+
+
+
+
+
+void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
+{
+	if (m_IsInternalChange)
+	{
+		return;
+	}
+	auto tmpl = currentTemplate();
+	if (tmpl == nullptr)
+	{
+		assert(!"Invalid template");
+		return;
+	}
+	assert(a_Item != nullptr);
+
+	// Get the affected filter object :
+	auto row = a_Item->row();
+	const auto & items = tmpl->items();
+	if ((row < 0) || (static_cast<size_t>(row) >= items.size()))
+	{
+		assert(!"Bad item index");
+		return;
+	}
+	auto filter = tmpl->items()[static_cast<size_t>(row)];
+
+	// Update the object:
+	switch (a_Item->column())
+	{
+		case colItemDisplayName: filter->setDisplayName(a_Item->text()); break;
+		case colItemNotes: filter->setNotes(a_Item->text()); break;
+		case colItemDurationLimit:
+		{
+			bool isOK;
+			auto limit = Utils::parseTime(a_Item->text(), isOK);
+			if (isOK)
+			{
+				filter->setDurationLimit(limit);
+			}
+			else
+			{
+				filter->resetDurationLimit();
+			}
+			break;
+		}
+		case colItemBgColor:
+		{
+			QColor c(a_Item->text());
+			if (c.isValid())
+			{
+				filter->setBgColor(c);
+				updateTemplateItemRow(row, *filter);
+			}
+			break;
+		}
+		default:
+		{
+			assert(!"Uneditable item");
+			return;
+		}
+	}
+
+	// Update all rows containing the filter:
+	m_IsInternalChange = true;
+	auto num = static_cast<int>(items.size());
+	for (int i = 0; i < num; ++i)
+	{
+		auto item = items[static_cast<size_t>(i)];
+		if (item.get() == filter.get())
+		{
+			updateTemplateItemRow(i, *item);
+		}
+	}
 }
 
 

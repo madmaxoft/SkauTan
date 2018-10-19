@@ -7,6 +7,30 @@
 #include "Database.h"
 #include "DlgEditFilter.h"
 #include "ColorDelegate.h"
+#include "Utils.h"
+
+
+
+
+
+// TODO: Duplicate filter
+
+
+
+
+
+/** Columns in tblFilters. */
+enum
+{
+	colDisplayName = 0,
+	colNotes,
+	colIsFavorite,
+	colBgColor,
+	colDurationLimit,
+	colNumSongs,
+	colNumTemplates,
+	colDescription,
+};
 
 
 
@@ -73,39 +97,45 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 	auto item = new QTableWidgetItem(a_Filter.displayName());
 	item->setBackgroundColor(a_Filter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 0, item);
+	tbl->setItem(a_Row, colDisplayName, item);
 
 	item = new QTableWidgetItem(a_Filter.notes());
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 1, item);
+	tbl->setItem(a_Row, colNotes, item);
 
 	item = new QTableWidgetItem();
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsUserCheckable);
 	item->setCheckState(a_Filter.isFavorite() ? Qt::Checked : Qt::Unchecked);
-	tbl->setItem(a_Row, 2, item);
+	tbl->setItem(a_Row, colIsFavorite, item);
 
 	item = new QTableWidgetItem(a_Filter.bgColor().name());
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 3, item);
+	tbl->setItem(a_Row, colBgColor, item);
+
+	auto durationLimit = a_Filter.durationLimit();
+	item = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
+	item->setBackground(a_Filter.bgColor());
+	item->setFlags(item->flags() | Qt::ItemIsEditable);
+	tbl->setItem(a_Row, colBgColor, item);
 
 	auto db = m_Components.get<Database>();
 	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(a_Filter)));
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 4, item);
+	tbl->setItem(a_Row, colNumSongs, item);
 
 	item = new QTableWidgetItem(QString("%1").arg(db->numTemplatesContaining(a_Filter)));
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 5, item);
+	tbl->setItem(a_Row, colNumTemplates, item);
 
 	item = new QTableWidgetItem(a_Filter.getFilterDescription());
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 6, item);
+	tbl->setItem(a_Row, colDescription, item);
 
 	m_IsInternalChange = false;
 }
@@ -272,10 +302,24 @@ void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
 	auto filter = db->filters()[static_cast<size_t>(row)];
 	switch (a_Item->column())
 	{
-		case 0: filter->setDisplayName(a_Item->text()); break;
-		case 1: filter->setNotes(a_Item->text()); break;
-		case 2: filter->setIsFavorite(a_Item->checkState() == Qt::Checked); break;
-		case 3:
+		case colDisplayName: filter->setDisplayName(a_Item->text()); break;
+		case colNotes: filter->setNotes(a_Item->text()); break;
+		case colIsFavorite: filter->setIsFavorite(a_Item->checkState() == Qt::Checked); break;
+		case colDurationLimit:
+		{
+			bool isOK;
+			auto limit = Utils::parseTime(a_Item->text(), isOK);
+			if (isOK)
+			{
+				filter->setDurationLimit(limit);
+			}
+			else
+			{
+				filter->resetDurationLimit();
+			}
+			break;
+		}
+		case colBgColor:
 		{
 			QColor c(a_Item->text());
 			if (c.isValid())
