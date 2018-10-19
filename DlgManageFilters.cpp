@@ -6,6 +6,7 @@
 #include "ComponentCollection.h"
 #include "Database.h"
 #include "DlgEditFilter.h"
+#include "ColorDelegate.h"
 
 
 
@@ -23,6 +24,8 @@ DlgManageFilters::DlgManageFilters(
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("DlgManageFilters", *this);
 	Settings::loadHeaderView("DlgManageFilters", "tblFilters", *m_UI->tblFilters->horizontalHeader());
+	auto delegate = new ColorDelegate(tr("SkauTan: Choose filter color"));
+	m_UI->tblFilters->setItemDelegateForColumn(3, delegate);
 
 	// Connect the signals:
 	connect(m_UI->btnAdd,      &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
@@ -83,21 +86,26 @@ void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 	item->setCheckState(a_Filter.isFavorite() ? Qt::Checked : Qt::Unchecked);
 	tbl->setItem(a_Row, 2, item);
 
+	item = new QTableWidgetItem(a_Filter.bgColor().name());
+	item->setBackground(a_Filter.bgColor());
+	item->setFlags(item->flags() | Qt::ItemIsEditable);
+	tbl->setItem(a_Row, 3, item);
+
 	auto db = m_Components.get<Database>();
 	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(a_Filter)));
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 3, item);
+	tbl->setItem(a_Row, 4, item);
 
 	item = new QTableWidgetItem(QString("%1").arg(db->numTemplatesContaining(a_Filter)));
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 4, item);
+	tbl->setItem(a_Row, 5, item);
 
 	item = new QTableWidgetItem(a_Filter.getFilterDescription());
 	item->setBackground(a_Filter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, 5, item);
+	tbl->setItem(a_Row, 6, item);
 
 	m_IsInternalChange = false;
 }
@@ -267,6 +275,16 @@ void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
 		case 0: filter->setDisplayName(a_Item->text()); break;
 		case 1: filter->setNotes(a_Item->text()); break;
 		case 2: filter->setIsFavorite(a_Item->checkState() == Qt::Checked); break;
+		case 3:
+		{
+			QColor c(a_Item->text());
+			if (c.isValid())
+			{
+				filter->setBgColor(c);
+				updateFilterRow(row, *filter);
+			}
+			break;
+		}
 		default:
 		{
 			assert(!"Editing a non-editable item");

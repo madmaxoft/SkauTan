@@ -122,6 +122,7 @@ SOURCES += \
 	lib/QrCodeGen/QrCode.cpp \
 	lib/QrCodeGen/QrSegment.cpp \
 	Filter.cpp \
+	ColorDelegate.cpp \
 	InstallConfiguration.cpp \
 	DatabaseBackup.cpp \
 
@@ -188,6 +189,7 @@ HEADERS += \
 	lib/QrCodeGen/QrCode.hpp \
 	lib/QrCodeGen/QrSegment.hpp \
 	Filter.h \
+	ColorDelegate.h \
 	InstallConfiguration.h \
 	DatabaseBackup.h \
 	Exception.h \
