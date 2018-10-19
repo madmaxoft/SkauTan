@@ -55,6 +55,7 @@ DlgManageFilters::DlgManageFilters(
 	connect(m_UI->btnClose,     &QPushButton::pressed,               this, &QDialog::close);
 	connect(m_UI->tblFilters,   &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
 	connect(m_UI->tblFilters,   &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
+	connect(m_UI->tblFilters,   &QTableWidget::cellDoubleClicked,    this, &DlgManageFilters::filterDoubleClicked);
 
 	// Fill in the existing filters:
 	auto tbl = m_UI->tblFilters;
@@ -149,6 +150,7 @@ void DlgManageFilters::editFilterOnRow(int a_Row)
 	auto filter = filters[static_cast<size_t>(a_Row)];
 	DlgEditFilter dlg(m_Components, *filter, this);
 	dlg.exec();
+	m_Components.get<Database>()->saveFilter(*filter);
 	updateFilterRow(a_Row, *filter);
 }
 
@@ -357,4 +359,14 @@ void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
 		}
 	}
 	db->saveFilter(*filter);
+}
+
+
+
+
+
+void DlgManageFilters::filterDoubleClicked(int a_Row, int a_Column)
+{
+	Q_UNUSED(a_Column);
+	editFilterOnRow(a_Row);
 }

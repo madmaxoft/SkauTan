@@ -95,6 +95,9 @@ private slots:
 	/** The specified item was edited, either by the user or the program.
 	If the change was from the user, update the filter in the DB. */
 	void filterChanged(QTableWidgetItem * a_Item);
+
+	/** The specified table cell in tblFilters was dblclicked, show the filter editor. */
+	void filterDoubleClicked(int a_Row, int a_Column);
 };
 
 
