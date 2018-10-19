@@ -465,7 +465,7 @@ void Database::swapTemplatesByIdx(size_t a_Idx1, size_t a_Idx2)
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Idx1);
+	query.bindValue(0, static_cast<qulonglong>(a_Idx1));
 	query.bindValue(1, m_Templates[a_Idx1]->dbRowId());
 	if (!query.exec())
 	{
@@ -473,7 +473,7 @@ void Database::swapTemplatesByIdx(size_t a_Idx1, size_t a_Idx2)
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Idx2);
+	query.bindValue(0, static_cast<qulonglong>(a_Idx2));
 	query.bindValue(1, m_Templates[a_Idx2]->dbRowId());
 	if (!query.exec())
 	{
@@ -564,7 +564,7 @@ void Database::saveTemplate(const Template & a_Template)
 	query.addBindValue(a_Template.displayName());
 	query.addBindValue(a_Template.notes());
 	query.addBindValue(a_Template.bgColor().name());
-	query.addBindValue(position);
+	query.addBindValue(static_cast<qulonglong>(position));
 	query.addBindValue(a_Template.dbRowId());
 	if (!query.exec())
 	{
@@ -681,7 +681,7 @@ void Database::swapFiltersByIdx(size_t a_Idx1, size_t a_Idx2)
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Idx1);
+	query.bindValue(0, static_cast<qulonglong>(a_Idx1));
 	query.bindValue(1, m_Filters[a_Idx1]->dbRowId());
 	if (!query.exec())
 	{
@@ -689,7 +689,7 @@ void Database::swapFiltersByIdx(size_t a_Idx1, size_t a_Idx2)
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Idx2);
+	query.bindValue(0, static_cast<qulonglong>(a_Idx2));
 	query.bindValue(1, m_Filters[a_Idx2]->dbRowId());
 	if (!query.exec())
 	{
@@ -819,7 +819,7 @@ void Database::saveFilter(const Filter & a_Filter)
 	query.addBindValue(a_Filter.bgColor().name());
 	query.addBindValue(a_Filter.isFavorite());
 	query.addBindValue(a_Filter.durationLimit().toVariant());
-	query.addBindValue(position);
+	query.addBindValue(static_cast<qulonglong>(position));
 	query.addBindValue(a_Filter.dbRowId());
 	if (!query.exec())
 	{

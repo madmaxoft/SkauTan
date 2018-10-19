@@ -733,6 +733,8 @@ Filter::Filter(
 
 
 Filter::Filter(const Filter & a_CopyFrom):
+	QObject(),
+	std::enable_shared_from_this<Filter>(),
 	m_DbRowId(-1),
 	m_DisplayName(a_CopyFrom.m_DisplayName),
 	m_Notes(a_CopyFrom.m_Notes),
