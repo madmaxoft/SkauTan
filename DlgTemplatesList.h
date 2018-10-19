@@ -121,6 +121,10 @@ protected slots:
 	Displays the UI for editing the filter. */
 	void itemDoubleClicked(int a_Row, int a_Column);
 
+	/** The item in the table has changed, either by us (m_IsInternalChange) or by the user.
+	If the change was by the user, save the new contents to the filter. */
+	void itemChanged(QTableWidgetItem * a_Item);
+
 	/** The user clicked the Export button.
 	Shows a file selection dialog, then exports selected templates into that file. */
 	void exportTemplates();
