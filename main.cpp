@@ -18,6 +18,7 @@
 #include "Utils.h"
 #include "DJControllers.h"
 #include "LocalVoteServer.h"
+#include "InstallConfiguration.h"
 
 
 
@@ -69,17 +70,6 @@ void importDefaultTemplates(Database & a_DB)
 
 
 
-void midiInCallback(double a_TimeStamp, std::vector<unsigned char> * a_Message, void * a_UserData)
-{
-	Q_UNUSED(a_TimeStamp);
-	Q_UNUSED(a_UserData);
-	qDebug() << "Midi IN: " << Utils::toHex(QByteArray(reinterpret_cast<const char *>(a_Message->data()), static_cast<int>(a_Message->size())));
-}
-
-
-
-
-
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -94,10 +84,12 @@ int main(int argc, char *argv[])
 		qRegisterMetaType<SongPtr>();
 		qRegisterMetaType<Song::SharedDataPtr>();
 		qRegisterMetaType<TempoDetector::ResultPtr>();
-		Settings::init("SkauTan.ini");
+		auto instConf = std::make_shared<InstallConfiguration>();
+		Settings::init(instConf->dataLocation("SkauTan.ini"));
 
 		// Create the main app objects:
 		ComponentCollection cc;
+		cc.addComponent(instConf);
 		auto mainDB = cc.addNew<Database>();
 		auto scanner = cc.addNew<MetadataScanner>();
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
@@ -130,7 +122,7 @@ int main(int argc, char *argv[])
 		);
 
 		// Load the DB:
-		mainDB->open("SkauTan.sqlite");
+		mainDB->open(instConf->dataLocation("SkauTan.sqlite"));
 
 		// Add default templates, if none in the DB:
 		if (mainDB->templates().empty())
