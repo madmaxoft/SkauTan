@@ -122,6 +122,7 @@ SOURCES += \
 	lib/QrCodeGen/BitBuffer.cpp \
 	lib/QrCodeGen/QrCode.cpp \
 	lib/QrCodeGen/QrSegment.cpp \
+	InstallConfiguration.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -186,6 +187,7 @@ HEADERS += \
 	lib/QrCodeGen/BitBuffer.hpp \
 	lib/QrCodeGen/QrCode.hpp \
 	lib/QrCodeGen/QrSegment.hpp \
+	InstallConfiguration.h \
 
 FORMS += \
 	PlayerWindow.ui \

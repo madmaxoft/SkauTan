@@ -38,6 +38,7 @@ public:
 		ckPlayer,
 		ckDJControllers,
 		ckLocalVoteServer,
+		ckInstallConfiguration,
 	};
 
 
