@@ -46,7 +46,7 @@ QString InstallConfiguration::detectDataPath()
 	}
 
 	// No suitable location found
-	throw std::runtime_error("Cannot find a suitable location to store the data.");
+	throw RuntimeError("Cannot find a suitable location to store the data.");
 }
 
 

@@ -59,7 +59,7 @@ public:
 	using RemovedSongPtr = std::shared_ptr<RemovedSong>;
 
 
-	Database();
+	Database(ComponentCollection & a_Components);
 
 	/** Opens the specified SQLite file and reads its contents into this object.
 	Keeps the DB open for subsequent immediate updates.
@@ -159,6 +159,9 @@ protected:
 
 	friend class DatabaseUpgrade;
 
+
+	/** The components of the entire program. */
+	ComponentCollection & m_Components;
 
 	/** The DB connection .*/
 	QSqlDatabase m_Database;

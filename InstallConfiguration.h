@@ -20,11 +20,17 @@ class InstallConfiguration:
 public:
 
 	/** Initializes the paths.
-	Throws a std::runtime_error if no suitable path was found. */
+	Throws a RuntimeError if no suitable path was found. */
 	InstallConfiguration();
 
-	/** Returns the filename with path where the specified file (with writable data) should be stored. */
+	/** Returns the path where the specified file (with writable data) / folder should be stored. */
 	QString dataLocation(const QString & a_FileName) const { return m_DataPath + a_FileName; }
+
+	/** Returns the filename of the main DB. */
+	QString dbFileName() const { return dataLocation("SkauTan.sqlite"); }
+
+	/** Returns the path to the folder into which DB backups should be stored. */
+	QString dbBackupsFolder() const { return dataLocation("backups/"); }
 
 
 protected:
@@ -36,7 +42,7 @@ protected:
 
 	/** Returns the folder to use for m_DataPath.
 	To be called from the constructor.
-	Throws a std::runtime_error if no suitable path was found. */
+	Throws a RuntimeError if no suitable path was found. */
 	QString detectDataPath();
 
 	/** Returns true if the specified path is suitable for data path.

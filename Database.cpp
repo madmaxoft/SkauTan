@@ -17,6 +17,9 @@
 #include "DatabaseUpgrade.h"
 #include "Playlist.h"
 #include "PlaylistItemSong.h"
+#include "InstallConfiguration.h"
+#include "DatabaseBackup.h"
+#include "Exception.h"
 
 
 
@@ -118,15 +121,14 @@ class SqlTransaction
 public:
 
 	/** Starts a transaction.
-	If a transaction cannot be started, logs and throws a std::runtime_error. */
+	If a transaction cannot be started, logs and throws a RuntimeError. */
 	SqlTransaction(QSqlDatabase & a_DB):
 		m_DB(a_DB),
 		m_IsActive(a_DB.transaction())
 	{
 		if (!m_IsActive)
 		{
-			qWarning() << "DB doesn't support transactions: " << m_DB.lastError();
-			throw std::runtime_error("DB doesn't support transactions");
+			throw RuntimeError("DB doesn't support transactions: %1", m_DB.lastError());
 		}
 	}
 
@@ -147,19 +149,17 @@ public:
 
 
 	/** Commits the transaction.
-	If a transaction wasn't started, or is already committed, logs and throws a std::logic_error.
-	If the transaction fails to commit, throws a std::runtime_error. */
+	If a transaction wasn't started, or is already committed, logs and throws a LogicError.
+	If the transaction fails to commit, throws a RuntimeError. */
 	void commit()
 	{
 		if (!m_IsActive)
 		{
-			qWarning() << "DB transaction not started, nothing to commit";
-			throw std::logic_error("DB transaction not started");
+			throw RuntimeError("DB transaction not started");
 		}
 		if (!m_DB.commit())
 		{
-			qWarning() << "Failed to commit DB transaction: " << m_DB.lastError();
-			throw std::runtime_error("DB transaction commit failed");
+			throw LogicError("DB transaction commit failed: %1", m_DB.lastError());
 		}
 		m_IsActive = false;
 	}
@@ -178,7 +178,8 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // Database:
 
-Database::Database()
+Database::Database(ComponentCollection & a_Components):
+	m_Components(a_Components)
 {
 }
 
@@ -191,12 +192,47 @@ void Database::open(const QString & a_DBFileName)
 	assert(!m_Database.isOpen());  // Opening another DB is not allowed
 
 	static std::atomic<int> counter(0);
-	m_Database = QSqlDatabase::addDatabase("QSQLITE", QString::fromUtf8("DB%1").arg(counter.fetch_add(1)));
+	auto connName = QString::fromUtf8("DB%1").arg(counter.fetch_add(1));
+	m_Database = QSqlDatabase::addDatabase("QSQLITE", connName);
 	m_Database.setDatabaseName(a_DBFileName);
 	if (!m_Database.open())
 	{
-		qWarning() << ": Cannot open DB " << a_DBFileName << ": " << m_Database.lastError();
-		return;
+		throw RuntimeError(tr("Cannot open the DB file: %1"), m_Database.lastError());
+	}
+
+	// Check DB version, if upgradeable, make a backup first:
+	{
+		auto query = std::make_unique<QSqlQuery>("SELECT MAX(Version) AS Version FROM Version", m_Database);
+		if (query->first())
+		{
+			auto version = query->record().value("Version").toULongLong();
+			auto maxVersion = DatabaseUpgrade::currentVersion();
+			query.reset();
+			if (version > maxVersion)
+			{
+				throw RuntimeError(tr("Cannot open DB, it is from a newer version %1, this program can only handle up to version %2"),
+					version, maxVersion
+				);
+			}
+			if (version < maxVersion)
+			{
+				// Close the DB:
+				m_Database.close();
+				QSqlDatabase::removeDatabase(connName);
+
+				// Backup:
+				auto backupFolder = m_Components.get<InstallConfiguration>()->dbBackupsFolder();
+				DatabaseBackup::backupBeforeUpgrade(a_DBFileName, version, backupFolder);
+
+				// Reopen the DB:
+				m_Database = QSqlDatabase::addDatabase("QSQLITE", connName);
+				m_Database.setDatabaseName(a_DBFileName);
+				if (!m_Database.open())
+				{
+					throw RuntimeError(tr("Cannot open the DB file: %1"), m_Database.lastError());
+				}
+			}
+		}
 	}
 
 	// Turn off synchronous queries (they slow up DB inserts by orders of magnitude):
@@ -204,6 +240,7 @@ void Database::open(const QString & a_DBFileName)
 	if (query.lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << "Turning off synchronous failed: " << query.lastError();
+		// Continue, this is not a hard error, just perf may be bad
 	}
 
 	// Turn on foreign keys:
@@ -211,7 +248,7 @@ void Database::open(const QString & a_DBFileName)
 	if (query.lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << "Turning on foreign keys failed: " << query.lastError();
-		return;
+		// Continue, this is not a hard error, just errors in the DB code may not surface
 	}
 
 	// Upgrade the DB to the latest version:
@@ -1243,7 +1280,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 		{
 			kind = Template::Filter::intToKind(intKind);
 		}
-		catch (const std::runtime_error & exc)
+		catch (const RuntimeError & exc)
 		{
 			qWarning() << ": Failed to load Kind for filter for "
 				<< " item " << a_Item.displayName()
@@ -1263,7 +1300,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 				{
 					comparison = Template::Filter::intToComparison(intComparison);
 				}
-				catch (const std::runtime_error & exc)
+				catch (const RuntimeError & exc)
 				{
 					qWarning() << ": Failed to load Comparison for filter for "
 						<< " item " << a_Item.displayName()
@@ -1275,7 +1312,7 @@ void Database::loadTemplateFilters(TemplatePtr a_Template, qlonglong a_ItemRowId
 				{
 					prop = Template::Filter::intToSongProperty(intProp);
 				}
-				catch (const std::runtime_error & exc)
+				catch (const RuntimeError & exc)
 				{
 					qWarning() << ": Failed to load SongProperty for filter for "
 						<< " item " << a_Item.displayName()

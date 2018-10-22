@@ -123,6 +123,7 @@ SOURCES += \
 	lib/QrCodeGen/QrCode.cpp \
 	lib/QrCodeGen/QrSegment.cpp \
 	InstallConfiguration.cpp \
+	DatabaseBackup.cpp \
 
 HEADERS += \
 	PlayerWindow.h \
@@ -188,6 +189,8 @@ HEADERS += \
 	lib/QrCodeGen/QrCode.hpp \
 	lib/QrCodeGen/QrSegment.hpp \
 	InstallConfiguration.h \
+	DatabaseBackup.h \
+	Exception.h \
 
 FORMS += \
 	PlayerWindow.ui \

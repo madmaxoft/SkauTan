@@ -181,15 +181,15 @@ public:
 		QString getDescription() const;
 
 		/** Returns the Kind that matches the specified integer value.
-		A std::runtime_error is thrown for unrecognized values. */
+		A RuntimeError is thrown for unrecognized values. */
 		static Kind intToKind(int a_Kind);
 
 		/** Returns the Comparison that matches the specified integer value.
-		A std::runtime_error is thrown for unrecognized values. */
+		A RuntimeError is thrown for unrecognized values. */
 		static Comparison intToComparison(int a_Comparison);
 
 		/** Returns the Comparison that matches the specified integer value.
-		A std::runtime_error is thrown for unrecognized values. */
+		A RuntimeError is thrown for unrecognized values. */
 		static SongProperty intToSongProperty(int a_SongProperty);
 
 		/** Returns the user-visible string representation of the specified SongProperty. */

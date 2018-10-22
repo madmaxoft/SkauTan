@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <map>
+#include <Exception.h>
 
 
 
@@ -100,7 +101,7 @@ public:
 		auto res = std::make_shared<ComponentClass>(std::forward<Args>(a_Args)...);
 		if (res == nullptr)
 		{
-			throw std::runtime_error("Failed to create component");
+			throw RuntimeError("Failed to create component %1", ComponentClass::Kind);
 		}
 		addComponent(ComponentClass::Kind, res);
 		return res;
