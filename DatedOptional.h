@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QVariant>
 #include <QDebug>
+#include <Exception.h>
 
 
 
@@ -54,25 +55,6 @@ template <typename T> class DatedOptional:
 	friend class DatedOptionalExtra<DatedOptional<T>, T>;
 
 public:
-
-	/** Exception is thrown when trying to access an empty DatedOptional<>. */
-	class Exception:
-		public std::runtime_error
-	{
-		using Super = std::runtime_error;
-
-	public:
-		Exception():
-			Super("DatedOptional<>::Exception")
-		{
-		}
-
-		Exception(const char * a_What):
-			Super(a_What)
-		{
-		}
-	};
-
 
 
 	/** Constructs a valid DatedOptional out of the provided value.
@@ -140,7 +122,7 @@ public:
 		}
 		else
 		{
-			throw Exception();
+			throw LogicError("Optional value not present");
 		}
 	}
 
@@ -152,7 +134,7 @@ public:
 		}
 		else
 		{
-			throw Exception();
+			throw LogicError("Optional value not present");
 		}
 	}
 
@@ -235,7 +217,7 @@ public:
 		if (!a_Value.canConvert<T>())
 		{
 			qDebug() << "Bad conversion from QVariant " << a_Value;
-			throw Exception("Incompatible QVariant type");
+			throw LogicError("Incompatible QVariant type");
 		}
 
 		// Produce a valid Optional:

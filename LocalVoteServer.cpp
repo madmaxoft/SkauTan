@@ -210,7 +210,7 @@ quint16 LocalVoteServer::port() const
 {
 	if (!m_IsStarted)
 	{
-		throw std::logic_error("Server not running");
+		throw LogicError("Server not running");
 	}
 	return m_Port;
 }

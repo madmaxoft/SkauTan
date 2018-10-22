@@ -107,11 +107,11 @@ namespace AVPP
 	public:
 
 		/** Returns the LibAV's AVSampleFormat representing the specified QAudioFormat's sample format.
-		Throws a std::runtime_error if the conversion fails. */
+		Throws a RuntimeError if the conversion fails. */
 		static AVSampleFormat sampleFormatFromSampleType(QAudioFormat::SampleType a_SampleType);
 
 		/** Returns the best guess of LibAV's channel layout representing the specified QAudioFormat's channel count.
-		Throws a std::runtime_error if the conversion fails. */
+		Throws a RuntimeError if the conversion fails. */
 		static uint64_t channelLayoutFromChannelCount(int a_ChannelCount);
 
 		/** Creates a new Resampler instance that converts the Src format into a_OutputFormat.

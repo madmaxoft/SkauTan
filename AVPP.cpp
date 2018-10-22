@@ -1,6 +1,6 @@
 #include "AVPP.h"
 #include <assert.h>
-#include <QDebug>
+#include <Exception.h>
 
 extern "C"
 {
@@ -233,8 +233,8 @@ AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType a_
 		case QAudioFormat::Float:     return AV_SAMPLE_FMT_FLT;
 		default:
 		{
-			qWarning() << ": Unhandled sample type: " << a_SampleType;
-			throw std::runtime_error("Unhandled sample type");;
+			qWarning() << "Unhandled sample type: " << a_SampleType;
+			throw RuntimeError("Unhandled sample type: %1", a_SampleType);
 		}
 	}
 }
@@ -254,8 +254,8 @@ uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
 		case 6: return AV_CH_LAYOUT_5POINT1;
 		default:
 		{
-			qWarning() << ": Unhandled ChannelCount:" << a_ChannelCount;
-			throw std::runtime_error("Unhandled ChannelCount");
+			qWarning() << "Unhandled ChannelCount:" << a_ChannelCount;
+			throw RuntimeError("Unhandled ChannelCount: %1: ", a_ChannelCount);
 		}
 	}
 }

@@ -739,6 +739,15 @@ void DatabaseUpgrade::upgrade(Database & a_DB)
 
 
 
+size_t DatabaseUpgrade::currentVersion()
+{
+	return g_VersionScripts.size();
+}
+
+
+
+
+
 void DatabaseUpgrade::execute()
 {
 	auto version = getVersion();
@@ -784,8 +793,6 @@ size_t DatabaseUpgrade::getVersion()
 // DatabaseUpgrade::SqlError:
 
 DatabaseUpgrade::SqlError::SqlError(const QSqlError & a_SqlError, const std::string & a_SqlCommand):
-	Super((std::string("DatabaseUpgrade::SqlError: ") + a_SqlError.text().toStdString()).c_str()),
-	m_Error(a_SqlError),
-	m_Command(a_SqlCommand)
+	Super("Failed to upgrade database: %1 (command \"%2\")", a_SqlError, a_SqlCommand)
 {
 }

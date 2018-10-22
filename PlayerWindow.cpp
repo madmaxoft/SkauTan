@@ -899,7 +899,7 @@ void PlayerWindow::importDB()
 		return;
 	}
 
-	Database fromDB;
+	Database fromDB(m_Components);
 	fromDB.open(dlg.m_FileName);
 	DatabaseImport import(fromDB, *m_Components.get<Database>(), dlg.m_Options);
 }

@@ -19,6 +19,7 @@
 #include "DJControllers.h"
 #include "LocalVoteServer.h"
 #include "InstallConfiguration.h"
+#include "DatabaseBackup.h"
 
 
 
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
 		// Create the main app objects:
 		ComponentCollection cc;
 		cc.addComponent(instConf);
-		auto mainDB = cc.addNew<Database>();
+		auto mainDB = cc.addNew<Database>(cc);
 		auto scanner = cc.addNew<MetadataScanner>();
 		auto lhCalc = cc.addNew<LengthHashCalculator>();
 		auto player = cc.addNew<Player>();
@@ -122,7 +123,9 @@ int main(int argc, char *argv[])
 		);
 
 		// Load the DB:
-		mainDB->open(instConf->dataLocation("SkauTan.sqlite"));
+		auto dbFile = instConf->dbFileName();
+		DatabaseBackup::dailyBackupOnStartup(dbFile, instConf->dbBackupsFolder());
+		mainDB->open(dbFile);
 
 		// Add default templates, if none in the DB:
 		if (mainDB->templates().empty())
@@ -148,7 +151,7 @@ int main(int argc, char *argv[])
 
 		return res;
 	}
-	catch (const std::runtime_error & exc)
+	catch (const Exception & exc)
 	{
 		QMessageBox::warning(
 			nullptr,

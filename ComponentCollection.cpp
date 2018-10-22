@@ -1,5 +1,5 @@
 #include "ComponentCollection.h"
-#include "assert.h"
+#include <cassert>
 
 
 
@@ -14,7 +14,7 @@ void ComponentCollection::addComponent(ComponentCollection::EKind a_Kind, Compon
 	if (itr != m_Components.end())
 	{
 		assert(!"Component of this kind is already present in the collection");
-		throw std::logic_error("Duplicate component in collection");
+		throw LogicError("Duplicate component in collection: %1", a_Kind);
 	}
 	m_Components[a_Kind] = a_Component;
 }

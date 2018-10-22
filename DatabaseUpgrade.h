@@ -5,9 +5,9 @@
 
 
 
-#include <stdexcept>
 #include <string>
 #include <QSqlError>
+#include <Exception.h>
 
 
 
@@ -25,42 +25,25 @@ class DatabaseUpgrade
 {
 public:
 
-	/** An exception that is thrown on upgrade error. */
-	class Error:
-		public std::runtime_error
-	{
-		using Super = std::runtime_error;
-
-	public:
-		Error(const char * a_What):
-			Super(a_What)
-		{
-		}
-	};
-
-
 	/** An exception that is thrown on upgrade error if the SQL command fails. */
 	class SqlError:
-		public Error
+		public RuntimeError
 	{
-		using Super = Error;
+		using Super = RuntimeError;
 
 	public:
 		/** Creates a new instance, based on the SQL error reported for the command. */
 		SqlError(const QSqlError & a_SqlError, const std::string & a_SqlCommand);
-
-		/** The error reported by the SQL engine. */
-		const QSqlError m_Error;
-
-		/** The command that caused the error. */
-		const std::string m_Command;
 	};
 
 
 	/** Upgrades the database to the latest known version.
-	May throw Error if the upgrade fails.
+	Throws SqlError if the upgrade fails.
 	Tries its best to keep the DB in a usable state, even if the upgrade fails. */
 	static void upgrade(Database & a_DB);
+
+	/** Returns the highest version that the upgrade knows (current version). */
+	static size_t currentVersion();
 
 
 protected:

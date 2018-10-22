@@ -1,8 +1,8 @@
 #include "Template.h"
-#include <assert.h>
+#include <cassert>
 #include <QLocale>
-#include <QDebug>
 #include <QCryptographicHash>
+#include "Exception.h"
 #include "Song.h"
 
 
@@ -324,7 +324,7 @@ Template::Filter::Kind Template::Filter::intToKind(int a_Kind)
 		case fkAnd:        return fkAnd;
 		case fkOr:         return fkOr;
 	}
-	throw std::runtime_error(QString("Unknown filter Kind: %1").arg(a_Kind).toUtf8().constData());
+	throw RuntimeError(QString("Unknown filter Kind: %1"), a_Kind);
 }
 
 
@@ -344,7 +344,7 @@ Template::Filter::Comparison Template::Filter::intToComparison(int a_Comparison)
 		case fcLowerThan:          return fcLowerThan;
 		case fcLowerThanOrEqual:   return fcLowerThanOrEqual;
 	}
-	throw std::runtime_error(QString("Unknown filter Comparison: %1").arg(a_Comparison).toUtf8().constData());
+	throw RuntimeError(QString("Unknown filter Comparison: %1"), a_Comparison);
 }
 
 
@@ -384,7 +384,7 @@ Template::Filter::SongProperty Template::Filter::intToSongProperty(int a_SongPro
 		case fspRatingPopularity:          return fspRatingPopularity;
 		case fspNotes:                     return fspNotes;
 	}
-	throw std::runtime_error(QString("Unknown filter SongProperty: %1").arg(a_SongProperty).toUtf8().constData());
+	throw RuntimeError(QString("Unknown filter SongProperty: %1"), a_SongProperty);
 }
 
 
