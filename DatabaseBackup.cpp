@@ -14,6 +14,13 @@ void DatabaseBackup::dailyBackupOnStartup(
 	const QString & a_BackupFolder
 )
 {
+	// If the DB file is not existent, there's nothing to back up:
+	if (!QFile::exists(a_DBFileName))
+	{
+		qDebug() << "Skipping daily backup, there's no DB file yet: " << a_DBFileName;
+		return;
+	}
+
 	auto now = QDate::currentDate();
 	auto dstFileName = a_BackupFolder + QString("%1/%1-%2-%3.sqlite")
 		.arg(now.year())
