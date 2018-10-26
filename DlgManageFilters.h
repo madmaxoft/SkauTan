@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <QDialog>
+#include <QMenu>
 
 
 
@@ -16,6 +17,7 @@
 class ComponentCollection;
 class Filter;
 class QTableWidgetItem;
+using FilterPtr = std::shared_ptr<Filter>;
 namespace Ui
 {
 	class DlgManageFilters;
@@ -55,6 +57,10 @@ private:
 	Used in filterItemChanged to distinguish between user and program editing the item. */
 	bool m_IsInternalChange;
 
+	/** The menu used with the Replace button.
+	Contains all filters that are currently not selected. */
+	QMenu m_ReplaceMenu;
+
 
 	/** Updates the table row with the info from the specified filter. */
 	void updateFilterRow(int a_Row, const Filter & a_Filter);
@@ -66,6 +72,13 @@ private:
 	and selects the new row a_Row2.
 	Asserts that the rows are valid. */
 	void swapFiltersAndSelectSecond(int a_Row1, int a_Row2);
+
+	/** Updates the menu displayed with the Replace button with all the unselected filters.
+	Takes into account the currently selected items, which are NOT added to the menu. */
+	void updateReplaceMenu();
+
+	/** Replaces the currently selected filters in all templates with the specified filter.*/
+	void replaceWithFilter(FilterPtr a_Filter);
 
 
 private slots:

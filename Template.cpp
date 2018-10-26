@@ -117,6 +117,24 @@ void Template::replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters)
 
 
 
+bool Template::replaceFilter(const Filter & a_From, Filter & a_To)
+{
+	bool hasReplaced = false;
+	for (auto itr = m_Items.begin(), end = m_Items.end(); itr != end; ++itr)
+	{
+		if (itr->get() == &a_From)
+		{
+			*itr = a_To.shared_from_this();
+			hasReplaced = true;
+		}
+	}
+	return hasReplaced;
+}
+
+
+
+
+
 void Template::swapItemsByIdx(size_t a_Index1, size_t a_Index2)
 {
 	assert(a_Index1 < m_Items.size());

@@ -618,6 +618,19 @@ void Database::saveTemplate(const Template & a_Template)
 
 
 
+void Database::saveAllTemplates()
+{
+	// TODO: This could be optimized - no need to calc position for each template, and wrap in a transaction
+	for (const auto & tmpl: m_Templates)
+	{
+		saveTemplate(*tmpl);
+	}
+}
+
+
+
+
+
 FilterPtr Database::createFilter()
 {
 	auto res = std::make_shared<Filter>();
@@ -722,26 +735,6 @@ void Database::delFilter(size_t a_Index)
 			saveTemplate(*tmpl);
 		}
 	}
-
-	#ifdef _DEBUG
-	{
-		QSqlQuery query(m_Database);
-		if (!query.prepare("SELECT * FROM TemplateItems WHERE FilterID = ?"))
-		{
-			qWarning() << "Cannot prep SELECT (TemplateItems) statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
-		query.addBindValue(filter->dbRowId());
-		if (!query.exec())
-		{
-			qWarning() << "Cannot exec SELECT (TemplateItems) statement: " << query.lastError();
-			assert(!"DB error");
-			return;
-		}
-		qDebug() << "TemplateItems with filter: " << query.record();
-	}
-	#endif
 
 	// Delete the filter nodes from the DB:
 	QSqlQuery query(m_Database);

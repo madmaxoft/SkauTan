@@ -86,6 +86,10 @@ public:
 	If there are multiple filters in a_KnownFilters with the same hash, (random) one of those is picked. */
 	void replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters);
 
+	/** Replaces all instances of the specified filter in m_Items with the other filter.
+	Returns true if at least one instance was replaced. */
+	bool replaceFilter(const Filter & a_From, Filter & a_To);
+
 	/** Swaps the two specified items.
 	Asserts that the indices are valid. */
 	void swapItemsByIdx(size_t a_Index1, size_t a_Index2);

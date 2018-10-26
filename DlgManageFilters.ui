@@ -103,6 +103,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="btnReplace">
+       <property name="text">
+        <string>Replace with</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -44,6 +44,7 @@ DlgManageFilters::DlgManageFilters(
 	Settings::loadHeaderView("DlgManageFilters", "tblFilters", *m_UI->tblFilters->horizontalHeader());
 	auto delegate = new ColorDelegate(tr("SkauTan: Choose filter color"));
 	m_UI->tblFilters->setItemDelegateForColumn(3, delegate);
+	m_UI->btnReplace->setMenu(&m_ReplaceMenu);
 
 	// Connect the signals:
 	connect(m_UI->btnAdd,       &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
@@ -66,6 +67,8 @@ DlgManageFilters::DlgManageFilters(
 	{
 		updateFilterRow(i, *filters[static_cast<size_t>(i)]);
 	}
+
+	filterSelectionChanged();
 }
 
 
@@ -165,6 +168,73 @@ void DlgManageFilters::swapFiltersAndSelectSecond(int a_Row1, int a_Row2)
 	updateFilterRow(a_Row1, *filters[static_cast<size_t>(a_Row1)]);
 	updateFilterRow(a_Row2, *filters[static_cast<size_t>(a_Row2)]);
 	m_UI->tblFilters->selectRow(a_Row2);
+}
+
+
+
+
+
+void DlgManageFilters::updateReplaceMenu()
+{
+	// Clear the current contents of the menu:
+	m_ReplaceMenu.clear();
+
+	// Add all unselected filters into the menu, together with the handlers:
+	const auto & selModel = m_UI->tblFilters->selectionModel();
+	const auto & filters = m_Components.get<Database>()->filters();
+	auto numFilters = static_cast<int>(filters.size());
+	QModelIndex rootIndex;
+	auto size = m_ReplaceMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
+	for (int row = 0; row < numFilters; ++row)
+	{
+		if (selModel->isRowSelected(row, rootIndex))
+		{
+			continue;
+		}
+		const auto filter = filters[static_cast<size_t>(row)];
+		auto action = new QAction(filter->displayName(), this);
+		QPixmap pixmap(size, size);
+		pixmap.fill(filter->bgColor());
+		action->setIcon(QIcon(pixmap));
+		m_ReplaceMenu.addAction(action);
+		connect(action, &QAction::triggered, [this, filter]() { this->replaceWithFilter(filter); });
+	}
+}
+
+
+
+
+
+void DlgManageFilters::replaceWithFilter(FilterPtr a_Filter)
+{
+	// Replace the filters:
+	const auto & selModel = m_UI->tblFilters->selectionModel();
+	auto db = m_Components.get<Database>();
+	const auto & filters = db->filters();
+	auto & templates = db->templates();
+	auto numFilters = static_cast<int>(filters.size());
+	QModelIndex rootIndex;
+	for (int row = 0; row < numFilters; ++row)
+	{
+		if (!selModel->isRowSelected(row, rootIndex))
+		{
+			continue;
+		}
+		const auto & filter = filters[static_cast<size_t>(row)];
+		assert(a_Filter != filter);
+		for (auto & tmpl: templates)
+		{
+			tmpl->replaceFilter(*filter, *a_Filter);
+		}
+	}
+	db->saveAllTemplates();
+
+	// Update the UI, esp. template counts:
+	for (int row = 0; row < numFilters; ++row)
+	{
+		const auto & filter = filters[static_cast<size_t>(row)];
+		updateFilterRow(row, *filter);
+	}
 }
 
 
@@ -305,8 +375,14 @@ void DlgManageFilters::filterSelectionChanged()
 	auto selSize = selection.size();
 	m_UI->btnEdit->setEnabled(selSize == 1);
 	m_UI->btnRemove->setEnabled(selSize > 0);
+	bool canReplace = (selSize > 0) && (selSize < m_UI->tblFilters->rowCount());
+	m_UI->btnReplace->setEnabled(canReplace);
 	m_UI->btnMoveUp->setEnabled((selSize == 1) && (selection[0].row() > 0));
 	m_UI->btnMoveDown->setEnabled((selSize == 1) && (selection[0].row() + 1 < m_UI->tblFilters->rowCount()));
+	if (canReplace)
+	{
+		updateReplaceMenu();
+	}
 }
 
 

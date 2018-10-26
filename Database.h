@@ -117,6 +117,9 @@ public:
 	/** Saves the changes in the specified template to the DB. */
 	void saveTemplate(const Template & a_Template);
 
+	/** Saves all the templates to the DB. */
+	void saveAllTemplates();
+
 	/** Creates a new empty filter, adds it in the DB and returns it.
 	Note that changes aren't saved automatically, you need to call saveFilter() to save. */
 	FilterPtr createFilter();
