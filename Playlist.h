@@ -107,7 +107,8 @@ protected:
 	/** All the items on the playlist. */
 	std::vector<IPlaylistItemPtr> m_Items;
 
-	/** The item in m_Items currently being played, or to be played when the playback is started. */
+	/** The item in m_Items currently being played, or to be played when the playback is started.
+	Set to -1 if there's no current item. */
 	int m_CurrentItemIdx;
 
 	/** If true, m_CurrentItem is being played back. */

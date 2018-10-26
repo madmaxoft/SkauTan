@@ -356,7 +356,11 @@ void Playlist::removeSong(SongPtr a_Song)
 void Playlist::updateItemTimesFromCurrent()
 {
 	auto idx = m_CurrentItemIdx;
-	assert(isValidIndex(idx));
+	if (!isValidIndex(idx))
+	{
+		// Happens when deleting all items form the playlist
+		return;
+	}
 	auto item = m_Items[static_cast<size_t>(idx)];
 	assert(item != nullptr);
 	// The current item's times have already been set in the Player, just emit the update signal now:
