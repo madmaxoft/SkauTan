@@ -167,7 +167,7 @@ private slots:
 	void jumpToAndPlay();
 
 	/** The user has clicked a QuickPlayer item, insert it into the playlist and maybe start playing. */
-	void quickPlayerItemClicked(QListWidgetItem * a_Item);
+	void quickPlayItemClicked(QListWidgetItem * a_Item);
 
 	/** Asks the user for the new duration limit, then applies it to all selected playlist items. */
 	void setDurationLimit();

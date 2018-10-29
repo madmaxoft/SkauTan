@@ -100,7 +100,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
 	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
 	connect(m_UI->actLvsStatus,           &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
-	connect(m_UI->lwQuickPlayer,          &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayerItemClicked);
+	connect(m_UI->lwQuickPlay,            &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
 	connect(m_UI->waveform,               &WaveformDisplay::songChanged,         db.get(),     &Database::saveSong);
@@ -247,13 +247,13 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 
 void PlayerWindow::refreshQuickPlayer()
 {
-	m_UI->lwQuickPlayer->clear();
+	m_UI->lwQuickPlay->clear();
 
 	// Insert the templates:
 	auto templates = m_Components.get<Database>()->templates();
 	for (const auto & tmpl: templates)
 	{
-		auto item = new QListWidgetItem(tmpl->displayName(), m_UI->lwQuickPlayer);
+		auto item = new QListWidgetItem(tmpl->displayName(), m_UI->lwQuickPlay);
 		item->setData(Qt::UserRole, QVariant::fromValue(tmpl));
 		item->setBackgroundColor(tmpl->bgColor());
 	}
@@ -262,7 +262,7 @@ void PlayerWindow::refreshQuickPlayer()
 	auto favorites = m_Components.get<Database>()->getFavoriteFilters();
 	for (const auto & fav: favorites)
 	{
-		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlayer);
+		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlay);
 		item->setData(Qt::UserRole, QVariant::fromValue(fav));
 		item->setBackgroundColor(fav->bgColor());
 	}
@@ -717,7 +717,7 @@ void PlayerWindow::jumpToAndPlay()
 
 
 
-void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
+void PlayerWindow::quickPlayItemClicked(QListWidgetItem * a_Item)
 {
 	// Find the position where to insert in the playlist:
 	auto player = m_Components.get<Player>();
@@ -734,6 +734,7 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 
 	auto data = a_Item->data(Qt::UserRole);
 	auto tmpl = data.value<TemplatePtr>();
+	int numAdded = 0;
 	if (tmpl != nullptr)
 	{
 		// Insert songs by a template:
@@ -747,6 +748,7 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 		{
 			playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(itr->first, itr->second));
 		}
+		numAdded = static_cast<int>(chosen.size());
 	}
 	else
 	{
@@ -765,6 +767,7 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 			return;
 		}
 		playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, filter));
+		numAdded = 1;
 	}
 	if (m_UI->chbImmediatePlayback->checkState() == Qt::Checked)
 	{
@@ -774,7 +777,7 @@ void PlayerWindow::quickPlayerItemClicked(QListWidgetItem * a_Item)
 			player->startPlayback();
 		}
 	}
-	m_UI->tblPlaylist->selectRow(idx);
+	m_UI->tblPlaylist->selectRow(idx + numAdded - 1);
 }
 
 
