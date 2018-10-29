@@ -252,15 +252,10 @@ public:
 
 
 
-	/** Creates an empty filter. */
-	Filter():
-		m_DbRowId(-1),
-		m_IsFavorite(false)
-	{
-	}
+	/** Creates an empty filter with white bgcolor and a Noop node tree. */
+	Filter();
 
-
-	/** Creates an empty filter with all the fields set up. */
+	/** Creates a filter with all the fields set up and a Noop node tree. */
 	Filter(
 		qlonglong a_DbRowId,
 		const QString & a_DisplayName,

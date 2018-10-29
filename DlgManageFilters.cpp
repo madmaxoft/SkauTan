@@ -88,7 +88,7 @@ DlgManageFilters::~DlgManageFilters()
 void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
 {
 	assert(a_Row >= 0);
-	assert(a_Row < m_UI->tblFilters->rowCount());
+	assert(a_Row < static_cast<int>(m_Components.get<Database>()->filters().size()));
 
 	m_IsInternalChange = true;
 
@@ -243,13 +243,17 @@ void DlgManageFilters::replaceWithFilter(FilterPtr a_Filter)
 
 void DlgManageFilters::addFilter()
 {
+	// Add the filter and edit it:
 	auto db = m_Components.get<Database>();
 	auto filter = db->createFilter();
 	DlgEditFilter dlg(m_Components, *filter, this);
 	dlg.exec();
+	m_Components.get<Database>()->saveFilter(*filter);
+
+	// Update the UI:
 	auto numFilters = static_cast<int>(db->filters().size());
 	m_UI->tblFilters->setRowCount(numFilters);
-	updateFilterRow(numFilters, *filter);
+	updateFilterRow(numFilters - 1, *filter);
 }
 
 

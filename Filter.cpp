@@ -709,6 +709,18 @@ QByteArray Filter::Node::hash() const
 ////////////////////////////////////////////////////////////////////////////////
 // Filter:
 
+Filter::Filter():
+	m_DbRowId(-1),
+	m_IsFavorite(false),
+	m_BgColor(255, 255, 255)
+{
+	setNoopFilter();
+}
+
+
+
+
+
 Filter::Filter(
 	qlonglong a_DbRowId,
 	const QString & a_DisplayName,
