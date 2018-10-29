@@ -205,7 +205,6 @@ bool CodecContext::open(AVCodec * a_Codec)
 		qWarning() << "Cannot open codec: " << ret;
 		return false;
 	}
-	qDebug() << "Codec opened.";
 	return true;
 }
 
@@ -434,7 +433,6 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 	}
 	if (outLen > m_BufferMaxNumSamples)
 	{
-		qDebug() << "Reallocating output sample buffer to " << outLen << " samples.";
 		m_BufferMaxNumSamples = outLen;
 		av_freep(&m_Buffer[0]);
 		auto err = av_samples_alloc(
@@ -641,8 +639,6 @@ void Format::decode()
 	assert(m_AudioOutput != nullptr);
 	assert(m_AudioDecoderContext != nullptr);
 
-	qDebug() << "Decoding...";
-
 	AVPacket packet;
 	AVFrame * frame = av_frame_alloc();
 	m_ShouldTerminate = false;
@@ -651,7 +647,8 @@ void Format::decode()
 		auto ret = av_read_frame(m_Context, &packet);
 		if (ret < 0)
 		{
-			qWarning() << "Failed to read frame: " << ret;
+			// Normal condition on EOF
+			// qWarning() << "Failed to read frame: " << ret;
 			return;
 		}
 
