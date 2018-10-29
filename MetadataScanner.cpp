@@ -295,10 +295,10 @@ Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
 	{
 		res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
 	}
+	/* genre = */   tryMatchGenreMPM(a_FileTag.m_Genre.valueOrDefault(), res);
+	/* comment = */ tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Comment.valueOrDefault(), res), res);
 	res.m_Author =  tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Author.valueOrDefault(), res), res);
 	res.m_Title =   tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Title.valueOrDefault(), res), res);
-	/* comment = */ tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Comment.valueOrDefault(), res), res);
-	/* genre = */   tryMatchGenreMPM(a_FileTag.m_Genre.valueOrDefault(), res);
 	return res;
 }
 
