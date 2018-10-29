@@ -9,8 +9,10 @@
 
 
 
-// Needed for NTFS permission checking, as documented in QFileInfo
-extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+#ifdef _WIN32
+	// Needed for NTFS permission checking, as documented in QFileInfo
+	extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+#endif  // _WIN32
 
 
 
@@ -65,8 +67,16 @@ bool InstallConfiguration::isDataPathSuitable(const QString & a_Folder)
 			return false;
 		}
 	}
-	qt_ntfs_permission_lookup++;  // Turn NTFS permission checking on
+
+	#ifdef _WIN32
+		qt_ntfs_permission_lookup++;  // Turn NTFS permission checking on
+	#endif
+
 	auto res = folder.isWritable();
-	qt_ntfs_permission_lookup--;  // Turn NTFS permission checking off
+
+	#ifdef _WIN32
+		qt_ntfs_permission_lookup--;  // Turn NTFS permission checking off
+	#endif
+
 	return res;
 }
