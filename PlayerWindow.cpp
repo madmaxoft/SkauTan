@@ -775,7 +775,7 @@ void PlayerWindow::quickPlayItemClicked(QListWidgetItem * a_Item)
 		auto chosen = m_Components.get<Database>()->pickSongForFilter(*filter);
 		if (chosen == nullptr)
 		{
-			qDebug() << ": Failed to add a song by filter " << filter->displayName() << " to playlist.";
+			qDebug() << "Failed to add a song by filter " << filter->displayName() << " to playlist.";
 			return;
 		}
 		playlist.insertItem(idx, std::make_shared<PlaylistItemSong>(chosen, filter));

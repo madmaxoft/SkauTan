@@ -326,7 +326,7 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 	auto items = a_TemplateXmlElement.firstChildElement("items");
 	if (items.isNull())
 	{
-		qDebug() << ": Template item " << res->displayName() << " contains no <items>.";
+		qDebug() << "Template item " << res->displayName() << " contains no <items>.";
 		return res;
 	}
 	for (auto ie = items.firstChildElement("item"); !ie.isNull(); ie = ie.nextSiblingElement("item"))

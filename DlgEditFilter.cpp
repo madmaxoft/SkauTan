@@ -140,7 +140,7 @@ protected:
 		auto song = sourceModel()->data(idx, SongModel::roleSongPtr).value<SongPtr>();
 		if (song == nullptr)
 		{
-			qWarning() << ": Underlying model returned nullptr song for row " << a_SourceRow;
+			qWarning() << "Underlying model returned nullptr song for row " << a_SourceRow;
 			assert(!"Unexpected nullptr song");
 			return false;
 		}

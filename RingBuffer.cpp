@@ -43,13 +43,13 @@ size_t RingBuffer::readData(void * a_Dest, size_t a_MaxLen)
 		{
 			if (m_IsEOF.load())
 			{
-				qDebug() << ": Reached EOF while reading.";
+				qDebug() << "Reached EOF while reading.";
 				return numBytesRead;
 			}
 			m_CVHasData.wait(&m_Mtx);
 			if (m_ShouldAbort.load())
 			{
-				qDebug() << ": Read aborted, returning " << numBytesRead << " bytes";
+				qDebug() << "Read aborted, returning " << numBytesRead << " bytes";
 				return numBytesRead;
 			}
 		}
@@ -97,7 +97,7 @@ size_t RingBuffer::writeData(const char * a_Data, size_t a_Len)
 			m_CVHasFreeSpace.wait(&m_Mtx);
 			if (m_ShouldAbort)
 			{
-				qDebug() << ": Write aborted, written " << (data - a_Data) << " bytes";
+				qDebug() << "Write aborted, written " << (data - a_Data) << " bytes";
 				return static_cast<size_t>(data - a_Data);
 			}
 		}
@@ -144,7 +144,7 @@ bool RingBuffer::waitForData()
 		m_CVHasData.wait(&m_Mtx);
 		if (m_ShouldAbort)
 		{
-			qDebug() << ": Aborted.";
+			qDebug() << "Aborted.";
 			return false;
 		}
 	}

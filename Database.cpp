@@ -283,7 +283,7 @@ void Database::addSongFile(const QString & a_FileName)
 	{
 		if (song->fileName() == a_FileName)
 		{
-			qDebug() << ": Skipping duplicate " << a_FileName;
+			qDebug() << "Skipping duplicate " << a_FileName;
 			return;
 		}
 	}
@@ -933,7 +933,7 @@ SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) co
 		{
 			return a_Avoid;
 		}
-		qDebug() << ": No song matches item " << a_Filter.displayName();
+		qDebug() << "No song matches item " << a_Filter.displayName();
 		return nullptr;
 	}
 

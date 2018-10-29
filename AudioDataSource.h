@@ -194,7 +194,7 @@ public:
 		#ifdef _DEBUG
 			static auto lastMsec = TimeSinceStart::msecElapsed();
 			auto msecNow = TimeSinceStart::msecElapsed();
-			qDebug() << ": Requested " << a_MaxLen << " bytes, got " << res << " bytes; since last: "
+			qDebug() << "Requested " << a_MaxLen << " bytes, got " << res << " bytes; since last: "
 				<< msecNow - lastMsec << " msec";
 			lastMsec = msecNow;
 		#endif  // _DEBUG

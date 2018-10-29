@@ -204,7 +204,7 @@ void MetadataScanner::writeTagToSong(SongPtr a_Song, const Tag & a_Tag)
 	if (fr.isNull())
 	{
 		// File format not recognized
-		qDebug() << ": Unable to parse file " << a_Song->fileName();
+		qDebug() << "Unable to parse file " << a_Song->fileName();
 		return;
 	}
 	auto props = fr.file()->properties();

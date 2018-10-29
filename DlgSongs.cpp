@@ -146,7 +146,7 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 	{
 		return;
 	}
-	qDebug() << ": Adding " << songs.size() << " song files";
+	qDebug() << "Adding " << songs.size() << " song files";
 	m_Components.get<Database>()->addSongFiles(songs);
 }
 
@@ -175,7 +175,7 @@ void DlgSongs::addFolderRecursive(const QString & a_Path)
 	{
 		return;
 	}
-	qDebug() << ": Adding " << songs.size() << " songs from folder " << a_Path;
+	qDebug() << "Adding " << songs.size() << " songs from folder " << a_Path;
 	m_Components.get<Database>()->addSongFiles(songs);
 }
 
