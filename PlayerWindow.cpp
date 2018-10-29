@@ -177,7 +177,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actLvsStatus,
 	});
 
-	refreshQuickPlayer();
+	refreshQuickPlay();
 	refreshAppendUponCompletion();
 	auto lastCompletionTemplateName = Settings::loadValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", "").toString();
 	auto tmplIndex = m_UI->cbCompletionAppendTemplate->findText(lastCompletionTemplateName);
@@ -245,12 +245,13 @@ std::vector<SongPtr> PlayerWindow::selectedPlaylistSongs() const
 
 
 
-void PlayerWindow::refreshQuickPlayer()
+void PlayerWindow::refreshQuickPlay()
 {
 	m_UI->lwQuickPlay->clear();
 
 	// Insert the templates:
-	auto templates = m_Components.get<Database>()->templates();
+	auto db = m_Components.get<Database>();
+	auto templates = db->templates();
 	for (const auto & tmpl: templates)
 	{
 		auto item = new QListWidgetItem(tmpl->displayName(), m_UI->lwQuickPlay);
@@ -259,12 +260,23 @@ void PlayerWindow::refreshQuickPlayer()
 	}
 
 	// Insert the favorite filters:
-	auto favorites = m_Components.get<Database>()->getFavoriteFilters();
+	auto favorites = db->getFavoriteFilters();
 	for (const auto & fav: favorites)
 	{
 		auto item = new QListWidgetItem(fav->displayName(), m_UI->lwQuickPlay);
 		item->setData(Qt::UserRole, QVariant::fromValue(fav));
 		item->setBackgroundColor(fav->bgColor());
+		auto numMatches = db->numSongsMatchingFilter(*fav);
+		item->setToolTip(tr("Songs: %1").arg(numMatches));
+		if (numMatches == 0)
+		{
+			auto fBrush = item->foreground();
+			fBrush.setColor(QColor(191, 0, 0));
+			item->setForeground(fBrush);
+			auto font = item->font();
+			font.setItalic(true);
+			item->setFont(font);
+		}
 	}
 }
 
@@ -351,7 +363,7 @@ void PlayerWindow::showTemplates()
 	DlgTemplatesList dlg(m_Components, this);
 	dlg.exec();
 
-	refreshQuickPlayer();
+	refreshQuickPlay();
 	refreshAppendUponCompletion();
 }
 

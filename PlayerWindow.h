@@ -87,7 +87,7 @@ private:
 	std::vector<SongPtr> selectedPlaylistSongs() const;
 
 	/** Refreshes the items in lwQuickPlayer to match the favorite template items in the DB. */
-	void refreshQuickPlayer();
+	void refreshQuickPlay();
 
 	/** Refreshes the items in cbAppendUponCompletion to match the favorite templates in the DB. */
 	void refreshAppendUponCompletion();
