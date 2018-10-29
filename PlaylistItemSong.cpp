@@ -9,7 +9,7 @@
 PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, FilterPtr a_Filter):
 	m_Song(a_Song),
 	m_Filter(a_Filter),
-	m_DurationLimit(a_Filter->durationLimit().valueOr(-1))
+	m_DurationLimit((a_Filter == nullptr) ? -1 : a_Filter->durationLimit().valueOr(-1))
 {
 }
 
