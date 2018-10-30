@@ -38,21 +38,7 @@ if not exist c:\projects\lib\include\taglib\tag.h (
 	)
 )
 
-rem Download the precompiled RtMidi:
-if not exist c:\projects\lib\include\RtMidi.h (
-	echo -------------------------
-	echo Downloading precompiled RtMidi libraries...
-	curl -o c:\projects\lib\RtMidi.7z http://xoft.cz/rtmidi-msvc2017-x64.7z
-	if errorlevel 1 (
-		echo Download unsuccessful
-		exit /b 1
-	)
-	7z x c:\projects\lib\rtmidi.7z -oc:\projects\lib
-	if errorlevel 1 (
-		echo Unzip unsuccessful
-		exit /b 1
-	)
-)
+
 echo -------------------------
 echo Libraries checked, compiling now...
 
@@ -61,22 +47,17 @@ set LIB=%LIB%;c:\projects\lib\lib
 set INCLUDE=%INCLUDE%;c:\projects\lib\include
 
 echo -------------------------
-echo Running QMake...
-qmake SkauTan.pro
+echo Running CMake...
+mkdir Build
+cd Build
+cmake -G "Visual Studio 15 2017 Win64" ..
 if errorlevel 1 (
 	exit /b 1
 )
 
 echo -------------------------
-echo Running nmake...
-nmake
+echo Building...
+msbuild SkauTan.sln /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 if errorlevel 1 (
 	exit /b 1
 )
-
-echo -------------------------
-echo Building BeatDetectTest...
-mkdir bdt-build
-cd bdt-build
-qmake ../BeatDetectTest/BeatDetectTest.pro
-nmake
