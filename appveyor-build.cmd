@@ -57,7 +57,7 @@ if errorlevel 1 (
 
 echo -------------------------
 echo Building...
-msbuild SkauTan.sln /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+msbuild SkauTan.sln /m /p:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 if errorlevel 1 (
 	exit /b 1
 )
