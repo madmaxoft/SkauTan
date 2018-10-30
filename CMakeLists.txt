@@ -52,6 +52,47 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}"
 
 
 
+# Add the precompiled libraries: Ffmpeg and TagLib
+include_directories($ENV{INCLUDE})
+find_library(AVCODEC NAMES avcodec PATHS ENV LIB)
+if ("${AVCODEC}" STREQUAL "AVCODEC-NOTFOUND")
+	message (FATAL_ERROR "Cannot find the Ffmpeg library avcodec")
+endif ()
+find_library(AVFORMAT NAMES avformat PATHS ENV LIB)
+if ("${AVFORMAT}" STREQUAL "AVFORMAT-NOTFOUND")
+	message (FATAL_ERROR "Cannot find the Ffmpeg library avformat")
+endif ()
+find_library(AVUTIL NAMES avutil PATHS ENV LIB)
+if ("${AVUTIL}" STREQUAL "AVUTIL-NOTFOUND")
+	message (FATAL_ERROR "Cannot find the Ffmpeg library avutil")
+endif ()
+find_library(SWRESAMPLE NAMES swresample PATHS ENV LIB)
+if ("${SWRESAMPLE}" STREQUAL "SWRESAMPLE-NOTFOUND")
+	message (FATAL_ERROR "Cannot find the Ffmpeg library swresample")
+endif ()
+
+find_library(TAGLIB_RELEASE NAMES tag PATHS ENV LIB)
+
+if (MSVC)
+	find_library(TAGLIB_DEBUG NAMES tagd PATHS ENV LIB)
+	find_library(ZLIB_RELEASE NAMES zlib z PATHS ENV LIB)
+	find_library(ZLIB_DEBUG NAMES zlibd PATHS ENV LIB)
+else ()
+	set (TAGLIB_DEBUG ${TAGLIB_RELEASE})
+endif()
+
+
+find_path(AVFORMAT_HDR libavformat/avformat.h NAME avformat PATHS ENV INCLUDE)
+if (AVFORMAT_HDR-NOTFOUND)
+	message(FATAL Cannot find the Ffmpeg library include folder base)
+endif ()
+
+include_directories (${AVFORMAT_HDR})
+
+
+
+
+
 
 # Add the preprocessor macros used for distinguishing between debug and release builds (CMake does this automatically for MSVC):
 if (NOT MSVC)
@@ -286,18 +327,20 @@ target_link_libraries (${PROJECT_NAME}
 	rtmidi_static
 
 	# Ffmpeg libraries (assumed installed on the build system):
-	avformat
-	avutil
-	avcodec
-	swresample
+	${AVFORMAT}
+	${AVUTIL}
+	${AVCODEC}
+	${SWRESAMPLE}
 
 	# TagLib libraries (assumed installed on the build system):
-	tag$<$<CONFIG:Debug>:d>
+	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
+	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
 )
 
-if (WIN32)
+if (MSVC)
 	target_link_libraries(${PROJECT_NAME}
-		zlib$<$<CONFIG:Debug>:d>
+		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
+		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
 	)
 else ()
 	target_link_libraries(${PROJECT_NAME}
