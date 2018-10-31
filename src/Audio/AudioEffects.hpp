@@ -46,13 +46,13 @@ private:
 	/** Total number of samples across which the FadeOut should be done.
 	Only used when m_IsFadingOut is true.
 	Protected against multithreaded access by m_Mtx. */
-	int m_FadeOutTotalSamples;
+	qint64 m_FadeOutTotalSamples;
 
 	/** Number of samples that will be faded out, before reaching zero volume.
 	Each read operation after a fadeout will decrease this numer by the number of samples read, until it reaches
 	zero, at which point the readData() function will abort decoding and return no more data.
 	Protected against multithreaded access by m_Mtx. */
-	int m_FadeOutRemaining;
+	qint64 m_FadeOutRemaining;
 
 
 	/** Applies FadeOut, if appropriate, to the specified data, and updates the FadeOut progress.

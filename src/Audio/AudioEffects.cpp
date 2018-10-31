@@ -85,7 +85,7 @@ void AudioFadeOut::applyFadeOut(void * a_Data, size_t a_NumBytes)
 	// The difference is so miniscule that it is unimportant
 	for (size_t s = 0; s < numSamples; ++s)
 	{
-		samples[s] = static_cast<int16_t>(static_cast<int>(samples[s]) * m_FadeOutRemaining / m_FadeOutTotalSamples);
+		samples[s] = static_cast<int16_t>(static_cast<qint64>(samples[s]) * m_FadeOutRemaining / m_FadeOutTotalSamples);
 		m_FadeOutRemaining -= 1;
 		if (m_FadeOutRemaining <= 0)
 		{
