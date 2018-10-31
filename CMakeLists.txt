@@ -11,11 +11,57 @@ find_package (Qt5Xml REQUIRED)
 find_package (Qt5Multimedia REQUIRED)
 
 
+
+
+option (FORCE_STATIC_RUNTIME "Force MSVC to use static runtime (use with static builds)" FALSE)
+
+
+
+
+if (MSVC)
+	# Make build use multiple threads under MSVC:
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+
+	# Make release builds use link-time code generation:
+	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+	set (CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   /GL")
+	set (CMAKE_EXE_LINKER_FLAGS_RELEASE    "${CMAKE_EXE_LINKER_FLAGS_RELEASE}    /LTCG")
+	set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
+	set (CMAKE_STATIC_LINKER_FLAGS_RELEASE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} /LTCG")
+	set (CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG")
+
+	if (FORCE_STATIC_RUNTIME)
+		message(STATUS "Forcing a static runtime")
+		string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+		string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+
+		# For some reason the Qt modules don't have their dependencies on other libraries set right, we need to explicitly add them:
+		set (QT_LIB_PATH ${CMAKE_PREFIX_PATH}/lib)
+		set (ADDITIONAL_LIBRARIES
+			Ws2_32.lib
+			opengl32.lib
+			imm32.lib
+			winmm.lib
+			iphlpapi.lib
+			crypt32.lib
+			mincore.lib
+			${QT_LIB_PATH}/qtharfbuzz.lib
+			${QT_LIB_PATH}/qtlibpng.lib
+			${QT_LIB_PATH}/qtpcre2.lib
+			${CMAKE_PREFIX_PATH}/plugins/platforms/qwindows.lib
+		)
+	endif ()
+endif ()
+
+
+
+
+
 add_subdirectory (lib/LibCppHttpParser EXCLUDE_FROM_ALL)
 add_subdirectory (lib/QrCodeGen        EXCLUDE_FROM_ALL)
 add_subdirectory (lib/RtMidi           EXCLUDE_FROM_ALL)
 
-include_directories(lib)
+include_directories (lib)
 
 
 
@@ -102,17 +148,6 @@ if (NOT MSVC)
 	set (CMAKE_C_FLAGS_RELEASE    "${CMAKE_C_FLAGS_RELEASE}    -DNDEBUG")
 endif ()
 
-if (MSVC)
-	# Make build use multiple threads under MSVC:
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-
-	# Make release builds use link-time code generation:
-	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
-	set (CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   /GL")
-	set (CMAKE_EXE_LINKER_FLAGS_RELEASE    "${CMAKE_EXE_LINKER_FLAGS_RELEASE}    /LTCG")
-	set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
-	set (CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG")
-endif()
 
 
 
@@ -320,11 +355,12 @@ set_source_files_properties (
 add_executable (${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI} ${RESOURCES})
 
 target_link_libraries (${PROJECT_NAME}
-	${Qt5Widgets_LIBRARIES}
-	${Qt5Network_LIBRARIES}
-	${Qt5Sql_LIBRARIES}
-	${Qt5Xml_LIBRARIES}
-	${Qt5Multimedia_LIBRARIES}
+	Qt5::Widgets
+	Qt5::Network
+	Qt5::Sql
+	Qt5::Xml
+	Qt5::Multimedia
+	${ADDITIONAL_LIBRARIES}
 	LibCppHttpParser-static
 	QrCodeGen-static
 	rtmidi_static
