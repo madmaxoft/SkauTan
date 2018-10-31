@@ -297,6 +297,9 @@ set (RESOURCES
 	res/SkauTan.qrc
 )
 
+if (WIN32)
+	list (APPEND RESOURCES res/win.rc)
+endif ()
 
 
 
