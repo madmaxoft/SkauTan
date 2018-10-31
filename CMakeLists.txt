@@ -35,16 +35,21 @@ if (MSVC)
 		string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 		string(REGEX REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
+		# Precompiled Ffmpeg libs seem to trigger a SAFESEH failure, fix it:
+		set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /SAFESEH:NO")
+
 		# For some reason the Qt modules don't have their dependencies on other libraries set right, we need to explicitly add them:
 		set (QT_LIB_PATH ${CMAKE_PREFIX_PATH}/lib)
 		set (ADDITIONAL_LIBRARIES
-			Ws2_32.lib
+			ws2_32.lib
 			opengl32.lib
 			imm32.lib
 			winmm.lib
 			iphlpapi.lib
 			crypt32.lib
-			mincore.lib
+			netapi32.lib
+			userenv.lib
+			version.lib
 			${QT_LIB_PATH}/qtharfbuzz.lib
 			${QT_LIB_PATH}/qtlibpng.lib
 			${QT_LIB_PATH}/qtpcre2.lib
