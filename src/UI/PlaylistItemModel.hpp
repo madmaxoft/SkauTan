@@ -38,6 +38,10 @@ public:
 
 	PlaylistItemModel(Playlist & a_Playlist);
 
+	/** Called when a track was modified externally and the model should update. */
+	void trackWasModified(const IPlaylistItem & a_Item);
+
+
 protected:
 
 	/** The playlist on which the model is based. */

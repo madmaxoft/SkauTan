@@ -191,6 +191,10 @@ private slots:
 	Updates the Tempo UI. */
 	void tempoCoeffChanged(qreal a_TempoCoeff);
 
+	/** Emitted by the player when it attempts to play a track and cannot do so (bad file, bad format, ...)
+	Marks the item as unplayable in the UI. */
+	void invalidTrack(IPlaylistItemPtr a_Item);
+
 	/** Shows DlgImportDB, then imports the data from the DB. */
 	void importDB();
 

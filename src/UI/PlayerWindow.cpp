@@ -116,6 +116,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                   player.get(), &Player::setKeepTempo);
 	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                   player.get(), &Player::setKeepVolume);
 	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
+	connect(player.get(),                 &Player::invalidTrack,                 this,         &PlayerWindow::invalidTrack);
 	connect(mc.get(),                     &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
 	connect(mc.get(),                     &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
 	connect(mc.get(),                     &DJControllers::setTempoCoeff,         this,         &PlayerWindow::djControllerSetTempoCoeff);
@@ -931,6 +932,15 @@ void PlayerWindow::tempoCoeffChanged(qreal a_TempoCoeff)
 	m_IsInternalChange = true;
 	m_UI->vsTempo->setValue(value);
 	m_IsInternalChange = false;
+}
+
+
+
+
+
+void PlayerWindow::invalidTrack(IPlaylistItemPtr a_Item)
+{
+	m_PlaylistModel->trackWasModified(*a_Item);
 }
 
 

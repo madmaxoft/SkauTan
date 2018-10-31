@@ -101,6 +101,9 @@ public:
 	/** Returns true iff the specified index is valid (there are at least that many tracks + 1 in the playlist). */
 	bool isValidIndex(int a_Index) const;
 
+	/** Returns the index on which the specified item is in the playlist, or <0 if not present. */
+	int indexFromItem(const IPlaylistItem & a_Item);
+
 
 protected:
 

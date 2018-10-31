@@ -297,6 +297,24 @@ bool Playlist::isValidIndex(int a_Index) const
 
 
 
+int Playlist::indexFromItem(const IPlaylistItem & a_Item)
+{
+	auto s = m_Items.size();
+	for (size_t i = 0; i < s; ++i)
+	{
+		if (m_Items[i].get() == &a_Item)
+		{
+			return static_cast<int>(i);
+		}
+	}
+	// Not found
+	return -1;
+}
+
+
+
+
+
 void Playlist::updateItemsStartEndTimes(int a_StartIdx)
 {
 	assert(isValidIndex(a_StartIdx));

@@ -37,9 +37,13 @@ public:
 	/** The tempo coefficient associated with this track. */
 	qreal m_TempoCoeff;
 
+	/** Set to true if the player fails to play this track. */
+	bool m_IsMarkedUnplayable;
+
 
 	IPlaylistItem():
-		m_TempoCoeff(1)
+		m_TempoCoeff(1),
+		m_IsMarkedUnplayable(false)
 	{
 	}
 
@@ -129,6 +133,13 @@ public:
 	/** Starts decoding the item into the specified audio format.
 	Returns a PlaybackBuffer-derived class that is expected to provide the audio output data. */
 	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) = 0;
+
+	/** Returns whether the player has marked the track as unplayable. */
+	virtual bool isMarkedUnplayable() const { return m_IsMarkedUnplayable; }
+
+	/** Marks the track as unplayable.
+	Called by the Player on tracks that fail to play. */
+	virtual void markAsUnplayable() { m_IsMarkedUnplayable = true; }
 };
 
 using IPlaylistItemPtr = std::shared_ptr<IPlaylistItem>;

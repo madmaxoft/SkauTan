@@ -146,6 +146,10 @@ protected:
 	Must not be fading out already. */
 	void fadeOut(State a_FadeOutState);
 
+	/** Invoked by the internal playback thread if the current track cannot start playing due to invalid data.
+	Emits the invalidTrack() signal. */
+	Q_INVOKABLE void invalidCurrentTrack();
+
 
 signals:
 
@@ -164,6 +168,10 @@ signals:
 	/** Emitted after playback has completely stopped, either running out of playlist, or after psFadeOutToStop.
 	Note that this is different from finishedPlayback(), which is called after each track finishes playing. */
 	void stoppedPlayback();
+
+	/** Emitted when unable to start playing the specified track.
+	The receiver should mark the track as invalid in the UI. */
+	void invalidTrack(IPlaylistItemPtr a_Item);
 
 	/** Emitted when the current tempo is changed from within the player,
 	such as loading a new track with pre-set default tempo and KeepTempo turned off. */

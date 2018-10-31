@@ -1,4 +1,5 @@
 #include "PlaylistItemModel.hpp"
+#include <cassert>
 #include <QMimeData>
 #include <QDebug>
 #include <QIcon>
@@ -70,6 +71,21 @@ PlaylistItemModel::PlaylistItemModel(Playlist & a_Playlist):
 	connect(&m_Playlist, &Playlist::itemInserted,       this, &PlaylistItemModel::playlistItemInserted);
 	connect(&m_Playlist, &Playlist::currentItemChanged, this, &PlaylistItemModel::playlistCurrentChanged);
 	connect(&m_Playlist, &Playlist::itemTimesChanged,   this, &PlaylistItemModel::playlistItemTimesChanged);
+}
+
+
+
+
+
+void PlaylistItemModel::trackWasModified(const IPlaylistItem & a_Item)
+{
+	auto row = m_Playlist.indexFromItem(a_Item);
+	if (row < 0)
+	{
+		assert(!"Track notification received for a track not in the playlist");
+		return;
+	}
+	emit dataChanged(index(row, 0), index(row, colMax));
 }
 
 
@@ -232,6 +248,7 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			}
 			return Qt::AlignLeft;
 		}
+
 		case Qt::DisplayRole:
 		{
 			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
@@ -270,22 +287,58 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 
 		case Qt::FontRole:
 		{
-			if (a_Index.row() != m_CurrentItemIdx)
+			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
 			{
 				return QVariant();
 			}
 			auto font = QApplication::font("QTableWidget");
-			font.setBold(true);
+			if (a_Index.row() == m_CurrentItemIdx)
+			{
+				font.setBold(true);
+			}
+			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
+			if (item->isMarkedUnplayable())
+			{
+				font.setItalic(true);
+			}
 			return font;
+		}
+
+		case Qt::ToolTipRole:
+		{
+			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
+			{
+				return QVariant();
+			}
+			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
+			if (item->isMarkedUnplayable())
+			{
+				return QVariant(tr("This track failed to play"));
+			}
+			return QVariant();
+		}
+
+		case Qt::ForegroundRole:
+		{
+			if ((a_Index.row() < 0) || (a_Index.row() >= static_cast<int>(m_Playlist.items().size())))
+			{
+				return QVariant();
+			}
+			const auto & item = m_Playlist.items()[static_cast<size_t>(a_Index.row())];
+			if (item->isMarkedUnplayable())
+			{
+				return QColor(127, 127, 127);
+			}
+			return QVariant();
 		}
 
 		case Qt::BackgroundRole:
 		{
-			if (a_Index.row() != m_CurrentItemIdx)
+			if (a_Index.row() == m_CurrentItemIdx)
 			{
-				return QVariant();
+				return QBrush(QColor(0xdf, 0xdf, 0xdf));  // TODO: Some color from the platform style?
 			}
-			return QBrush(QColor(0xdf, 0xdf, 0xdf));  // TODO: Some color from the platform style?
+			return QVariant();
 		}
 
 		case Qt::DecorationRole:
@@ -299,6 +352,7 @@ QVariant PlaylistItemModel::data(const QModelIndex & a_Index, int a_Role) const
 			}
 			return QVariant();
 		}
+
 		case Qt::UserRole:
 		{
 			if (a_Index.column() != colReplace)
