@@ -58,6 +58,14 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("00:00"));
 	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-00:00"));
 
+	// Set button widths:
+	auto w = m_UI->lblTotalTime->fontMetrics().width("000");
+	QSize btnSize(w, w);
+	m_UI->btnPrev->setFixedSize(btnSize);
+	m_UI->btnPlayPause->setFixedSize(btnSize);
+	m_UI->btnStop->setFixedSize(btnSize);
+	m_UI->btnNext->setFixedSize(btnSize);
+
 	// Decorate the splitter handle with 3 sunken lines:
 	auto lay = new QVBoxLayout(m_UI->splitter->handle(1));
 	lay->setSpacing(0);

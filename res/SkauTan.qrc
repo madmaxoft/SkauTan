@@ -15,5 +15,8 @@
         <file>VoteServer/cz/index.html</file>
         <file>VoteServer/cz/static/lang.js</file>
         <file>VoteServer/static/lang.js</file>
+        <file>img/next.png</file>
+        <file>img/prev.png</file>
+        <file>img/stop.png</file>
     </qresource>
 </RCC>

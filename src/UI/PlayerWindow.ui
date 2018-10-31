@@ -458,7 +458,7 @@
         <item>
          <widget class="QPushButton" name="btnPrev">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -467,14 +467,18 @@
            <string>Previous track (with fade-out)</string>
           </property>
           <property name="text">
-           <string notr="true">|&lt;</string>
+           <string notr="true"/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../res/SkauTan.qrc">
+            <normaloff>:/img/prev.png</normaloff>:/img/prev.png</iconset>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnPlayPause">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -483,14 +487,18 @@
            <string>Start playback / pause playback (NO fade-out)</string>
           </property>
           <property name="text">
-           <string notr="true">|&gt;</string>
+           <string notr="true"/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../res/SkauTan.qrc">
+            <normaloff>:/img/play.png</normaloff>:/img/play.png</iconset>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnStop">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -499,14 +507,18 @@
            <string>Stop the playback (with fade-out)</string>
           </property>
           <property name="text">
-           <string notr="true">[ ]</string>
+           <string notr="true"/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../res/SkauTan.qrc">
+            <normaloff>:/img/stop.png</normaloff>:/img/stop.png</iconset>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnNext">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -515,7 +527,11 @@
            <string>Next track (with fade-out)</string>
           </property>
           <property name="text">
-           <string notr="true">&gt;|</string>
+           <string notr="true"/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../res/SkauTan.qrc">
+            <normaloff>:/img/next.png</normaloff>:/img/next.png</iconset>
           </property>
          </widget>
         </item>
@@ -684,6 +700,8 @@
   <tabstop>btnStop</tabstop>
   <tabstop>btnNext</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../../res/SkauTan.qrc"/>
+ </resources>
  <connections/>
 </ui>
