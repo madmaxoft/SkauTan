@@ -1,3 +1,9 @@
 [submodule "lib/QrCodeGen"]
 	path = lib/QrCodeGen
 	url = https://github.com/madmaxoft/QrCodeGen
+[submodule "lib/LibCppHttpParser"]
+	path = lib/LibCppHttpParser
+	url = https://github.com/madmaxoft/LibCppHttpParser
+[submodule "lib/RtMidi"]
+	path = lib/RtMidi
+	url = https://github.com/madmaxoft/RtMidi
