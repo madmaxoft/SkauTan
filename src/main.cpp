@@ -25,6 +25,17 @@
 
 
 
+// From http://stackoverflow.com/a/27807379
+// When linking statically with CMake + MSVC, we need to add the platform plugin
+#if defined(_MSC_VER) && defined(FORCE_STATIC_RUNTIME)
+	#include <QtPlugin>
+	Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#endif
+
+
+
+
+
 void initTranslations(QApplication & a_App)
 {
 	auto translator = std::make_unique<QTranslator>();

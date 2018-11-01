@@ -55,6 +55,7 @@ if (MSVC)
 			${QT_LIB_PATH}/qtpcre2.lib
 			${CMAKE_PREFIX_PATH}/plugins/platforms/qwindows.lib
 		)
+		add_definitions(FORCE_STATIC_RUNTIME)
 	endif ()
 endif ()
 
