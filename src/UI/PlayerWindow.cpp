@@ -301,14 +301,18 @@ void PlayerWindow::refreshAppendUponCompletion()
 	auto selFilter = selObj.value<FilterPtr>();
 
 	// Insert templates:
-	m_UI->cbCompletionAppendTemplate->clear();
+	auto cb = m_UI->cbCompletionAppendTemplate;
+	cb->clear();
 	auto tmpls = m_Components.get<Database>()->templates();
+	auto size = cb->fontMetrics().ascent();
 	for (const auto & tmpl: tmpls)
 	{
-		m_UI->cbCompletionAppendTemplate->addItem(tmpl->displayName(), QVariant::fromValue(tmpl));
+		QPixmap pixmap(size, size);
+		pixmap.fill(tmpl->bgColor());
+		cb->addItem(QIcon(pixmap), tmpl->displayName(), QVariant::fromValue(tmpl));
 		if (tmpl == selTemplate)
 		{
-			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
+			cb->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
 		}
 	}
 
@@ -316,10 +320,12 @@ void PlayerWindow::refreshAppendUponCompletion()
 	auto filters = m_Components.get<Database>()->getFavoriteFilters();
 	for (const auto & filter: filters)
 	{
-		m_UI->cbCompletionAppendTemplate->addItem(filter->displayName(), QVariant::fromValue(filter));
+		QPixmap pixmap(size, size);
+		pixmap.fill(filter->bgColor());
+		cb->addItem(QIcon(pixmap), filter->displayName(), QVariant::fromValue(filter));
 		if (filter == selFilter)
 		{
-			m_UI->cbCompletionAppendTemplate->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
+			cb->setCurrentIndex(m_UI->cbCompletionAppendTemplate->count() - 1);
 		}
 	}
 }
