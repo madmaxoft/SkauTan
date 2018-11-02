@@ -135,6 +135,7 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 		return true;
 	}
 
+	// Decode the indices from the mime data:
 	QByteArray encodedData = a_Data->data(MIME_TYPE);
 	std::vector<int> rows;
 	auto numRows = static_cast<size_t>(encodedData.size() / 4);
@@ -144,12 +145,21 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 		memcpy(&row, encodedData.data() + i * 4, 4);
 		rows.push_back(row);
 	}
+	std::sort(rows.begin(), rows.end());
+
+	// Move the items:
 	auto minRow = a_Row;
 	auto maxRow = a_Row;
 	while (!rows.empty())
 	{
 		auto row = rows.back();
-		m_Playlist.moveItem(row, a_Row);
+		if ((row != a_Row) && (row + 1 != a_Row))
+		{
+			emit layoutAboutToBeChanged();
+			beginMoveRows(QModelIndex(), row, row, QModelIndex(), a_Row);
+			m_Playlist.moveItem(row, a_Row);
+			endMoveRows();
+		}
 		if (minRow > row)
 		{
 			minRow = row;
@@ -163,9 +173,38 @@ bool PlaylistItemModel::dropMimeData(const QMimeData * a_Data, Qt::DropAction a_
 		{
 			a_Row -= 1;  // Moving an item down the list means the destination index moved as well.
 		}
+
+		// Move any source rows within the affected range:
+		if (row > a_Row)
+		{
+			// Source rows have moved down, add one to their index:
+			std::transform(rows.begin(), rows.end(), rows.begin(),
+				[row, a_Row](int a_ListRow)
+				{
+					if ((a_ListRow > a_Row) && (a_ListRow < row))
+					{
+						return a_ListRow + 1;
+					}
+					return a_ListRow;
+				}
+			);
+		}
+		else if (a_Row > row)
+		{
+			// Source rows have moved up, subtract one from their index:
+			std::transform(rows.begin(), rows.end(), rows.begin(),
+				[row, a_Row](int a_ListRow)
+				{
+					if ((a_ListRow > row) && (a_ListRow < a_Row))
+					{
+						return a_ListRow - 1;
+					}
+					return a_ListRow;
+				}
+			);
+		}
 	}
 	m_Playlist.updateItemTimesFromCurrent();
-	emit dataChanged(createIndex(minRow, 0), createIndex(maxRow, colMax - 1));
 	return true;
 }
 

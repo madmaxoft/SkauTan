@@ -1,6 +1,7 @@
 #include "Playlist.hpp"
 #include <limits>
 #include <cassert>
+#include <set>
 #include <QDebug>
 #include "DB/Database.hpp"
 #include "PlaylistItemSong.hpp"
@@ -48,6 +49,7 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 	if (a_FromIdx == a_ToIdx)
 	{
 		// No action needed
+		return;
 	}
 	auto stash = m_Items[static_cast<size_t>(a_FromIdx)];
 	if (a_FromIdx > a_ToIdx)
@@ -99,6 +101,16 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 		stash->m_PlaybackEnded = QDateTime();
 		emit itemTimesChanged(a_ToIdx, stash.get());
 	}
+
+	// Sanity check: no item is in the playlist twice:
+	#ifdef _DEBUG
+		std::set<IPlaylistItemPtr> items;
+		for (const auto & item: m_Items)
+		{
+			assert(items.find(item) == items.cend());
+			items.insert(item);
+		}
+	#endif  // _DEBUG
 }
 
 
