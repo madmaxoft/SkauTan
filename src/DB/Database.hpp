@@ -196,6 +196,10 @@ public:
 	Used primarily by the import. */
 	void addVotes(const QString & a_TableName, const std::vector<Vote> & a_Votes);
 
+	/** Removes songs whose files are not accessible.
+	Keeps the SongSharedData. */
+	quint32 removeInaccessibleSongs();
+
 
 protected:
 

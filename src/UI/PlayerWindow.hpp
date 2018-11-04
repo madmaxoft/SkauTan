@@ -198,6 +198,9 @@ private slots:
 	/** Shows DlgImportDB, then imports the data from the DB. */
 	void importDB();
 
+	/** Shows DlgLibraryMaintenance. */
+	void showLibraryMaintenance();
+
 	/** Emitted when the user selects Save Playlist from the Tools menu.
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();

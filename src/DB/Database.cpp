@@ -1225,6 +1225,27 @@ void Database::addVotes(const QString & a_TableName, const std::vector<Database:
 
 
 
+quint32 Database::removeInaccessibleSongs()
+{
+	// NOTE: This function is called from a BackgroundTasks thread, needs to synchronize DB access
+	unsigned res = 0;
+	auto songs = m_Songs;  // Make a copy, we're running in a background thread
+	for (const auto & song: songs)
+	{
+		if (!QFile::exists(song->fileName()))
+		{
+			qDebug() << "Song file " << song->fileName() << " doesn't exist, removing";
+			QMetaObject::invokeMethod(this, "removeSong", Q_ARG(SongPtr, song));
+			res += 1;
+		}
+	}
+	return res;
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:

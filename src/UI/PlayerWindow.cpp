@@ -28,7 +28,7 @@
 #include "Dlg/DlgRemovedSongs.hpp"
 #include "Dlg/DlgImportDB.hpp"
 #include "Dlg/DlgLvsStatus.hpp"
-
+#include "Dlg/DlgLibraryMaintenance.hpp"
 
 
 
@@ -105,6 +105,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actRemoveDurationLimit, &QAction::triggered,                   this,         &PlayerWindow::removeDurationLimit);
 	connect(m_UI->actRemovedSongs,        &QAction::triggered,                   this,         &PlayerWindow::showRemovedSongs);
 	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
+	connect(m_UI->actLibraryMaintenance,  &QAction::triggered,                   this,         &PlayerWindow::showLibraryMaintenance);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
 	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
 	connect(m_UI->actLvsStatus,           &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
@@ -162,6 +163,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addSeparator();
 	menu->addAction(m_UI->actImportDB);
 	menu->addSeparator();
+	menu->addAction(m_UI->actLibraryMaintenance);
+	menu->addSeparator();
 	menu->addAction(m_UI->actSavePlaylist);
 	menu->addSeparator();
 	menu->addAction(m_UI->actToggleLvs);
@@ -181,6 +184,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actBackgroundTasks,
 		m_UI->actRemovedSongs,
 		m_UI->actImportDB,
+		m_UI->actLibraryMaintenance,
 		m_UI->actSavePlaylist,
 		m_UI->actToggleLvs,
 		m_UI->actLvsStatus,
@@ -964,6 +968,16 @@ void PlayerWindow::importDB()
 	Database fromDB(m_Components);
 	fromDB.open(dlg.m_FileName);
 	DatabaseImport import(fromDB, *m_Components.get<Database>(), dlg.m_Options);
+}
+
+
+
+
+
+void PlayerWindow::showLibraryMaintenance()
+{
+	DlgLibraryMaintenance dlg(m_Components, this);
+	dlg.exec();
 }
 
 

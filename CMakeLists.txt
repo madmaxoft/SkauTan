@@ -220,6 +220,7 @@ set (SOURCES
 	src/UI/Dlg/DlgEditFilter.cpp
 	src/UI/Dlg/DlgHistory.cpp
 	src/UI/Dlg/DlgImportDB.cpp
+	src/UI/Dlg/DlgLibraryMaintenance.cpp
 	src/UI/Dlg/DlgLvsStatus.cpp
 	src/UI/Dlg/DlgManageFilters.cpp
 	src/UI/Dlg/DlgPickTemplate.cpp
@@ -290,6 +291,7 @@ set (HEADERS
 	src/UI/Dlg/DlgEditFilter.hpp
 	src/UI/Dlg/DlgHistory.hpp
 	src/UI/Dlg/DlgImportDB.hpp
+	src/UI/Dlg/DlgLibraryMaintenance.hpp
 	src/UI/Dlg/DlgLvsStatus.hpp
 	src/UI/Dlg/DlgManageFilters.hpp
 	src/UI/Dlg/DlgPickTemplate.hpp
@@ -329,6 +331,7 @@ set (UI
 	src/UI/Dlg/DlgEditFilter.ui
 	src/UI/Dlg/DlgHistory.ui
 	src/UI/Dlg/DlgImportDB.ui
+	src/UI/Dlg/DlgLibraryMaintenance.ui
 	src/UI/Dlg/DlgLvsStatus.ui
 	src/UI/Dlg/DlgManageFilters.ui
 	src/UI/Dlg/DlgPickTemplate.ui

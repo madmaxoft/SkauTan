@@ -671,6 +671,14 @@
     <string>Displays detailed status information on the Local Vote Server</string>
    </property>
   </action>
+  <action name="actLibraryMaintenance">
+   <property name="text">
+    <string>Library maintenance...</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens a dialog with tools forlibrary maintenance</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
