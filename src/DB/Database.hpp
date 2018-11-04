@@ -200,6 +200,12 @@ public:
 	Keeps the SongSharedData. */
 	quint32 removeInaccessibleSongs();
 
+	/** Adds the specified values into the SharedData's Manual tag.
+	Doesn't overwrite values, only adds into empty values.
+	Hashes that don't exist are silently skipped.
+	Saves all SharedData after applying all changes. */
+	void addToSharedDataManualTags(const std::map<QByteArray /* hash */, Song::Tag> & a_Tags);
+
 
 protected:
 

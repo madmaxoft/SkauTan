@@ -98,7 +98,11 @@ public:
 
 		void addDuplicate(Song * a_Duplicate);
 		void delDuplicate(const Song * a_Duplicate);
+
+		/** Returns the count of all duplicates for this SharedData. Thread-safe. */
 		size_t duplicatesCount() const;
+
+		/** Returns *a copy* of all the duplicates for this SharedData. Thread-safe. */
 		std::vector<Song *> duplicates() const;
 	};
 
