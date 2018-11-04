@@ -206,6 +206,7 @@ set (SOURCES
 	src/DB/DatabaseBackup.cpp
 	src/DB/DatabaseImport.cpp
 	src/DB/DatabaseUpgrade.cpp
+	src/DB/TagImportExport.cpp
 
 	# UI-related sources:
 	src/UI/ColorDelegate.cpp
@@ -277,6 +278,7 @@ set (HEADERS
 	src/DB/DatabaseBackup.hpp
 	src/DB/DatabaseImport.hpp
 	src/DB/DatabaseUpgrade.hpp
+	src/DB/TagImportExport.hpp
 
 	# UI-related headers:
 	src/UI/ColorDelegate.hpp

@@ -1246,6 +1246,28 @@ quint32 Database::removeInaccessibleSongs()
 
 
 
+void Database::addToSharedDataManualTags(const std::map<QByteArray, Song::Tag> & a_Tags)
+{
+	for (const auto & sdt: a_Tags)
+	{
+		auto itr = m_SongSharedData.find(sdt.first);
+		if (itr == m_SongSharedData.end())
+		{
+			continue;
+		}
+		const auto & tag = sdt.second;
+		itr->second->m_TagManual.m_Author.updateIfNewer(tag.m_Author);
+		itr->second->m_TagManual.m_Title.updateIfNewer(tag.m_Title);
+		itr->second->m_TagManual.m_Genre.updateIfNewer(tag.m_Genre);
+		itr->second->m_TagManual.m_MeasuresPerMinute.updateIfNewer(tag.m_MeasuresPerMinute);
+	}
+	saveAllSongSharedData();
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:

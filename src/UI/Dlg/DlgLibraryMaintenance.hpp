@@ -49,10 +49,33 @@ private:
 	Shows an information message box to the user. */
 	Q_INVOKABLE void inaccessibleSongsRemoved(quint32 a_NumRemoved);
 
+	/** Invoked by the background thread after failing to export tags.
+	Shows a warning dialog to the user. */
+	Q_INVOKABLE void tagExportError(const QString & a_FileName, const QString & a_Error);
+
+	/** Invoked by the background thread after finishing the tag export.
+	Shows an information message to the user. */
+	Q_INVOKABLE void tagExportFinished(const QString & a_FileName);
+
+	/** Invoked by the background thread after failing to import tags.
+	Shows a warning dialog to the user. */
+	Q_INVOKABLE void tagImportError(const QString & a_FileName, const QString & a_Error);
+
+	/** Invoked by the background thread after finishing the tag import.
+	Shows an information message to the user. */
+	Q_INVOKABLE void tagImportFinished(const QString & a_FileName);
+
+
 private slots:
 
 	/** Removes the songs that don't have a file. */
 	void removeInaccessibleSongs();
+
+	/** Asks for the destination file, then exports the Primary tags of each library's SongSharedData. */
+	void exportAllTags();
+
+	/** Asks for the source file, then imports tags from the file and fills them into the Library. */
+	void importTags();
 };
 
 
