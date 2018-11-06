@@ -98,13 +98,13 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SB" },
 		{ QRegularExpression("(^|[\\W])cha[-\\s]?cha(\\-?cha)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",   QRegularExpression::CaseInsensitiveOption), "CH" },
 		{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   QRegularExpression::CaseInsensitiveOption), "RU" },
-		{ QRegularExpression("(^|[\\W])paso[-\\s]?doble\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          QRegularExpression::CaseInsensitiveOption), "PD" },
+		{ QRegularExpression("(^|[\\W])paso[-\\s]?(doble)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "PD" },
 		{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      QRegularExpression::CaseInsensitiveOption), "JI" },
 		{ QRegularExpression("(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "BL" },
-		{ QRegularExpression("(^|[\\W])polka\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "PO" },
+		{ QRegularExpression("(^|[\\W])polk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                  QRegularExpression::CaseInsensitiveOption), "PO" },
 		{ QRegularExpression("(^|[\\W])mazurk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                QRegularExpression::CaseInsensitiveOption), "MA" },
 		{ QRegularExpression("(^|[\\W])salsa\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SL" },
-		{ QRegularExpression("(^|[\\W])rozcvičk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",              QRegularExpression::CaseInsensitiveOption), "RO" },
+		{ QRegularExpression("(^|[\\W])rozcvi[cč]k[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "RO" },
 	};
 
 	for (const auto & p: genreMap)
