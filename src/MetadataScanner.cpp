@@ -68,9 +68,11 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		// Shortcut-based genre + optional MPM:
 		{ QRegularExpression("(^|[\\W])SW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
 		{ QRegularExpression("(^|[\\W])LW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+		{ QRegularExpression("(^|[\\W])EW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
 		{ QRegularExpression("(^|[\\W])TG(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
 		{ QRegularExpression("(^|[\\W])TA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
 		{ QRegularExpression("(^|[\\W])VW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+		{ QRegularExpression("(^|[\\W])VV(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
 		{ QRegularExpression("(^|[\\W])WW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
 		{ QRegularExpression("(^|[\\W])SF(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
 		{ QRegularExpression("(^|[\\W])QS(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
@@ -90,6 +92,7 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		// Full genre name + optional MPM:
 		{ QRegularExpression("(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
 		{ QRegularExpression("(^|[\\W])valcik\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
+		{ QRegularExpression("(^|[\\W])v\\.[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "v. waltz" matches SW too
 		{ QRegularExpression("(^|[\\W])vien(nese|n?a)[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "vienna waltz" matches SW too
 		{ QRegularExpression("(^|[\\W])(slow[-\\s]?)?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "SW" },
 		{ QRegularExpression("(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "TG" },
