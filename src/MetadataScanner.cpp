@@ -143,7 +143,7 @@ Returns the input string after removing the potential match.
 Assumes that the match is not in the middle of "author - title", but rather at either end. */
 static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 {
-	static const QRegularExpression re("(.*?)(\\d+) bpm(.*)", QRegularExpression::CaseInsensitiveOption);
+	static const QRegularExpression re("(.*?)(\\d+)\\s?[bmt]pm(.*)", QRegularExpression::CaseInsensitiveOption);
 	auto match = re.match(a_Input);
 	if (match.hasMatch())
 	{
