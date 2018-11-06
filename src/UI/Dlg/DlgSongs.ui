@@ -300,6 +300,14 @@
     <string>Insert the selected songs after the currently selected song in the playlist</string>
    </property>
   </action>
+  <action name="actManualToId3">
+   <property name="text">
+    <string>Manual -&gt; ID3</string>
+   </property>
+   <property name="toolTip">
+    <string>Moves the Manual tag values into the file's ID3 tag</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>leSearch</tabstop>
