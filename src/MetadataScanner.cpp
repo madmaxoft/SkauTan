@@ -23,7 +23,9 @@ static void setOrClearProp(TagLib::PropertyMap & a_Props, const char * a_PropNam
 {
 	if (a_Value.isPresent())
 	{
-		a_Props[a_PropName] = TagLib::StringList(a_Value.value().toStdString());
+		a_Props[a_PropName] = TagLib::StringList(
+			TagLib::String(a_Value.value().toStdString(), TagLib::String::Type::UTF8)
+		);
 	}
 	else
 	{
