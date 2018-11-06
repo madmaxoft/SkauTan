@@ -127,7 +127,7 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 			a_OutputTag.m_MeasuresPerMinute = mpm;
 		}
 		a_OutputTag.m_Genre = p.second;
-		auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1) - 1) : QString();
+		auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1)) : QString();
 		return prefix + " " + a_Input.mid(match.capturedEnd("end"));
 	}
 	return a_Input;
@@ -161,6 +161,7 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 		if (prefix.endsWith('['))
 		{
 			prefix.chop(1);
+			prefix = prefix.trimmed();
 		}
 		auto suffix = match.captured(3);
 		if (suffix.length() < 4)
@@ -169,7 +170,7 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 		}
 		if (suffix.startsWith(']'))
 		{
-			suffix.remove(0, 1);
+			suffix = suffix.remove(0, 1).trimmed();
 		}
 		// Decide whether to further use the suffix or the prefix, regular filenames don't have BPM in the middle
 		// Just use the longer one:
