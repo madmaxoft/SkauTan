@@ -157,6 +157,18 @@ void Song::delSkipStart()
 
 
 
+void Song::clearManualTag()
+{
+	m_SharedData->m_TagManual.m_Author.reset();
+	m_SharedData->m_TagManual.m_Title.reset();
+	m_SharedData->m_TagManual.m_Genre.reset();
+	m_SharedData->m_TagManual.m_MeasuresPerMinute.reset();
+}
+
+
+
+
+
 bool Song::needsTagRescan() const
 {
 	// Any invalid metadata signals that the rescan hasn't been done

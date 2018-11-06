@@ -203,6 +203,9 @@ public:
 	/** Removes the skip-start, if SharedData is present; otherwise ignored. */
 	void delSkipStart();
 
+	/** Removes all properties from the Manual tag. */
+	void clearManualTag();
+
 	/** Returns true if a tag rescan is needed for the song
 	(the tags are empty and the scan hasn't been performed already). */
 	bool needsTagRescan() const;

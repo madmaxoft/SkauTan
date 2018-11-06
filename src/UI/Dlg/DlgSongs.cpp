@@ -101,6 +101,7 @@ DlgSongs::DlgSongs(
 	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,                     this, &DlgSongs::removeSelected);
 	connect(m_UI->actTempoDetector,      &QAction::triggered,                     this, &DlgSongs::showTempoDetector);
 	connect(m_UI->actTapTempo,           &QAction::triggered,                     this, &DlgSongs::showTapTempo);
+	connect(m_UI->actManualToId3,        &QAction::triggered,                     this, &DlgSongs::moveManualToId3);
 
 	initFilterSearch();
 	createContextMenu();
@@ -233,6 +234,8 @@ void DlgSongs::createContextMenu()
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actRemoveFromLibrary);
 	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
+	m_ContextMenu->addSeparator();
+	m_ContextMenu->addAction(m_UI->actManualToId3);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actRate);
 	connect(m_ContextMenu->addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
@@ -628,4 +631,45 @@ void DlgSongs::showTapTempo()
 	assert(song != nullptr);
 	DlgTapTempo dlg(m_Components, song, this);
 	dlg.exec();
+}
+
+
+
+
+
+void DlgSongs::moveManualToId3()
+{
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	auto db = m_Components.get<Database>();
+	for (const auto & row: sel)
+	{
+		auto song = songFromIndex(row);
+		assert(song != nullptr);
+		auto tagFile = MetadataScanner::readTagFromFile(song->fileName());
+		if (!tagFile.first)
+		{
+			// Song file not readable / tag not parseable
+			continue;
+		}
+		auto & tagManual = song->tagManual();
+		if (!tagManual.m_Author.isEmpty())
+		{
+			tagFile.second.m_Author = tagManual.m_Author.value();
+		}
+		if (!tagManual.m_Title.isEmpty())
+		{
+			tagFile.second.m_Title = tagManual.m_Title.value();
+		}
+		if (!tagManual.m_Genre.isEmpty())
+		{
+			tagFile.second.m_Genre = tagManual.m_Genre.value();
+		}
+		if (tagManual.m_MeasuresPerMinute.isPresent())
+		{
+			tagFile.second.m_MeasuresPerMinute = tagManual.m_MeasuresPerMinute.value();
+		}
+		MetadataScanner::writeTagToSong(song, tagFile.second);
+		song->clearManualTag();
+		db->saveSong(song);
+	}
 }
