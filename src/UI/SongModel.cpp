@@ -19,7 +19,7 @@ static QString formatLength(const Song & a_Song)
 {
 	if (!a_Song.length().isPresent())
 	{
-		return SongModel::tr("<unknown>", "Length");
+		return QString();
 	}
 	auto len = static_cast<int>(floor(a_Song.length().value() + 0.5));
 	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, QChar('0'));
@@ -33,7 +33,7 @@ static QString formatMPM(const DatedOptional<double> & a_SongMPM)
 {
 	if (!a_SongMPM.isPresent())
 	{
-		return SongModel::tr("<unknown>", "MPM");
+		return QString();
 	}
 	return QLocale().toString(a_SongMPM.value(), 'f', 1);
 }
@@ -46,7 +46,7 @@ static QString formatLastPlayed(const Song & a_Song)
 {
 	if (!a_Song.lastPlayed().isPresent())
 	{
-		return SongModel::tr("<never>", "LastPlayed");
+		return QString();
 	}
 	return a_Song.lastPlayed().value().toString("yyyy-MM-dd HH:mm:ss");
 }
