@@ -305,7 +305,15 @@
     <string>Manual -&gt; ID3</string>
    </property>
    <property name="toolTip">
-    <string>Moves the Manual tag values into the file's ID3 tag</string>
+    <string>Move the Manual tag values into the file's ID3 tag</string>
+   </property>
+  </action>
+  <action name="actFileNameToId3">
+   <property name="text">
+    <string>FileName -&gt; ID3</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy the FileName tag values into the file's ID3 tag</string>
    </property>
   </action>
  </widget>

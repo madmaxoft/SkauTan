@@ -177,8 +177,11 @@ private slots:
 	/** Shows the TapTempo dialog fo the first selected song. */
 	void showTapTempo();
 
-	/** Moves the Manual tag values to ID3 tag values, for all selected songs. */
+	/** Moves the Manual tag values to the ID3 tag values, for all selected songs. */
 	void moveManualToId3();
+
+	/** Copies the non-empty FileName tag values to the ID3 tag, for all selected songs. */
+	void copyFileNameToId3();
 
 
 signals:

@@ -72,6 +72,8 @@ DlgSongs::DlgSongs(
 		m_UI->actAddToPlaylist,
 		m_UI->actInsertIntoPlaylist,
 		m_UI->actDeleteFromDisk,
+		m_UI->actManualToId3,
+		m_UI->actFileNameToId3,
 		m_UI->actProperties,
 		m_UI->actRate,
 		m_UI->actRemoveFromLibrary,
@@ -102,6 +104,7 @@ DlgSongs::DlgSongs(
 	connect(m_UI->actTempoDetector,      &QAction::triggered,                     this, &DlgSongs::showTempoDetector);
 	connect(m_UI->actTapTempo,           &QAction::triggered,                     this, &DlgSongs::showTapTempo);
 	connect(m_UI->actManualToId3,        &QAction::triggered,                     this, &DlgSongs::moveManualToId3);
+	connect(m_UI->actFileNameToId3,      &QAction::triggered,                     this, &DlgSongs::copyFileNameToId3);
 
 	initFilterSearch();
 	createContextMenu();
@@ -236,6 +239,7 @@ void DlgSongs::createContextMenu()
 	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actManualToId3);
+	m_ContextMenu->addAction(m_UI->actFileNameToId3);
 	m_ContextMenu->addSeparator();
 	m_ContextMenu->addAction(m_UI->actRate);
 	connect(m_ContextMenu->addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
@@ -670,6 +674,46 @@ void DlgSongs::moveManualToId3()
 		}
 		MetadataScanner::writeTagToSong(song, tagFile.second);
 		song->clearManualTag();
+		db->saveSong(song);
+	}
+}
+
+
+
+
+
+void DlgSongs::copyFileNameToId3()
+{
+	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	auto db = m_Components.get<Database>();
+	for (const auto & row: sel)
+	{
+		auto song = songFromIndex(row);
+		assert(song != nullptr);
+		auto tagFile = MetadataScanner::readTagFromFile(song->fileName());
+		if (!tagFile.first)
+		{
+			// Song file not readable / tag not parseable
+			continue;
+		}
+		auto & tagFileName = song->tagFileName();
+		if (!tagFileName.m_Author.isEmpty())
+		{
+			tagFile.second.m_Author = tagFileName.m_Author.value();
+		}
+		if (!tagFileName.m_Title.isEmpty())
+		{
+			tagFile.second.m_Title = tagFileName.m_Title.value();
+		}
+		if (!tagFileName.m_Genre.isEmpty())
+		{
+			tagFile.second.m_Genre = tagFileName.m_Genre.value();
+		}
+		if (tagFileName.m_MeasuresPerMinute.isPresent())
+		{
+			tagFile.second.m_MeasuresPerMinute = tagFileName.m_MeasuresPerMinute.value();
+		}
+		MetadataScanner::writeTagToSong(song, tagFile.second);
 		db->saveSong(song);
 	}
 }
