@@ -608,6 +608,7 @@ void DlgTemplatesList::itemDoubleClicked(int a_Row, int a_Column)
 	// Edit the filter:
 	DlgEditFilter dlg(m_Components, *item);
 	dlg.exec();
+	m_Components.get<Database>()->saveFilter(*item);
 
 	// Update the UI that may have been affected by a filter edit:
 	updateTemplateItemRow(a_Row, *item);
@@ -677,6 +678,9 @@ void DlgTemplatesList::itemChanged(QTableWidgetItem * a_Item)
 			return;
 		}
 	}
+
+	// Save to DB:
+	m_Components.get<Database>()->saveFilter(*filter);
 
 	// Update all rows containing the filter:
 	m_IsInternalChange = true;
