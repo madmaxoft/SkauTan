@@ -127,6 +127,16 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		{ QRegularExpression("(^|[\\W])mazurk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                QRegularExpression::CaseInsensitiveOption), "MA" },
 		{ QRegularExpression("(^|[\\W])salsa\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SL" },
 		{ QRegularExpression("(^|[\\W])rozcvi[cč]k[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "RO" },
+
+		// Single-letter genre + MPM (only some genres):
+		{ QRegularExpression("(^|[\\W])W(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
+		{ QRegularExpression("(^|[\\W])T(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
+		{ QRegularExpression("(^|[\\W])V(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
+		{ QRegularExpression("(^|[\\W])Q(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
+		{ QRegularExpression("(^|[\\W])S(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
+		{ QRegularExpression("(^|[\\W])C(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
+		{ QRegularExpression("(^|[\\W])R(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
+		{ QRegularExpression("(^|[\\W])J(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
 	};
 
 	for (const auto & p: genreMap)
