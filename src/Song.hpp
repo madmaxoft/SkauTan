@@ -237,6 +237,11 @@ public:
 	If the genre is not known, returns 0 .. MAX_USHORT */
 	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
 
+	/** Returns the most likely MPM value given the MPM or BPM input and genre.
+	If the input is double, triple or quadruple of a competition range MPM, return 1/2, 1/3 or 1/4 of the input,
+	otherwise returns the input. */
+	static double adjustMpm(double a_Input, const QString & a_Genre);
+
 	/** Returns all the songs that have the same hash as this song, including this. */
 	std::vector<Song *> duplicates();
 
