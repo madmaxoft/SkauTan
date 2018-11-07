@@ -193,6 +193,79 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 
 
 
+/** Extracts as much metadata form the input string as possible.
+The extracted data is saved into a_OutputTag and removed from the string. */
+static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
+{
+	// First process all parentheses, brackets and braces:
+	QString intermediate;
+	auto len = a_Input.length();
+	int last = 0;  // last boundary of the outer-most parenthesis / bracket / brace
+	int numNestingLevels = 0;
+	bool hasExtracted = false;
+	for (int i = 0; i < len; ++i)
+	{
+		switch (a_Input[i].unicode())
+		{
+			case '(':
+			case '{':
+			case '[':
+			{
+				if (numNestingLevels == 0)
+				{
+					if (i > last)
+					{
+						intermediate.append(a_Input.mid(last, i - last));
+					}
+					last = i + 1;
+				}
+				numNestingLevels += 1;
+				break;
+			}
+			case ')':
+			case '}':
+			case ']':
+			{
+				numNestingLevels -= 1;
+				if (numNestingLevels == 0)
+				{
+					auto subBlock = a_Input.mid(last, i - last);
+					auto outBlock = tryMatchGenreMPM(tryMatchBPM(subBlock, a_OutputTag), a_OutputTag);
+					if (subBlock == outBlock)
+					{
+						// No extractable information within this parenthesis, just append all of it:
+						intermediate.append(subBlock);
+					}
+					else
+					{
+						// This block had metadata, do NOT append any of it
+						hasExtracted = true;
+					}
+					last = i + 1;
+				}
+				break;
+			}
+		}
+	}  // for i - a_Input[]
+	if (last < len)
+	{
+		intermediate.append(a_Input.mid(last, len - last));
+	}
+
+	// If anything was extracted from the parentheses, don't extract anything from the leftover text:
+	if (hasExtracted)
+	{
+		return intermediate;
+	}
+
+	// Nothing useful in parentheses, run extraction on the bare text:
+	return tryMatchGenreMPM(tryMatchBPM(intermediate, a_OutputTag), a_OutputTag);
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // MetadataScanner:
 
@@ -302,10 +375,10 @@ Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
 	{
 		res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
 	}
-	/* genre = */   tryMatchGenreMPM(a_FileTag.m_Genre.valueOrDefault(), res);
-	/* comment = */ tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Comment.valueOrDefault(), res), res);
-	res.m_Author =  tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Author.valueOrDefault(), res), res);
-	res.m_Title =   tryMatchGenreMPM(tryMatchBPM(a_FileTag.m_Title.valueOrDefault(), res), res);
+	/* genre = */   extract(a_FileTag.m_Genre.valueOrDefault(), res);
+	/* comment = */ extract(a_FileTag.m_Comment.valueOrDefault(), res);
+	res.m_Author =  extract(a_FileTag.m_Author.valueOrDefault(), res);
+	res.m_Title =   extract(a_FileTag.m_Title.valueOrDefault(), res);
 	return res;
 }
 
@@ -400,8 +473,9 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	{
 		fileBareName.remove(idxExt, fileBareName.length());
 	}
-	fileBareName = tryMatchGenreMPM(fileBareName, songTag);
-	fileBareName = tryMatchBPM(fileBareName, songTag);
+	fileBareName = extract(fileBareName, songTag);
+
+	// TODO: Remove a possible numerical prefix ("01 - ", "01." etc.)
 
 	// Try split into author - title:
 	auto idxSeparator = fileBareName.indexOf(" - ");
