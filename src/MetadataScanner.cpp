@@ -92,12 +92,12 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		// Full genre name + optional MPM:
 		{ QRegularExpression("(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
 		{ QRegularExpression("(^|[\\W])valcik\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
-		{ QRegularExpression("(^|[\\W])v\\.[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "v. waltz" matches SW too
+		{ QRegularExpression("(^|[\\W])v[.-]?\\s?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "v. waltz" matches SW too
 		{ QRegularExpression("(^|[\\W])vien(nese|n?a)[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "vienna waltz" matches SW too
 		{ QRegularExpression("(^|[\\W])(slow[-\\s]?)?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "SW" },
 		{ QRegularExpression("(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "TG" },
-		{ QRegularExpression("(^|[\\W])slow\\-?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",        QRegularExpression::CaseInsensitiveOption), "SF" },
-		{ QRegularExpression("(^|[\\W])quick\\-?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",             QRegularExpression::CaseInsensitiveOption), "QS" },
+		{ QRegularExpression("(^|[\\W])slow[-\\s]?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",     QRegularExpression::CaseInsensitiveOption), "SF" },
+		{ QRegularExpression("(^|[\\W])quick[-\\s]?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          QRegularExpression::CaseInsensitiveOption), "QS" },
 		{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SB" },
 		{ QRegularExpression("(^|[\\W])cha[-\\s]?cha(\\-?cha)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",   QRegularExpression::CaseInsensitiveOption), "CH" },
 		{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   QRegularExpression::CaseInsensitiveOption), "RU" },
