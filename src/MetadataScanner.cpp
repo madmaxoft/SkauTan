@@ -76,6 +76,29 @@ static bool isReasonableMpm(double a_Mpm)
 
 
 
+/** Scans the string from the start, removes anything non-alpha. */
+static QString stripBeginningNonAlpha(const QString & a_Input)
+{
+	int len = a_Input.length();
+	for (int i = 0; i < len; ++i)
+	{
+		if (a_Input[i].isLetter())
+		{
+			// If there are any digits in front, include them in the result:
+			while ((i > 0) && a_Input[i - 1].isLetterOrNumber())
+			{
+				--i;
+			}
+			return a_Input.mid(i, len - i);
+		}
+	}
+	return QString();
+}
+
+
+
+
+
 /** Attempts to find the genre and MPM in the specified string.
 Detects strings such as "SW" and "SW30". Any found matches are set into a_OutputTag.
 Returns the string excluding the genre / MPM substring. */
@@ -513,7 +536,8 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	}
 	fileBareName = extract(fileBareName, songTag);
 
-	// TODO: Remove a possible numerical prefix ("01 - ", "01." etc.)
+	// Remove a possible numerical prefix ("01 - ", "01.", "(01)" etc.)
+	fileBareName = stripBeginningNonAlpha(fileBareName);
 
 	// Try split into author - title:
 	auto idxSeparator = fileBareName.indexOf(" - ");
