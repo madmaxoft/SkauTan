@@ -159,7 +159,7 @@ void Player::fadeOut(Player::State a_FadeOutState)
 	m_State = a_FadeOutState;
 	if (m_AudioDataSource != nullptr)
 	{
-		m_AudioDataSource->fadeOut(4000);  // TODO: Settable FadeOut length
+		m_AudioDataSource->fadeOut(2000);  // TODO: Settable FadeOut length
 	}
 }
 
