@@ -91,8 +91,12 @@ public:
 		{
 		}
 
-		SharedData(const QByteArray & a_Hash):
-			m_Hash(a_Hash)
+		SharedData(
+			const QByteArray & a_Hash,
+			double a_Length
+		):
+			m_Hash(a_Hash),
+			m_Length(a_Length)
 		{
 		}
 

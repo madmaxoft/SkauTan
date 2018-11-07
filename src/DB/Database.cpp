@@ -2020,7 +2020,7 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 	if (itr == m_SongSharedData.end())
 	{
 		// Create new SharedData:
-		sharedData = std::make_shared<Song::SharedData>(a_Hash);
+		sharedData = std::make_shared<Song::SharedData>(a_Hash, a_Length);
 		m_SongSharedData[a_Hash] = sharedData;
 		saveSongSharedData(sharedData);  // Hash has been inserted above, so now can be updated
 	}
