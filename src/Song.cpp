@@ -262,6 +262,39 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 
 
 
+double Song::adjustMpm(double a_Input, const QString & a_Genre)
+{
+	auto mpmRange = competitionTempoRangeForGenre(a_Genre);
+	if (mpmRange.first < 0)
+	{
+		// No known competition range, don't adjust anything
+		return a_Input;
+	}
+
+	if (a_Input < mpmRange.second)
+	{
+		// Input is low enough, no adjustment needed
+		return a_Input;
+	}
+
+	// Half, third or quarter the input, if the result is in range:
+	double divisor[] = {2, 3, 4};
+	for (auto d: divisor)
+	{
+		if ((a_Input >= mpmRange.first * d) && (a_Input <= mpmRange.second * d))
+		{
+			return a_Input / d;
+		}
+	}
+
+	// No adjustment was valid, return unchanged:
+	return a_Input;
+}
+
+
+
+
+
 std::vector<Song *> Song::duplicates()
 {
 	return m_SharedData->duplicates();

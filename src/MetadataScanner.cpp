@@ -37,7 +37,8 @@ static void setOrClearProp(TagLib::PropertyMap & a_Props, const char * a_PropNam
 
 
 
-/** Any textual invalid variant in the specified tag gets replaced with an empty string. */
+/** Any textual invalid variant in the specified tag gets replaced with an empty string.
+Also adjusts MPM, based on the genre (if present). */
 static void validateSongTag(Song::Tag & a_Tag)
 {
 	if (a_Tag.m_Author.isEmpty())
@@ -52,7 +53,25 @@ static void validateSongTag(Song::Tag & a_Tag)
 	{
 		a_Tag.m_Genre = QString("");
 	}
+	else
+	{
+		// Valid genre, use it to adjust MPM, if needed:
+		if (a_Tag.m_MeasuresPerMinute.isPresent())
+		{
+			a_Tag.m_MeasuresPerMinute = Song::adjustMpm(a_Tag.m_MeasuresPerMinute.value(), a_Tag.m_Genre.value());
+		}
+	}
 }
+
+
+
+
+/** Returns whether the value is a reasonable MPM or BPM (in the (10, 300) range. */
+static bool isReasonableMpm(double a_Mpm)
+{
+	return (a_Mpm > 10) && (a_Mpm < 300);
+}
+
 
 
 
@@ -125,7 +144,7 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		}
 		bool isOK = false;
 		auto mpm = match.captured("mpm").toInt(&isOK);
-		if (isOK && (mpm > 0))
+		if (isOK && (mpm > 10) && (mpm < 300))
 		{
 			a_OutputTag.m_MeasuresPerMinute = mpm;
 		}
@@ -141,7 +160,7 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 
 
 /** Detects and removes MPM from the "[30 BPM]" substring.
-If the substring is found and song has no MPM set, it is set into the song.
+If the substring is found and the MPM is in the (10, 300) range, it is set into the song.
 Returns the input string after removing the potential match.
 Assumes that the match is not in the middle of "author - title", but rather at either end. */
 static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
@@ -152,7 +171,7 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 	{
 		bool isOK = false;
 		auto mpm = match.captured(2).toInt(&isOK);
-		if (isOK && (mpm > 0))
+		if (isOK && isReasonableMpm(mpm))
 		{
 			a_OutputTag.m_MeasuresPerMinute = mpm;
 		}
@@ -371,14 +390,23 @@ std::pair<bool, MetadataScanner::Tag> MetadataScanner::readTagFromFile(const QSt
 Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
 {
 	Song::Tag res;
-	if (a_FileTag.m_MeasuresPerMinute.isPresent())
-	{
-		res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
-	}
 	/* genre = */   extract(a_FileTag.m_Genre.valueOrDefault(), res);
 	/* comment = */ extract(a_FileTag.m_Comment.valueOrDefault(), res);
 	res.m_Author =  extract(a_FileTag.m_Author.valueOrDefault(), res);
 	res.m_Title =   extract(a_FileTag.m_Title.valueOrDefault(), res);
+	if (a_FileTag.m_MeasuresPerMinute.isPresent())
+	{
+		if (res.m_Genre.isPresent())
+		{
+			// Use genre to adjust from BPM to MPM:
+			res.m_MeasuresPerMinute = Song::adjustMpm(a_FileTag.m_MeasuresPerMinute.value(), res.m_Genre.value());
+		}
+		else
+		{
+			// No genre, cannot adjust
+			res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
+		}
+	}
 	return res;
 }
 
