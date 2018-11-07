@@ -1,98 +1,108 @@
 <!--These are templates exported from SkauTan. https://github.com/madmaxoft/SkauTan-->
 <SkauTanTemplates>
- <SkauTanTemplate bgColor="#cfffff" name="STT" notes="">
+ <SkauTanTemplate notes="" bgColor="#cfffff" name="STT">
   <items>
-   <item bgColor="#cfffff" isFavorite="1" name="SW 28 - 31" notes="">
+   <item notes="" bgColor="#cfffff" name="SW 28 - 31" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="SW"/>
-      <comparison songProperty="22" comparison="5" value="28"/>
-      <comparison songProperty="22" comparison="7" value="31"/>
+      <comparison comparison="0" value="SW" songProperty="21"/>
+      <comparison comparison="5" value="28" songProperty="22"/>
+      <comparison comparison="7" value="31" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#cfffff" isFavorite="1" name="TG 30 - 34" notes="">
+   <item notes="" bgColor="#cfffff" name="TG 30 - 34" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="TG"/>
-      <comparison songProperty="22" comparison="5" value="30"/>
-      <comparison songProperty="22" comparison="7" value="34"/>
+      <comparison comparison="0" value="TG" songProperty="21"/>
+      <comparison comparison="5" value="30" songProperty="22"/>
+      <comparison comparison="7" value="34" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#cfffff" isFavorite="1" name="VW 50 - 60" notes="">
+   <item notes="" bgColor="#cfffff" name="VW 50 - 60" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="VW"/>
-      <comparison songProperty="22" comparison="5" value="50"/>
-      <comparison songProperty="22" comparison="7" value="60"/>
+      <comparison comparison="0" value="VW" songProperty="21"/>
+      <comparison comparison="5" value="50" songProperty="22"/>
+      <comparison comparison="7" value="60" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#cfffff" isFavorite="1" name="SF 28 - 30" notes="">
+   <item notes="" bgColor="#cfffff" name="SF 28 - 30" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="SF"/>
-      <comparison songProperty="22" comparison="5" value="28"/>
-      <comparison songProperty="22" comparison="7" value="30"/>
+      <comparison comparison="0" value="SF" songProperty="21"/>
+      <comparison comparison="5" value="28" songProperty="22"/>
+      <comparison comparison="7" value="30" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#cfffff" isFavorite="1" name="QS 48 - 52" notes="">
+   <item notes="" bgColor="#cfffff" name="QS 48 - 52" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="QS"/>
-      <comparison songProperty="22" comparison="5" value="48"/>
-      <comparison songProperty="22" comparison="7" value="52"/>
+      <comparison comparison="0" value="QS" songProperty="21"/>
+      <comparison comparison="5" value="48" songProperty="22"/>
+      <comparison comparison="7" value="52" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
   </items>
  </SkauTanTemplate>
- <SkauTanTemplate bgColor="#ffffcf" name="LAT" notes="">
+ <SkauTanTemplate notes="" bgColor="#ffffcf" name="LAT">
   <items>
-   <item bgColor="#ffffcf" isFavorite="1" name="SB 48 - 52" notes="">
+   <item notes="" bgColor="#ffffcf" name="SB 48 - 52" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="SB"/>
-      <comparison songProperty="22" comparison="5" value="48"/>
-      <comparison songProperty="22" comparison="7" value="52"/>
+      <comparison comparison="0" value="SB" songProperty="21"/>
+      <comparison comparison="5" value="48" songProperty="22"/>
+      <comparison comparison="7" value="52" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#ffffcf" isFavorite="1" name="CH 28 - 33" notes="">
+   <item notes="" bgColor="#ffffcf" name="CH 28 - 33" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="CH"/>
-      <comparison songProperty="22" comparison="5" value="28"/>
-      <comparison songProperty="22" comparison="7" value="33"/>
+      <comparison comparison="0" value="CH" songProperty="21"/>
+      <comparison comparison="5" value="28" songProperty="22"/>
+      <comparison comparison="7" value="33" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#ffffcf" isFavorite="1" name="RU 24 - 29" notes="">
+   <item notes="" bgColor="#ffffcf" name="RU 24 - 29" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="RU"/>
-      <comparison songProperty="22" comparison="5" value="24"/>
-      <comparison songProperty="22" comparison="7" value="29"/>
+      <comparison comparison="0" value="RU" songProperty="21"/>
+      <comparison comparison="5" value="24" songProperty="22"/>
+      <comparison comparison="7" value="29" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#ffffcf" isFavorite="1" name="PD 56 - 62" notes="">
+   <item notes="" bgColor="#ffffcf" name="PD 56 - 62" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="PD"/>
-      <comparison songProperty="22" comparison="5" value="56"/>
-      <comparison songProperty="22" comparison="7" value="62"/>
+      <comparison comparison="0" value="PD" songProperty="21"/>
+      <comparison comparison="5" value="56" songProperty="22"/>
+      <comparison comparison="7" value="62" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
-   <item bgColor="#ffffcf" isFavorite="1" name="JI 38 - 44" notes="">
+   <item notes="" bgColor="#ffffcf" name="JI 38 - 44" isFavorite="1">
     <filter>
      <and>
-      <comparison songProperty="21" comparison="0" value="JI"/>
-      <comparison songProperty="22" comparison="5" value="38"/>
-      <comparison songProperty="22" comparison="7" value="44"/>
+      <comparison comparison="0" value="JI" songProperty="21"/>
+      <comparison comparison="5" value="38" songProperty="22"/>
+      <comparison comparison="7" value="44" songProperty="22"/>
+      <comparison comparison="0" value="0" songProperty="23"/>
      </and>
     </filter>
    </item>
