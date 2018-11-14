@@ -648,6 +648,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/Dlg/DlgLibraryMaintenance.cpp" line="61"/>
+        <source>SkauTan cannot export tags to file %1:
+
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/Dlg/DlgLibraryMaintenance.cpp" line="73"/>
         <source>SkauTan: Tags exported</source>
         <translation type="unfinished"></translation>
@@ -660,13 +667,6 @@
     <message>
         <location filename="../src/UI/Dlg/DlgLibraryMaintenance.cpp" line="86"/>
         <source>SkauTan: Cannot import tags</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgLibraryMaintenance.cpp" line="61"/>
-        <source>SkauTan cannot export tags to file %1:
-
-%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
