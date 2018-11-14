@@ -548,7 +548,7 @@ void DlgEditFilter::addNodeSibling()
 	if (parent == nullptr)
 	{
 		// Need to update filter's root
-		auto combinator = std::make_shared<Filter::Node>(Filter::Node::nkOr);
+		auto combinator = std::make_shared<Filter::Node>(Filter::Node::nkAnd);
 		combinator->addChild(curNode->shared_from_this());
 		m_Filter.setRootNode(combinator);
 		parent = combinator.get();
