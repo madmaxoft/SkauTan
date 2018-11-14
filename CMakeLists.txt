@@ -406,7 +406,7 @@ set_source_files_properties (
 	PROPERTIES COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/src/UI"
 )
 
-add_executable (${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI} ${RESOURCES} ${QMFILES})
+add_executable (${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${UI} ${RESOURCES} ${QMFILES})
 
 target_link_libraries (${PROJECT_NAME}
 	Qt5::Widgets
