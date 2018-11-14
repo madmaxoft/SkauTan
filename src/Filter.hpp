@@ -29,6 +29,8 @@ class Filter:
 	public QObject,
 	public std::enable_shared_from_this<Filter>
 {
+	Q_OBJECT
+
 public:
 
 

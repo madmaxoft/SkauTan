@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
 project (SkauTan LANGUAGES CXX)
 
 set (CMAKE_CXX_STANDARD 14)
 
-find_package (Qt5Widgets REQUIRED)
-find_package (Qt5Network REQUIRED)
-find_package (Qt5Sql REQUIRED)
-find_package (Qt5Xml REQUIRED)
-find_package (Qt5Multimedia REQUIRED)
+find_package (Qt5 COMPONENTS Widgets Network Sql Xml Multimedia LinguistTools REQUIRED)
+
 
 
 
@@ -353,7 +350,9 @@ if (WIN32)
 	list (APPEND RESOURCES res/win.rc)
 endif ()
 
-
+set (TSFILES
+	translations/SkauTan_cs.ts
+)
 
 # TODO: BeatDetectTest
 set (BEATDETECTTEST_SOURCES
@@ -363,13 +362,51 @@ set (BEATDETECTTEST_SOURCES
 
 
 
+
+
+# Process translations (update, compile):
+set(ts_lst_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ts_lst_file")
+set(lst_file_srcs)
+foreach(lst_file_src ${SOURCES} ${HEADERS} ${UI})
+	set(lst_file_srcs "${lst_file_src}\n${lst_file_srcs}")
+endforeach()
+file (WRITE ${ts_lst_file} "${lst_file_srcs}")
+
+add_custom_target(tsfiles
+	COMMENT "Updating TS files"
+	COMMAND "${Qt5_LUPDATE_EXECUTABLE}" ${_lupdate_options} @${ts_lst_file} -ts ${TSFILES}
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ts_byproduct_file"
+	DEPENDS ${SOURCES} ${HEADERS} ${TSFILES} VERBATIM
+	SOURCES ${TSFILES}
+)
+set (QMFILES "")
+foreach(_current_FILE ${TSFILES})
+	get_filename_component(_abs_FILE ${_current_FILE} ABSOLUTE)
+	get_filename_component(qm ${_abs_FILE} NAME)
+	# everything before the last dot has to be considered the file name (including other dots)
+	string(REGEX REPLACE "\\.[^.]*$" "" FILE_NAME ${qm})
+	set(qm "${CMAKE_CURRENT_BINARY_DIR}/translations/${FILE_NAME}.qm")
+
+	add_custom_command(OUTPUT ${qm}
+		COMMENT "Compiling QM files"
+		COMMAND ${Qt5_LRELEASE_EXECUTABLE}
+		ARGS ${_abs_FILE} -qm ${qm}
+		DEPENDS ${_abs_FILE} VERBATIM
+	)
+	list(APPEND QMFILES ${qm})
+endforeach()
+
+
+
+
 # Special handling: The WaveformDisplay.hpp file needs to be accessible from moc_PlayerWindow.h compiled from PlayerWindow.cpp:
 set_source_files_properties (
 	src/UI/PlayerWindow.cpp
 	PROPERTIES COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/src/UI"
 )
 
-add_executable (${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI} ${RESOURCES})
+add_executable (${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UI} ${RESOURCES} ${QMFILES})
 
 target_link_libraries (${PROJECT_NAME}
 	Qt5::Widgets
@@ -403,3 +440,5 @@ else ()
 		z
 	)
 endif ()
+
+add_dependencies(${PROJECT_NAME} tsfiles)

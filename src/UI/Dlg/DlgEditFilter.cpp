@@ -628,7 +628,7 @@ void DlgEditFilter::removeNode()
 	}
 	if (QMessageBox::question(
 		this,
-		tr("SkauTan - Remove filter node?"),
+		tr("SkauTan: Remove filter node?"),
 		questionText,
 		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
 	) == QMessageBox::No)
@@ -702,7 +702,7 @@ void DlgEditFilter::nodeSelectionChanged()
 void DlgEditFilter::updateFilterStats()
 {
 	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(m_Filter);
-	m_UI->lblMatchingSongCount->setText(tr("Matching songs: %n", "",numMatching));
+	m_UI->lblMatchingSongCount->setText(tr("Matching songs: %n", "", numMatching));
 }
 
 

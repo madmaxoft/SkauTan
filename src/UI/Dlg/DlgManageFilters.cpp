@@ -283,7 +283,7 @@ void DlgManageFilters::removeFilter()
 	}
 	if (QMessageBox::question(
 		this,
-		tr("SkauTan: Remove filter?"),
+		tr("SkauTan: Remove filter"),
 		tr("Are you sure you want to remove the selected filters? The filters will also be removed from any template that uses them."),
 		QMessageBox::Yes, QMessageBox::No
 	) != QMessageBox::Yes)

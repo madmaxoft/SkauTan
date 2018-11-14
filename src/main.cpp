@@ -36,11 +36,40 @@
 
 
 
+/** Loads translation for the specified locale from all reasonable locations.
+Returns true if successful, false on failure.
+Tries: resources, <curdir>/translations, <exepath>/translations. */
+static bool tryLoadTranslation(QTranslator & a_Translator, const QLocale & a_Locale)
+{
+	static const QString exePath = QCoreApplication::applicationDirPath();
+
+	if (a_Translator.load("SkauTan_" + a_Locale.name(), ":/translations"))
+	{
+		qDebug() << "Loaded translation " << a_Locale.name() << " from resources";
+		return true;
+	}
+	if (a_Translator.load("SkauTan_" + a_Locale.name(), "translations"))
+	{
+		qDebug() << "Loaded translation " << a_Locale.name() << " from current folder";
+		return true;
+	}
+	if (a_Translator.load("SkauTan_" + a_Locale.name(), exePath + "/translations"))
+	{
+		qDebug() << "Loaded translation " << a_Locale.name() << " from exe folder";
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
 void initTranslations(QApplication & a_App)
 {
 	auto translator = std::make_unique<QTranslator>();
 	auto locale = QLocale::system();
-	if (!translator->load("SkauTan_" + locale.name(), "translations"))
+	if (!tryLoadTranslation(*translator, locale))
 	{
 		qWarning() << "Could not load translations for locale " << locale.name() << ", trying all UI languages " << locale.uiLanguages();
 		if (!translator->load(locale, "SkauTan", "_", "translations"))
@@ -49,6 +78,7 @@ void initTranslations(QApplication & a_App)
 			return;
 		}
 	}
+	qDebug() << "Translator empty: " << translator->isEmpty();
 	a_App.installTranslator(translator.release());
 }
 

@@ -988,7 +988,7 @@ void PlayerWindow::savePlaylist()
 {
 	auto fileName = QFileDialog::getSaveFileName(
 		this,
-		tr("SkauTan: Save playlist:"),
+		tr("SkauTan: Save playlist"),
 		QString(),
 		tr("M3U playlist (*.m3u)")
 	);
@@ -1017,13 +1017,13 @@ void PlayerWindow::savePlaylist()
 		auto filter = si->filter();
 		if (filter != nullptr)
 		{
-			f.write(tr("#SKAUTAN:TMPL:%1:%2\n")
+			f.write(QString("#SKAUTAN:TMPL:%1:%2\n")
 				.arg(QString::fromUtf8(filter->hash().toHex()))
 				.arg(filter->displayName())
 				.toUtf8()
 			);
 		}
-		f.write(tr("#SKAUTAN:HASH:%1\n").arg(QString::fromUtf8(si->song()->hash().toHex())).toUtf8());
+		f.write(QString("#SKAUTAN:HASH:%1\n").arg(QString::fromUtf8(si->song()->hash().toHex())).toUtf8());
 		f.write(si->song()->fileName().toUtf8());
 		f.write("\n\n");
 	}
