@@ -77,7 +77,7 @@ void DlgTapTempo::addTimePoint(qint64 a_MSecElapsed)
 	m_UI->twMeasures->setRowCount(row + 1);
 	m_UI->twMeasures->setItem(row, 0, new QTableWidgetItem(QString::number(a_MSecElapsed)));
 	m_UI->twMeasures->setItem(row, 1, new QTableWidgetItem(formatMPM(tempo)));
-	m_UI->twMeasures->setItem(row, 2, new QTableWidgetItem(formatMPM(Song::foldTempoToMPM(tempo, m_Song->primaryGenre()))));
+	m_UI->twMeasures->setItem(row, 2, new QTableWidgetItem(formatMPM(Song::adjustMpm(tempo, m_Song->primaryGenre().valueOrDefault()))));
 	m_UI->twMeasures->resizeRowToContents(row);
 	auto overallMPM = detectMPM();
 	m_UI->lblDetectionResults->setText(tr("Detected average MPM: %1").arg(formatMPM(overallMPM)));
@@ -96,7 +96,7 @@ double DlgTapTempo::detectMPM()
 		sum += tp;
 	}
 	auto tempo = (static_cast<double>(m_TimePoints.size()) * 60000) / sum;
-	return Song::foldTempoToMPM(tempo, m_Song->primaryGenre());
+	return Song::adjustMpm(tempo, m_Song->primaryGenre().valueOrDefault());
 }
 
 
@@ -129,7 +129,7 @@ void DlgTapTempo::saveAndClose()
 {
 	if (!m_TimePoints.empty())
 	{
-		m_Song->setManualMeasuresPerMinute(detectMPM());
+		m_Song->setManualMeasuresPerMinute(static_cast<int>(detectMPM() * 10) / 10.0);
 		m_Components.get<Database>()->saveSong(m_Song);
 	}
 	reject();

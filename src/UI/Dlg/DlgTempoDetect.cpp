@@ -238,7 +238,7 @@ void DlgTempoDetect::updateHistoryRow(int a_Row)
 	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->m_Tempo)));
 	if (m_Song->primaryGenre().isPresent())
 	{
-		auto mpm = Song::foldTempoToMPM(res->m_Tempo, m_Song->primaryGenre());
+		auto mpm = Song::adjustMpm(res->m_Tempo, m_Song->primaryGenre().valueOrDefault());
 		m_UI->twDetectionHistory->setItem(a_Row, 9,  new QTableWidgetItem(QString::number(mpm, 'f', 1)));
 		auto btn = new QPushButton(tr("Use"));
 		m_UI->twDetectionHistory->setCellWidget(a_Row, 10, btn);
