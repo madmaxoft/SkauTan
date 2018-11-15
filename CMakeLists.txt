@@ -381,6 +381,7 @@ add_custom_target(tsfiles
 	SOURCES ${TSFILES}
 )
 set (QMFILES "")
+make_directory("${CMAKE_CURRENT_BINARY_DIR}/translations")
 foreach(_current_FILE ${TSFILES})
 	get_filename_component(_abs_FILE ${_current_FILE} ABSOLUTE)
 	get_filename_component(qm ${_abs_FILE} NAME)
