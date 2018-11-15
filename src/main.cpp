@@ -190,6 +190,9 @@ int main(int argc, char *argv[])
 		// Save the server state:
 		Settings::saveValue("LocalVoteServer", "isStarted", voteServer->isStarted());
 
+		// Stop all background tasks:
+		BackgroundTasks::get().stopAll();
+
 		return res;
 	}
 	catch (const Exception & exc)

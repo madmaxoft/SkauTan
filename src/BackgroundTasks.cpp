@@ -1,4 +1,5 @@
 #include "BackgroundTasks.hpp"
+#include <cassert>
 #include <QDebug>
 
 
@@ -29,25 +30,7 @@ BackgroundTasks::BackgroundTasks()
 
 BackgroundTasks::~BackgroundTasks()
 {
-	// Tell all executors to terminate:
-	qDebug() << "Terminating all executors...";
-	m_ShouldTerminate = true;
-	m_WaitForTasks.wakeAll();
-
-	// Wait for all executors to terminate:
-	qDebug() << "Waiting for all executors...";
-	for (auto & e: m_Executors)
-	{
-		e->wait();
-	}
-
-	// Abort all tasks left over in the queue:
-	qDebug() << "Aborting non-executed tasks.";
-	for (auto & t: m_Tasks)
-	{
-		t->abort();
-		emit taskAborted(t);
-	}
+	assert(m_ShouldTerminate.load());  // App must explicitly call stopAll() before exiting;
 }
 
 
@@ -135,6 +118,33 @@ const std::list<BackgroundTasks::TaskPtr> BackgroundTasks::tasks() const
 	QMutexLocker lock(&m_Mtx);
 	std::list<TaskPtr> res(m_Tasks);
 	return res;
+}
+
+
+
+
+
+void BackgroundTasks::stopAll()
+{
+	// Tell all executors to terminate:
+	qDebug() << "Terminating all executors...";
+	m_ShouldTerminate = true;
+	m_WaitForTasks.wakeAll();
+
+	// Wait for all executors to terminate:
+	qDebug() << "Waiting for all executors...";
+	for (auto & e: m_Executors)
+	{
+		e->wait();
+	}
+
+	// Abort all tasks left over in the queue:
+	qDebug() << "Aborting non-executed tasks.";
+	for (auto & t: m_Tasks)
+	{
+		t->abort();
+		emit taskAborted(t);
+	}
 }
 
 

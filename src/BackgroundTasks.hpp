@@ -91,6 +91,10 @@ public:
 
 	const std::list<TaskPtr> tasks() const;
 
+	/** Aborts all tasks that haven't started yet, and waits for all current tasks to finish.
+	This is to be called before program shutdown so that tasks terminate in a defined way. */
+	void stopAll();
+
 
 protected:
 

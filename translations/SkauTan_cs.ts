@@ -2791,12 +2791,12 @@ Tato operace je nevratná!</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="199"/>
+        <location filename="../src/main.cpp" line="202"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="200"/>
+        <location filename="../src/main.cpp" line="203"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
