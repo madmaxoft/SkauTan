@@ -306,6 +306,17 @@ void Player::setTempo(qreal a_NewTempo)
 
 void Player::nextTrack()
 {
+	if (m_State == psFadeOutToTrack)
+	{
+		// Already fading out to a track, abort the fade-out:
+		auto ads = m_AudioDataSource;
+		if (ads != nullptr)
+		{
+			ads->fadeOut(1);
+		}
+		return;
+	}
+
 	if (!m_Playlist->nextItem())
 	{
 		// There's no next track in the playlist
@@ -344,6 +355,17 @@ void Player::nextTrack()
 
 void Player::prevTrack()
 {
+	if (m_State == psFadeOutToTrack)
+	{
+		// Already fading out to a track, abort the fade-out:
+		auto ads = m_AudioDataSource;
+		if (ads != nullptr)
+		{
+			ads->fadeOut(1);
+		}
+		return;
+	}
+
 	if (!m_Playlist->prevItem())
 	{
 		// There's no prev track in the playlist
@@ -475,11 +497,33 @@ void Player::pausePlayback()
 
 void Player::stopPlayback()
 {
-	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
+	switch (m_State)
 	{
-		return;
+		case psPlaying:
+		case psStartingPlayback:
+		{
+			fadeOut(psFadeOutToStop);
+			break;
+		}
+		case psFadeOutToStop:
+		case psFadeOutToTrack:
+		{
+			// Stop completely without finishing the fadeout
+			qDebug() << "Stopping playback immediately";
+			auto ads = m_AudioDataSource;
+			if (ads != nullptr)
+			{
+				ads->fadeOut(1);
+			}
+			break;
+		}
+		case psStopped:
+		case psPaused:
+		{
+			// Do nothing, already stopped
+			break;
+		}
 	}
-	fadeOut(psFadeOutToStop);
 }
 
 
@@ -713,7 +757,7 @@ void Player::OutputThread::run()
 				}
 				else
 				{
-					m_Player.pausePlayback();
+					m_Player.stopPlayback();
 				}
 			}
 		}
