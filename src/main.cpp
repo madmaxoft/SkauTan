@@ -30,6 +30,7 @@
 #if defined(_MSC_VER) && defined(FORCE_STATIC_RUNTIME)
 	#include <QtPlugin>
 	Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+	Q_IMPORT_PLUGIN(QSQLiteDriverPlugin)
 #endif
 
 

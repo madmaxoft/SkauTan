@@ -57,6 +57,7 @@ if (MSVC)
 			${QT_LIB_PATH}/Qt5ThemeSupport.lib
 			${QT_LIB_PATH}/Qt5AccessibilitySupport.lib
 			${CMAKE_PREFIX_PATH}/plugins/platforms/qwindows.lib
+			${CMAKE_PREFIX_PATH}/plugins/sqldrivers/qsqlite.lib
 		)
 		add_definitions(-DFORCE_STATIC_RUNTIME)
 	endif ()
