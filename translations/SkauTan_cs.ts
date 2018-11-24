@@ -2792,6 +2792,7 @@ Tato operace je nevratná!</translation>
     </message>
     <message>
         <location filename="../src/main.cpp" line="202"/>
+        <location filename="../src/main.cpp" line="211"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
@@ -2803,6 +2804,11 @@ Tato operace je nevratná!</translation>
         <translation>SkauTan detekoval chybu:
 
 %1</translation>
+    </message>
+    <message>
+        <location filename="../src/main.cpp" line="212"/>
+        <source>SkauTan has detected an unknown fatal error. Use a debugger to view detailed runtime log.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

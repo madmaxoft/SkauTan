@@ -195,12 +195,21 @@ int main(int argc, char *argv[])
 
 		return res;
 	}
-	catch (const Exception & exc)
+	catch (const std::exception & exc)
 	{
 		QMessageBox::warning(
 			nullptr,
 			QApplication::tr("SkauTan: Fatal error"),
 			QApplication::tr("SkauTan has detected a fatal error:\n\n%1").arg(exc.what())
+		);
+		return -1;
+	}
+	catch (...)
+	{
+		QMessageBox::warning(
+			nullptr,
+			QApplication::tr("SkauTan: Fatal error"),
+			QApplication::tr("SkauTan has detected an unknown fatal error. Use a debugger to view detailed runtime log.")
 		);
 		return -1;
 	}
