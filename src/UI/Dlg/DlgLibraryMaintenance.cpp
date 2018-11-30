@@ -58,7 +58,7 @@ void DlgLibraryMaintenance::tagExportError(const QString & a_FileName, const QSt
 	QMessageBox::warning(
 		this,
 		tr("SkauTan: Cannot export tags"),
-		tr("SkauTan cannot export tags to file %1:\r\n\r\n%2").arg(a_FileName).arg(a_Error)
+		tr("SkauTan cannot export tags to file %1:\n\n%2").arg(a_FileName).arg(a_Error)
 	);
 }
 
@@ -84,7 +84,7 @@ void DlgLibraryMaintenance::tagImportError(const QString & a_FileName, const QSt
 	QMessageBox::warning(
 		this,
 		tr("SkauTan: Cannot import tags"),
-		tr("SkauTan cannot import tags from file %1:\r\n\r\n%2").arg(a_FileName).arg(a_Error)
+		tr("SkauTan cannot import tags from file %1:\n\n%2").arg(a_FileName).arg(a_Error)
 	);
 }
 
