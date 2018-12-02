@@ -205,6 +205,10 @@ private slots:
 	Asks for filename, then saves the current playlist into the file. */
 	void savePlaylist();
 
+	/** Emitted when the user selects Load Playlist from the Tools menu.
+	Asks for filename, then loads the playlist from the file and inserts it after the current selection. */
+	void loadPlaylist();
+
 	/** Toggles the LocalVoteServer on or off. */
 	void toggleLvs();
 

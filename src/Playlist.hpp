@@ -95,6 +95,10 @@ public:
 	If the index is out of bounds, appends the item to the end of the playlist. */
 	void insertItem(int a_Index, IPlaylistItemPtr a_Item);
 
+	/** Inserts the specified items so that the first of them is at the specified index.
+	If the index is out of bounds, appends the items to the end of the playlist. */
+	void insertItems(int a_Index, const std::vector<IPlaylistItemPtr> & a_Items);
+
 	/** Returns true if the current item is the last in the playlist. */
 	bool isAtEnd() const;
 

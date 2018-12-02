@@ -390,6 +390,41 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 
 
 
+SongPtr Database::songFromHash(const QByteArray & a_SongHash)
+{
+	auto sd = m_SongSharedData.find(a_SongHash);
+	if (sd == m_SongSharedData.end())
+	{
+		return nullptr;
+	}
+	auto dups = sd->second->duplicates();
+	if (dups.empty())
+	{
+		return nullptr;
+	}
+	return dups[0]->shared_from_this();
+}
+
+
+
+
+
+SongPtr Database::songFromFileName(const QString a_SongFileName)
+{
+	for (const auto & song: m_Songs)
+	{
+		if (song->fileName() == a_SongFileName)
+		{
+			return song;
+		}
+	}
+	return nullptr;
+}
+
+
+
+
+
 TemplatePtr Database::createTemplate()
 {
 	auto res = std::make_shared<Template>(-1);
@@ -840,6 +875,22 @@ void Database::saveFilter(const Filter & a_Filter)
 
 	// Re-add all filter's nodes into the DB:
 	saveFilterNodes(a_Filter.dbRowId(), *a_Filter.rootNode(), -1);
+}
+
+
+
+
+
+FilterPtr Database::filterFromHash(const QByteArray & a_FilterHash)
+{
+	for (const auto & filter: m_Filters)
+	{
+		if (filter->hash() == a_FilterHash)
+		{
+			return filter;
+		}
+	}
+	return nullptr;
 }
 
 

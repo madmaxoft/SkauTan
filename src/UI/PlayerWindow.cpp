@@ -19,6 +19,7 @@
 #include "../Utils.hpp"
 #include "../DJControllers.hpp"
 #include "../LocalVoteServer.hpp"
+#include "../PlaylistImportExport.hpp"
 #include "Dlg/DlgSongs.hpp"
 #include "Dlg/DlgTemplatesList.hpp"
 #include "Dlg/DlgHistory.hpp"
@@ -107,6 +108,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actImportDB,            &QAction::triggered,                   this,         &PlayerWindow::importDB);
 	connect(m_UI->actLibraryMaintenance,  &QAction::triggered,                   this,         &PlayerWindow::showLibraryMaintenance);
 	connect(m_UI->actSavePlaylist,        &QAction::triggered,                   this,         &PlayerWindow::savePlaylist);
+	connect(m_UI->actLoadPlaylist,        &QAction::triggered,                   this,         &PlayerWindow::loadPlaylist);
 	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
 	connect(m_UI->actLvsStatus,           &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
 	connect(m_UI->lwQuickPlay,            &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayItemClicked);
@@ -166,6 +168,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addAction(m_UI->actLibraryMaintenance);
 	menu->addSeparator();
 	menu->addAction(m_UI->actSavePlaylist);
+	menu->addAction(m_UI->actLoadPlaylist);
 	menu->addSeparator();
 	menu->addAction(m_UI->actToggleLvs);
 	menu->addAction(m_UI->actLvsStatus);
@@ -186,6 +189,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actImportDB,
 		m_UI->actLibraryMaintenance,
 		m_UI->actSavePlaylist,
+		m_UI->actLoadPlaylist,
 		m_UI->actToggleLvs,
 		m_UI->actLvsStatus,
 	});
@@ -996,36 +1000,51 @@ void PlayerWindow::savePlaylist()
 	{
 		return;
 	}
-	QFile f(fileName);
-	if (!f.open(QFile::ReadWrite))
+	try
+	{
+		PlaylistImportExport::doExport(m_Components.get<Player>()->playlist(), fileName);
+	}
+	catch (const std::exception & exc)
 	{
 		QMessageBox::warning(
 			this,
-			tr("SkauTan: Cannot write file"),
-			tr("Cannot write to file %1, playlist NOT saved.").arg(fileName)
+			tr("SkauTan: Cannot save playlist"),
+			tr("Cannot save playlist to file %1: %2").arg(fileName).arg(exc.what())
 		);
+	}
+}
+
+
+
+
+
+void PlayerWindow::loadPlaylist()
+{
+	auto fileName = QFileDialog::getOpenFileName(
+		this,
+		tr("SkauTan: Load playlist"),
+		QString(),
+		tr("M3U playlist (*.m3u)")
+	);
+	if (fileName.isEmpty())
+	{
 		return;
 	}
-	f.write("#EXTM3U\n");
-	for (const auto & i: m_Components.get<Player>()->playlist().items())
+	try
 	{
-		auto si = std::dynamic_pointer_cast<PlaylistItemSong>(i);
-		if (si == nullptr)
-		{
-			continue;
-		}
-		auto filter = si->filter();
-		if (filter != nullptr)
-		{
-			f.write(QString("#SKAUTAN:TMPL:%1:%2\n")
-				.arg(QString::fromUtf8(filter->hash().toHex()))
-				.arg(filter->displayName())
-				.toUtf8()
-			);
-		}
-		f.write(QString("#SKAUTAN:HASH:%1\n").arg(QString::fromUtf8(si->song()->hash().toHex())).toUtf8());
-		f.write(si->song()->fileName().toUtf8());
-		f.write("\n\n");
+		auto & playlist = m_Components.get<Player>()->playlist();
+		const auto & selRows = m_UI->tblPlaylist->selectionModel()->selectedRows();
+		auto pos = selRows.empty() ? static_cast<int>(playlist.items().size()) - 1 : selRows[0].row();
+		auto numInserted = PlaylistImportExport::doImport(playlist, *(m_Components.get<Database>()), pos, fileName);
+		m_UI->tblPlaylist->selectRow(pos + numInserted);
+	}
+	catch (const std::exception & exc)
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Cannot load playlist"),
+			tr("Cannot save playlist to file %1: %2").arg(fileName).arg(exc.what())
+		);
 	}
 }
 
