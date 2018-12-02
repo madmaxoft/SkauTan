@@ -679,6 +679,14 @@
     <string>Opens a dialog with tools forlibrary maintenance</string>
    </property>
   </action>
+  <action name="actLoadPlaylist">
+   <property name="text">
+    <string>&amp;Load playlist...</string>
+   </property>
+   <property name="toolTip">
+    <string>Load a playlist from a file, insert after the current selection</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

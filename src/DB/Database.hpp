@@ -87,6 +87,14 @@ public:
 	Note that the SongSharedData entry is kept, in case there are duplicates or the song is re-added later on. */
 	void removeSong(const Song & a_Song, bool a_DeleteDiskFile);
 
+	/** Returns the song with the specified hash (picks random one if there are multiple).
+	Returns nullptr if there is no such song. */
+	SongPtr songFromHash(const QByteArray & a_SongHash);
+
+	/** Returns the song with the specified filename.
+	Returns nullptr if there is no such song. */
+	SongPtr songFromFileName(const QString a_SongFileName);
+
 	/** Returns all templates stored in the DB, in the order dictated by their Position. */
 	const std::vector<TemplatePtr> & templates() const { return m_Templates; }
 
@@ -141,6 +149,11 @@ public:
 
 	/** Saves the specified filter into the DB. */
 	void saveFilter(const Filter & a_Filter);
+
+	/** Returns the filter that has the specified hash.
+	If there are multiple filters with the hash, returns a random one.
+	Returns nullptr if there's no such filter. */
+	FilterPtr filterFromHash(const QByteArray & a_FilterHash);
 
 	/** Returns all the filters that have been marked as "favorite". */
 	std::vector<FilterPtr> getFavoriteFilters() const;

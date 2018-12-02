@@ -238,8 +238,10 @@ set (SOURCES
 	src/InstallConfiguration.cpp
 	src/LengthHashCalculator.cpp
 	src/LocalVoteServer.cpp
+	src/main.cpp
 	src/MetadataScanner.cpp
 	src/Playlist.cpp
+	src/PlaylistImportExport.cpp
 	src/PlaylistItemSong.cpp
 	src/Settings.cpp
 	src/Song.cpp
@@ -247,7 +249,6 @@ set (SOURCES
 	src/Template.cpp
 	src/TempoDetector.cpp
 	src/Utils.cpp
-	src/main.cpp
 )
 
 
@@ -315,6 +316,7 @@ set (HEADERS
 	src/LocalVoteServer.hpp
 	src/MetadataScanner.hpp
 	src/Playlist.hpp
+	src/PlaylistImportExport.hpp
 	src/PlaylistItemSong.hpp
 	src/Settings.hpp
 	src/Song.hpp

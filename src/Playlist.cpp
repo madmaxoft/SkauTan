@@ -291,6 +291,19 @@ void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
 
 
 
+void Playlist::insertItems(int a_Index, const std::vector<IPlaylistItemPtr> & a_Items)
+{
+	for (const auto & item: a_Items)
+	{
+		insertItem(a_Index, item);
+		a_Index += 1;
+	}
+}
+
+
+
+
+
 bool Playlist::isAtEnd() const
 {
 	return (m_CurrentItemIdx == static_cast<int>(m_Items.size()) - 1);
