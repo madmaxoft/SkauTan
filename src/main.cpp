@@ -26,9 +26,10 @@
 
 
 // From http://stackoverflow.com/a/27807379
-// When linking statically with CMake + MSVC, we need to add the platform plugin
+// When linking statically with CMake + MSVC, we need to add the Qt plugins' initializations:
 #if defined(_MSC_VER) && defined(FORCE_STATIC_RUNTIME)
 	#include <QtPlugin>
+	Q_IMPORT_PLUGIN(QWindowsAudioPlugin)
 	Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
 	Q_IMPORT_PLUGIN(QSQLiteDriverPlugin)
 #endif
