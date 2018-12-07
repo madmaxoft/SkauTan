@@ -48,6 +48,7 @@ if (MSVC)
 			userenv.lib
 			version.lib
 			dwmapi.lib
+			strmiids.lib
 			${QT_LIB_PATH}/qtfreetype.lib
 			${QT_LIB_PATH}/qtharfbuzz.lib
 			${QT_LIB_PATH}/qtlibpng.lib
@@ -56,6 +57,7 @@ if (MSVC)
 			${QT_LIB_PATH}/Qt5EventDispatcherSupport.lib
 			${QT_LIB_PATH}/Qt5ThemeSupport.lib
 			${QT_LIB_PATH}/Qt5AccessibilitySupport.lib
+			${CMAKE_PREFIX_PATH}/plugins/audio/qtaudio_windows.lib
 			${CMAKE_PREFIX_PATH}/plugins/platforms/qwindows.lib
 			${CMAKE_PREFIX_PATH}/plugins/sqldrivers/qsqlite.lib
 		)
