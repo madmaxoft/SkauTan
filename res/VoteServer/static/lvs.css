@@ -75,6 +75,11 @@ div
 	grid-area: votePopHdr;
 }
 
+.voteButton
+{
+	margin: 3px;
+}
+
 .mpm
 {
 	grid-area: mpm;
