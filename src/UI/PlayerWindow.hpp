@@ -232,6 +232,9 @@ private slots:
 
 	/** Shows the status dialog for the LocalVoteServer. */
 	void showLvsStatus();
+
+	/** Shows the DebugLog dialog. */
+	void showDebugLog();
 };
 
 

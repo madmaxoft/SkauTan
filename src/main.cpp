@@ -20,6 +20,7 @@
 #include "DJControllers.hpp"
 #include "LocalVoteServer.hpp"
 #include "InstallConfiguration.hpp"
+#include "DebugLogger.hpp"
 
 
 
@@ -116,6 +117,9 @@ void importDefaultTemplates(Database & a_DB)
 
 int main(int argc, char *argv[])
 {
+	// Initialize the DebugLogger:
+	DebugLogger::get();
+
 	QApplication app(argc, argv);
 
 	try

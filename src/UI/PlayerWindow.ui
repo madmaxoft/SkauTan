@@ -687,6 +687,14 @@
     <string>Load a playlist from a file, insert after the current selection</string>
    </property>
   </action>
+  <action name="actShowDebugLog">
+   <property name="text">
+    <string>Show DebugLog...</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows the debug messages recorded so far</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
