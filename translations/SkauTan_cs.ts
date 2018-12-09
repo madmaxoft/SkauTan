@@ -123,6 +123,49 @@
     </message>
 </context>
 <context>
+    <name>DlgDebugLog</name>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="14"/>
+        <source>SkauTan: DebugLog</source>
+        <translation>SkauTan: DebugLog</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="42"/>
+        <source>Date</source>
+        <translation>Datum</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="47"/>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="52"/>
+        <source>File</source>
+        <translation>Soubor</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="57"/>
+        <source>Function</source>
+        <translation>Funkce</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="62"/>
+        <source>Line</source>
+        <translation>Řádek</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="67"/>
+        <source>Message</source>
+        <translation>Zpráva</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgDebugLog.ui" line="90"/>
+        <source>&amp;Close</source>
+        <translation>&amp;Zavřít</translation>
+    </message>
+</context>
+<context>
     <name>DlgEditFilter</name>
     <message>
         <location filename="../src/UI/Dlg/DlgEditFilter.ui" line="14"/>
@@ -994,7 +1037,7 @@
     <message>
         <location filename="../src/UI/Dlg/DlgRemovedSongs.ui" line="36"/>
         <source>Date</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Datum</translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgRemovedSongs.ui" line="41"/>
@@ -2632,21 +2675,31 @@ Tato operace je nevratná!</translation>
         <translation>Načte playlist ze souboru a vloží jej za aktuálně označenou skladbu</translation>
     </message>
     <message>
+        <location filename="../src/UI/PlayerWindow.ui" line="692"/>
+        <source>Show DebugLog...</source>
+        <translation>Zobrazit DebugLog...</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/PlayerWindow.ui" line="695"/>
+        <source>Shows the debug messages recorded so far</source>
+        <translation>Zobrazí dialog s výpisem ladících zpráv</translation>
+    </message>
+    <message>
         <source>Background tasks</source>
         <translation type="vanished">Úlohy na pozadí</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="287"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="292"/>
         <source>Songs: %1</source>
         <translation>Skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="677"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="682"/>
         <source>SkauTan: Delete songs?</source>
         <translation>SkauTan: vymazat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="678"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="683"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2655,12 +2708,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="712"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="717"/>
         <source>SkauTan: Remove songs?</source>
         <translation>SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="713"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="718"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2669,38 +2722,38 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="827"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="832"/>
         <source>SkauTan: Set duration limit</source>
         <translation>SkauTan: Nastavit limit</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="828"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="833"/>
         <source>New duration:</source>
         <translation>Nový limit:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="995"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1000"/>
         <source>SkauTan: Save playlist</source>
         <translation>SkauTan: Uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1011"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1016"/>
         <source>SkauTan: Cannot save playlist</source>
         <translation>SkauTan: Nelze uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1012"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1046"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1017"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1051"/>
         <source>Cannot save playlist to file %1: %2</source>
         <translation>Nelze uložit playlist do souboru %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1025"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1030"/>
         <source>SkauTan: Load playlist</source>
         <translation>SkauTan: Načíst playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1045"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1050"/>
         <source>SkauTan: Cannot load playlist</source>
         <translation>SkauTan: Nelze načíst playlist</translation>
     </message>
@@ -2709,8 +2762,8 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">SkauTan: Uložit playlist:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="997"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1027"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1002"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1032"/>
         <source>M3U playlist (*.m3u)</source>
         <translation>Playlist M3U (*.m3u)</translation>
     </message>
@@ -2827,25 +2880,25 @@ Tato operace je nevratná!</translation>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/main.cpp" line="99"/>
+        <location filename="../src/main.cpp" line="100"/>
         <source>SkauTan: Error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="100"/>
+        <location filename="../src/main.cpp" line="101"/>
         <source>Cannot import default templates, the definition file is inaccessible.
 %1</source>
         <translation>Nelze importovat vestavěné šablony, definice není přístupná.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="204"/>
-        <location filename="../src/main.cpp" line="213"/>
+        <location filename="../src/main.cpp" line="208"/>
+        <location filename="../src/main.cpp" line="217"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="205"/>
+        <location filename="../src/main.cpp" line="209"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
@@ -2854,7 +2907,7 @@ Tato operace je nevratná!</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="214"/>
+        <location filename="../src/main.cpp" line="218"/>
         <source>SkauTan has detected an unknown fatal error. Use a debugger to view detailed runtime log.</source>
         <translation>SkauTan detekoval neznámou chybu. Použijte debugger pro zobrazení detailního logu.</translation>
     </message>

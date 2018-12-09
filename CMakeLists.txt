@@ -186,6 +186,12 @@ endif ()
 add_definitions(-DQT_DEPRECATED_WARNINGS)
 add_definitions(-DTAGLIB_STATIC)
 
+# Enable message log context information even in Release builds:
+add_definitions(-DQT_MESSAGELOGCONTEXT)
+
+
+
+
 
 set (SOURCES
 	# Audio-related sources:
@@ -218,6 +224,7 @@ set (SOURCES
 	# UI Dialog-related sources:
 	src/UI/Dlg/DlgBackgroundTaskList.cpp
 	src/UI/Dlg/DlgChooseImportTemplates.cpp
+	src/UI/Dlg/DlgDebugLog.cpp
 	src/UI/Dlg/DlgEditFilter.cpp
 	src/UI/Dlg/DlgHistory.cpp
 	src/UI/Dlg/DlgImportDB.cpp
@@ -235,6 +242,7 @@ set (SOURCES
 	# Other sources:
 	src/BackgroundTasks.cpp
 	src/ComponentCollection.cpp
+	src/DebugLogger.cpp
 	src/DJControllers.cpp
 	src/Filter.cpp
 	src/InstallConfiguration.cpp
@@ -291,6 +299,7 @@ set (HEADERS
 	# UI Dialog-related headers:
 	src/UI/Dlg/DlgBackgroundTaskList.hpp
 	src/UI/Dlg/DlgChooseImportTemplates.hpp
+	src/UI/Dlg/DlgDebugLog.hpp
 	src/UI/Dlg/DlgEditFilter.hpp
 	src/UI/Dlg/DlgHistory.hpp
 	src/UI/Dlg/DlgImportDB.hpp
@@ -308,6 +317,7 @@ set (HEADERS
 	# Other headers:
 	src/BackgroundTasks.hpp
 	src/ComponentCollection.hpp
+	src/DebugLogger.hpp
 	src/DJControllers.hpp
 	src/DatedOptional.hpp
 	src/Exception.hpp
@@ -332,6 +342,7 @@ set (UI
 	src/UI/PlayerWindow.ui
 	src/UI/Dlg/DlgBackgroundTaskList.ui
 	src/UI/Dlg/DlgChooseImportTemplates.ui
+	src/UI/Dlg/DlgDebugLog.ui
 	src/UI/Dlg/DlgEditFilter.ui
 	src/UI/Dlg/DlgHistory.ui
 	src/UI/Dlg/DlgImportDB.ui

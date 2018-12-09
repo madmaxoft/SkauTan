@@ -30,6 +30,7 @@
 #include "Dlg/DlgImportDB.hpp"
 #include "Dlg/DlgLvsStatus.hpp"
 #include "Dlg/DlgLibraryMaintenance.hpp"
+#include "Dlg/DlgDebugLog.hpp"
 
 
 
@@ -111,6 +112,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->actLoadPlaylist,        &QAction::triggered,                   this,         &PlayerWindow::loadPlaylist);
 	connect(m_UI->actToggleLvs,           &QAction::triggered,                   this,         &PlayerWindow::toggleLvs);
 	connect(m_UI->actLvsStatus,           &QAction::triggered,                   this,         &PlayerWindow::showLvsStatus);
+	connect(m_UI->actShowDebugLog,        &QAction::triggered,                   this,         &PlayerWindow::showDebugLog);
 	connect(m_UI->lwQuickPlay,            &QListWidget::itemClicked,             this,         &PlayerWindow::quickPlayItemClicked);
 	connect(m_PlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(m_UI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
@@ -172,6 +174,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	menu->addSeparator();
 	menu->addAction(m_UI->actToggleLvs);
 	menu->addAction(m_UI->actLvsStatus);
+	menu->addSeparator();
+	menu->addAction(m_UI->actShowDebugLog);
 	m_UI->btnTools->setMenu(menu);
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
@@ -192,6 +196,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 		m_UI->actLoadPlaylist,
 		m_UI->actToggleLvs,
 		m_UI->actLvsStatus,
+		m_UI->actShowDebugLog,
 	});
 
 	refreshQuickPlay();
@@ -1140,5 +1145,15 @@ void PlayerWindow::djControllerNavigateDown()
 void PlayerWindow::showLvsStatus()
 {
 	DlgLvsStatus dlg(m_Components, this);
+	dlg.exec();
+}
+
+
+
+
+
+void PlayerWindow::showDebugLog()
+{
+	DlgDebugLog dlg(this);
 	dlg.exec();
 }
