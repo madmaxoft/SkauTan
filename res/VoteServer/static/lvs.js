@@ -31,13 +31,11 @@ function appendVoteButtons(a_Parent, a_SongHash, a_RatingCategory, a_Class)
 	var i;
 	for (i = 5; i >= 1; --i)
 	{
-		var btn = document.createElement("button");
-		btn.setAttribute("class", "voteButton");
 		var img = document.createElement("img");
 		img.setAttribute("src", "static/voteButton" + i + ".png")
-		btn.appendChild(img);
-		btn.setAttribute("OnClick", "vote(this, \"" + a_SongHash + "\", \"" + a_RatingCategory + "\", " + i + ")");
-		div.appendChild(btn);
+		img.setAttribute("class", "voteButton")
+		img.setAttribute("OnClick", "vote(this, \"" + a_SongHash + "\", \"" + a_RatingCategory + "\", " + i + ")");
+		div.appendChild(img);
 	}
 	a_Parent.appendChild(div);
 }
@@ -113,12 +111,11 @@ a_VoteValue is the actual vote to be sent (1 - 5). */
 function vote(a_Button, a_SongHash, a_VoteType, a_VoteValue)
 {
 	// Highlight and disable the button for a while:
-	var oldColor = a_Button.style.backgroundColor;
-	a_Button.style.backgroundColor = '#0000ff';
+	a_Button.style.opacity = '0.5';
 	a_Button.enabled = false
 	setTimeout(function()
 	{
-		a_Button.style.backgroundColor = oldColor;
+		a_Button.style.opacity = '1';
 		a_Button.enabled = false;
 	}, 1000);
 
