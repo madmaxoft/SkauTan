@@ -1,12 +1,12 @@
 --[[
 
-Runs BeatDetectTest on multiple files with known MPM, checks the detected tempo against the known MPM
+Runs BeatDetectCmd on multiple files with known MPM, checks the detected tempo against the known MPM
 
 Usage:
-MultiTest.lua [-d c:\path\to\BeatDetectTest.exe] [-l c:\path\to\filelist.txt]
+MultiTest.lua [-d c:\path\to\BeatDetectCmd.exe] [-l c:\path\to\filelist.txt]
 
 Reads the list of songfiles to run detection on from filelist.txt (each line is a single filename).
-Runs the specified executable (BeatDetectTest[.exe] in current folder if not given) on each songfile.
+Runs the specified executable (BeatDetectCmd[.exe] in current folder if not given) on each songfile.
 Multiple list files can be given. If none was given, reads filelist.txt from current folder
 --]]
 
@@ -20,28 +20,28 @@ local WINDOW_SIZE = 1024
 local STRIDE = 512
 
 local isWindows = (string.sub(package.config or "", 1, 1) == "\\")
-local beatDetectTextExe = isWindows and "BeatDetectTest.exe" or "BeatDetectTest"
+local beatDetectCmdExe = isWindows and "BeatDetectCmd.exe" or "BeatDetectCmd"
 
 
 
 
 
 --- Runs the detection on a single song
--- Returns an array-table of the detected MPMs and their confidences ({array of {mpm = .., confidence = ..}})
+--[[ Returns a table of the detected values, as returned from BeatDetectCmd:
+{
+	fileName = "file.mp3",
+	confidences = { {mpm, confidence}, ... },
+	histogram = { {mpm, count}, ... },
+	beats = { {beat index, sound-level}, ... },
+}
+--]]
 local function runDetection(a_SongFileName)
 	assert(type(a_SongFileName) == "string")
 
-	local cmdLine = beatDetectTextExe .. " -w " .. WINDOW_SIZE .. " -s " .. STRIDE .. " \"" .. a_SongFileName .. "\""
-	local res = {}
-	for line in io.popen(cmdLine):lines() do
-		if (string.sub(line, 1, 2) == "  ") then
-			local mpm, confidence = string.match(line, "(%d+)%s*:%s*(%d+)")
-			if (mpm and confidence) then
-				table.insert(res, {mpm = tonumber(mpm), confidence = tonumber(confidence)})
-			end
-		end
-	end
-	return res
+	local cmdLine = beatDetectCmdExe .. " -i -w " .. WINDOW_SIZE .. " -s " .. STRIDE .. " \"" .. a_SongFileName .. "\""
+	local detectionResult = assert(io.popen(cmdLine)):read("*a")
+	local res = assert(loadstring(detectionResult))
+	return res()
 end
 
 
@@ -75,10 +75,10 @@ local function processParams(a_Args)
 		if ((arg == "-d") or (arg == "-D")) then
 			i = i + 1
 			if (i < numArgs) then
-				print("Invalid commandline argument: -d requires a following argument specifying the BeatDetectTest.exe executable location.")
+				print("Invalid commandline argument: -d requires a following argument specifying the BeatDetectCmd.exe executable location.")
 				return res
 			end
-			beatDetectTextExe = a_Args[i]
+			beatDetectCmdExe = a_Args[i]
 		elseif ((arg == "-l") or (arg == "-L")) then
 			i = i + 1
 			if (i < numArgs) then
@@ -104,11 +104,11 @@ end
 -- a_DetectionRes is a dict table of SongFileName -> {array of {mpm = .., confidence = ..}}
 local function outputDetectionResults(a_DetectionRes)
 	print("{")
-	for songFileName, mpms in pairs(a_DetectionRes) do
+	for songFileName, info in pairs(a_DetectionRes) do
 		print("\t[\"" .. songFileName .. "\"] =")
 		print("\t{")
-		for _, cg in ipairs(mpms) do
-			print("\t\t{ mpm = " .. (cg.mpm or "-1") .. ", confidence = " .. (cg.confidence or "-1") .. "},")
+		for _, cg in ipairs(info.confidences or {}) do
+			print("\t\t{ mpm = " .. (cg[1] or "-1") .. ", confidence = " .. (cg[2] or "-1") .. "},")
 		end
 		print("\t},")
 	end
@@ -139,20 +139,21 @@ end
 
 
 --- Calculates statistics over the detection results
--- a_DetectionRes is a dict table of SongFileName -> {array of {mpm = .., confidence = ..}}
+-- a_DetectionRes is a dict table of SongFileName -> { <BeatDetectCmd results> }
 local function calcStatistics(a_DetectionRes)
 	local minMatchConfidenceRel = 1e16
 	local maxWrongConfidenceRel = 0
 	local numMatches = 0
 	local numWrongs = 0
-	for songFileName, mpms in pairs(a_DetectionRes) do
-		local storedMPM = tonumber(songFileName:match("(%d*) BPM"))
-		if (storedMPM) then
+	for songFileName, info in pairs(a_DetectionRes) do
+		local storedMPM = (info.parsedID3Tag or {}).mpm
+		if (storedMPM and info.confidences and info.confidences[1] and info.confidences[2]) then
 			print(songFileName)
 			print("  Stored: " .. storedMPM)
-			print("  Detected: " .. tostring((mpms[1] or {}).mpm))
-			local confidenceRel = (tonumber((mpms[1] or {}).confidence) or 0) / (tonumber((mpms[2] or {}).confidence) or 1)
-			if (isCompatibleTempo(mpms[1].mpm, storedMPM)) then
+			local detectedMpm = info.confidences[1][1]
+			print("  Detected: " .. tostring(detectedMpm))
+			local confidenceRel = info.confidences[1][2] / info.confidences[2][2]
+			if (isCompatibleTempo(detectedMpm, storedMPM)) then
 				print("  Tempo MATCH, confidence rel = " .. confidenceRel)
 				if (minMatchConfidenceRel > confidenceRel) then
 					minMatchConfidenceRel = confidenceRel
