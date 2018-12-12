@@ -370,12 +370,28 @@ set (TSFILES
 	translations/SkauTan_cs.ts
 )
 
-# TODO: BeatDetectTest
-set (BEATDETECTTEST_SOURCES
-	BeatDetectTest/Stubs.cpp
-	BeatDetectTest/BeatDetectTest.cpp
+
+
+
+
+# BeatDetectCmd
+set (SOURCES_BEATDETECTCMD
+	src/BeatDetectCmd/Stubs.cpp
+	src/BeatDetectCmd/BeatDetectCmd.cpp
+	src/Audio/AVPP.cpp
+	src/Audio/PlaybackBuffer.cpp
+	src/MetadataScanner.cpp
+	src/Song.cpp
+	src/TempoDetector.cpp
 )
 
+set (HEADERS_BEATDETECTCMD
+	src/Audio/AVPP.hpp
+	src/Audio/PlaybackBuffer.hpp
+	src/MetadataScanner.hpp
+	src/Song.hpp
+	src/TempoDetector.hpp
+)
 
 
 
@@ -459,3 +475,39 @@ else ()
 endif ()
 
 add_dependencies(${PROJECT_NAME} tsfiles)
+
+
+
+
+
+# BeatDetect commandline utility:
+add_executable(BeatDetectCmd
+	${SOURCES_BEATDETECTCMD}
+	${HEADERS_BEATDETECTCMD}
+)
+
+target_link_libraries(BeatDetectCmd
+	Qt5::Core
+	Qt5::Multimedia
+
+	# Ffmpeg libraries (assumed installed on the build system):
+	${AVFORMAT}
+	${AVUTIL}
+	${AVCODEC}
+	${SWRESAMPLE}
+
+	# TagLib libraries (assumed installed on the build system):
+	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
+	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
+)
+
+if (MSVC)
+	target_link_libraries(BeatDetectCmd
+		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
+		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
+	)
+else ()
+	target_link_libraries(BeatDetectCmd
+		z
+	)
+endif ()

@@ -29,7 +29,16 @@ class Initializer
 {
 	Initializer()
 	{
+		av_log_set_callback(&qtLogger);
 		av_register_all();
+	}
+
+
+	static void qtLogger(void *, int, const char * a_Format, va_list a_Params)
+	{
+		// Ignore LibAV logging for now
+		Q_UNUSED(a_Format);
+		Q_UNUSED(a_Params);
 	}
 
 
