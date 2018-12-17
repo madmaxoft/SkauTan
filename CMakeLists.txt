@@ -461,12 +461,16 @@ target_link_libraries (${PROJECT_NAME}
 	# TagLib libraries (assumed installed on the build system):
 	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
 	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:RelWithDebInfo>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:MinSizeRel>:${TAGLIB_RELEASE}>
 )
 
 if (MSVC)
 	target_link_libraries(${PROJECT_NAME}
 		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
 		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
+		$<$<CONFIG:RelWithDebInfo>:${ZLIB_RELEASE}>
+		$<$<CONFIG:MinSizeRel>:${ZLIB_RELEASE}>
 	)
 else ()
 	target_link_libraries(${PROJECT_NAME}
@@ -499,12 +503,16 @@ target_link_libraries(BeatDetectCmd
 	# TagLib libraries (assumed installed on the build system):
 	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
 	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:RelWithDebInfo>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:MinSizeRel>:${TAGLIB_RELEASE}>
 )
 
 if (MSVC)
 	target_link_libraries(BeatDetectCmd
 		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
 		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
+		$<$<CONFIG:RelWithDebInfo>:${ZLIB_RELEASE}>
+		$<$<CONFIG:MinSizeRel>:${ZLIB_RELEASE}>
 	)
 else ()
 	target_link_libraries(BeatDetectCmd
