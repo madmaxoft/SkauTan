@@ -3366,7 +3366,7 @@ Poslední změna: %2</translation>
         <translation type="obsolete">Čtení metadat: %1</translation>
     </message>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="615"/>
+        <location filename="../src/TempoDetector.cpp" line="626"/>
         <source>Detect tempo: %1</source>
         <translation>Detekce tempa: %1</translation>
     </message>
