@@ -198,6 +198,7 @@ void printUsage()
 	cerr << "  -d <filename>   ... Output debug audio with levels to file" << endl;
 	cerr << "  -h              ... Print this help" << endl;
 	cerr << "  -i              ... Include the ID3 information from the file in the output" << endl;
+	cerr << "  -r <samplerate> ... Convert the file to samplerate (default: " << defaultOptions.m_SampleRate << ")" << endl;
 }
 
 
@@ -280,6 +281,14 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				{
 					NEED_ARG(1);
 					a_Options.m_LevelPeak = static_cast<size_t>(stoll(a_Args[i + 1]));
+					i += 1;
+					break;
+				}
+				case 'r':
+				case 'R':
+				{
+					NEED_ARG(1);
+					a_Options.m_SampleRate = stoi(a_Args[i + 1]);
 					i += 1;
 					break;
 				}

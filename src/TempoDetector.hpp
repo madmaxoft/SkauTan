@@ -47,6 +47,9 @@ public:
 	/** Holds the options for the detection. */
 	struct Options
 	{
+		/** The sample rate to which the song is converted before detecting. */
+		int m_SampleRate;
+
 		/** The algorithm to use for detecting loudness levels in the audio. */
 		ELevelAlgorithm m_LevelAlgorithm;
 

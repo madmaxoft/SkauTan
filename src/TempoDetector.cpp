@@ -38,7 +38,7 @@ public:
 			return nullptr;
 		}
 		QAudioFormat fmt;
-		fmt.setSampleRate(48000);
+		fmt.setSampleRate(m_Options.m_SampleRate);
 		fmt.setChannelCount(1);
 		fmt.setSampleSize(16);
 		fmt.setSampleType(QAudioFormat::SignedInt);
@@ -57,7 +57,7 @@ public:
 		res->m_Levels = calcLevels(buf);
 		debugLevelsInAudioData(buf, res->m_Levels);
 		res->m_Beats = detectBeats(res->m_Levels);
-		debugBeatsInAudioData(buf, res->m_Beats);
+		debugBeatsInAudioData(buf, res->m_Beats, res->m_Levels);
 		res->m_Histogram = beatsToHistogram(res->m_Beats);
 		if (m_Options.m_ShouldFoldHistogram)
 		{
@@ -349,7 +349,7 @@ public:
 			weightedBeats.emplace_back(i, static_cast<float>(a_Levels[i]) * m_Options.m_LevelPeak / sum);
 		}
 
-		// Prune the beats according to their weight, so that we only have 120 BPM on average:
+		// Prune the beats according to their weight, so that we only have 240 BPM on average:
 		using BeatType = decltype(weightedBeats[0]);
 		std::sort(weightedBeats.begin(), weightedBeats.end(),
 			[](BeatType b1, BeatType b2)
@@ -357,8 +357,8 @@ public:
 				return (b1.second > b2.second);
 			}
 		);
-		size_t songLengthSec = a_Levels.size() * m_Options.m_Stride / 48000;
-		size_t wantedNumBeats = 120 * songLengthSec / 60;
+		size_t songLengthSec = a_Levels.size() * m_Options.m_Stride / static_cast<size_t>(m_Options.m_SampleRate);
+		size_t wantedNumBeats = 240 * songLengthSec / 60;
 		if (weightedBeats.size() > wantedNumBeats)
 		{
 			weightedBeats.resize(wantedNumBeats);
@@ -471,7 +471,7 @@ public:
 	/** Converts the distance between levels to a BPM value. */
 	double distToBPM(size_t a_Dist)
 	{
-		return 60.0 / (m_Options.m_Stride * static_cast<double>(a_Dist) / 48000.0);
+		return 60.0 / (m_Options.m_Stride * static_cast<double>(a_Dist) / m_Options.m_SampleRate);
 	}
 
 
@@ -480,7 +480,8 @@ public:
 	/** Outputs the debug audio data with mixed-in beats. */
 	void debugBeatsInAudioData(
 		const PlaybackBuffer & a_Buf,
-		const std::vector<size_t> & a_Beats
+		const std::vector<size_t> & a_Beats,
+		const std::vector<qint32> & a_Levels
 	)
 	{
 		if (m_Options.m_DebugAudioBeatsFileName.isEmpty())
@@ -493,6 +494,15 @@ public:
 			qDebug() << "Cannot open debug file " << m_Options.m_DebugAudioBeatsFileName;
 			return;
 		}
+		qint32 maxLevel = 0;
+		for (const auto beat: a_Beats)
+		{
+			if (a_Levels[beat] > maxLevel)
+			{
+				maxLevel = a_Levels[beat];
+			}
+		}
+		float levelCoeff = 32767.0f / maxLevel;
 		size_t lastBeatIdx = 0;
 		size_t maxIdx = a_Beats.back();
 		qint16 mixStrength = 0;
@@ -502,14 +512,15 @@ public:
 		{
 			if (i == a_Beats[lastBeatIdx])
 			{
-				mixStrength = 32767;
+				assert(a_Levels[i] <= maxLevel);
+				mixStrength = static_cast<qint16>(a_Levels[i] * levelCoeff);
 				lastBeatIdx += 1;
 			}
 			auto audio = reinterpret_cast<const qint16 *>(a_Buf.audioData().data()) + i * m_Options.m_Stride;
 			for (size_t j = 0; j < m_Options.m_Stride; ++j)
 			{
 				interlaced[2 * j] = audio[j];
-				auto m = static_cast<int>(mixStrength * sin(static_cast<float>(j + m_Options.m_Stride * i) / 10));
+				auto m = static_cast<int>(mixStrength * sin(static_cast<float>(j + m_Options.m_Stride * i) * 1000 / m_Options.m_SampleRate));
 				interlaced[2 * j + 1]  = static_cast<qint16>(Utils::clamp<int>(m, -32768, 32767));
 			}
 			mixStrength = static_cast<qint16>(mixStrength * 0.8);
@@ -627,6 +638,7 @@ void TempoDetector::queueScanSong(SongPtr a_Song, const TempoDetector::Options &
 
 
 TempoDetector::Options::Options():
+	m_SampleRate(48000),
 	m_LevelAlgorithm(laSumDist),
 	m_WindowSize(1024),
 	m_Stride(256),
@@ -655,6 +667,7 @@ bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
 			return false; \
 		}
 
+	COMPARE(m_SampleRate)
 	COMPARE(m_LevelAlgorithm)
 	COMPARE(m_WindowSize)
 	COMPARE(m_Stride)
