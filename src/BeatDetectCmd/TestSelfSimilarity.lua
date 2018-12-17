@@ -9,6 +9,16 @@ If -d is not given, uses BeatDetectCmd[.exe] by default.
 If -l is not given, processes filelist.txt by default
 Multiple parameters of the same kind may be given, they will be processed in the order they appear.
 
+Tested algorithms:
+  - Bucket offsets by MPM
+		- Add up all contributions from min to max, weighted towards exact (50 % success rate)
+		- Search for nearest match, add weighted by distance from exact match (50 % success rate)
+	- Test each individual offset
+		- Add one point for exact match and half point for off-by-one match (37 / 60 success rate)
+			- Average points across offsets bucketed by whole-MPM (22 / 60 success rate)
+		- Add one point for exact match (27 / 60 success rate)
+		- For exact match, add 2 / SoundLevelDiff points (25 / 60 success rate)
+		- As above, and for off-by-one match, add 1 / SoundLevelDiff points (29 / 60 success rate)
 --]]
 
 
@@ -43,6 +53,7 @@ end
 
 
 --- Converts the mpm into (whole) number of strides that makes up the interval for that MPM
+-- The inverse function is stridesToMPM()
 local function mpmToStrides(aMPM)
 	return math.floor(5625 / aMPM)
 end
@@ -51,58 +62,36 @@ end
 
 
 
---- Calculates the beats' similarity with itself at the specified offsets
+--- Converts the number of strides that make up a time interval, into the corresponding MPM, rounded to 2 decimal places
+-- The inverse function is mpmToStrides()
+local function stridesToMPM(aStrides)
+	return math.floor(562500 / aStrides + 50) / 100
+end
+
+
+
+
+
+--- Calculates the beats' similarity with itself at the specified offset
 -- aBeatsDict is the dict-table of { beatIdx = soundLevel }, returned from prepareBeats()
 -- aBeatsArr is the array table of { {beatIdx, soundLevel}, ...}, returned by BeatDetectCmd
--- aMinOffset is the minimum offset to consider a match
--- aExactOffset is the offset to consider the exact match
--- aMaxOffset is the maximum offset to consider a match
+-- aOffset is the offset to calculate the similarity for
 -- Returns a single number, the calculated similarity
-local function calcSimilarity(aBeatsDict, aBeatsArr, aMinOffset, aExactOffset, aMaxOffset)
+local function calcSimilarity(aBeatsDict, aBeatsArr, aOffset)
 	assert(type(aBeatsDict) == "table")
 	assert(type(aBeatsArr) == "table")
-	assert(type(aMinOffset) == "number")
-	assert(type(aExactOffset) == "number")
-	assert(type(aMaxOffset) == "number")
-	assert(math.floor(aMinOffset) == aMinOffset)  -- The numbers are whole
-	assert(math.floor(aExactOffset) == aExactOffset)
-	assert(math.floor(aMaxOffset) == aMaxOffset)
+	assert(type(aOffset) == "number")
 
-	--[[
-	-- Algorithm: Add up all contributions from min to max, weighted towards exact
 	local res = 0
-	for k, v in pairs(aBeatsDict) do
-		for ofs = aMinOffset, aExactOffset - 1 do
-			if (aBeats[k + ofs]) then
-				res = res + 1 / (aExactOffset + 1 - ofs)
-			end
-		end
-		for ofs = aExactOffset, aMaxOffset do
-			if (aBeats[k + ofs]) then
-				res = res + 1 / (ofs - aExactOffset + 1)
-			end
-		end
-	end
-	return res
-	--]]
-
-	-- Algorithm: Search for the nearest from min to max, add only its weight relative to exact
-	local res = 0
-	for k, v in pairs(aBeatsDict) do
-		local bestOfs
-		local bestDif = aMaxOffset - aMinOffset
-		for ofs = aMinOffset, aMaxOffset do
-			if (aBeatsDict[k + ofs] and (math.abs(ofs - aExactOffset) < bestDif)) then
-				bestOfs = ofs
-				bestDif = math.abs(bestOfs - aExactOffset)
-			end
-		end
-		if (bestOfs) then
-			res = res + 1 / (bestDif + 1)
-		--[[
-		else
-			res = res - 1  -- Penalize a missing match
-		--]]
+	for _, beat in ipairs(aBeatsArr) do
+		local beatIdx = beat[1]
+		local idx = aOffset + beatIdx
+		if (aBeatsDict[idx]) then
+			res = res + 2
+		elseif (aBeatsDict[idx + 1]) then
+			res = res + 1
+		elseif (aBeatsDict[idx - 1]) then
+			res = res + 1
 		end
 	end
 	return res
@@ -150,28 +139,85 @@ end
 
 
 
---- Runs detection on the specified song file
--- Returns the results as a dict table, { storedMPM = ..., detectedMPM = ... }
-local function runDetection(aSongFileName)
+--- Runs BeatDetect on the specified song file
+-- Returns the table produced by BeatDetectCmd
+-- Caches the resulting table into a Lua file with the same base name and ".lua" extension
+-- If the cache file is found, the detection is not run and the file is loaded instead (to speed up repeated runs)
+local function runBeatDetect(aSongFileName)
+	local cacheFileName = aSongFileName:gsub("%.....?", ".lua")  --Replace any 3- or 4-char extension with ".lua"
+	local cacheFile = io.open(cacheFileName, "r")
+	if (cacheFile) then
+		print("Using cache file " .. cacheFileName)
+		local cached = cacheFile:read("*a")
+		cacheFile:close()
+		return assert(loadstring(cached))()
+	end
+
 	-- Run the beat detection:
 	local cmdLine = beatDetectCmdExe .. " -i -w " .. WINDOW_SIZE .. " -s " .. STRIDE .. " \"" .. aSongFileName .. "\""
 	local detectionResult = assert(io.popen(cmdLine)):read("*a")
 	local det = assert(loadstring(detectionResult))
 	det = det()
 
+	-- Store the result in the cache file for the next time:
+	cacheFile = io.open(cacheFileName, "w")
+	if (cacheFile) then
+		cacheFile:write(detectionResult)
+		cacheFile:close()
+	end
+	return det
+end
+
+
+
+
+
+--- Returns averages of similarity across MPM buckets
+-- aSimilarity is is an array-table of { mpm = ..., similarity = ...}
+-- Groups the similarities by the same whole-MPM, then calculates the average of the group
+-- Returns an array-table of { mpm = ..., similarity = ...}
+local function bucketizeSimilarityByMPM(aSimilarity)
+	assert(type(aSimilarity) == "table")
+
+	local grouped = {}
+	for _, sim in ipairs(aSimilarity) do
+		local fl = math.floor(sim.mpm)
+		grouped[fl] = grouped[fl] or {sum = 0, count = 0}
+		grouped[fl].sum = grouped[fl].sum + sim.similarity
+		grouped[fl].count = grouped[fl].count + 1
+	end
+
+	local res = {}
+	local n = 1
+	for mpm, group in pairs(grouped) do
+		res[n] = { mpm = mpm, similarity = group.sum / group.count }
+		n = n + 1
+	end
+	return res
+end
+
+
+
+
+
+--- Runs the full detection and calculation on the specified file
+-- Returns the results as a dict table, { storedMPM = ..., detectedMPM = ... }
+local function runOnFile(aFileName)
+	local det = runBeatDetect(aFileName)
+
 	-- Calculate the self-similarity, sort from best:
 	local similarity = {}
 	local n = 1
 	local beats = prepareBeats(det.beats)
 	local minMPM, maxMPM = getMPMRangeForGenre(det.parsedID3Tag.genre)
-	for mpm = minMPM, maxMPM do
-		local minOffset   = mpmToStrides(mpm + 0.5)
-		local exactOffset = mpmToStrides(mpm)
-		local maxOffset   = mpmToStrides(mpm - 0.5)
-		local sim = calcSimilarity(beats, det.beats, minOffset, exactOffset, maxOffset)
-		similarity[n] = {mpm = mpm, similarity = sim}
+	local minOfs = math.floor(mpmToStrides(maxMPM))
+	local maxOfs = math.ceil(mpmToStrides(minMPM))
+	for ofs = minOfs, maxOfs do
+		local sim = calcSimilarity(beats, det.beats, ofs)
+		similarity[n] = {mpm = stridesToMPM(ofs), similarity = sim}
 		n = n + 1
 	end
+	-- similarity = bucketizeSimilarityByMPM(similarity)
 	table.sort(similarity,
 		function(aSim1, aSim2)
 			return (aSim1.similarity > aSim2.similarity)
@@ -211,7 +257,7 @@ local function processListFile(aListFileName, aResults)
 	assert(type(aResults) == "table")
 
 	for line in io.lines(aListFileName) do
-		aResults[line] = runDetection(line)
+		aResults[line] = runOnFile(line)
 	end
 end
 
@@ -257,6 +303,22 @@ end
 
 
 
+--- Returns true if the two values are close enough
+-- The values needn't be valid number at all, returns false in such a case
+local function isCloseEnoughMPM(aMPM1, aMPM2)
+	if not(aMPM1) or not(aMPM2) then
+		return false
+	end
+	if (math.abs(aMPM1 - aMPM2) <= 1.5) then
+		return true
+	end
+	return false
+end
+
+
+
+
+
 --- Prints the summary of the processed files
 -- aResults is a dict-table of fileName -> {storedMPM = ..., detectedMPM = ..., storedMPMIndex = ...}, as returned from processParams()
 -- Prints the number of successful and failed detections and a per-song details
@@ -284,7 +346,7 @@ local function printSummary(aResults, aNumSeconds)
 		local sim = r.similarity
 		local diff = sim[2].similarity / sim[1].similarity
 		print("\trelative similarity diff: " .. math.floor(diff * 1000) / 1000)
-		if (r.storedMPM == r.detectedMPM) then
+		if (isCloseEnoughMPM(r.storedMPM, r.detectedMPM)) then
 			numMatches = numMatches + 1
 			print("\tmatch")
 		elseif (r.storedMPM) then
