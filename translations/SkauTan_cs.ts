@@ -1977,12 +1977,12 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="186"/>
-        <source>Levels for average:</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="372"/>
+        <source>LvlPeak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="193"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="179"/>
         <source>Save raw audio with Beats...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1992,12 +1992,12 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="207"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="186"/>
         <source>Fold histogram</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="221"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="193"/>
         <source>Save raw audio with Levels...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2007,89 +2007,84 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="258"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="214"/>
         <source>Max:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="285"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="278"/>
         <source>Histogram Cut-off:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="309"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="295"/>
         <source>Detected tempo:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="323"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="411"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="309"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="397"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="331"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="432"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="317"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="418"/>
         <source>Confidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="348"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="334"/>
         <source>History:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="371"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="357"/>
         <source>LevelAlg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="376"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="362"/>
         <source>Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="381"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="367"/>
         <source>Stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="386"/>
-        <source>LvlAvg</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="391"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="377"/>
         <source>LocDist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="396"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="382"/>
         <source>HistCutOff</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="401"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="387"/>
         <source>FoldMin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="406"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="392"/>
         <source>FoldMax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="422"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="408"/>
         <source>MPM</source>
         <translation>t/min</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="437"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="423"/>
         <source>RelConf</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="460"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="446"/>
         <source>&amp;Close</source>
         <translation>&amp;Zavřít</translation>
     </message>
@@ -2099,23 +2094,23 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="243"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="240"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="331"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="328"/>
         <source>SkauTan: Save debug audio with Beats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="333"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="354"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="330"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="351"/>
         <source>RAW audio file (*.raw)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="352"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="349"/>
         <source>SkauTan: Save debug audio with Levels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3366,7 +3361,7 @@ Poslední změna: %2</translation>
         <translation type="obsolete">Čtení metadat: %1</translation>
     </message>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="626"/>
+        <location filename="../src/TempoDetector.cpp" line="753"/>
         <source>Detect tempo: %1</source>
         <translation>Detekce tempa: %1</translation>
     </message>
