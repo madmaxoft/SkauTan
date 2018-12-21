@@ -68,7 +68,6 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	connect(m_UI->leFoldHistogramMax, &QLineEdit::textChanged,         this, &DlgTempoDetect::delayedDetectTempo);
 	connect(m_UI->leFoldHistogramMin, &QLineEdit::textChanged,         this, &DlgTempoDetect::delayedDetectTempo);
 	connect(m_UI->leHistogramCutoff,  &QLineEdit::textChanged,         this, &DlgTempoDetect::delayedDetectTempo);
-	connect(m_UI->leLevelAvg,         &QLineEdit::textChanged,         this, &DlgTempoDetect::delayedDetectTempo);
 	connect(m_UI->leLevelPeak,        &QLineEdit::textChanged,         this, &DlgTempoDetect::delayedDetectTempo);
 	connect(m_UI->lwLevelAlgorithm,   &QListWidget::currentRowChanged, this, &DlgTempoDetect::detectTempo);
 	connect(m_UI->lwWindowSize,       &QListWidget::currentRowChanged, this, &DlgTempoDetect::detectTempo);
@@ -172,7 +171,6 @@ void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
 	Utils::selectItemWithData(m_UI->lwLevelAlgorithm, a_Options.m_LevelAlgorithm);
 	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.m_WindowSize));
 	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.m_Stride));
-	m_UI->leLevelAvg->setText(        QString::number(a_Options.m_LevelAvg));
 	m_UI->leLevelPeak->setText(       QString::number(a_Options.m_LevelPeak));
 	m_UI->leHistogramCutoff->setText( QString::number(a_Options.m_HistogramCutoff));
 	m_UI->leFoldHistogramMin->setText(QString::number(a_Options.m_HistogramFoldMin));
@@ -191,7 +189,6 @@ TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 	options.m_LevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(m_UI->lwLevelAlgorithm->currentItem()->data(Qt::UserRole).toInt());
 	options.m_WindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
 	options.m_Stride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
-	options.m_LevelAvg = static_cast<size_t>(m_UI->leLevelAvg->text().toLongLong());
 	options.m_LevelPeak = static_cast<size_t>(m_UI->leLevelPeak->text().toLongLong());
 	options.m_HistogramCutoff = static_cast<size_t>(m_UI->leHistogramCutoff->text().toLongLong());
 	options.m_ShouldFoldHistogram = m_UI->chbFoldHistogram->isChecked();
@@ -230,7 +227,7 @@ void DlgTempoDetect::updateHistoryRow(int a_Row)
 	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.m_LevelAlgorithm)));
 	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.m_WindowSize)));
 	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.m_Stride)));
-	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.m_LevelAvg)));
+	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
 	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
 	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.m_HistogramCutoff)));
 	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(opt.m_ShouldFoldHistogram ? QString::number(opt.m_HistogramFoldMin) : QString()));

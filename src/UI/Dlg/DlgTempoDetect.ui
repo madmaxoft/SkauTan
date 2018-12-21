@@ -173,56 +173,63 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="2">
-        <widget class="QLineEdit" name="leLevelAvg">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Levels for average:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="3">
+       <item row="7" column="0" colspan="3">
         <widget class="QPushButton" name="btnSaveDebugBeats">
          <property name="text">
           <string>Save raw audio with Beats...</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Local maximum distance:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="3">
+       <item row="2" column="0" colspan="3">
         <widget class="QCheckBox" name="chbFoldHistogram">
          <property name="text">
           <string>Fold histogram</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <widget class="QLineEdit" name="leFoldHistogramMin">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0" colspan="3">
+       <item row="6" column="0" colspan="3">
         <widget class="QPushButton" name="btnSaveDebugLevels">
          <property name="text">
           <string>Save raw audio with Levels...</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Local maximum distance:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="leFoldHistogramMin">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>Max:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLineEdit" name="leLevelPeak">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QLineEdit" name="leFoldHistogramMax">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -238,14 +245,7 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="leLevelPeak">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
+       <item row="3" column="1">
         <widget class="QLabel" name="label_11">
          <property name="text">
           <string>Min:</string>
@@ -253,20 +253,6 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QLabel" name="label_12">
-         <property name="text">
-          <string>Max:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QLineEdit" name="leFoldHistogramMax">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -279,17 +265,17 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>Histogram Cut-off:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
+       <item row="1" column="2">
         <widget class="QLineEdit" name="leHistogramCutoff">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Histogram Cut-off:</string>
          </property>
         </widget>
        </item>
@@ -383,7 +369,7 @@
      </column>
      <column>
       <property name="text">
-       <string>LvlAvg</string>
+       <string>LvlPeak</string>
       </property>
      </column>
      <column>
@@ -472,7 +458,6 @@
   <tabstop>lwLevelAlgorithm</tabstop>
   <tabstop>lwWindowSize</tabstop>
   <tabstop>lwStride</tabstop>
-  <tabstop>leLevelAvg</tabstop>
   <tabstop>leLevelPeak</tabstop>
   <tabstop>leHistogramCutoff</tabstop>
   <tabstop>chbFoldHistogram</tabstop>

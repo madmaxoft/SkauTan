@@ -40,6 +40,7 @@ public:
 		laSumDist,                ///< level = sum(abs(sample - prevSample))
 		laMinMax,                 ///< level = maxSample - minSample
 		laDiscreetSineTransform,  ///< level = sum(abs(DST in several frequency bands))
+		laSumDistMinMax,          ///< Combination of laSumDist and laMinMax
 	};
 
 
@@ -58,9 +59,6 @@ public:
 
 		/** The distance between successive levels, in samples. */
 		size_t m_Stride;
-
-		/** The number of successive levels to average for the beat strength calculation. */
-		size_t m_LevelAvg;
 
 		/** The number of levels to check before and after current level to filter out non-peak levels. */
 		size_t m_LevelPeak;
@@ -81,14 +79,20 @@ public:
 		Tempos higher than this are halved until they are lower, then half their count is added. */
 		int m_HistogramFoldMax;
 
+		/** If true, the levels are normalized across m_NormalizeLevelsWindowSize elements. */
+		bool m_ShouldNormalizeLevels;
+
+		/** Number of neighboring levels to normalize against when m_ShouldNormalizeLevels is true. */
+		size_t m_NormalizeLevelsWindowSize;
+
 		/** Name of file to store the audio levels for debugging purposes.
-		Creates a 48 kHz 16-bit int stereo RAW file,
+		Creates a 16-bit int stereo RAW file,
 		left channel contains the original audiodata, right channel contains level values.
 		If empty, no debug file is created. */
 		QString m_DebugAudioLevelsFileName;
 
 		/** Name of file to store the audio beats for debugging purposes.
-		Creates a 48 kHz 16-bit int stereo RAW file,
+		Creates a 16-bit int stereo RAW file,
 		left channel contains the original audiodata, right channel contains a "ping" for each detected beat.
 		If empty, no debug file is created. */
 		QString m_DebugAudioBeatsFileName;
@@ -123,8 +127,8 @@ public:
 		/** The raw histogram of tempo -> number of occurences. */
 		std::map<int, size_t> m_Histogram;
 
-		/** A sorted vector of beat indices into m_Levels. */
-		std::vector<size_t> m_Beats;
+		/** A sorted vector of beat indices into m_Levels and their weight. */
+		std::vector<std::pair<size_t, qint32>> m_Beats;
 
 		/** A vector of all levels calculated for the audio. */
 		std::vector<qint32> m_Levels;

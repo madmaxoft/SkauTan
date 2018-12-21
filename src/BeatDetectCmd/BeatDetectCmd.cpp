@@ -150,7 +150,14 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	const auto & levels = res->m_Levels;
 	for (const auto & b: res->m_Beats)
 	{
-		cout << "\t\t{ " << b << ", " << levels[b] << "}," << endl;
+		cout << "\t\t{ " << b.first << ", " << levels[b.first] << ", " << b.second << "}," << endl;
+	}
+	cout << "\t}," << endl;
+	cout << "\tsoundLevels =" << endl;
+	cout << "\t{" << endl;
+	for (const auto lev: res->m_Levels)
+	{
+		cout << "\t\t" << lev << "," << endl;
 	}
 	cout << "\t}," << endl;
 	if (g_ShouldIncludeID3)
@@ -182,7 +189,6 @@ void printUsage()
 	cerr << "                        2: DiscreetSineTransform" << endl;
 	cerr << "  -w <N>          ... Set window size to N (default: " << defaultOptions.m_WindowSize << ")" << endl;
 	cerr << "  -s <N>          ... Set the stride to N (default: " << defaultOptions.m_Stride << ")" << endl;
-	cerr << "  -v <N>          ... Set the number of levels to average for beat strength (default: " << defaultOptions.m_LevelAvg << ")" << endl;
 	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.m_LevelPeak << ")" << endl;
 	cerr << "  -c <N>          ... Set the histogram cutoff (default: " << defaultOptions.m_HistogramCutoff << ")" << endl;
 	cerr << "  -f <min> <max>  ... Fold the histogram into the specified tempo range (default: ";
@@ -199,6 +205,7 @@ void printUsage()
 	cerr << "  -h              ... Print this help" << endl;
 	cerr << "  -i              ... Include the ID3 information from the file in the output" << endl;
 	cerr << "  -r <samplerate> ... Convert the file to samplerate (default: " << defaultOptions.m_SampleRate << ")" << endl;
+	cerr << "  -n <N> <file>   ... Output debug audio with levels normalized in N samples to file" << endl;
 }
 
 
@@ -274,6 +281,14 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'I':
 				{
 					g_ShouldIncludeID3 = true;
+					break;
+				}
+				case 'n':
+				case 'N':
+				{
+					NEED_ARG(1);
+					a_Options.m_NormalizeLevelsWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
+					i += 1;
 					break;
 				}
 				case 'p':
