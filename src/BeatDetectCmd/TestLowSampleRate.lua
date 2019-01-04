@@ -34,6 +34,7 @@ Tested algorithms / parameters:
 		- -a 3 -r 500 -w 11 -s 8 [30 % success rate, 0.01 songs / sec]
 	- Use beat division (pick start and stop beats, guess the biggest number that divides them into equal beats that matches the existing beats)
 		- -a 3 -r 500 -w 11 -s 8 -p 13, crop 1/5 off each end [32 % success rate]
+		- -a 3 -r 500 -w 11 -s 8 -p 13, crop 10 %, refine end beats by weight (20) [43 % success rate]
 --]]
 
 
@@ -42,6 +43,8 @@ Tested algorithms / parameters:
 
 local isWindows = (string.sub(package.config or "", 1, 1) == "\\")
 local beatDetectCmdExe = isWindows and "BeatDetectCmd.exe" or "BeatDetectCmd"
+
+local gNumHistogramBuckets = 30
 
 
 
@@ -283,7 +286,7 @@ end
 
 
 --- Crops both ends of the beat array at the specified time-ratios
--- aBeats is an array-table of { timestamp, soundlevel, ... }, as returned from BDC, sorted by timestamp
+-- aBeats is an array-table of { timestamp, soundlevel, beatStrength }, as returned from BDC, sorted by timestamp
 -- aLowRatio and aHighRatio are ratios of the beats' timestamps against the last beat's timestamp
 -- Returns a new beat array that contains only the cropped beats
 local function cropBeats(aBeats, aLowRatio, aHighRatio)
@@ -313,6 +316,73 @@ local function cropBeats(aBeats, aLowRatio, aHighRatio)
 			res[n] = beat
 			n = n + 1
 		end
+	end
+	return res
+end
+
+
+
+
+
+--- Crops both ends of the beat array at the specified time-ratios
+-- aBeats is an array-table of { timestamp, soundlevel, beatStrength }, as returned from BDC, sorted by timestamp
+-- aLowRatio and aHighRatio are ratios of the beats' timestamps against the last beat's timestamp
+-- Returns a new beat array that contains only the cropped beats
+-- Picks the starting and ending beats to be strong beats (crops even more)
+local function cropBeatsAtStrongBounds(aBeats, aLowRatio, aHighRatio)
+	assert(type(aBeats) == "table")
+	assert(type(aBeats[1]) == "table")
+	assert(type(aBeats[1][1]) == "number")
+	assert(type(aLowRatio) == "number")
+	assert(type(aHighRatio) == "number")
+	assert(aLowRatio >= 0)
+	assert(aHighRatio <= 1)
+	assert(aLowRatio < aHighRatio)
+
+	-- Search for the indices of the first and last beats in the specified timestamp range:
+	local firstBeatTS = aBeats[1][1]
+	local lastBeatIdx = #aBeats
+	local lastBeatTS = aBeats[lastBeatIdx][1]
+	local tsDiff = lastBeatTS - firstBeatTS
+	local lowTS = firstBeatTS + aLowRatio * tsDiff
+	local highTS = firstBeatTS + aHighRatio * tsDiff
+	local lowIdx = 1
+	local highIdx = #aBeats
+	for idx, beat in ipairs(aBeats) do
+		if (beat[1] < lowTS) then
+			lowIdx = idx
+		end
+		if (beat[1] > highTS) then
+			highIdx = idx
+			break
+		end
+	end
+
+	-- Find a close strong beat for the border indices:
+	for i = lowIdx + 1, lowIdx + 20 do
+		if (i >= highIdx) then
+			break
+		end
+		if (aBeats[i][3] > aBeats[lowIdx][3]) then
+			-- This is a stronger beat, use it instead:
+			lowIdx = i
+		end
+	end
+	for i = highIdx - 20, highIdx - 1 do
+		if (i > 0) then
+			if (aBeats[i][3] > aBeats[highIdx][3]) then
+				-- This is a stronger beat, use it instead:
+				highIdx = i
+			end
+		end
+	end
+
+	-- Return the cropped array:
+	local res = {}
+	local n = 1
+	for idx = lowIdx, highIdx do
+		res[n] = aBeats[idx]
+		n = n + 1
 	end
 	return res
 end
@@ -457,6 +527,7 @@ end
 
 
 
+--- Calculates how well the beats match their division
 local function calcBeatDivisionMatch(aBeatsDict, aStartTS, aEndTS, aNumDivisions)
 	assert(type(aBeatsDict) == "table")
 	assert(type(aStartTS) == "number")
@@ -471,11 +542,11 @@ local function calcBeatDivisionMatch(aBeatsDict, aStartTS, aEndTS, aNumDivisions
 	for i = 1, aNumDivisions - 1 do
 		local ts = floor(aStartTS + tsDiff * i + 0.5)
 		if (aBeatsDict[ts]) then
-			res = res + aBeatsDict[ts]
+			res = res + aBeatsDict[ts][3]
 		elseif (aBeatsDict[ts - 1]) then
-			res = res + aBeatsDict[ts - 1] / 2
+			res = res + aBeatsDict[ts - 1][3] / 2
 		elseif (aBeatsDict[ts + 1]) then
-			res = res + aBeatsDict[ts + 1] / 2
+			res = res + aBeatsDict[ts + 1][3] / 2
 		end
 	end
 	return res / aNumDivisions
@@ -542,7 +613,7 @@ local function detectBeatDivision(aBDCResults, aStride, aSampleRate)
 
 	local genre = aBDCResults.parsedID3Tag.genre
 	local minMPM, maxMPM = getMPMRangeForGenre(genre)
-	local croppedBeats = cropBeats(aBDCResults.beats, 0.2, 0.8)
+	local croppedBeats = cropBeatsAtStrongBounds(aBDCResults.beats, 0.1, 0.9)
 	local beatsDict = prepareBeats(croppedBeats)
 	local numCropped = #croppedBeats
 	local histogram = {}
@@ -555,6 +626,7 @@ local function detectBeatDivision(aBDCResults, aStride, aSampleRate)
 	local best = {match = 0}
 	for i = minDiv, maxDiv do
 		histogram[n] = {division = i, match = calcBeatDivisionMatch(beatsDict, startTS, endTS, i)}
+		histogram[n].mpm = foldBPM(stridesToMPM((endTS - startTS) / histogram[n].division, aStride, aSampleRate), minMPM, maxMPM, genre)
 		if (histogram[n].match > best.match) then
 			best = histogram[n]
 		end
@@ -569,6 +641,12 @@ local function detectBeatDivision(aBDCResults, aStride, aSampleRate)
 
 	-- Process the results into MPMs and certainty:
 	local bestMPM = foldBPM(stridesToMPM((endTS - startTS) / best.division, aStride, aSampleRate), minMPM, maxMPM, genre)
+	--[[
+	if not(isCloseEnoughMPM(bestMPM, aBDCResults.parsedID3Tag.mpm)) then
+		-- Known failure, check the certainty manually
+		print("Check the certainty manually, breakpoint here")
+	end
+	--]]
 	for _, hist in ipairs(histogram) do
 		local secondBestMPM = foldBPM(stridesToMPM((endTS - startTS) / hist.division, aStride, aSampleRate), minMPM, maxMPM, genre)
 		if not(isCloseEnoughMPM(bestMPM, secondBestMPM)) then
@@ -792,5 +870,66 @@ end
 
 
 
+local function calcHistograms(aResults)
+	assert(type(aResults) == "table")
+
+	local histSucc = {}
+	local histFail = {}
+	for i = 1, gNumHistogramBuckets do
+		histSucc[i] = 0
+		histFail[i] = 0
+	end
+	for _, res in pairs(aResults) do
+		local bucket = math.floor(res.certainty * gNumHistogramBuckets + 0.5)
+		if (isCloseEnoughMPM(res.parsedID3Tag.mpm, res.detectedMPM)) then
+			histSucc[bucket] = (histSucc[bucket] or 0) + 1
+		else
+			histFail[bucket] = (histFail[bucket] or 0) + 1
+		end
+	end
+	return histSucc, histFail
+end
+
+
+
+
+
+local function printHistogram(aHistogram)
+	assert(type(aHistogram) == "table")
+	assert(type(aHistogram[1]) == "number")
+
+	local floor = math.floor
+	local rep = string.rep
+	local total = 0
+	local max = 0
+	for _, cnt in ipairs(aHistogram) do
+		total = total + cnt
+		if (cnt > max) then
+			max = cnt
+		end
+	end
+	local cumul = 0
+	for idx, cnt in ipairs(aHistogram) do
+		local valMin = floor((idx / gNumHistogramBuckets) * 100 + 0.5) / 100
+		local valMax = floor(((idx + 1) / gNumHistogramBuckets) * 100 + 0.5) / 100
+		cumul = cumul + cnt
+		print("\t" .. valMin .. " .. " .. valMax ..
+			"\t" .. cnt .. "\t" .. floor(100 * cnt / total + 0.5) ..
+			" %\tcumul " .. floor(100 * cumul / total + 0.5) ..
+			" %\trcumul " .. floor(100.5 - 100 * cumul / total) ..
+			"\t" .. rep("#", 30 * cnt / max)
+		)
+	end
+end
+
+
+
+
+
 local res = processParams({...})
 printResults(res)
+local histSucc, histFail = calcHistograms(res)
+print("Success certainty histogram:")
+printHistogram(histSucc)
+print("Failure certainty histogram:")
+printHistogram(histFail)
