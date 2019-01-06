@@ -16,6 +16,7 @@ The supported algorithms are:
 	2, "simLevels"      - Self-similarity on soundlevels   (detectSelfSimilarityLevels())
 	3, "divBeats"       - Beat division (detectBeatDivision())
 	4, "simBeatsWeight" - Self-similarity on detected beats, consider weights (detectSelfSimilarityBeatsWeight())
+	5, "comboBeats"     - Combine simBeats, simBeatsWeight and divBeats
 
 
 Tested algorithms / parameters:
@@ -35,6 +36,8 @@ Tested algorithms / parameters:
 	- Use beat division (pick start and stop beats, guess the biggest number that divides them into equal beats that matches the existing beats)
 		- -a 3 -r 500 -w 11 -s 8 -p 13, crop 1/5 off each end [32 % success rate]
 		- -a 3 -r 500 -w 11 -s 8 -p 13, crop 10 %, refine end beats by weight (20) [43 % success rate]
+	- Combine simBeats, divBeats and simBeatsWeight
+		- { 89 %, 90 %, 43 % } -> 81 % success rate
 --]]
 
 
@@ -705,6 +708,47 @@ end
 
 
 
+--- Detects MPM by running detectSelfSimilarityBeats() detectSelfSimilarityBeatsWeight() and detectBeatDivision(),
+-- then combining the results.
+-- Returns the detected MPM, the second-best guess and the certainty of the guess ([0 .. 1])
+local function detectCombo(aBDCResults, aStride, aSampleRate)
+	local resSimBeats = { detectSelfSimilarityBeats(aBDCResults, aStride, aSampleRate) }
+	local resSimBeatsWeight = { detectSelfSimilarityBeatsWeight(aBDCResults, aStride, aSampleRate) }
+	local resSimBeatDiv = { detectBeatDivision(aBDCResults, aStride, aSampleRate) }
+
+	-- Combine the results:
+	local mpms = {}
+	local floor = math.floor
+	local addResults = function(aRes)
+		local mainMPM = floor(aRes[1] + 0.5)
+		local secondMPM = floor(aRes[2] + 0.5)
+		mpms[mainMPM] = (mpms[mainMPM] or 0) + aRes[3]
+		mpms[secondMPM] = (mpms[secondMPM] or 0) + aRes[3] / 3
+	end
+	addResults(resSimBeats)
+	addResults(resSimBeatsWeight)
+	addResults(resSimBeatDiv)
+
+	-- Return the highest-ranking MPM:
+	local mpmArr = {}
+	local n = 1
+	for mpm, certainty in pairs(mpms) do
+		mpmArr[n] = { mpm = mpm, certainty = certainty }
+		n = n + 1
+	end
+	table.sort(mpmArr,
+		function(aVal1, aVal2)
+			return (aVal1.certainty > aVal2.certainty)
+		end
+	)
+
+	return mpmArr[1].mpm, mpmArr[2].mpm, mpmArr[1].certainty
+end
+
+
+
+
+
 --- Runs the BeatDetectCmd on the specified song file, using different detection params
 -- Returns a dict table of {windowSize = ..., stride = ...} -> <BeatDetectCmd results>, with a summary
 local function runOnFile(aSongFileName, aFnDetectMPM)
@@ -750,6 +794,8 @@ local gDetectionAlgorithms =
 	["divBeats"] = detectBeatDivision,
 	[4] = detectSelfSimilarityBeatsWeight,
 	["simBeatsWeight"] = detectSelfSimilarityBeatsWeight,
+	[5] = detectCombo,
+	["comboBeats"] = detectCombo,
 }
 
 --- Processes the command line parameters
