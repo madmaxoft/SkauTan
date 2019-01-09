@@ -519,3 +519,30 @@ else ()
 		z
 	)
 endif ()
+
+
+
+
+# FreqFilter experiment:
+add_executable(FreqExtract
+	Experiments/FreqExtract.cpp
+
+	# Shared sources:
+	src/Audio/AVPP.cpp
+	src/Audio/PlaybackBuffer.cpp
+
+	# Shared headers:
+	src/Audio/AVPP.hpp
+	src/Audio/PlaybackBuffer.hpp
+)
+
+target_link_libraries(FreqExtract
+	Qt5::Core
+	Qt5::Multimedia
+
+	# Ffmpeg libraries (assumed installed on the build system):
+	${AVFORMAT}
+	${AVUTIL}
+	${AVCODEC}
+	${SWRESAMPLE}
+)
