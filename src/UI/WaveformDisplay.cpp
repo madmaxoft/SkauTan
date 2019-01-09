@@ -76,7 +76,7 @@ void WaveformDisplay::paint(QPainter & a_Painter, const QPoint & a_Origin, int a
 	auto pos = m_PlaybackBuffer->readPos();
 	auto total = m_PlaybackBuffer->bufferLimit();
 	a_Painter.setPen(QPen(QBrush(QColor(0, 160, 0)), 2));
-	int left = static_cast<int>(static_cast<size_t>(m_Width) * pos / total);
+	int left = static_cast<int>(static_cast<float>(m_Width) * pos / total);
 	a_Painter.drawLine(left, 0, left, a_Height);
 
 	// Paint the skip-start:
