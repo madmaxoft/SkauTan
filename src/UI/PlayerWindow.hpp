@@ -46,6 +46,9 @@ public:
 
 	~PlayerWindow();
 
+	/** Sets the window to use for switching to the Classroom mode. */
+	void setClassroomWindow(QWidget & aClassroomWindow);
+
 
 private:
 
@@ -78,6 +81,9 @@ private:
 	/** Set to true while updating the UI as a reaction to an internal event.
 	If true, the changes in the UI shouldn't be propagated further. */
 	bool m_IsInternalChange;
+
+	/** The window that is shown when asked to switch to the Classroom mode. */
+	QWidget * m_ClassroomWindow;
 
 
 	/** Sets the local rating for the selected songs. */
@@ -134,6 +140,9 @@ private slots:
 
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();
+
+	/** Switches to the classroom mode, if available, and hides this window. */
+	void switchToClassroomMode();
 
 	/** Emitted by the global tempo slider; updates the playback tempo. */
 	void tempoValueChanged(int a_NewValue);

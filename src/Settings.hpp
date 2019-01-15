@@ -46,8 +46,14 @@ public:
 	/** Saves the splitter section sizes. */
 	static void saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter & a_Splitter);
 
+	/** Saves the splitter section sizes. */
+	static void saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter * a_Splitter);
+
 	/** Restores previously saves splitter section sizes. */
 	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter);
+
+	/** Restores previously saves splitter section sizes. */
+	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter * a_Splitter);
 
 	/** Saves a generic value. */
 	static void saveValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Value);

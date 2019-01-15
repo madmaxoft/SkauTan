@@ -147,6 +147,16 @@ void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_Split
 
 
 
+void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter * a_Splitter)
+{
+	assert(a_Splitter != nullptr);
+	saveSplitterSizes(a_WindowName, a_SplitterName, *a_Splitter);
+}
+
+
+
+
+
 void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter)
 {
 	CHECK_VALID;
@@ -167,6 +177,16 @@ void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_Split
 			m_Settings->endArray();
 		m_Settings->endGroup();
 	m_Settings->endGroup();
+}
+
+
+
+
+
+void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter * a_Splitter)
+{
+	assert(a_Splitter != nullptr);
+	loadSplitterSizes(a_WindowName, a_SplitterName, *a_Splitter);
 }
 
 

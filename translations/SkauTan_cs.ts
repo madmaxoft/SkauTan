@@ -2,6 +2,68 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="cs_CZ">
 <context>
+    <name>ClassroomWindow</name>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="14"/>
+        <source>SkauTan</source>
+        <translation type="unfinished">SkauTan</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="217"/>
+        <source>How long has this song been playing</source>
+        <translation type="unfinished">Jak dlouho skladba hraje</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="239"/>
+        <source>Remaining playback time</source>
+        <translation type="unfinished">Zbývající čas</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="261"/>
+        <source>Current wall-clock time</source>
+        <translation type="unfinished">Aktuální čas</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="276"/>
+        <source>Current position within the song</source>
+        <translation type="unfinished">Aktuální poloha ve skladbě</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="318"/>
+        <source>Start playback / pause playback (NO fade-out)</source>
+        <translation type="unfinished">Začít hrát / pauza (BEZ zeslabení)</translation>
+    </message>
+    <message>
+        <source>Next track (with fade-out)</source>
+        <translation type="obsolete">Další skladba (se zeslabením)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="55"/>
+        <source>Volume</source>
+        <translation type="unfinished">Hlasitost</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="90"/>
+        <source>Tempo</source>
+        <translation type="unfinished">Tempo</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="141"/>
+        <source>Reset tempo to +0 %</source>
+        <translation type="unfinished">Nastavit původní tempo</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="156"/>
+        <source>Playlist mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="143"/>
+        <source>Currently playing: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Database</name>
     <message>
         <location filename="../src/DB/Database.cpp" line="200"/>
@@ -2428,254 +2490,259 @@ Tato operace je nevratná!</translation>
         <translation>Aktualizace knihovny:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="133"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="169"/>
         <source>Volume</source>
         <translation>Hlasitost</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="143"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="140"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="182"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="189"/>
         <source>Reset tempo to +0 %</source>
         <translation>Nastavit původní tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="195"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="133"/>
         <location filename="../src/UI/PlayerWindow.ui" line="202"/>
         <source>Keep</source>
         <translation>Fix</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="267"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="211"/>
+        <source>Classroom mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/PlayerWindow.ui" line="274"/>
         <source>Start playing immediately</source>
         <comment>QuickPlayer</comment>
         <translation>Začít ihned přehrávat</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="339"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="346"/>
         <source>Upon completion append</source>
         <translation>Po dokončení přidat</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="382"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="389"/>
         <source>How long has this song been playing</source>
         <translation>Jak dlouho skladba hraje</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="404"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="411"/>
         <source>Remaining playback time</source>
         <translation>Zbývající čas</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="421"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="428"/>
         <source>Current wall-clock time</source>
         <translation>Aktuální čas</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="431"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="438"/>
         <source>Current position within the song</source>
         <translation>Aktuální poloha ve skladbě</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="467"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="474"/>
         <source>Previous track (with fade-out)</source>
         <translation>Předchozí skladba (se zeslabením)</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="487"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="494"/>
         <source>Start playback / pause playback (NO fade-out)</source>
         <translation>Začít hrát / pauza (BEZ zeslabení)</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="507"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="514"/>
         <source>Stop the playback (with fade-out)</source>
         <translation>Zastavit přehrávání (se zeslabením)</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="527"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="534"/>
         <source>Next track (with fade-out)</source>
         <translation>Další skladba (se zeslabením)</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="546"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="553"/>
         <source>Background tasks...</source>
         <translation>Úlohy na pozadí...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="549"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="556"/>
         <source>Show the tasks running in the background</source>
         <translation>Zobrazí seznam úloh, které běží na pozadí</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="552"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="559"/>
         <source>Ctrl+B</source>
         <translation>Ctrl+B</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="557"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="564"/>
         <source>Song properties...</source>
         <translation>Vlastnosti skladby...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="560"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="567"/>
         <source>Alt+3</source>
         <translation>Alt+3</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="565"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="572"/>
         <source>&amp;Play</source>
         <translation>&amp;Přehrát</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="568"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="575"/>
         <source>Play the selected song</source>
         <translation>Začne přehrávat označenou skladbu</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="577"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="584"/>
         <source>Return</source>
         <translation>Return</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="582"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="589"/>
         <source>Rate:</source>
         <translation>Ohodnotit:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="585"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="592"/>
         <source>Set the songs&apos; local rating</source>
         <translation>Nastavit lokální hodnocení označených skladeb</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="588"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="595"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="593"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="600"/>
         <source>&amp;Remove from library...</source>
         <translation>&amp;Odebrat z knihovny...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="596"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="603"/>
         <source>Remove the songs from the library, but keep the files on the disk</source>
         <translation>Odebere označené skladby z knihovny, ale ponechá soubory na disku</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="601"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="608"/>
         <source>&amp;Delete from disk...</source>
         <translation>Smazat &amp;z disku...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="604"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="611"/>
         <source>Delete the songs from both the library and the disk</source>
         <translation>Smaže označené skladby z knihovny i z disku</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="609"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="616"/>
         <source>R&amp;emove from playlist</source>
         <translation>O&amp;debrat z playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="612"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="619"/>
         <source>Remove the selected items from the playlist</source>
         <translation>Odebere označené skladby z aktuálního playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="615"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="622"/>
         <source>Del</source>
         <translation>Del</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="620"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="627"/>
         <source>Set duration limit:</source>
         <translation>Zastavit po:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="625"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="632"/>
         <source>Remove duration limit</source>
         <translation>Stornovat limit</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="630"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="637"/>
         <source>Removed songs...</source>
         <translation>Odebrané skladby...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="633"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="640"/>
         <source>Shows the list of songs that have been removed from the library</source>
         <translation>Zobrazí seznam skladeb, které byly v minulosti odebrány z knihovny</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="638"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="645"/>
         <source>Import data...</source>
         <translation>Importovat data...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="641"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="648"/>
         <source>Import data from another database</source>
         <translation>Umožňuje importovat data z jiné databáze</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="646"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="653"/>
         <source>&amp;Save playlist...</source>
         <translation>&amp;Uložit playlist...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="649"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="656"/>
         <source>Save the current playlist into a file</source>
         <translation>Uloží aktuální playlist do souboru</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="657"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="664"/>
         <source>Local voting server</source>
         <translation>Lokální hlasování</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="660"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="667"/>
         <source>Turns Local voting server on or off</source>
         <translation>Zapne / vypne lokální server pro hlasování</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="668"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="675"/>
         <source>  Status...</source>
         <translation>  Status...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="671"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="678"/>
         <source>Displays detailed status information on the Local Vote Server</source>
         <translation>Zobrazí detailní stav lokálního hlasovacího serveru</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="676"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="683"/>
         <source>Library maintenance...</source>
         <translation>Údržba knihovny...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="679"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="686"/>
         <source>Opens a dialog with tools forlibrary maintenance</source>
         <translation>Zobrazí dialog s nástroji pro údržbu knihovny</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="684"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="691"/>
         <source>&amp;Load playlist...</source>
         <translation>&amp;Načíst playlist...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="687"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="694"/>
         <source>Load a playlist from a file, insert after the current selection</source>
         <translation>Načte playlist ze souboru a vloží jej za aktuálně označenou skladbu</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="692"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="699"/>
         <source>Show DebugLog...</source>
         <translation>Zobrazit DebugLog...</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.ui" line="695"/>
+        <location filename="../src/UI/PlayerWindow.ui" line="702"/>
         <source>Shows the debug messages recorded so far</source>
         <translation>Zobrazí dialog s výpisem ladících zpráv</translation>
     </message>
@@ -2684,17 +2751,17 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">Úlohy na pozadí</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="292"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="303"/>
         <source>Songs: %1</source>
         <translation>Skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="682"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="709"/>
         <source>SkauTan: Delete songs?</source>
         <translation>SkauTan: vymazat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="683"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="710"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2703,12 +2770,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="717"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="744"/>
         <source>SkauTan: Remove songs?</source>
         <translation>SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="718"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="745"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2717,38 +2784,38 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="832"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="859"/>
         <source>SkauTan: Set duration limit</source>
         <translation>SkauTan: Nastavit limit</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="833"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="860"/>
         <source>New duration:</source>
         <translation>Nový limit:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1000"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1027"/>
         <source>SkauTan: Save playlist</source>
         <translation>SkauTan: Uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1016"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1043"/>
         <source>SkauTan: Cannot save playlist</source>
         <translation>SkauTan: Nelze uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1017"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1051"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1044"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1078"/>
         <source>Cannot save playlist to file %1: %2</source>
         <translation>Nelze uložit playlist do souboru %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1030"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1057"/>
         <source>SkauTan: Load playlist</source>
         <translation>SkauTan: Načíst playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1050"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1077"/>
         <source>SkauTan: Cannot load playlist</source>
         <translation>SkauTan: Nelze načíst playlist</translation>
     </message>
@@ -2757,8 +2824,8 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">SkauTan: Uložit playlist:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1002"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1032"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1029"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1059"/>
         <source>M3U playlist (*.m3u)</source>
         <translation>Playlist M3U (*.m3u)</translation>
     </message>
@@ -2875,25 +2942,25 @@ Tato operace je nevratná!</translation>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/main.cpp" line="100"/>
+        <location filename="../src/main.cpp" line="101"/>
         <source>SkauTan: Error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="101"/>
+        <location filename="../src/main.cpp" line="102"/>
         <source>Cannot import default templates, the definition file is inaccessible.
 %1</source>
         <translation>Nelze importovat vestavěné šablony, definice není přístupná.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="208"/>
-        <location filename="../src/main.cpp" line="217"/>
+        <location filename="../src/main.cpp" line="224"/>
+        <location filename="../src/main.cpp" line="233"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="209"/>
+        <location filename="../src/main.cpp" line="225"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
@@ -2902,7 +2969,7 @@ Tato operace je nevratná!</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="218"/>
+        <location filename="../src/main.cpp" line="234"/>
         <source>SkauTan has detected an unknown fatal error. Use a debugger to view detailed runtime log.</source>
         <translation>SkauTan detekoval neznámou chybu. Použijte debugger pro zobrazení detailního logu.</translation>
     </message>
