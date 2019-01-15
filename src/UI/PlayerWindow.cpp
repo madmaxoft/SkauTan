@@ -43,7 +43,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_PlaylistDelegate(new PlaylistItemDelegate),
 	m_IsLibraryRescanShown(true),
 	m_LastLibraryRescanTotal(0),
-	m_LastLibraryRescanQueue(-1)
+	m_LastLibraryRescanQueue(-1),
+	m_ClassroomWindow(nullptr)
 {
 	m_PlaylistModel.reset(new PlaylistItemModel(m_Components.get<Player>()->playlist()));
 
@@ -88,6 +89,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,                 this,         &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,                 this,         &PlayerWindow::showHistory);
 	connect(m_UI->btnAddFromTemplate,     &QPushButton::clicked,                 this,         &PlayerWindow::addFromTemplate);
+	connect(m_UI->btnClassroomMode,       &QPushButton::clicked,                 this,         &PlayerWindow::switchToClassroomMode);
 	connect(m_UI->btnPrev,                &QPushButton::clicked,                 player.get(), &Player::prevTrack);
 	connect(m_UI->btnPlayPause,           &QPushButton::clicked,                 player.get(), &Player::startPausePlayback);
 	connect(m_UI->btnStop,                &QPushButton::clicked,                 player.get(), &Player::stopPlayback);
@@ -221,6 +223,15 @@ PlayerWindow::~PlayerWindow()
 	Settings::saveValue("PlayerWindow", "chbAppendUponCompletion.isChecked", m_UI->chbAppendUponCompletion->isChecked());
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *m_UI->tblPlaylist->horizontalHeader());
 	Settings::saveSplitterSizes("PlayerWindow", "splitter", *m_UI->splitter);
+}
+
+
+
+
+
+void PlayerWindow::setClassroomWindow(QWidget & aClassroomWindow)
+{
+	m_ClassroomWindow = &aClassroomWindow;
 }
 
 
@@ -503,6 +514,22 @@ void PlayerWindow::addFromTemplate()
 		return;
 	}
 	m_Components.get<Player>()->playlist().addFromTemplate(*m_Components.get<Database>(), *tmpl);
+}
+
+
+
+
+
+void PlayerWindow::switchToClassroomMode()
+{
+	if (m_ClassroomWindow == nullptr)
+	{
+		qWarning() << "ClassroomWindow not available!";
+		assert(!"ClassroomWindow not available");
+		return;
+	}
+	m_ClassroomWindow->showMaximized();
+	this->hide();
 }
 
 

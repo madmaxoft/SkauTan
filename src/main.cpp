@@ -8,6 +8,7 @@
 #include "Audio/PlaybackBuffer.hpp"
 #include "DB/Database.hpp"
 #include "DB/DatabaseBackup.hpp"
+#include "UI/ClassroomWindow.hpp"
 #include "UI/PlayerWindow.hpp"
 #include "BackgroundTasks.hpp"
 #include "MetadataScanner.hpp"
@@ -187,8 +188,23 @@ int main(int argc, char *argv[])
 		}
 
 		// Show the UI:
-		PlayerWindow w(cc);
-		w.showMaximized();
+		PlayerWindow pw(cc);
+		ClassroomWindow cw(cc);
+		pw.setClassroomWindow(cw);
+		cw.setPlaylistWindow(pw);
+		switch (Settings::loadValue("UI", "LastMode").toInt())
+		{
+			case 1:
+			{
+				cw.showMaximized();
+				break;
+			}
+			default:
+			{
+				pw.showMaximized();
+				break;
+			}
+		}
 
 		// Run the app:
 		auto res = app.exec();

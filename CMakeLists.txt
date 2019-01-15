@@ -215,6 +215,7 @@ set (SOURCES
 	src/DB/TagImportExport.cpp
 
 	# UI-related sources:
+	src/UI/ClassroomWindow.cpp
 	src/UI/ColorDelegate.cpp
 	src/UI/PlayerWindow.cpp
 	src/UI/PlaylistItemModel.cpp
@@ -290,6 +291,7 @@ set (HEADERS
 	src/DB/TagImportExport.hpp
 
 	# UI-related headers:
+	src/UI/ClassroomWindow.hpp
 	src/UI/ColorDelegate.hpp
 	src/UI/PlayerWindow.hpp
 	src/UI/PlaylistItemModel.hpp
@@ -339,6 +341,7 @@ set (HEADERS
 )
 
 set (UI
+	src/UI/ClassroomWindow.ui
 	src/UI/PlayerWindow.ui
 	src/UI/Dlg/DlgBackgroundTaskList.ui
 	src/UI/Dlg/DlgChooseImportTemplates.ui
