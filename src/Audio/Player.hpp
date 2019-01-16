@@ -177,6 +177,10 @@ signals:
 	such as loading a new track with pre-set default tempo and KeepTempo turned off. */
 	void tempoCoeffChanged(qreal a_TempoCoeff);
 
+	/** Emitted when the current volume is changed from within the player,
+	such as loading a new track with pre-set default volume and KeepVolume turned off. */
+	void volumeChanged(qreal a_NewVolume);
+
 
 public slots:
 

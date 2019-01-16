@@ -55,11 +55,17 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	m_UI->waveform->setPlayer(*m_Components.get<Player>());
 
 	// Connect the signals:
-	connect(m_UI->btnPlaylistMode, &QPushButton::clicked,              this, &ClassroomWindow::switchToPlaylistMode);
-	connect(m_UI->lwFilters,       &QListWidget::itemSelectionChanged, this, &ClassroomWindow::updateSongList);
-	connect(m_UI->lwSongs,         &QListWidget::itemClicked,          this, &ClassroomWindow::songItemClicked);
-	connect(m_UI->lwSongs,         &QListWidget::itemDoubleClicked,    this, &ClassroomWindow::songItemDoubleClicked);
-	connect(&m_UpdateTimer,        &QTimer::timeout,                   this, &ClassroomWindow::periodicUIUpdate);
+	auto player = m_Components.get<Player>();
+	connect(m_UI->btnPlaylistMode, &QPushButton::clicked,              this,         &ClassroomWindow::switchToPlaylistMode);
+	connect(m_UI->lwFilters,       &QListWidget::itemSelectionChanged, this,         &ClassroomWindow::updateSongList);
+	connect(m_UI->lwSongs,         &QListWidget::itemDoubleClicked,    this,         &ClassroomWindow::songItemDoubleClicked);
+	connect(&m_UpdateTimer,        &QTimer::timeout,                   this,         &ClassroomWindow::periodicUIUpdate);
+	connect(m_UI->vsVolume,        &QSlider::sliderMoved,              this,         &ClassroomWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,         &QSlider::valueChanged,             this,         &ClassroomWindow::tempoValueChanged);
+	connect(player.get(),          &Player::tempoCoeffChanged,         this,         &ClassroomWindow::playerTempoChanged);
+	connect(player.get(),          &Player::volumeChanged,             this,         &ClassroomWindow::playerVolumeChanged);
+	connect(m_UI->btnPlayPause,    &QPushButton::clicked,              player.get(), &Player::startPausePlayback);
+	connect(m_UI->btnStop,         &QPushButton::clicked,              player.get(), &Player::stopPlayback);
 
 	updateFilterList();
 	m_UpdateTimer.start(200);
@@ -155,6 +161,7 @@ void ClassroomWindow::switchToPlaylistMode()
 		assert(!"PlaylistWindow not available");
 		return;
 	}
+	Settings::saveValue("UI", "LastMode", 0);
 	m_PlaylistWindow->showMaximized();
 	this->hide();
 }
@@ -196,19 +203,6 @@ void ClassroomWindow::updateSongList()
 
 
 
-void ClassroomWindow::songItemClicked(QListWidgetItem * a_Item)
-{
-	if (!m_Components.get<Player>()->isPlaying())
-	{
-		// Disabled
-		// startPlayingSong(a_Item->data(Qt::UserRole).value<SongPtr>());
-	}
-}
-
-
-
-
-
 void ClassroomWindow::songItemDoubleClicked(QListWidgetItem * a_Item)
 {
 	startPlayingSong(a_Item->data(Qt::UserRole).value<SongPtr>());
@@ -229,4 +223,61 @@ void ClassroomWindow::periodicUIUpdate()
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 	m_UI->lblWallClockTime->setText(QTime::currentTime().toString());
+}
+
+
+
+
+
+void ClassroomWindow::volumeSliderMoved(int a_NewValue)
+{
+	if (!m_IsInternalChange)
+	{
+		m_Components.get<Player>()->setVolume(static_cast<double>(a_NewValue) / 100);
+	}
+}
+
+
+
+
+
+void ClassroomWindow::tempoValueChanged(int a_NewValue)
+{
+	auto percent = static_cast<double>(a_NewValue) / 3;
+	if (a_NewValue >= 0)
+	{
+		m_UI->btnTempoReset->setText(QString("+%1 %").arg(QString::number(percent, 'f', 1)));
+	}
+	else
+	{
+		m_UI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
+	}
+	if (!m_IsInternalChange)
+	{
+		m_Components.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
+	}
+}
+
+
+
+
+
+void ClassroomWindow::playerVolumeChanged(qreal a_Volume)
+{
+	auto value = static_cast<int>(a_Volume * 100);
+	m_IsInternalChange = true;
+	m_UI->vsVolume->setValue(value);
+	m_IsInternalChange = false;
+}
+
+
+
+
+
+void ClassroomWindow::playerTempoChanged(qreal a_TempoCoeff)
+{
+	auto value = static_cast<int>((a_TempoCoeff * 100 - 100) * 3);
+	m_IsInternalChange = true;
+	m_UI->vsTempo->setValue(value);
+	m_IsInternalChange = false;
 }

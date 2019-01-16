@@ -179,7 +179,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <widget class="QListWidget" name="lwSongs">
@@ -207,7 +207,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_6">
               <item>
-			   <widget class="QLabel" name="lblTotalTime">
+               <widget class="QLabel" name="lblTotalTime">
                 <property name="font">
                  <font>
                   <pointsize>20</pointsize>
@@ -229,7 +229,7 @@
                </widget>
               </item>
               <item>
-			   <widget class="QLabel" name="lblRemaining">
+               <widget class="QLabel" name="lblRemaining">
                 <property name="font">
                  <font>
                   <pointsize>20</pointsize>
@@ -251,7 +251,7 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
-			   <widget class="QLabel" name="lblWallClockTime">
+               <widget class="QLabel" name="lblWallClockTime">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -266,7 +266,7 @@
                </widget>
               </item>
               <item>
-			   <widget class="QLabel" name="lblPosition">
+               <widget class="QLabel" name="lblPosition">
                 <property name="font">
                  <font>
                   <pointsize>9</pointsize>
@@ -323,6 +323,26 @@
             <property name="icon">
              <iconset resource="../../res/SkauTan.qrc">
               <normaloff>:/img/play.png</normaloff>:/img/play.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnStop">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Stop playback (with fade-out)</string>
+            </property>
+            <property name="text">
+             <string notr="true"/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../res/SkauTan.qrc">
+              <normaloff>:/img/stop.png</normaloff>:/img/stop.png</iconset>
             </property>
            </widget>
           </item>
