@@ -52,6 +52,10 @@ private:
 	/** The window that will be shown when asked to switch to Playlist mode. */
 	QWidget * m_PlaylistWindow;
 
+	/** Set to true while updating the UI as a reaction to an internal event.
+	If true, the changes in the UI shouldn't be propagated further. */
+	bool m_IsInternalChange;
+
 
 	/** Updates the list of filters in lwFilters. */
 	void updateFilterList();
@@ -71,16 +75,28 @@ private slots:
 	/** Updates the list of song matching the currently selected filter. */
 	void updateSongList();
 
-	/** The user has clicked on the specified item.
-	If there's nothing playing, starts playing the song, otherwise only selects the item. */
-	void songItemClicked(QListWidgetItem * a_Item);
-
 	/** The user has dbl-clicked on the specified item.
 	Starts playing the song, applying a fadeout if already playing another before. */
 	void songItemDoubleClicked(QListWidgetItem * a_Item);
 
 	/** Called periodically to update the UI. */
 	void periodicUIUpdate();
+
+	/** Emitted by the global volume control slider; updates the player volume. */
+	void volumeSliderMoved(int a_NewValue);
+
+	/** Emitted by the global tempo slider; updates the playback tempo. */
+	void tempoValueChanged(int a_NewValue);
+
+	/** Emitted by Player after changing the volume from within the player,
+	such as loading a new track with pre-set default volume and KeepVolume turned off.
+	Updates the Volume UI. */
+	void playerVolumeChanged(qreal a_Volume);
+
+	/** Emitted by Player after changing the tempo from within the player,
+	such as loading a new track with pre-set default tempo and KeepTempo turned off.
+	Updates the Tempo UI. */
+	void playerTempoChanged(qreal a_TempoCoeff);
 };
 
 

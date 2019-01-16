@@ -278,6 +278,7 @@ bool Player::isTrackLoaded() const
 void Player::setVolume(qreal a_NewVolume)
 {
 	m_OutputThread->m_Output->setVolume(a_NewVolume);
+	emit volumeChanged(a_NewVolume);
 }
 
 
@@ -289,6 +290,7 @@ void Player::setTempo(qreal a_NewTempo)
 	m_Tempo = a_NewTempo;
 	if (m_AudioDataSource == nullptr)
 	{
+		emit tempoCoeffChanged(a_NewTempo);
 		return;
 	}
 	m_AudioDataSource->setTempo(a_NewTempo);
@@ -298,6 +300,7 @@ void Player::setTempo(qreal a_NewTempo)
 	{
 		m_Playlist->updateItemTimesFromCurrent();
 	}
+	emit tempoCoeffChanged(a_NewTempo);
 }
 
 

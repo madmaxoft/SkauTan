@@ -123,6 +123,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(m_UI->chbKeepTempo,           &QCheckBox::toggled,                   player.get(), &Player::setKeepTempo);
 	connect(m_UI->chbKeepVolume,          &QCheckBox::toggled,                   player.get(), &Player::setKeepVolume);
 	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
+	connect(player.get(),                 &Player::volumeChanged,                this,         &PlayerWindow::playerVolumeChanged);
 	connect(player.get(),                 &Player::invalidTrack,                 this,         &PlayerWindow::invalidTrack);
 	connect(mc.get(),                     &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
 	connect(mc.get(),                     &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
@@ -528,6 +529,7 @@ void PlayerWindow::switchToClassroomMode()
 		assert(!"ClassroomWindow not available");
 		return;
 	}
+	Settings::saveValue("UI", "LastMode", 1);
 	m_ClassroomWindow->showMaximized();
 	this->hide();
 }
@@ -977,6 +979,18 @@ void PlayerWindow::tempoCoeffChanged(qreal a_TempoCoeff)
 	auto value = static_cast<int>((a_TempoCoeff * 100 - 100) * 3);
 	m_IsInternalChange = true;
 	m_UI->vsTempo->setValue(value);
+	m_IsInternalChange = false;
+}
+
+
+
+
+
+void PlayerWindow::playerVolumeChanged(qreal a_Volume)
+{
+	auto value = static_cast<int>(a_Volume * 100);
+	m_IsInternalChange = true;
+	m_UI->vsVolume->setValue(value);
 	m_IsInternalChange = false;
 }
 
