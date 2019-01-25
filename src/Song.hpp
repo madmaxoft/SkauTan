@@ -12,6 +12,7 @@
 #include <QVariant>
 #include <QCoreApplication>
 #include <QMutex>
+#include <QColor>
 #include "DatedOptional.hpp"
 
 
@@ -71,6 +72,7 @@ public:
 		std::vector<Song *> m_Duplicates;  // All songs having the same hash
 		DatedOptional<double> m_SkipStart;  // Where to start playing
 		DatedOptional<QString> m_Notes;
+		DatedOptional<QColor> m_BgColor;
 
 		SharedData(
 			const QByteArray & a_Hash,
@@ -79,7 +81,8 @@ public:
 			Rating && a_Rating,
 			Tag && a_TagManual,
 			DatedOptional<double> && a_SkipStart,
-			DatedOptional<QString> && a_Notes
+			DatedOptional<QString> && a_Notes,
+			DatedOptional<QColor> && a_BgColor
 		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
@@ -87,7 +90,8 @@ public:
 			m_Rating(std::move(a_Rating)),
 			m_TagManual(std::move(a_TagManual)),
 			m_SkipStart(std::move(a_SkipStart)),
-			m_Notes(std::move(a_Notes))
+			m_Notes(std::move(a_Notes)),
+			m_BgColor(std::move(a_BgColor))
 		{
 		}
 
@@ -157,6 +161,7 @@ public:
 	const DatedOptional<QDateTime> & lastPlayed() const { return m_SharedData->m_LastPlayed; }
 	const Rating &   rating()     const { return m_SharedData->m_Rating; }
 	const DatedOptional<double> skipStart() const;
+	const DatedOptional<QColor> & bgColor() const { return m_SharedData->m_BgColor; }
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;
@@ -206,6 +211,9 @@ public:
 
 	/** Removes the skip-start, if SharedData is present; otherwise ignored. */
 	void delSkipStart();
+
+	/** Sets the BgColor, if SharedData is present; otherwise ignored. */
+	void setBgColor(const QColor & a_BgColor);
 
 	/** Removes all properties from the Manual tag. */
 	void clearManualTag();

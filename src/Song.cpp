@@ -157,6 +157,18 @@ void Song::delSkipStart()
 
 
 
+void Song::setBgColor(const QColor & a_BgColor)
+{
+	if (m_SharedData != nullptr)
+	{
+		m_SharedData->m_BgColor = a_BgColor;
+	}
+}
+
+
+
+
+
 void Song::clearManualTag()
 {
 	m_SharedData->m_TagManual.m_Author.reset();

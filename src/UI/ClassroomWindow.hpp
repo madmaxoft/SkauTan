@@ -61,7 +61,6 @@ private:
 	to avoid applying a limit parsed from number in the middle of editing. */
 	int m_TicksToDurationLimitApply;
 
-
 	/** Updates the list of filters in lwFilters. */
 	void updateFilterList();
 
@@ -74,6 +73,14 @@ private:
 
 	/** Applies the settings in the UI related to Duration Limit to the currently playing track. */
 	void applyDurationLimitSettings();
+
+	/** Updates the list item by the current data from its linked Song. */
+	void updateSongItem(QListWidgetItem & a_Item);
+
+	/** Sets the background color of the selected song. */
+	void setSelectedSongBgColor(QColor a_BgColor);
+
+	void rateSelectedSongs(double a_LocalRating);
 
 
 private slots:
@@ -116,6 +123,22 @@ private slots:
 	/** The Duration Limit lineedit was edited, applies the duration limit.
 	If the string is invalid, colors the text red and refuses to apply the limit. */
 	void durationLimitEdited(const QString & a_NewText);
+
+	/** Plays the song that is currently selected.
+	If another song is already playing, applies a fade-out to it first. */
+	void playSelectedSong();
+
+	/** Removes from library the selected song (all its instances via SharedData). */
+	void removeFromLibrary();
+
+	/** Deletes from the disk the selected song's files (all their instances via SharedData). */
+	void deleteFromDisk();
+
+	/** Shows the Properties dialog for the selected song. */
+	void showSongProperties();
+
+	/** Shows the context menu for lwSongs items at the specified position. */
+	void showSongContextMenu(const QPoint & a_Pos);
 };
 
 
