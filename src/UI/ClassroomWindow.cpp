@@ -10,6 +10,7 @@
 #include "../Audio/Player.hpp"
 #include "../Playlist.hpp"
 #include "../PlaylistItemSong.hpp"
+#include "../Utils.hpp"
 
 
 
@@ -47,25 +48,40 @@ static QString songDisplayText(const Song & a_Song)
 ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	m_UI(new Ui::ClassroomWindow),
 	m_Components(a_Components),
-	m_PlaylistWindow(nullptr)
+	m_PlaylistWindow(nullptr),
+	m_IsInternalChange(false)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("ClassroomWindow", *this);
 	Settings::loadSplitterSizes("ClassroomWindow", "splMain", m_UI->splMain);
 	m_UI->waveform->setPlayer(*m_Components.get<Player>());
 
+	// Set labels' minimum width to avoid layout changes in runtime:
+	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("00:00"));
+	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("00:00"));
+	m_UI->lblRemaining->setMinimumWidth(m_UI->lblRemaining->fontMetrics().width("-00:00"));
+
+	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
+	auto fm = m_UI->btnTempoReset->fontMetrics();
+	m_UI->btnTempoReset->setMinimumWidth(
+		m_UI->btnTempoReset->sizeHint().width() - fm.width(m_UI->btnTempoReset->text()) + fm.width("+99.9 %")
+	);
+
 	// Connect the signals:
 	auto player = m_Components.get<Player>();
-	connect(m_UI->btnPlaylistMode, &QPushButton::clicked,              this,         &ClassroomWindow::switchToPlaylistMode);
-	connect(m_UI->lwFilters,       &QListWidget::itemSelectionChanged, this,         &ClassroomWindow::updateSongList);
-	connect(m_UI->lwSongs,         &QListWidget::itemDoubleClicked,    this,         &ClassroomWindow::songItemDoubleClicked);
-	connect(&m_UpdateTimer,        &QTimer::timeout,                   this,         &ClassroomWindow::periodicUIUpdate);
-	connect(m_UI->vsVolume,        &QSlider::sliderMoved,              this,         &ClassroomWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,         &QSlider::valueChanged,             this,         &ClassroomWindow::tempoValueChanged);
-	connect(player.get(),          &Player::tempoCoeffChanged,         this,         &ClassroomWindow::playerTempoChanged);
-	connect(player.get(),          &Player::volumeChanged,             this,         &ClassroomWindow::playerVolumeChanged);
-	connect(m_UI->btnPlayPause,    &QPushButton::clicked,              player.get(), &Player::startPausePlayback);
-	connect(m_UI->btnStop,         &QPushButton::clicked,              player.get(), &Player::stopPlayback);
+	connect(m_UI->btnPlaylistMode,  &QPushButton::clicked,              this,         &ClassroomWindow::switchToPlaylistMode);
+	connect(m_UI->lwFilters,        &QListWidget::itemSelectionChanged, this,         &ClassroomWindow::updateSongList);
+	connect(m_UI->lwSongs,          &QListWidget::itemDoubleClicked,    this,         &ClassroomWindow::songItemDoubleClicked);
+	connect(&m_UpdateTimer,         &QTimer::timeout,                   this,         &ClassroomWindow::periodicUIUpdate);
+	connect(m_UI->vsVolume,         &QSlider::sliderMoved,              this,         &ClassroomWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,          &QSlider::valueChanged,             this,         &ClassroomWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,    &QPushButton::clicked,              this,         &ClassroomWindow::tempoResetClicked);
+	connect(player.get(),           &Player::tempoCoeffChanged,         this,         &ClassroomWindow::playerTempoChanged);
+	connect(player.get(),           &Player::volumeChanged,             this,         &ClassroomWindow::playerVolumeChanged);
+	connect(m_UI->btnPlayPause,     &QPushButton::clicked,              player.get(), &Player::startPausePlayback);
+	connect(m_UI->btnStop,          &QPushButton::clicked,              player.get(), &Player::stopPlayback);
+	connect(m_UI->chbDurationLimit, &QCheckBox::clicked,                this,         &ClassroomWindow::durationLimitClicked);
+	connect(m_UI->leDurationLimit,  &QLineEdit::textEdited,             this,         &ClassroomWindow::durationLimitEdited);
 
 	updateFilterList();
 	m_UpdateTimer.start(200);
@@ -147,6 +163,35 @@ void ClassroomWindow::startPlayingSong(std::shared_ptr<Song> a_Song)
 		player->startPlayback();
 	}
 	m_UI->lblCurrentlyPlaying->setText(tr("Currently playing: %1").arg(songDisplayText(*a_Song)));
+	applyDurationLimitSettings();
+}
+
+
+
+
+
+void ClassroomWindow::applyDurationLimitSettings()
+{
+	auto player = m_Components.get<Player>();
+	auto track = player->currentTrack();
+	if (track == nullptr)
+	{
+		qDebug() << "currentTrack == nullptr";
+		return;
+	}
+	if (!m_UI->chbDurationLimit->isChecked())
+	{
+		track->setDurationLimit(-1);
+		return;
+	}
+	bool isOK;
+	auto durationLimit = Utils::parseTime(m_UI->leDurationLimit->text(), isOK);
+	if (!isOK)
+	{
+		// Unparseable time, don't change the currently applied limit
+		return;
+	}
+	track->setDurationLimit(durationLimit);
 }
 
 
@@ -223,6 +268,16 @@ void ClassroomWindow::periodicUIUpdate()
 	m_UI->lblRemaining->setText(QString("-%1:%2").arg(remaining / 60).arg(QString::number(remaining % 60), 2, '0'));
 	m_UI->lblTotalTime->setText(QString( "%1:%2").arg(total     / 60).arg(QString::number(total     % 60), 2, '0'));
 	m_UI->lblWallClockTime->setText(QTime::currentTime().toString());
+
+	// If asked to, apply the duration limit settings:
+	if (m_TicksToDurationLimitApply > 0)
+	{
+		m_TicksToDurationLimitApply -= 1;
+		if (m_TicksToDurationLimitApply == 0)
+		{
+			applyDurationLimitSettings();
+		}
+	}
 }
 
 
@@ -262,6 +317,15 @@ void ClassroomWindow::tempoValueChanged(int a_NewValue)
 
 
 
+void ClassroomWindow::tempoResetClicked()
+{
+	m_UI->vsTempo->setValue(0);
+}
+
+
+
+
+
 void ClassroomWindow::playerVolumeChanged(qreal a_Volume)
 {
 	auto value = static_cast<int>(a_Volume * 100);
@@ -280,4 +344,32 @@ void ClassroomWindow::playerTempoChanged(qreal a_TempoCoeff)
 	m_IsInternalChange = true;
 	m_UI->vsTempo->setValue(value);
 	m_IsInternalChange = false;
+}
+
+
+
+
+
+void ClassroomWindow::durationLimitClicked()
+{
+	applyDurationLimitSettings();
+}
+
+
+
+
+
+void ClassroomWindow::durationLimitEdited(const QString & a_NewText)
+{
+	bool isOK;
+	Utils::parseTime(a_NewText, isOK);
+	if (isOK)
+	{
+		m_UI->leDurationLimit->setStyleSheet({});
+	}
+	else
+	{
+		m_UI->leDurationLimit->setStyleSheet("background-color: #ff7f7f");
+	}
+	m_TicksToDurationLimitApply = 5;
 }

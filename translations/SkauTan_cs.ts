@@ -4,37 +4,42 @@
 <context>
     <name>ClassroomWindow</name>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="14"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="19"/>
         <source>SkauTan</source>
         <translation type="unfinished">SkauTan</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="217"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="212"/>
+        <source>Limit:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="238"/>
         <source>How long has this song been playing</source>
         <translation type="unfinished">Jak dlouho skladba hraje</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="239"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="260"/>
         <source>Remaining playback time</source>
         <translation type="unfinished">Zbývající čas</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="261"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="277"/>
         <source>Current wall-clock time</source>
         <translation type="unfinished">Aktuální čas</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="276"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="287"/>
         <source>Current position within the song</source>
         <translation type="unfinished">Aktuální poloha ve skladbě</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="318"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="331"/>
         <source>Start playback / pause playback (NO fade-out)</source>
         <translation type="unfinished">Začít hrát / pauza (BEZ zeslabení)</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="338"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="351"/>
         <source>Stop playback (with fade-out)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -43,27 +48,27 @@
         <translation type="obsolete">Další skladba (se zeslabením)</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="55"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="60"/>
         <source>Volume</source>
         <translation type="unfinished">Hlasitost</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="90"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="95"/>
         <source>Tempo</source>
         <translation type="unfinished">Tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="141"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="146"/>
         <source>Reset tempo to +0 %</source>
         <translation type="unfinished">Nastavit původní tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="156"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="161"/>
         <source>Playlist mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="149"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="165"/>
         <source>Currently playing: %1</source>
         <translation type="unfinished"></translation>
     </message>
