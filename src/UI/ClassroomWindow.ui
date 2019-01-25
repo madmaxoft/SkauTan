@@ -10,6 +10,11 @@
     <height>545</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>SkauTan</string>
   </property>
@@ -190,11 +195,6 @@
         </item>
         <item>
          <widget class="QLabel" name="lblCurrentlyPlaying">
-          <property name="font">
-           <font>
-            <pointsize>9</pointsize>
-           </font>
-          </property>
           <property name="text">
            <string notr="true">Currently playing:</string>
           </property>
@@ -204,6 +204,27 @@
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="chbDurationLimit">
+                <property name="text">
+                 <string>Limit:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="leDurationLimit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_6">
               <item>
@@ -252,11 +273,6 @@
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
                <widget class="QLabel" name="lblWallClockTime">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                 </font>
-                </property>
                 <property name="toolTip">
                  <string>Current wall-clock time</string>
                 </property>
@@ -267,11 +283,6 @@
               </item>
               <item>
                <widget class="QLabel" name="lblPosition">
-                <property name="font">
-                 <font>
-                  <pointsize>9</pointsize>
-                 </font>
-                </property>
                 <property name="toolTip">
                  <string>Current position within the song</string>
                 </property>
@@ -307,44 +318,48 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnPlayPause">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>Start playback / pause playback (NO fade-out)</string>
-            </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../res/SkauTan.qrc">
-              <normaloff>:/img/play.png</normaloff>:/img/play.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnStop">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>Stop playback (with fade-out)</string>
-            </property>
-            <property name="text">
-             <string notr="true"/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../res/SkauTan.qrc">
-              <normaloff>:/img/stop.png</normaloff>:/img/stop.png</iconset>
-            </property>
-           </widget>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QPushButton" name="btnPlayPause">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>Start playback / pause playback (NO fade-out)</string>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="icon">
+               <iconset resource="../../res/SkauTan.qrc">
+                <normaloff>:/img/play.png</normaloff>:/img/play.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnStop">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>Stop playback (with fade-out)</string>
+              </property>
+              <property name="text">
+               <string notr="true"/>
+              </property>
+              <property name="icon">
+               <iconset resource="../../res/SkauTan.qrc">
+                <normaloff>:/img/stop.png</normaloff>:/img/stop.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>

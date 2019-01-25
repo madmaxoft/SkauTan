@@ -56,6 +56,11 @@ private:
 	If true, the changes in the UI shouldn't be propagated further. */
 	bool m_IsInternalChange;
 
+	/** If positive, the number of m_UpdateTimer ticks until the current Duration Limit settings are applied.
+	Used by the leDurationLimit to apply the settings only after some time after the last edit,
+	to avoid applying a limit parsed from number in the middle of editing. */
+	int m_TicksToDurationLimitApply;
+
 
 	/** Updates the list of filters in lwFilters. */
 	void updateFilterList();
@@ -66,6 +71,10 @@ private:
 	/** Adds the specified song to the playlist and starts playing it.
 	If another song is currently playing, fade-out is used for it. */
 	void startPlayingSong(std::shared_ptr<Song> a_Song);
+
+	/** Applies the settings in the UI related to Duration Limit to the currently playing track. */
+	void applyDurationLimitSettings();
+
 
 private slots:
 
@@ -88,6 +97,9 @@ private slots:
 	/** Emitted by the global tempo slider; updates the playback tempo. */
 	void tempoValueChanged(int a_NewValue);
 
+	/** The user clicked the "reset tempo" button. */
+	void tempoResetClicked();
+
 	/** Emitted by Player after changing the volume from within the player,
 	such as loading a new track with pre-set default volume and KeepVolume turned off.
 	Updates the Volume UI. */
@@ -97,6 +109,13 @@ private slots:
 	such as loading a new track with pre-set default tempo and KeepTempo turned off.
 	Updates the Tempo UI. */
 	void playerTempoChanged(qreal a_TempoCoeff);
+
+	/** The Duration Limit checkbox was clicked, applies or removes the duration limit. */
+	void durationLimitClicked();
+
+	/** The Duration Limit lineedit was edited, applies the duration limit.
+	If the string is invalid, colors the text red and refuses to apply the limit. */
+	void durationLimitEdited(const QString & a_NewText);
 };
 
 
