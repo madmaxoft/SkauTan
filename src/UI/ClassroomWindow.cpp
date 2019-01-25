@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QStyledItemDelegate>
 #include <QPainter>
+#include <QMenu>
+#include <QMessageBox>
 #include "ui_ClassroomWindow.h"
 #include "../Settings.hpp"
 #include "../ComponentCollection.hpp"
@@ -11,6 +13,7 @@
 #include "../Playlist.hpp"
 #include "../PlaylistItemSong.hpp"
 #include "../Utils.hpp"
+#include "Dlg/DlgSongProperties.hpp"
 
 
 
@@ -67,21 +70,38 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 		m_UI->btnTempoReset->sizeHint().width() - fm.width(m_UI->btnTempoReset->text()) + fm.width("+99.9 %")
 	);
 
+	// Decorate the splitter handle with 2 sunken lines:
+	auto lay = new QHBoxLayout(m_UI->splMain->handle(1));
+	lay->setSpacing(0);
+	lay->setMargin(0);
+	for (int i = 0; i < 2; ++i)
+	{
+		auto frame = new QFrame(m_UI->splMain->handle(1));
+		frame->setFrameStyle(QFrame::VLine | QFrame::Sunken);
+		frame->setLineWidth(1);
+		lay->addWidget(frame);
+	}
+
 	// Connect the signals:
 	auto player = m_Components.get<Player>();
-	connect(m_UI->btnPlaylistMode,  &QPushButton::clicked,              this,         &ClassroomWindow::switchToPlaylistMode);
-	connect(m_UI->lwFilters,        &QListWidget::itemSelectionChanged, this,         &ClassroomWindow::updateSongList);
-	connect(m_UI->lwSongs,          &QListWidget::itemDoubleClicked,    this,         &ClassroomWindow::songItemDoubleClicked);
-	connect(&m_UpdateTimer,         &QTimer::timeout,                   this,         &ClassroomWindow::periodicUIUpdate);
-	connect(m_UI->vsVolume,         &QSlider::sliderMoved,              this,         &ClassroomWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,          &QSlider::valueChanged,             this,         &ClassroomWindow::tempoValueChanged);
-	connect(m_UI->btnTempoReset,    &QPushButton::clicked,              this,         &ClassroomWindow::tempoResetClicked);
-	connect(player.get(),           &Player::tempoCoeffChanged,         this,         &ClassroomWindow::playerTempoChanged);
-	connect(player.get(),           &Player::volumeChanged,             this,         &ClassroomWindow::playerVolumeChanged);
-	connect(m_UI->btnPlayPause,     &QPushButton::clicked,              player.get(), &Player::startPausePlayback);
-	connect(m_UI->btnStop,          &QPushButton::clicked,              player.get(), &Player::stopPlayback);
-	connect(m_UI->chbDurationLimit, &QCheckBox::clicked,                this,         &ClassroomWindow::durationLimitClicked);
-	connect(m_UI->leDurationLimit,  &QLineEdit::textEdited,             this,         &ClassroomWindow::durationLimitEdited);
+	connect(m_UI->btnPlaylistMode,      &QPushButton::clicked,                this,         &ClassroomWindow::switchToPlaylistMode);
+	connect(m_UI->lwFilters,            &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::updateSongList);
+	connect(m_UI->lwSongs,              &QListWidget::itemDoubleClicked,      this,         &ClassroomWindow::songItemDoubleClicked);
+	connect(&m_UpdateTimer,             &QTimer::timeout,                     this,         &ClassroomWindow::periodicUIUpdate);
+	connect(m_UI->vsVolume,             &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,              &QSlider::valueChanged,               this,         &ClassroomWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,        &QPushButton::clicked,                this,         &ClassroomWindow::tempoResetClicked);
+	connect(player.get(),               &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
+	connect(player.get(),               &Player::volumeChanged,               this,         &ClassroomWindow::playerVolumeChanged);
+	connect(m_UI->btnPlayPause,         &QPushButton::clicked,                player.get(), &Player::startPausePlayback);
+	connect(m_UI->btnStop,              &QPushButton::clicked,                player.get(), &Player::stopPlayback);
+	connect(m_UI->chbDurationLimit,     &QCheckBox::clicked,                  this,         &ClassroomWindow::durationLimitClicked);
+	connect(m_UI->leDurationLimit,      &QLineEdit::textEdited,               this,         &ClassroomWindow::durationLimitEdited);
+	connect(m_UI->actPlay,              &QAction::triggered,                  this,         &ClassroomWindow::playSelectedSong);
+	connect(m_UI->actRemoveFromLibrary, &QAction::triggered,                  this,         &ClassroomWindow::removeFromLibrary);
+	connect(m_UI->actDeleteFromDisk,    &QAction::triggered,                  this,         &ClassroomWindow::deleteFromDisk);
+	connect(m_UI->actProperties,        &QAction::triggered,                  this,         &ClassroomWindow::showSongProperties);
+	connect(m_UI->lwSongs,              &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showSongContextMenu);
 
 	updateFilterList();
 	m_UpdateTimer.start(200);
@@ -198,6 +218,66 @@ void ClassroomWindow::applyDurationLimitSettings()
 
 
 
+void ClassroomWindow::updateSongItem(QListWidgetItem & a_Item)
+{
+	auto song = a_Item.data(Qt::UserRole).value<SongPtr>();
+	if (song == nullptr)
+	{
+		assert(!"Invalid song pointer");
+		return;
+	}
+	a_Item.setText(songDisplayText(*song));
+	a_Item.setBackgroundColor(song->bgColor().valueOr(QColor(0xff, 0xff, 0xff)));
+}
+
+
+
+
+
+void ClassroomWindow::setSelectedSongBgColor(QColor a_BgColor)
+{
+	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
+	auto song = selItem->data(Qt::UserRole).value<SongPtr>();
+	if (song == nullptr)
+	{
+		assert(!"Invalid song pointer");
+		return;
+	}
+	song->setBgColor(a_BgColor);
+	m_Components.get<Database>()->saveSong(song);
+	updateSongItem(*selItem);
+}
+
+
+
+
+
+void ClassroomWindow::rateSelectedSongs(double a_LocalRating)
+{
+	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
+	auto song = selItem->data(Qt::UserRole).value<SongPtr>();
+	if (song == nullptr)
+	{
+		assert(!"Invalid song pointer");
+		return;
+	}
+	song->setLocalRating(a_LocalRating);
+	m_Components.get<Database>()->saveSong(song);
+	updateSongItem(*selItem);
+}
+
+
+
+
+
 void ClassroomWindow::switchToPlaylistMode()
 {
 	if (m_PlaylistWindow == nullptr)
@@ -217,6 +297,8 @@ void ClassroomWindow::switchToPlaylistMode()
 
 void ClassroomWindow::updateSongList()
 {
+	STOPWATCH("Updating song list");
+
 	auto curFilter = selectedFilter();
 	m_UI->lwSongs->clear();
 	if (curFilter == nullptr)
@@ -233,8 +315,9 @@ void ClassroomWindow::updateSongList()
 		{
 			if (root->isSatisfiedBy(*song))
 			{
-				auto item = new QListWidgetItem(songDisplayText(*song));
+				auto item = new QListWidgetItem();
 				item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
+				updateSongItem(*item);
 				m_UI->lwSongs->addItem(item);
 				break;
 			}
@@ -372,4 +455,170 @@ void ClassroomWindow::durationLimitEdited(const QString & a_NewText)
 		m_UI->leDurationLimit->setStyleSheet("background-color: #ff7f7f");
 	}
 	m_TicksToDurationLimitApply = 5;
+}
+
+
+
+
+
+void ClassroomWindow::playSelectedSong()
+{
+	auto selItem = m_UI->lwSongs->currentItem();
+	startPlayingSong(selItem->data(Qt::UserRole).value<SongPtr>());
+}
+
+
+
+
+
+void ClassroomWindow::removeFromLibrary()
+{
+	// Collect the songs to remove:
+	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
+	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
+	if (selSong == nullptr)
+	{
+		assert(!"Invalid song pointer");
+		return;
+	}
+	auto songs = selSong->duplicates();
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Remove song?"),
+		tr(
+			"Are you sure you want to remove the selected song from the library? The song file will stay "
+			"on the disk, but all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB:
+	for (const auto & song: songs)
+	{
+		m_Components.get<Database>()->removeSong(*song, false);
+	}
+}
+
+
+
+
+
+void ClassroomWindow::deleteFromDisk()
+{
+	// Collect the songs to remove:
+	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
+	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
+	if (selSong == nullptr)
+	{
+		assert(!"Invalid song pointer");
+		return;
+	}
+	auto songs = selSong->duplicates();
+	if (songs.empty())
+	{
+		return;
+	}
+
+	// Ask for confirmation:
+	if (QMessageBox::question(
+		this,
+		tr("SkauTan: Delete song?"),
+		tr(
+			"Are you sure you want to delete the selected song from the disk?"
+			"The files will be deleted and all properties set in the library will be lost.\n\n"
+			"This operation cannot be undone!"
+		),
+		QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape
+	) == QMessageBox::No)
+	{
+		return;
+	}
+
+	// Remove from the DB, delete from disk:
+	for (const auto & song: songs)
+	{
+		m_Components.get<Database>()->removeSong(*song, true);
+	}
+}
+
+
+
+
+
+void ClassroomWindow::showSongProperties()
+{
+	auto selItem = m_UI->lwSongs->currentItem();
+	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
+	DlgSongProperties dlg(m_Components, selSong, this);
+	dlg.exec();
+	updateSongItem(*selItem);
+}
+
+
+
+
+
+void ClassroomWindow::showSongContextMenu(const QPoint & a_Pos)
+{
+	// The colors for setting the background:
+	QColor colors[] =
+	{
+		{ 0xff, 0xff, 0xff },
+		{ 0xff, 0xff, 0x7f },
+		{ 0xff, 0x7f, 0xff },
+		{ 0x7f, 0xff, 0xff },
+		{ 0xff, 0x7f, 0x7f },
+		{ 0x7f, 0x7f, 0xff },
+		{ 0x7f, 0xff, 0x7f },
+	};
+
+	// Build the context menu:
+	QMenu contextMenu;
+	contextMenu.addAction(m_UI->actPlay);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actSetColor);
+	auto size = contextMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
+	for (const auto c: colors)
+	{
+		auto act = contextMenu.addAction("");
+		QPixmap pixmap(size, size);
+		pixmap.fill(c);
+		act->setIcon(QIcon(pixmap));
+		connect(act, &QAction::triggered, [this, c]() { setSelectedSongBgColor(c); });
+	}
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRate);
+	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRemoveFromLibrary);
+	contextMenu.addAction(m_UI->actDeleteFromDisk);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actProperties);
+
+	// Display the menu:
+	auto widget = dynamic_cast<QWidget *>(sender());
+	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
+	contextMenu.exec(pos, nullptr);
 }
