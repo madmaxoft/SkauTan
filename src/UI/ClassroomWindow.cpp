@@ -401,6 +401,7 @@ void ClassroomWindow::filterItemSelected()
 
 	auto curFilter = selectedFilter();
 	m_UI->lwSongs->clear();
+	m_AllFilterSongs.clear();
 	if (curFilter == nullptr)
 	{
 		return;
