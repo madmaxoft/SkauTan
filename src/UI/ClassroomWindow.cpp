@@ -52,7 +52,9 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	m_UI(new Ui::ClassroomWindow),
 	m_Components(a_Components),
 	m_PlaylistWindow(nullptr),
-	m_IsInternalChange(false)
+	m_IsInternalChange(false),
+	m_SearchFilter("", QRegularExpression::CaseInsensitiveOption),
+	m_TicksUntilSetSearchText(0)
 {
 	m_UI->setupUi(this);
 	Settings::loadWindowPos("ClassroomWindow", *this);
@@ -85,7 +87,7 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	// Connect the signals:
 	auto player = m_Components.get<Player>();
 	connect(m_UI->btnPlaylistMode,      &QPushButton::clicked,                this,         &ClassroomWindow::switchToPlaylistMode);
-	connect(m_UI->lwFilters,            &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::updateSongList);
+	connect(m_UI->lwFilters,            &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::filterItemSelected);
 	connect(m_UI->lwSongs,              &QListWidget::itemDoubleClicked,      this,         &ClassroomWindow::songItemDoubleClicked);
 	connect(&m_UpdateTimer,             &QTimer::timeout,                     this,         &ClassroomWindow::periodicUIUpdate);
 	connect(m_UI->vsVolume,             &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
@@ -101,10 +103,12 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	connect(m_UI->actRemoveFromLibrary, &QAction::triggered,                  this,         &ClassroomWindow::removeFromLibrary);
 	connect(m_UI->actDeleteFromDisk,    &QAction::triggered,                  this,         &ClassroomWindow::deleteFromDisk);
 	connect(m_UI->actProperties,        &QAction::triggered,                  this,         &ClassroomWindow::showSongProperties);
-	connect(m_UI->lwSongs,              &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showSongContextMenu);
+	connect(m_UI->lwSongs,              &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showSongListContextMenu);
+	connect(m_UI->lblCurrentlyPlaying,  &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showCurSongContextMenu);
+	connect(m_UI->leSearchSongs,        &QLineEdit::textEdited,               this,         &ClassroomWindow::searchTextEdited);
 
 	updateFilterList();
-	m_UpdateTimer.start(200);
+	m_UpdateTimer.start(100);
 }
 
 
@@ -234,44 +238,140 @@ void ClassroomWindow::updateSongItem(QListWidgetItem & a_Item)
 
 
 
-void ClassroomWindow::setSelectedSongBgColor(QColor a_BgColor)
+void ClassroomWindow::updateSongItem(Song & a_Song)
 {
-	auto selItem = m_UI->lwSongs->currentItem();
-	if (selItem == nullptr)
+	auto item = itemFromSong(a_Song);
+	if (item != nullptr)
 	{
-		return;
+		updateSongItem(*item);
 	}
-	auto song = selItem->data(Qt::UserRole).value<SongPtr>();
-	if (song == nullptr)
-	{
-		assert(!"Invalid song pointer");
-		return;
-	}
-	song->setBgColor(a_BgColor);
-	m_Components.get<Database>()->saveSong(song);
-	updateSongItem(*selItem);
 }
 
 
 
 
 
-void ClassroomWindow::rateSelectedSongs(double a_LocalRating)
+void ClassroomWindow::setContextSongBgColor(QColor a_BgColor)
 {
-	auto selItem = m_UI->lwSongs->currentItem();
-	if (selItem == nullptr)
+	if (m_ContextSong == nullptr)
 	{
 		return;
 	}
-	auto song = selItem->data(Qt::UserRole).value<SongPtr>();
-	if (song == nullptr)
+	m_ContextSong->setBgColor(a_BgColor);
+	m_Components.get<Database>()->saveSong(m_ContextSong);
+	updateSongItem(*m_ContextSong);
+}
+
+
+
+
+
+void ClassroomWindow::rateContextSong(double a_LocalRating)
+{
+	if (m_ContextSong == nullptr)
 	{
-		assert(!"Invalid song pointer");
 		return;
 	}
-	song->setLocalRating(a_LocalRating);
-	m_Components.get<Database>()->saveSong(song);
-	updateSongItem(*selItem);
+	m_ContextSong->setLocalRating(a_LocalRating);
+	m_Components.get<Database>()->saveSong(m_ContextSong);
+	updateSongItem(*m_ContextSong);
+}
+
+
+
+
+
+QListWidgetItem * ClassroomWindow::itemFromSong(Song & a_Song)
+{
+	auto numItems = m_UI->lwSongs->count();
+	for (int i = 0; i < numItems; ++i)
+	{
+		auto item = m_UI->lwSongs->item(i);
+		if (item == nullptr)
+		{
+			continue;
+		}
+		auto itemSong = item->data(Qt::UserRole).value<SongPtr>();
+		if (itemSong.get() == &a_Song)
+		{
+			return item;
+		}
+	}
+	return nullptr;
+}
+
+
+
+
+
+void ClassroomWindow::showSongContextMenu(const QPoint & a_Pos, std::shared_ptr<Song> a_Song)
+{
+	// The colors for setting the background:
+	QColor colors[] =
+	{
+		{ 0xff, 0xff, 0xff },
+		{ 0xff, 0xff, 0x7f },
+		{ 0xff, 0x7f, 0xff },
+		{ 0x7f, 0xff, 0xff },
+		{ 0xff, 0x7f, 0x7f },
+		{ 0x7f, 0x7f, 0xff },
+		{ 0x7f, 0xff, 0x7f },
+	};
+
+	// Build the context menu:
+	QMenu contextMenu;
+	contextMenu.addAction(m_UI->actPlay);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actSetColor);
+	auto size = contextMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
+	for (const auto c: colors)
+	{
+		auto act = contextMenu.addAction("");
+		QPixmap pixmap(size, size);
+		pixmap.fill(c);
+		act->setIcon(QIcon(pixmap));
+		connect(act, &QAction::triggered, [this, c]() { setContextSongBgColor(c); });
+	}
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRate);
+	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateContextSong(5); });
+	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateContextSong(4); });
+	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateContextSong(3); });
+	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateContextSong(2); });
+	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateContextSong(1); });
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actRemoveFromLibrary);
+	contextMenu.addAction(m_UI->actDeleteFromDisk);
+	contextMenu.addSeparator();
+	contextMenu.addAction(m_UI->actProperties);
+
+	// Display the menu:
+	auto widget = dynamic_cast<QWidget *>(sender());
+	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
+	m_ContextSong = a_Song;
+	contextMenu.exec(pos, nullptr);
+}
+
+
+
+
+
+void ClassroomWindow::applySearchFilterToSongs()
+{
+	STOPWATCH("Applying search filter to song list");
+
+	m_UI->lwSongs->clear();
+	for (const auto & song: m_AllFilterSongs)
+	{
+		auto item = std::make_unique<QListWidgetItem>();
+		item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
+		updateSongItem(*item);
+		if (m_SearchFilter.match(item->text()).hasMatch())
+		{
+			m_UI->lwSongs->addItem(item.release());
+		}
+	}
+	m_UI->lwSongs->sortItems();
 }
 
 
@@ -295,7 +395,7 @@ void ClassroomWindow::switchToPlaylistMode()
 
 
 
-void ClassroomWindow::updateSongList()
+void ClassroomWindow::filterItemSelected()
 {
 	STOPWATCH("Updating song list");
 
@@ -315,16 +415,13 @@ void ClassroomWindow::updateSongList()
 		{
 			if (root->isSatisfiedBy(*song))
 			{
-				auto item = new QListWidgetItem();
-				item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
-				updateSongItem(*item);
-				m_UI->lwSongs->addItem(item);
+				m_AllFilterSongs.push_back(song->shared_from_this());
 				break;
 			}
 		}
 	}
 
-	m_UI->lwSongs->sortItems();
+	applySearchFilterToSongs();
 }
 
 
@@ -359,6 +456,17 @@ void ClassroomWindow::periodicUIUpdate()
 		if (m_TicksToDurationLimitApply == 0)
 		{
 			applyDurationLimitSettings();
+		}
+	}
+
+	// Update the search filter, if appropriate:
+	if (m_TicksUntilSetSearchText > 0)
+	{
+		m_TicksUntilSetSearchText -= 1;
+		if (m_TicksUntilSetSearchText == 0)
+		{
+			m_SearchFilter.setPattern(m_NewSearchText);
+			applySearchFilterToSongs();
 		}
 	}
 }
@@ -576,49 +684,38 @@ void ClassroomWindow::showSongProperties()
 
 
 
-void ClassroomWindow::showSongContextMenu(const QPoint & a_Pos)
+void ClassroomWindow::showSongListContextMenu(const QPoint & a_Pos)
 {
-	// The colors for setting the background:
-	QColor colors[] =
-	{
-		{ 0xff, 0xff, 0xff },
-		{ 0xff, 0xff, 0x7f },
-		{ 0xff, 0x7f, 0xff },
-		{ 0x7f, 0xff, 0xff },
-		{ 0xff, 0x7f, 0x7f },
-		{ 0x7f, 0x7f, 0xff },
-		{ 0x7f, 0xff, 0x7f },
-	};
+	auto selItem = m_UI->lwSongs->currentItem();
+	showSongContextMenu(a_Pos, selItem->data(Qt::UserRole).value<SongPtr>());
+}
 
-	// Build the context menu:
-	QMenu contextMenu;
-	contextMenu.addAction(m_UI->actPlay);
-	contextMenu.addSeparator();
-	contextMenu.addAction(m_UI->actSetColor);
-	auto size = contextMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
-	for (const auto c: colors)
+
+
+
+
+void ClassroomWindow::showCurSongContextMenu(const QPoint & a_Pos)
+{
+	auto player = m_Components.get<Player>();
+	auto curTrack = player->currentTrack();
+	if (curTrack == nullptr)
 	{
-		auto act = contextMenu.addAction("");
-		QPixmap pixmap(size, size);
-		pixmap.fill(c);
-		act->setIcon(QIcon(pixmap));
-		connect(act, &QAction::triggered, [this, c]() { setSelectedSongBgColor(c); });
+		return;
 	}
-	contextMenu.addSeparator();
-	contextMenu.addAction(m_UI->actRate);
-	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
-	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
-	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
-	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
-	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
-	contextMenu.addSeparator();
-	contextMenu.addAction(m_UI->actRemoveFromLibrary);
-	contextMenu.addAction(m_UI->actDeleteFromDisk);
-	contextMenu.addSeparator();
-	contextMenu.addAction(m_UI->actProperties);
+	auto psi = std::dynamic_pointer_cast<PlaylistItemSong>(curTrack);
+	if (psi == nullptr)
+	{
+		return;
+	}
+	showSongContextMenu(a_Pos, psi->song());
+}
 
-	// Display the menu:
-	auto widget = dynamic_cast<QWidget *>(sender());
-	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
-	contextMenu.exec(pos, nullptr);
+
+
+
+
+void ClassroomWindow::searchTextEdited(const QString & a_NewSearchText)
+{
+	m_NewSearchText = a_NewSearchText;
+	m_TicksUntilSetSearchText = 3;
 }

@@ -4,6 +4,7 @@
 #include <memory>
 #include <QMainWindow>
 #include <QTimer>
+#include <QRegularExpression>
 
 
 
@@ -61,6 +62,25 @@ private:
 	to avoid applying a limit parsed from number in the middle of editing. */
 	int m_TicksToDurationLimitApply;
 
+	/** The song on which the context menu actions are applied. */
+	std::shared_ptr<Song> m_ContextSong;
+
+	/** All the songs matching the current filter.
+	Updated when the filter is chosen by the user, in updateAllFilterSongs().
+	Used to populate the song list, after post-filtering with m_SearchFilter, in applySearchFilterToSongs(). */
+	std::vector<std::shared_ptr<Song>> m_AllFilterSongs;
+
+	/** The search string entered by the user to filter out songs.
+	Updated immediately on UI change, but applied with a delay not to slow down the UI. */
+	QString m_NewSearchText;
+
+	/** The compiled search string entered by the user to filter out songs. */
+	QRegularExpression m_SearchFilter;
+
+	int m_TicksUntilSetSearchText;
+
+
+
 	/** Updates the list of filters in lwFilters. */
 	void updateFilterList();
 
@@ -77,10 +97,26 @@ private:
 	/** Updates the list item by the current data from its linked Song. */
 	void updateSongItem(QListWidgetItem & a_Item);
 
-	/** Sets the background color of the selected song. */
-	void setSelectedSongBgColor(QColor a_BgColor);
+	/** Updates the list item representing the specified song by the song current data.
+	If the song is not represented by any item, ignored silently. */
+	void updateSongItem(Song & a_Song);
 
-	void rateSelectedSongs(double a_LocalRating);
+	/** Sets the background color of m_ContextSong. */
+	void setContextSongBgColor(QColor a_BgColor);
+
+	/** Sets the rating of m_ContextSong. */
+	void rateContextSong(double a_LocalRating);
+
+	/** Returns the list item representing the given song, or nullptr if no such item. */
+	QListWidgetItem * itemFromSong(Song & a_Song);
+
+	/** Shows the context menu for a song at the specified position.
+	The menu items act on m_ContextSong (so that this can be reused from multiple song sources). */
+	void showSongContextMenu(const QPoint & a_Pos, std::shared_ptr<Song> a_Song);
+
+	/** Updates lwSongs with all songs from m_AllFilterSongs that match m_SearchFilter.
+	Called when the user selects a different template-filter, or if they edit the search filter. */
+	void applySearchFilterToSongs();
 
 
 private slots:
@@ -89,7 +125,7 @@ private slots:
 	void switchToPlaylistMode();
 
 	/** Updates the list of song matching the currently selected filter. */
-	void updateSongList();
+	void filterItemSelected();
 
 	/** The user has dbl-clicked on the specified item.
 	Starts playing the song, applying a fadeout if already playing another before. */
@@ -138,7 +174,16 @@ private slots:
 	void showSongProperties();
 
 	/** Shows the context menu for lwSongs items at the specified position. */
-	void showSongContextMenu(const QPoint & a_Pos);
+	void showSongListContextMenu(const QPoint & a_Pos);
+
+	/** Shows the context menu for lblCurrentlyPlaying at the specified position.
+	The context menu is the same as for lwSongs. */
+	void showCurSongContextMenu(const QPoint & a_Pos);
+
+	/** The user has changed the search text.
+	Updates the m_SearchFilter and starts a countdown for it to be applied.
+	Does not apply the filter immediately, so that the UI doesn't slow down waiting for the filtering. */
+	void searchTextEdited(const QString & a_NewSearchText);
 };
 
 
