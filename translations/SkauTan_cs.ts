@@ -6,77 +6,82 @@
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="19"/>
         <source>SkauTan</source>
-        <translation type="unfinished">SkauTan</translation>
+        <translation>SkauTan</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="218"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="195"/>
+        <source>Search</source>
+        <translation>Hledat</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="228"/>
         <source>Limit:</source>
-        <translation type="unfinished"></translation>
+        <translation>Limit:</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="244"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="254"/>
         <source>How long has this song been playing</source>
-        <translation type="unfinished">Jak dlouho skladba hraje</translation>
+        <translation>Jak dlouho skladba hraje</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="266"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="276"/>
         <source>Remaining playback time</source>
-        <translation type="unfinished">Zbývající čas</translation>
-    </message>
-    <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="283"/>
-        <source>Current wall-clock time</source>
-        <translation type="unfinished">Aktuální čas</translation>
+        <translation>Zbývající čas</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="293"/>
+        <source>Current wall-clock time</source>
+        <translation>Aktuální čas</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="303"/>
         <source>Current position within the song</source>
-        <translation type="unfinished">Aktuální poloha ve skladbě</translation>
+        <translation>Aktuální poloha ve skladbě</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="337"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="347"/>
         <source>Start playback / pause playback (NO fade-out)</source>
-        <translation type="unfinished">Začít hrát / pauza (BEZ zeslabení)</translation>
+        <translation>Začít hrát / pauza (BEZ zeslabení)</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="357"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="367"/>
         <source>Stop playback (with fade-out)</source>
-        <translation type="unfinished"></translation>
+        <translation>Zastavit přehrávání (se zeslabením)</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="380"/>
+        <location filename="../src/UI/ClassroomWindow.ui" line="390"/>
         <source>Play song</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="391"/>
-        <source>Remove from library...</source>
-        <translation type="unfinished">Odebrat z knihovny...</translation>
-    </message>
-    <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="396"/>
-        <source>Delete from disk...</source>
-        <translation type="unfinished">Smazat z disku...</translation>
+        <translation>Přehrát</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="401"/>
+        <source>Remove from library...</source>
+        <translation>Odebrat z knihovny...</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="406"/>
+        <source>Delete from disk...</source>
+        <translation>Smazat z disku...</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="411"/>
         <source>Properties...</source>
-        <translation type="unfinished">Vlastnosti...</translation>
-    </message>
-    <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="404"/>
-        <source>Display / edit the song&apos;s properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/ClassroomWindow.ui" line="409"/>
-        <source>Rate:</source>
-        <translation type="unfinished">Ohodnotit:</translation>
+        <translation>Vlastnosti...</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="414"/>
+        <source>Display / edit the song&apos;s properties</source>
+        <translation>Zobrazit / upravit vlastnosti skladby</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="419"/>
+        <source>Rate:</source>
+        <translation>Ohodnotit:</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/ClassroomWindow.ui" line="424"/>
         <source>Set color:</source>
-        <translation type="unfinished"></translation>
+        <translation>Obarvit:</translation>
     </message>
     <message>
         <source>Next track (with fade-out)</source>
@@ -85,51 +90,55 @@
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="63"/>
         <source>Volume</source>
-        <translation type="unfinished">Hlasitost</translation>
+        <translation>Hlasitost</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="98"/>
         <source>Tempo</source>
-        <translation type="unfinished">Tempo</translation>
+        <translation>Tempo</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="149"/>
         <source>Reset tempo to +0 %</source>
-        <translation type="unfinished">Nastavit původní tempo</translation>
+        <translation>Nastavit původní tempo</translation>
     </message>
     <message>
         <location filename="../src/UI/ClassroomWindow.ui" line="164"/>
         <source>Playlist mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Režim playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="185"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="189"/>
         <source>Currently playing: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Zrovna přehráváno: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="497"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="605"/>
         <source>SkauTan: Remove song?</source>
-        <translation type="unfinished"></translation>
+        <translation>SkauTan: Odebrat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="543"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="651"/>
         <source>SkauTan: Delete song?</source>
-        <translation type="unfinished"></translation>
+        <translation>SkauTan: Vymazat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="498"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="606"/>
         <source>Are you sure you want to remove the selected song from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
-        <translation type="unfinished"></translation>
+        <translation>Opravdu chcete odebrat označenou skladbu z knihovny? Soubor na disku zůstane, ale všechny hodnoty uložené v knihovně budou ztraceny.
+
+Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="544"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="652"/>
         <source>Are you sure you want to delete the selected song from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
-        <translation type="unfinished"></translation>
+        <translation>Opravdu chcete vymazat označenou skladbu z disku? Soubor bude smazán a všechny hodnoty uložené v knihovně budou ztraceny.
+
+Tato operace je nevratná!</translation>
     </message>
 </context>
 <context>
@@ -2582,7 +2591,7 @@ Tato operace je nevratná!</translation>
     <message>
         <location filename="../src/UI/PlayerWindow.ui" line="211"/>
         <source>Classroom mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Režim výuky</translation>
     </message>
     <message>
         <location filename="../src/UI/PlayerWindow.ui" line="274"/>
