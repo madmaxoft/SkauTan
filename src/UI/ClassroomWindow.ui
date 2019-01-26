@@ -190,6 +190,13 @@
          <number>2</number>
         </property>
         <item>
+         <widget class="QLineEdit" name="leSearchSongs">
+          <property name="placeholderText">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QListWidget" name="lwSongs">
           <property name="contextMenuPolicy">
            <enum>Qt::CustomContextMenu</enum>
@@ -201,6 +208,9 @@
         </item>
         <item>
          <widget class="QLabel" name="lblCurrentlyPlaying">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
           <property name="text">
            <string notr="true">Currently playing:</string>
           </property>
