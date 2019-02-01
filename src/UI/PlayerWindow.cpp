@@ -17,7 +17,6 @@
 #include "../LengthHashCalculator.hpp"
 #include "../Settings.hpp"
 #include "../Utils.hpp"
-#include "../DJControllers.hpp"
 #include "../LocalVoteServer.hpp"
 #include "../PlaylistImportExport.hpp"
 #include "Dlg/DlgSongs.hpp"
@@ -55,6 +54,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	m_UI->tblPlaylist->setItemDelegate(m_PlaylistDelegate.get());
 	m_UI->tblPlaylist->setDropIndicatorShown(true);
 	m_UI->waveform->setPlayer(*m_Components.get<Player>());
+	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, "PlayerWindow");
 
 	// Set labels' minimum width to avoid layout changes in runtime:
 	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("00:00"));
@@ -84,7 +84,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	// Connect the signals:
 	auto db     = m_Components.get<Database>();
 	auto player = m_Components.get<Player>();
-	auto mc     = m_Components.get<DJControllers>();
+	auto djc    = m_Components.get<DJControllers>();
 	connect(m_UI->btnSongs,               &QPushButton::clicked,                 this,         &PlayerWindow::showSongs);
 	connect(m_UI->btnTemplates,           &QPushButton::clicked,                 this,         &PlayerWindow::showTemplates);
 	connect(m_UI->btnHistory,             &QPushButton::clicked,                 this,         &PlayerWindow::showHistory);
@@ -125,13 +125,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
 	connect(player.get(),                 &Player::volumeChanged,                this,         &PlayerWindow::playerVolumeChanged);
 	connect(player.get(),                 &Player::invalidTrack,                 this,         &PlayerWindow::invalidTrack);
-	connect(mc.get(),                     &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
-	connect(mc.get(),                     &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
-	connect(mc.get(),                     &DJControllers::setTempoCoeff,         this,         &PlayerWindow::djControllerSetTempoCoeff);
-	connect(mc.get(),                     &DJControllers::setVolume,             this,         &PlayerWindow::djControllerSetVolume);
-	connect(mc.get(),                     &DJControllers::playPause,             player.get(), &Player::startPausePlayback);
-	connect(mc.get(),                     &DJControllers::navigateUp,            this,         &PlayerWindow::djControllerNavigateUp);
-	connect(mc.get(),                     &DJControllers::navigateDown,          this,         &PlayerWindow::djControllerNavigateDown);
+	connect(djc.get(),                    &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
+	connect(djc.get(),                    &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(m_UI->tblPlaylist->horizontalHeader()->font());
@@ -207,6 +202,8 @@ PlayerWindow::PlayerWindow(ComponentCollection & a_Components):
 	auto lastCompletionTemplateName = Settings::loadValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", "").toString();
 	auto tmplIndex = m_UI->cbCompletionAppendTemplate->findText(lastCompletionTemplateName);
 	m_UI->cbCompletionAppendTemplate->setCurrentIndex(tmplIndex);
+
+	setUpDjControllers();
 
 	m_UpdateTimer.start(200);
 }
@@ -379,6 +376,89 @@ void PlayerWindow::setSelectedItemsDurationLimit(double a_NewDurationLimit)
 QVariant PlayerWindow::objectToAppendUponCompletion() const
 {
 	return m_UI->cbCompletionAppendTemplate->currentData();
+}
+
+
+
+
+
+void PlayerWindow::setUpDjControllers()
+{
+	const QString CONTEXT = "PlayerWindow";
+	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, CONTEXT);
+	auto djc = m_Components.get<DJControllers>();
+	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, [this](int a_Key) { handleDjControllerKey(a_Key); });
+	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, [this](int a_Slider, qreal a_Value) { handleDjControllerSlider(a_Slider, a_Value); });
+	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, [this](int a_Wheel, int a_NumSteps) { handleDjControllerWheel(a_Wheel, a_NumSteps); });
+}
+
+
+
+
+
+void PlayerWindow::handleDjControllerKey(int a_Key)
+{
+	switch (a_Key)
+	{
+		case AbstractController::skPlayPause1:
+		case AbstractController::skPlayPause2:
+		{
+			m_Components.get<Player>()->startPausePlayback();
+			return;
+		}
+	}
+}
+
+
+
+
+
+void PlayerWindow::handleDjControllerSlider(int a_Slider, qreal a_Value)
+{
+	switch (a_Slider)
+	{
+		case AbstractController::ssPitch1:
+		case AbstractController::ssPitch2:
+		{
+			m_UI->vsTempo->setValue(static_cast<int>(100 * a_Value) - 50);
+			return;
+		}
+
+		case AbstractController::ssVolume1:
+		case AbstractController::ssVolume2:
+		case AbstractController::ssMasterVolume:
+		{
+			auto volume = static_cast<int>(100 * a_Value);
+			m_UI->vsVolume->setValue(volume);
+			volumeSliderMoved(volume);
+			return;
+		}
+	}
+}
+
+
+
+
+
+void PlayerWindow::handleDjControllerWheel(int a_Wheel, int a_NumSteps)
+{
+	switch (a_Wheel)
+	{
+		case AbstractController::swBrowse:
+		{
+			if (m_UI->tblPlaylist->currentIndex().isValid())
+			{
+				auto row = m_UI->tblPlaylist->currentIndex().row() - a_NumSteps;
+				auto numRows = static_cast<int>(m_Components.get<Player>()->playlist().items().size());
+				m_UI->tblPlaylist->selectRow(Utils::clamp(row, 0, numRows - 1));
+			}
+			else
+			{
+				m_UI->tblPlaylist->selectRow(0);
+			}
+			return;
+		}
+	}
 }
 
 
@@ -1132,51 +1212,6 @@ void PlayerWindow::djControllerConnected(const QString & a_Name)
 void PlayerWindow::djControllerRemoved()
 {
 	// Nothing needed yet
-}
-
-
-
-
-
-void PlayerWindow::djControllerSetTempoCoeff(qreal a_TempoCoeff)
-{
-	m_UI->vsTempo->setValue(static_cast<int>(100 * a_TempoCoeff) - 50);
-}
-
-
-
-
-
-void PlayerWindow::djControllerSetVolume(qreal a_Volume)
-{
-	auto volume = static_cast<int>(100 * a_Volume);
-	m_UI->vsVolume->setValue(volume);
-	volumeSliderMoved(volume);
-}
-
-
-
-
-
-void PlayerWindow::djControllerNavigateUp()
-{
-	if (m_UI->tblPlaylist->currentIndex().row() > 0)
-	{
-		m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() - 1);
-	}
-	else
-	{
-		m_UI->tblPlaylist->selectRow(0);
-	}
-}
-
-
-
-
-
-void PlayerWindow::djControllerNavigateDown()
-{
-	m_UI->tblPlaylist->selectRow(m_UI->tblPlaylist->currentIndex().row() + 1);
 }
 
 

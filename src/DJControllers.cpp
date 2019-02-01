@@ -1,6 +1,8 @@
 #include "DJControllers.hpp"
 #include <QSemaphore>
 #include <QDebug>
+#include <QGuiApplication>
+#include <QWidget>
 #include "Utils.hpp"
 #include "Controller/MidiEnumerator.hpp"
 
@@ -12,7 +14,8 @@
 // DJControllers:
 
 DJControllers::DJControllers(QObject * a_Parent):
-	Super(a_Parent)
+	Super(a_Parent),
+	m_NextRegID(0)
 {
 	QThread::setObjectName("DJControllers");
 	moveToThread(this);
@@ -39,12 +42,126 @@ DJControllers::~DJControllers()
 
 
 
+void DJControllers::unregisterKeyHandler(quint64 a_RegID)
+{
+	for (auto itr = m_KeyHandlers.begin(), end = m_KeyHandlers.end(); itr != end; ++itr)
+	{
+		if (std::get<0>(*itr) == a_RegID)
+		{
+			m_KeyHandlers.erase(itr);
+			return;
+		}
+	}
+}
+
+
+
+
+
+void DJControllers::unregisterSliderHandler(quint64 a_RegID)
+{
+	for (auto itr = m_SliderHandlers.begin(), end = m_SliderHandlers.end(); itr != end; ++itr)
+	{
+		if (std::get<0>(*itr) == a_RegID)
+		{
+			m_SliderHandlers.erase(itr);
+			return;
+		}
+	}
+}
+
+
+
+
+
+void DJControllers::unregisterWheelHandler(quint64 a_RegID)
+{
+	for (auto itr = m_WheelHandlers.begin(), end = m_WheelHandlers.end(); itr != end; ++itr)
+	{
+		if (std::get<0>(*itr) == a_RegID)
+		{
+			m_WheelHandlers.erase(itr);
+			return;
+		}
+	}
+}
+
+
+
+
+
+DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(const QString & a_Context, DJControllers::KeyHandler a_Callback)
+{
+	auto regID = m_NextRegID++;
+	m_KeyHandlers.push_back({regID, a_Context, a_Callback});
+	return std::make_shared<KeyHandlerReg>(*this, regID);
+}
+
+
+
+
+
+DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(const QString & a_Context, DJControllers::SliderHandler a_Callback)
+{
+	auto regID = m_NextRegID++;
+	m_SliderHandlers.push_back({regID, a_Context, a_Callback});
+	return std::make_shared<SliderHandlerReg>(*this, regID);
+}
+
+
+
+
+
+DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(const QString & a_Context, DJControllers::WheelHandler a_Callback)
+{
+	auto regID = m_NextRegID++;
+	m_WheelHandlers.push_back({regID, a_Context, a_Callback});
+	return std::make_shared<WheelHandlerReg>(*this, regID);
+}
+
+
+
+
+
 void DJControllers::setLed(int a_Led, bool a_LightUp)
 {
 	for (auto & c: m_Controllers)
 	{
 		c->setLed(a_Led, a_LightUp);
 	}
+}
+
+
+
+
+
+QString DJControllers::findCurrentContext()
+{
+	auto focused = qApp->focusObject();
+	QString wholeContext;
+	while (focused != nullptr)
+	{
+		auto context = focused->property(CONTEXT_PROPERTY_NAME);
+		if (context.isValid() && !context.toString().isEmpty())
+		{
+			wholeContext = "." + context.toString();
+		}
+		auto w = dynamic_cast<QWidget *>(focused);
+		if (w != nullptr)
+		{
+			focused = w->parentWidget();
+		}
+		else
+		{
+			focused = focused->parent();
+		}
+	}
+	if (wholeContext.isEmpty())
+	{
+		return QString();
+	}
+	wholeContext.remove(0, 1);  // Remove the initial dot
+	return wholeContext;
 }
 
 
@@ -114,26 +231,15 @@ void DJControllers::controllerDisconnected(std::shared_ptr<AbstractController> a
 
 void DJControllers::controllerKeyPressed(int a_Key)
 {
-	switch (a_Key)
+	// Notify all handlers whose context matches the current one:
+	auto context = findCurrentContext();
+	for (const auto & handler: m_KeyHandlers)
 	{
-		case AbstractController::skPlayPause1:
+		if (std::get<1>(handler) == context)
 		{
-			emit playPause();
-			return;
+			std::get<2>(handler)(a_Key);
 		}
-		case AbstractController::skPitchPlus1:
-		{
-			emit pitchPlus();
-			return;
-		}
-		case AbstractController::skPitchMinus1:
-		{
-			emit pitchMinus();
-			return;
-		}
-		// TODO: Other keys
 	}
-	qDebug() << "Unhandled controller key: " << a_Key;
 }
 
 
@@ -142,21 +248,15 @@ void DJControllers::controllerKeyPressed(int a_Key)
 
 void DJControllers::controllerSliderSet(int a_Slider, qreal a_Value)
 {
-	switch (a_Slider)
+	// Notify all handlers whose context matches the current one:
+	auto context = findCurrentContext();
+	for (const auto & handler: m_SliderHandlers)
 	{
-		case AbstractController::ssMasterVolume:
+		if (std::get<1>(handler) == context)
 		{
-			emit setVolume(a_Value);
-			return;
+			std::get<2>(handler)(a_Slider, a_Value);
 		}
-		case AbstractController::ssPitch1:
-		{
-			emit setTempoCoeff(a_Value);
-			return;
-		}
-		// TODO: Other sliders
 	}
-	qDebug() << "Unhandled controller slider: " << a_Slider;
 }
 
 
@@ -165,23 +265,15 @@ void DJControllers::controllerSliderSet(int a_Slider, qreal a_Value)
 
 void DJControllers::controllerWheelMoved(int a_Wheel, int a_NumSteps)
 {
-	switch (a_Wheel)
+	// Notify all handlers whose context matches the current one:
+	auto context = findCurrentContext();
+	for (const auto & handler: m_WheelHandlers)
 	{
-		case AbstractController::swBrowse:
+		if (std::get<1>(handler) == context)
 		{
-			if (a_NumSteps < 0)
-			{
-				emit navigateUp();
-			}
-			else
-			{
-				emit navigateDown();
-			}
-			return;
+			std::get<2>(handler)(a_Wheel, a_NumSteps);
 		}
-		// TODO: Other wheels
 	}
-	qDebug() << "Unhandled controller wheel: " << a_Wheel;
 }
 
 

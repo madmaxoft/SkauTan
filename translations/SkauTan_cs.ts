@@ -108,22 +108,22 @@
         <translation>Režim playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="189"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="191"/>
         <source>Currently playing: %1</source>
         <translation>Zrovna přehráváno: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="606"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="695"/>
         <source>SkauTan: Remove song?</source>
         <translation>SkauTan: Odebrat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="652"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="741"/>
         <source>SkauTan: Delete song?</source>
         <translation>SkauTan: Vymazat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="607"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="696"/>
         <source>Are you sure you want to remove the selected song from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -132,7 +132,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="653"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="742"/>
         <source>Are you sure you want to delete the selected song from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2829,17 +2829,17 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">Úlohy na pozadí</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="304"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="301"/>
         <source>Songs: %1</source>
         <translation>Skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="711"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="791"/>
         <source>SkauTan: Delete songs?</source>
         <translation>SkauTan: vymazat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="712"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="792"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2848,12 +2848,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="746"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="826"/>
         <source>SkauTan: Remove songs?</source>
         <translation>SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="747"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="827"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -2862,38 +2862,38 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="861"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="941"/>
         <source>SkauTan: Set duration limit</source>
         <translation>SkauTan: Nastavit limit</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="862"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="942"/>
         <source>New duration:</source>
         <translation>Nový limit:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1041"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1121"/>
         <source>SkauTan: Save playlist</source>
         <translation>SkauTan: Uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1057"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1137"/>
         <source>SkauTan: Cannot save playlist</source>
         <translation>SkauTan: Nelze uložit playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1058"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1092"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1138"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1172"/>
         <source>Cannot save playlist to file %1: %2</source>
         <translation>Nelze uložit playlist do souboru %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1071"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1151"/>
         <source>SkauTan: Load playlist</source>
         <translation>SkauTan: Načíst playlist</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1091"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1171"/>
         <source>SkauTan: Cannot load playlist</source>
         <translation>SkauTan: Nelze načíst playlist</translation>
     </message>
@@ -2902,8 +2902,8 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">SkauTan: Uložit playlist:</translation>
     </message>
     <message>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1043"/>
-        <location filename="../src/UI/PlayerWindow.cpp" line="1073"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1123"/>
+        <location filename="../src/UI/PlayerWindow.cpp" line="1153"/>
         <source>M3U playlist (*.m3u)</source>
         <translation>Playlist M3U (*.m3u)</translation>
     </message>

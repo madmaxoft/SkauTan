@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QRegularExpression>
+#include "../DJControllers.hpp"
 
 
 
@@ -77,8 +78,13 @@ private:
 	/** The compiled search string entered by the user to filter out songs. */
 	QRegularExpression m_SearchFilter;
 
+	/** Number of periodicUpradeUi()'s ticks before m_NewSearchText is applied from the lineedit to the*/
 	int m_TicksUntilSetSearchText;
 
+	// The DJControllers registrations:
+	DJControllers::KeyHandlerRegPtr    m_DjKeyHandler;
+	DJControllers::SliderHandlerRegPtr m_DjSliderHandler;
+	DJControllers::WheelHandlerRegPtr  m_DjWheelHandler;
 
 
 	/** Updates the list of filters in lwFilters. */
@@ -117,6 +123,26 @@ private:
 	/** Updates lwSongs with all songs from m_AllFilterSongs that match m_SearchFilter.
 	Called when the user selects a different template-filter, or if they edit the search filter. */
 	void applySearchFilterToSongs();
+
+	/** Initializes the window to accept input by DJ controllers. */
+	void setUpDjControllers();
+
+	/** Handler for keypresses on the DJ controller. */
+	void handleDjControllerKey(int a_Key);
+
+	/** Handler for slider changes on the DJ controller. */
+	void handleDjControllerSlider(int a_Slider, qreal a_Value);
+
+	/** Handler for wheel moves on the DJ controller. */
+	void handleDjControllerWheel(int a_Wheel, int a_NumSteps);
+
+	/** Moves the selection in lwFilters by the specified number of steps up or down.
+	If not all steps can be taken, they are ignored silently. */
+	void moveFilterSelection(int a_NumSteps);
+
+	/** Moves the selection in lwSongs by the specified number of steps up or down.
+	If not all steps can be taken, they are ignored silently. */
+	void moveSongSelection(int a_NumSteps);
 
 
 private slots:
