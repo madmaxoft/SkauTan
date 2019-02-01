@@ -11,6 +11,7 @@
 #include <QTimer>
 
 #include "PlaylistItemModel.hpp"
+#include "../DJControllers.hpp"
 
 
 
@@ -85,6 +86,11 @@ private:
 	/** The window that is shown when asked to switch to the Classroom mode. */
 	QWidget * m_ClassroomWindow;
 
+	// The DJControllers registrations:
+	DJControllers::KeyHandlerRegPtr    m_DjKeyHandler;
+	DJControllers::SliderHandlerRegPtr m_DjSliderHandler;
+	DJControllers::WheelHandlerRegPtr  m_DjWheelHandler;
+
 
 	/** Sets the local rating for the selected songs. */
 	void rateSelectedSongs(double a_LocalRating);
@@ -105,6 +111,18 @@ private:
 	Returns a valid template / item even if the checkbox is unchecked (so that it can be used for preserving
 	the combobox selection when refreshing). */
 	QVariant objectToAppendUponCompletion() const;
+
+	/** Sets up all that is needed to support the DJ controllers in this window. */
+	void setUpDjControllers();
+
+	/** Handler for keypresses on the DJ controller. */
+	void handleDjControllerKey(int a_Key);
+
+	/** Handler for slider changes on the DJ controller. */
+	void handleDjControllerSlider(int a_Slider, qreal a_Value);
+
+	/** Handler for wheel moves on the DJ controller. */
+	void handleDjControllerWheel(int a_Wheel, int a_NumSteps);
 
 
 private slots:
@@ -231,18 +249,6 @@ private slots:
 
 	/** A DJ controller was disconnected. */
 	void djControllerRemoved();
-
-	/** A DJ controller's tempo slider was moved. */
-	void djControllerSetTempoCoeff(qreal a_TempoCoeff);
-
-	/** A DJ controller's volume slider was moved. */
-	void djControllerSetVolume(qreal a_Volume);
-
-	/** A DJ controller's navigation wheel has been moved upwards. */
-	void djControllerNavigateUp();
-
-	/** A DJ controller's navigation wheel has been moved downwards. */
-	void djControllerNavigateDown();
 
 	/** Shows the status dialog for the LocalVoteServer. */
 	void showLvsStatus();

@@ -61,6 +61,8 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	Settings::loadSplitterSizes("ClassroomWindow", "splMain", m_UI->splMain);
 	m_UI->waveform->setPlayer(*m_Components.get<Player>());
 
+	setUpDjControllers();
+
 	// Set labels' minimum width to avoid layout changes in runtime:
 	m_UI->lblTotalTime->setMinimumWidth(m_UI->lblTotalTime->fontMetrics().width("00:00"));
 	m_UI->lblPosition->setMinimumWidth(m_UI->lblPosition->fontMetrics().width("00:00"));
@@ -372,6 +374,93 @@ void ClassroomWindow::applySearchFilterToSongs()
 		}
 	}
 	m_UI->lwSongs->sortItems();
+}
+
+
+
+
+
+void ClassroomWindow::setUpDjControllers()
+{
+	const QString CONTEXT = "ClassroomWindow";
+	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, CONTEXT);
+	auto djc = m_Components.get<DJControllers>();
+	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, [this](int a_Key) { handleDjControllerKey(a_Key); });
+	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, [this](int a_Slider, qreal a_Value) { handleDjControllerSlider(a_Slider, a_Value); });
+	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, [this](int a_Wheel, int a_NumSteps) { handleDjControllerWheel(a_Wheel, a_NumSteps); });
+}
+
+
+
+
+
+void ClassroomWindow::handleDjControllerKey(int a_Key)
+{
+	switch (a_Key)
+	{
+		case AbstractController::skPlayPause1:
+		case AbstractController::skPlayPause2:
+		{
+			m_Components.get<Player>()->startPausePlayback();
+			return;
+		}
+		case AbstractController::skEnter1:
+		case AbstractController::skEnter2:
+		{
+			playSelectedSong();
+			return;
+		}
+	}
+}
+
+
+
+
+
+void ClassroomWindow::handleDjControllerSlider(int a_Slider, qreal a_Value)
+{
+	switch (a_Slider)
+	{
+		case AbstractController::ssVolume1:
+		case AbstractController::ssVolume2:
+		{
+			m_UI->vsVolume->setValue(static_cast<int>(a_Value * 100));
+			return;
+		}
+		case AbstractController::ssPitch1:
+		case AbstractController::ssPitch2:
+		{
+			m_UI->vsTempo->setValue(static_cast<int>(a_Value * 100 - 50));
+			return;
+		}
+	}
+}
+
+
+
+
+
+void ClassroomWindow::handleDjControllerWheel(int a_Wheel, int a_NumSteps)
+{
+	switch (a_Wheel)
+	{
+		case AbstractController::swBrowse:
+		{
+			auto curRow = m_UI->lwFilters->currentRow();
+			curRow = Utils::clamp(curRow + a_NumSteps, 0, m_UI->lwFilters->count() - 1);
+			m_UI->lwFilters->setCurrentRow(curRow);
+			return;
+		}
+
+		case AbstractController::swJog1:
+		case AbstractController::swJog2:
+		{
+			auto curRow = m_UI->lwSongs->currentRow();
+			curRow = Utils::clamp(curRow + a_NumSteps, 0, m_UI->lwSongs->count() - 1);
+			m_UI->lwSongs->setCurrentRow(curRow);
+			return;
+		}
+	}
 }
 
 

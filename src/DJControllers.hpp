@@ -30,11 +30,93 @@ class DJControllers:
 	Q_OBJECT
 
 
+protected:
+
+	/** Unregisters the specified key handler.
+	For internal use, clients of this class will call this automatically via KeyHandlerReg's destructor. */
+	void unregisterKeyHandler(quint64 a_RegID);
+
+	/** Unregisters the specified slider handler.
+	For internal use, clients of this class will call this automatically via SliderHandlerReg's destructor. */
+	void unregisterSliderHandler(quint64 a_RegID);
+
+	/** Unregisters the specified wheel handler.
+	For internal use, clients of this class will call this automatically via WheelHandlerReg's destructor. */
+	void unregisterWheelHandler(quint64 a_RegID);
+
+
 public:
 
+	using KeyHandler = std::function<void(int a_Key)>;
+	using SliderHandler = std::function<void(int a_Slider, qreal a_Value)>;
+	using WheelHandler = std::function<void(int a_Wheel, int a_NumSteps)>;
+
+
+	/** RAII class for unregistering callbacks upon its destruction. */
+	template <void (DJControllers::*UnregFn)(quint64)>
+	class HandlerReg
+	{
+	public:
+
+		/** Creates a new RAII wrapper tied to the specified registration ID. */
+		HandlerReg(DJControllers & a_Parent, quint64 a_RegID):
+			m_Parent(a_Parent),
+			m_RegID(a_RegID)
+		{
+		}
+
+		/** Unregisters the wrapped handler. */
+		~HandlerReg()
+		{
+			(m_Parent.*UnregFn)(m_RegID);
+		}
+
+
+	protected:
+
+		/** The DJControllers instance where the handler is registered. */
+		DJControllers & m_Parent;
+
+		/** The registration ID in m_Parent to remove upon destruction. */
+		quint64 m_RegID;
+	};
+
+	// Typedefs for easier usage:
+	using KeyHandlerReg    = HandlerReg<&DJControllers::unregisterKeyHandler>;
+	using SliderHandlerReg = HandlerReg<&DJControllers::unregisterSliderHandler>;
+	using WheelHandlerReg  = HandlerReg<&DJControllers::unregisterWheelHandler>;
+	using KeyHandlerRegPtr    = std::shared_ptr<KeyHandlerReg>;
+	using SliderHandlerRegPtr = std::shared_ptr<SliderHandlerReg>;
+	using WheelHandlerRegPtr  = std::shared_ptr<WheelHandlerReg>;
+
+
+	/** The QObject's property used to store the context name. */
+	static constexpr char CONTEXT_PROPERTY_NAME[] = "SkauTan_DJControllers_Context";
+
+
+	/** Creates a new empty instance. */
 	explicit DJControllers(QObject * a_Parent = nullptr);
 
 	virtual ~DJControllers() override;
+
+	/** Registers a handler for key events in the specified context.
+	Returns a registration object that unregisters the callback when destroyed. */
+	KeyHandlerRegPtr registerContextKeyHandler(
+		const QString & a_Context,
+		KeyHandler a_Callback
+	);
+
+	/** Registers a handler for slider events in the specified context. */
+	SliderHandlerRegPtr registerContextSliderHandler(
+		const QString & a_Context,
+		SliderHandler a_Callback
+	);
+
+	/** Registers a handler for wheel events in the specified context. */
+	WheelHandlerRegPtr registerContextWheelHandler(
+		const QString & a_Context,
+		WheelHandler a_Callback
+	);
 
 
 private:
@@ -48,9 +130,24 @@ private:
 	/** Controllers currently connected and detected. */
 	std::vector<std::shared_ptr<AbstractController>> m_Controllers;
 
+	/** The RegID of the next key / slider / wheel registration. */
+	std::atomic<quint64> m_NextRegID;
+
+	/** The registered key handlers. */
+	std::vector<std::tuple<quint64, QString, KeyHandler>> m_KeyHandlers;
+
+	/** The registered slider handlers. */
+	std::vector<std::tuple<quint64, QString, SliderHandler>> m_SliderHandlers;
+
+	/** The registered wheel handlers. */
+	std::vector<std::tuple<quint64, QString, WheelHandler>> m_WheelHandlers;
+
 
 	/** Sends a message to turn the specified LED on or off. */
 	void setLed(int a_Led, bool a_LightUp);
+
+	/** Returns the current context, based on the app's focused window and its parents. */
+	QString findCurrentContext();
 
 
 	// QThread overrides:
@@ -64,28 +161,6 @@ signals:
 
 	/** The user disconnected the controller. */
 	void controllerRemoved();
-
-	/** The user pressed the Play / Pause button on the controller. */
-	void playPause();
-
-	/** The user changed the TempoCoeff on the controller.
-	a_TempoCoeff ranges from 0.0 to 1.0. */
-	void setTempoCoeff(qreal a_TempoCoeff);
-
-	/** The user pressed the Pitch Plus button on the controller. */
-	void pitchPlus();
-
-	/** The user pressed the Pitch Minus button on the controller. */
-	void pitchMinus();
-
-	/** The user changed the Volume on the controller. */
-	void setVolume(qreal a_Volume);
-
-	/** The user rolled the Navigation wheel up on the controller. */
-	void navigateUp();
-
-	/** The user rolled the Navigation wheel down on the controller. */
-	void navigateDown();
 
 
 private slots:
