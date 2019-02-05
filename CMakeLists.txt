@@ -340,6 +340,10 @@ set (HEADERS
 	src/Utils.hpp
 )
 
+
+
+
+
 set (UI
 	src/UI/ClassroomWindow.ui
 	src/UI/PlayerWindow.ui
@@ -511,6 +515,10 @@ target_link_libraries(BeatDetectCmd
 	$<$<CONFIG:MinSizeRel>:${TAGLIB_RELEASE}>
 )
 
+
+
+
+
 if (MSVC)
 	target_link_libraries(BeatDetectCmd
 		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
@@ -523,6 +531,7 @@ else ()
 		z
 	)
 endif ()
+
 
 
 
@@ -549,4 +558,47 @@ target_link_libraries(FreqExtract
 	${AVUTIL}
 	${AVCODEC}
 	${SWRESAMPLE}
+)
+
+
+
+
+
+############################################
+# Tests:
+
+enable_testing()
+
+add_executable(TagProcessing
+	tests/TagProcessing.cpp
+	src/MetadataScanner.cpp
+	src/MetadataScanner.hpp
+	src/Song.cpp
+	src/Song.hpp
+)
+
+target_link_libraries (TagProcessing
+	Qt5::Widgets
+	# TagLib libraries (assumed installed on the build system):
+	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
+	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:RelWithDebInfo>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:MinSizeRel>:${TAGLIB_RELEASE}>
+)
+
+if (MSVC)
+	target_link_libraries(TagProcessing
+		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
+		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
+		$<$<CONFIG:RelWithDebInfo>:${ZLIB_RELEASE}>
+		$<$<CONFIG:MinSizeRel>:${ZLIB_RELEASE}>
+	)
+else ()
+	target_link_libraries(TagProcessing
+		z
+	)
+endif ()
+
+add_test(NAME TagProcessing
+	COMMAND TagProcessing
 )

@@ -246,7 +246,7 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 
 
 /** Extracts as much metadata form the input string as possible.
-The extracted data is saved into a_OutputTag and removed from the string. */
+The extracted data is saved into a_OutputTag and, if appropriate, removed from the string. */
 static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 {
 	// First process all parentheses, brackets and braces:
@@ -477,36 +477,6 @@ MetadataScanner::Tag MetadataScanner::applyTagChanges(const MetadataScanner::Tag
 
 
 
-void MetadataScanner::enqueueScan(SongPtr a_Song, bool a_Prioritize)
-{
-	m_QueueLength += 1;
-	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
-		{
-			scanSong(a_Song);
-			m_QueueLength -= 1;
-		},
-		a_Prioritize
-	);
-}
-
-
-
-
-
-TagLib::FileRef MetadataScanner::openTagFile(const QString & a_FileName)
-{
-	#ifdef _WIN32
-		// TagLib on Windows needs UTF16-BE filenames (#134):
-		return TagLib::FileRef(reinterpret_cast<const wchar_t *>(a_FileName.constData()), false);
-	#else
-		return TagLib::FileRef(a_FileName.toUtf8().constData(), false);
-	#endif
-}
-
-
-
-
-
 Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 {
 	Song::Tag songTag;
@@ -553,6 +523,36 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	}
 	validateSongTag(songTag);
 	return songTag;
+}
+
+
+
+
+
+void MetadataScanner::enqueueScan(SongPtr a_Song, bool a_Prioritize)
+{
+	m_QueueLength += 1;
+	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
+		{
+			scanSong(a_Song);
+			m_QueueLength -= 1;
+		},
+		a_Prioritize
+	);
+}
+
+
+
+
+
+TagLib::FileRef MetadataScanner::openTagFile(const QString & a_FileName)
+{
+	#ifdef _WIN32
+		// TagLib on Windows needs UTF16-BE filenames (#134):
+		return TagLib::FileRef(reinterpret_cast<const wchar_t *>(a_FileName.constData()), false);
+	#else
+		return TagLib::FileRef(a_FileName.toUtf8().constData(), false);
+	#endif
 }
 
 

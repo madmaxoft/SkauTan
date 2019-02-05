@@ -10,6 +10,7 @@
 #include <QObject>
 #include "ComponentCollection.hpp"
 #include "Song.hpp"
+#include "DatedOptional.hpp"
 
 
 
@@ -43,9 +44,39 @@ public:
 	{
 		DatedOptional<QString> m_Author;
 		DatedOptional<QString> m_Title;
-		DatedOptional<QString> m_Genre;
 		DatedOptional<QString> m_Comment;
+		DatedOptional<QString> m_Genre;
 		DatedOptional<double>  m_MeasuresPerMinute;
+
+		Tag() = default;
+		Tag(const Tag & a_Other) = default;
+		Tag(
+			const QString & a_Author,
+			const QString & a_Title,
+			const QString & a_Comment,
+			const QString & a_Genre,
+			double a_MeasuresPerMinute
+		):
+			m_Author(a_Author),
+			m_Title(a_Title),
+			m_Comment(a_Comment),
+			m_Genre(a_Genre),
+			m_MeasuresPerMinute(a_MeasuresPerMinute)
+		{
+		}
+
+		Tag(
+			const QString & a_Author,
+			const QString & a_Title,
+			const QString & a_Comment,
+			const QString & a_Genre
+		):
+			m_Author(a_Author),
+			m_Title(a_Title),
+			m_Comment(a_Comment),
+			m_Genre(a_Genre)
+		{
+		}
 	};
 
 
@@ -71,6 +102,11 @@ public:
 	Only values from a_Changes that are present are applied into the result. */
 	static Tag applyTagChanges(const Tag & a_FileTag, const Tag & a_Changes);
 
+	/** Attempts to parse the filename into metadata.
+	Assumes that most of our songs have some info in their filename or the containing folders,
+	tries to extract that info into the returned tag. */
+	static Song::Tag parseFileNameIntoMetadata(const QString & a_FileName);
+
 
 protected:
 
@@ -83,11 +119,6 @@ protected:
 
 	/** Opens the specified file for reading / writing the tag using TagLib. */
 	static TagLib::FileRef openTagFile(const QString & a_FileName);
-
-	/** Attempts to parse the filename into metadata.
-	Assumes that most of our songs have some info in their filename or the containing folders,
-	tries to extract that info into the returned tag. */
-	static Song::Tag parseFileNameIntoMetadata(const QString & a_FileName);
 
 
 signals:

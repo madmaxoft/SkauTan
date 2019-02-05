@@ -109,6 +109,22 @@ public:
 		return m_IsPresent;
 	}
 
+	constexpr bool operator == (const DatedOptional<T> & a_Other) const noexcept
+	{
+		return (
+			(m_IsPresent == a_Other.m_IsPresent) &&
+			(
+				!m_IsPresent ||
+				(m_Value == a_Other.m_Value)
+			)
+		);
+	}
+
+	constexpr bool operator != (const DatedOptional<T> & a_Other) const noexcept
+	{
+		return !(operator==(a_Other));
+	}
+
 	constexpr bool isPresent() const noexcept
 	{
 		return m_IsPresent;
