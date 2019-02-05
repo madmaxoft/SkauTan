@@ -43,10 +43,60 @@ public:
 	the metadata for each source. */
 	struct Tag
 	{
-		DatedOptional<QString> m_Title;
 		DatedOptional<QString> m_Author;
+		DatedOptional<QString> m_Title;
 		DatedOptional<QString> m_Genre;
 		DatedOptional<double>  m_MeasuresPerMinute;
+
+		Tag() = default;
+		Tag(const Tag & a_Other) = default;
+		Tag(
+			const QString & a_Author,
+			const QString & a_Title,
+			const QString & a_Genre,
+			double a_MeasuresPerMinute
+		):
+			m_Author(a_Author),
+			m_Title(a_Title),
+			m_Genre(a_Genre),
+			m_MeasuresPerMinute(a_MeasuresPerMinute)
+		{
+		}
+
+		Tag(
+			const QString & a_Author,
+			const QString & a_Title,
+			const QString & a_Genre
+		):
+			m_Author(a_Author),
+			m_Title(a_Title),
+			m_Genre(a_Genre)
+		{
+		}
+
+		Tag(
+			const QString & a_Author,
+			const QString & a_Title
+		):
+			m_Author(a_Author),
+			m_Title(a_Title)
+		{
+		}
+
+		constexpr bool operator == (const Tag & a_Other) const noexcept
+		{
+			return (
+				(m_Title == a_Other.m_Title) &&
+				(m_Author == a_Other.m_Author) &&
+				(m_Genre == a_Other.m_Genre) &&
+				(m_MeasuresPerMinute == a_Other.m_MeasuresPerMinute)
+			);
+		}
+
+		constexpr bool operator != (const Tag & a_Other) const noexcept
+		{
+			return !(operator==(a_Other));
+		}
 	};
 
 
