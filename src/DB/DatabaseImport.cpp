@@ -38,6 +38,10 @@ DatabaseImport::DatabaseImport(const Database & a_From, Database & a_To, const O
 	{
 		importDeletionHistory();
 	}
+	if (m_Options.m_ShouldImportSongColors)
+	{
+		importSongColors();
+	}
 	m_To.saveAllSongSharedData();
 }
 
@@ -263,6 +267,23 @@ void DatabaseImport::importDeletionHistory()
 		}
 	}
 	m_To.addSongRemovalHistory(toAdd);
+}
+
+
+
+
+
+void DatabaseImport::importSongColors()
+{
+	for (auto & sd: m_From.songSharedDataMap())
+	{
+		auto dest = m_To.sharedDataFromHash(sd.first);
+		if (dest == nullptr)
+		{
+			continue;
+		}
+		dest->m_BgColor.updateIfNewer(sd.second->m_BgColor);
+	}
 }
 
 

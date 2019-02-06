@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>517</width>
-    <height>291</height>
+    <height>334</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -126,6 +126,16 @@
     <widget class="QCheckBox" name="chbDeletionHistory">
      <property name="text">
       <string>Song deletion history</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chbSongColors">
+     <property name="text">
+      <string>Song colors</string>
      </property>
      <property name="checked">
       <bool>true</bool>

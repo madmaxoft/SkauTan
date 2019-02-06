@@ -25,6 +25,7 @@ public:
 		bool m_ShouldImportPlaybackHistory;
 		bool m_ShouldImportSkipStart;
 		bool m_ShouldImportDeletionHistory;
+		bool m_ShouldImportSongColors;
 	};
 
 
@@ -52,6 +53,7 @@ private:
 	void importPlaybackHistory();
 	void importSkipStart();
 	void importDeletionHistory();
+	void importSongColors();
 
 	/** Imports the votes from a_From to a_To, regarding the specified votes DB table. */
 	void importVotes(const QString & a_TableName);

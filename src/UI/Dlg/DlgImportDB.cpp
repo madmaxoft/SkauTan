@@ -19,6 +19,7 @@ DlgImportDB::DlgImportDB(QWidget * a_Parent) :
 	m_UI->chbPlaybackHistory->setChecked(Settings::loadValue("DlgImportDB", "chbPlaybackHistory.isChecked", true).toBool());
 	m_UI->chbSkipStart->setChecked      (Settings::loadValue("DlgImportDB", "chbSkipStart.isChecked", true).toBool());
 	m_UI->chbDeletionHistory->setChecked(Settings::loadValue("DlgImportDB", "chbDeletionHistory.isChecked", true).toBool());
+	m_UI->chbSongColors->setChecked     (Settings::loadValue("DlgImportDB", "chbSongColors.isChecked", true).toBool());
 
 	connect(m_UI->btnBrowse, &QPushButton::clicked, this, &DlgImportDB::browseForDB);
 	connect(m_UI->btnCancel, &QPushButton::clicked, this, &DlgImportDB::reject);
@@ -46,6 +47,7 @@ DlgImportDB::~DlgImportDB()
 	Settings::saveValue("DlgImportDB", "chbPlaybackHistory.isChecked", m_UI->chbPlaybackHistory->isChecked());
 	Settings::saveValue("DlgImportDB", "chbSkipStart.isChecked",       m_UI->chbSkipStart->isChecked());
 	Settings::saveValue("DlgImportDB", "chbDeletionHistory.isChecked", m_UI->chbDeletionHistory->isChecked());
+	Settings::saveValue("DlgImportDB", "chbSongColors.isChecked",      m_UI->chbSongColors->isChecked());
 }
 
 
@@ -63,6 +65,7 @@ void DlgImportDB::onFinished(int a_Result)
 	m_Options.m_ShouldImportPlaybackHistory = m_UI->chbPlaybackHistory->isChecked();
 	m_Options.m_ShouldImportSkipStart       = m_UI->chbSkipStart->isChecked();
 	m_Options.m_ShouldImportDeletionHistory = m_UI->chbDeletionHistory->isChecked();
+	m_Options.m_ShouldImportSongColors      = m_UI->chbSongColors->isChecked();
 }
 
 

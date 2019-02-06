@@ -793,22 +793,27 @@ Tato operace je nevratná!</translation>
         <translation>Historie smazaných skladeb</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="166"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="138"/>
+        <source>Song colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="176"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Storno</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="176"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="186"/>
         <source>&amp;Import</source>
         <translation>&amp;Importovat</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="76"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="79"/>
         <source>SkauTan: Import data from DB</source>
         <translation>SkauTan: Importovat data</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="78"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="81"/>
         <source>SkauTan Database (*.sqlite)</source>
         <translation>Databáze SkauTan (*.sqlite)</translation>
     </message>
