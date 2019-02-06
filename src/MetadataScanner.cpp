@@ -307,11 +307,11 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 	// If anything was extracted from the parentheses, don't extract anything from the leftover text:
 	if (hasExtracted)
 	{
-		return intermediate;
+		return intermediate.simplified();
 	}
 
 	// Nothing useful in parentheses, run extraction on the bare text:
-	return tryMatchGenreMPM(tryMatchBPM(intermediate, a_OutputTag), a_OutputTag);
+	return tryMatchGenreMPM(tryMatchBPM(intermediate, a_OutputTag), a_OutputTag).simplified();
 }
 
 
