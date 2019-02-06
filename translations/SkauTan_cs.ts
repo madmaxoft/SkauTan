@@ -113,17 +113,17 @@
         <translation>Zrovna přehráváno: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="695"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="705"/>
         <source>SkauTan: Remove song?</source>
         <translation>SkauTan: Odebrat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="741"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="751"/>
         <source>SkauTan: Delete song?</source>
         <translation>SkauTan: Vymazat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="696"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="706"/>
         <source>Are you sure you want to remove the selected song from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -132,7 +132,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="742"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="752"/>
         <source>Are you sure you want to delete the selected song from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>

@@ -233,6 +233,16 @@ void ClassroomWindow::updateSongItem(QListWidgetItem & a_Item)
 		return;
 	}
 	a_Item.setText(songDisplayText(*song));
+	QString fileNames;
+	for (const auto & s: song->duplicates())
+	{
+		if (!fileNames.isEmpty())
+		{
+			fileNames.append('\n');
+		}
+		fileNames.append(s->fileName());
+	}
+	a_Item.setToolTip(fileNames);
 	a_Item.setBackgroundColor(song->bgColor().valueOr(QColor(0xff, 0xff, 0xff)));
 }
 
@@ -312,12 +322,12 @@ void ClassroomWindow::showSongContextMenu(const QPoint & a_Pos, std::shared_ptr<
 	QColor colors[] =
 	{
 		{ 0xff, 0xff, 0xff },
-		{ 0xff, 0xff, 0x7f },
-		{ 0xff, 0x7f, 0xff },
-		{ 0x7f, 0xff, 0xff },
-		{ 0xff, 0x7f, 0x7f },
-		{ 0x7f, 0x7f, 0xff },
-		{ 0x7f, 0xff, 0x7f },
+		{ 0xff, 0xff, 0xaf },
+		{ 0xff, 0xcf, 0xff },
+		{ 0xcf, 0xff, 0xff },
+		{ 0xff, 0xcf, 0xcf },
+		{ 0xcf, 0xcf, 0xff },
+		{ 0xcf, 0xff, 0xcf },
 	};
 
 	// Build the context menu:
@@ -326,7 +336,7 @@ void ClassroomWindow::showSongContextMenu(const QPoint & a_Pos, std::shared_ptr<
 	contextMenu.addSeparator();
 	contextMenu.addAction(m_UI->actSetColor);
 	auto size = contextMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
-	for (const auto c: colors)
+	for (const auto & c: colors)
 	{
 		auto act = contextMenu.addAction("");
 		QPixmap pixmap(size, size);
