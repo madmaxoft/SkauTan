@@ -139,6 +139,15 @@ private slots:
 
 	/** Asks for confirmation, then deletes the selected duplicate from the disk. */
 	void deleteFromDisk();
+
+	/** Copies to clipboard the ID3 tag contents. */
+	void copyId3Tag();
+
+	/** Copies to clipboard the Parsed tag contents. */
+	void copyPid3Tag();
+
+	/** Copies to clipboard the Filename-based tag contents. */
+	void copyFilenameTag();
 };
 
 

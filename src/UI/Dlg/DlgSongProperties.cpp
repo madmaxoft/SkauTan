@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QClipboard>
 #include "ui_DlgSongProperties.h"
 #include "../../DB/Database.hpp"
 #include "../../Settings.hpp"
@@ -16,6 +17,23 @@
 
 
 
+
+/** Converts the BPM in text form to the number to be output into the CopyTag strings. */
+static double bpmToCopy(const QString & a_TextBpm)
+{
+	if (a_TextBpm.isEmpty())
+	{
+		return -1;
+	}
+	return a_TextBpm.toDouble();
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// DlgSongProperties:
 
 DlgSongProperties::DlgSongProperties(
 	ComponentCollection & a_Components,
@@ -65,6 +83,9 @@ DlgSongProperties::DlgSongProperties(
 	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,          this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
 	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,             this, &DlgSongProperties::removeFromLibrary);
 	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,             this, &DlgSongProperties::deleteFromDisk);
+	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,           this, &DlgSongProperties::copyId3Tag);
+	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,           this, &DlgSongProperties::copyPid3Tag);
+	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,           this, &DlgSongProperties::copyFilenameTag);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -598,4 +619,50 @@ void DlgSongProperties::deleteFromDisk()
 	m_Components.get<Database>()->removeSong(*song, true);
 	m_Duplicates.erase(m_Duplicates.begin() + row);
 	delete m_UI->lwDuplicates->takeItem(row);
+}
+
+
+
+
+
+void DlgSongProperties::copyId3Tag()
+{
+	QGuiApplication::clipboard()->setText(
+		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", \"%4\", %5}")
+		.arg(m_UI->leId3Author->text())
+		.arg(m_UI->leId3Title->text())
+		.arg(m_UI->leId3Comment->text())
+		.arg(m_UI->leId3Genre->text())
+		.arg(bpmToCopy(m_UI->leId3MeasuresPerMinute->text()))
+	);
+}
+
+
+
+
+
+void DlgSongProperties::copyPid3Tag()
+{
+	QGuiApplication::clipboard()->setText(
+		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", %4}")
+		.arg(m_UI->lePid3Author->text())
+		.arg(m_UI->lePid3Title->text())
+		.arg(m_UI->lePid3Genre->text())
+		.arg(bpmToCopy(m_UI->lePid3MeasuresPerMinute->text()))
+	);
+}
+
+
+
+
+
+void DlgSongProperties::copyFilenameTag()
+{
+	QGuiApplication::clipboard()->setText(
+		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", %4}")
+		.arg(m_UI->leFilenameAuthor->text())
+		.arg(m_UI->leFilenameTitle->text())
+		.arg(m_UI->leFilenameGenre->text())
+		.arg(bpmToCopy(m_UI->leFilenameMeasuresPerMinute->text()))
+	);
 }
