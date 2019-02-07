@@ -199,6 +199,27 @@ private slots:
 	/** Shows the Properties dialog for the selected song. */
 	void showSongProperties();
 
+	/** Shows a dialog with all songs. */
+	void showSongs();
+
+	/** Shows the Manage filters dialog. */
+	void showFilters();
+
+	/** Shows the Background tasks dialog */
+	void showBackgroundTasks();
+
+	/** Shows a dialog listing all removed songs. */
+	void showRemovedSongs();
+
+	/** Shows a dialog for importing DB data. */
+	void importDB();
+
+	/** Shows a dialog with library maintenance options. */
+	void libraryMaintenance();
+
+	/** Shows the dialog that lists the contents of the debug log. */
+	void showDebugLog();
+
 	/** Shows the context menu for lwSongs items at the specified position. */
 	void showSongListContextMenu(const QPoint & a_Pos);
 

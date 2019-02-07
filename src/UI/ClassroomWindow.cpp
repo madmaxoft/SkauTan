@@ -14,6 +14,13 @@
 #include "../PlaylistItemSong.hpp"
 #include "../Utils.hpp"
 #include "Dlg/DlgSongProperties.hpp"
+#include "Dlg/DlgSongs.hpp"
+#include "Dlg/DlgManageFilters.hpp"
+#include "Dlg/DlgBackgroundTaskList.hpp"
+#include "Dlg/DlgRemovedSongs.hpp"
+#include "Dlg/DlgImportDB.hpp"
+#include "Dlg/DlgLibraryMaintenance.hpp"
+#include "Dlg/DlgDebugLog.hpp"
 
 
 
@@ -88,26 +95,46 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 
 	// Connect the signals:
 	auto player = m_Components.get<Player>();
-	connect(m_UI->btnPlaylistMode,      &QPushButton::clicked,                this,         &ClassroomWindow::switchToPlaylistMode);
-	connect(m_UI->lwFilters,            &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::filterItemSelected);
-	connect(m_UI->lwSongs,              &QListWidget::itemDoubleClicked,      this,         &ClassroomWindow::songItemDoubleClicked);
-	connect(&m_UpdateTimer,             &QTimer::timeout,                     this,         &ClassroomWindow::periodicUIUpdate);
-	connect(m_UI->vsVolume,             &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
-	connect(m_UI->vsTempo,              &QSlider::valueChanged,               this,         &ClassroomWindow::tempoValueChanged);
-	connect(m_UI->btnTempoReset,        &QPushButton::clicked,                this,         &ClassroomWindow::tempoResetClicked);
-	connect(player.get(),               &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
-	connect(player.get(),               &Player::volumeChanged,               this,         &ClassroomWindow::playerVolumeChanged);
-	connect(m_UI->btnPlayPause,         &QPushButton::clicked,                player.get(), &Player::startPausePlayback);
-	connect(m_UI->btnStop,              &QPushButton::clicked,                player.get(), &Player::stopPlayback);
-	connect(m_UI->chbDurationLimit,     &QCheckBox::clicked,                  this,         &ClassroomWindow::durationLimitClicked);
-	connect(m_UI->leDurationLimit,      &QLineEdit::textEdited,               this,         &ClassroomWindow::durationLimitEdited);
-	connect(m_UI->actPlay,              &QAction::triggered,                  this,         &ClassroomWindow::playSelectedSong);
-	connect(m_UI->actRemoveFromLibrary, &QAction::triggered,                  this,         &ClassroomWindow::removeFromLibrary);
-	connect(m_UI->actDeleteFromDisk,    &QAction::triggered,                  this,         &ClassroomWindow::deleteFromDisk);
-	connect(m_UI->actProperties,        &QAction::triggered,                  this,         &ClassroomWindow::showSongProperties);
-	connect(m_UI->lwSongs,              &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showSongListContextMenu);
-	connect(m_UI->lblCurrentlyPlaying,  &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showCurSongContextMenu);
-	connect(m_UI->leSearchSongs,        &QLineEdit::textEdited,               this,         &ClassroomWindow::searchTextEdited);
+	connect(m_UI->btnPlaylistMode,       &QPushButton::clicked,                this,         &ClassroomWindow::switchToPlaylistMode);
+	connect(m_UI->lwFilters,             &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::filterItemSelected);
+	connect(m_UI->lwSongs,               &QListWidget::itemDoubleClicked,      this,         &ClassroomWindow::songItemDoubleClicked);
+	connect(&m_UpdateTimer,              &QTimer::timeout,                     this,         &ClassroomWindow::periodicUIUpdate);
+	connect(m_UI->vsVolume,              &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
+	connect(m_UI->vsTempo,               &QSlider::valueChanged,               this,         &ClassroomWindow::tempoValueChanged);
+	connect(m_UI->btnTempoReset,         &QPushButton::clicked,                this,         &ClassroomWindow::tempoResetClicked);
+	connect(player.get(),                &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
+	connect(player.get(),                &Player::volumeChanged,               this,         &ClassroomWindow::playerVolumeChanged);
+	connect(m_UI->btnPlayPause,          &QPushButton::clicked,                player.get(), &Player::startPausePlayback);
+	connect(m_UI->btnStop,               &QPushButton::clicked,                player.get(), &Player::stopPlayback);
+	connect(m_UI->chbDurationLimit,      &QCheckBox::clicked,                  this,         &ClassroomWindow::durationLimitClicked);
+	connect(m_UI->leDurationLimit,       &QLineEdit::textEdited,               this,         &ClassroomWindow::durationLimitEdited);
+	connect(m_UI->actPlay,               &QAction::triggered,                  this,         &ClassroomWindow::playSelectedSong);
+	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,                  this,         &ClassroomWindow::removeFromLibrary);
+	connect(m_UI->actDeleteFromDisk,     &QAction::triggered,                  this,         &ClassroomWindow::deleteFromDisk);
+	connect(m_UI->actProperties,         &QAction::triggered,                  this,         &ClassroomWindow::showSongProperties);
+	connect(m_UI->actShowSongs,          &QAction::triggered,                  this,         &ClassroomWindow::showSongs);
+	connect(m_UI->actShowFilters,        &QAction::triggered,                  this,         &ClassroomWindow::showFilters);
+	connect(m_UI->actBackgroundTasks,    &QAction::triggered,                  this,         &ClassroomWindow::showBackgroundTasks);
+	connect(m_UI->actRemovedSongs,       &QAction::triggered,                  this,         &ClassroomWindow::showRemovedSongs);
+	connect(m_UI->actImportDB,           &QAction::triggered,                  this,         &ClassroomWindow::importDB);
+	connect(m_UI->actLibraryMaintenance, &QAction::triggered,                  this,         &ClassroomWindow::libraryMaintenance);
+	connect(m_UI->actShowDebugLog,       &QAction::triggered,                  this,         &ClassroomWindow::showDebugLog);
+	connect(m_UI->lwSongs,               &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showSongListContextMenu);
+	connect(m_UI->lblCurrentlyPlaying,   &QWidget::customContextMenuRequested, this,         &ClassroomWindow::showCurSongContextMenu);
+	connect(m_UI->leSearchSongs,         &QLineEdit::textEdited,               this,         &ClassroomWindow::searchTextEdited);
+
+	// Set up the Tools button:
+	auto menu = new QMenu(this);
+	menu->addAction(m_UI->actShowSongs);
+	menu->addAction(m_UI->actShowFilters);
+	menu->addSeparator();
+	menu->addAction(m_UI->actBackgroundTasks);
+	menu->addAction(m_UI->actRemovedSongs);
+	menu->addAction(m_UI->actImportDB);
+	menu->addAction(m_UI->actLibraryMaintenance);
+	menu->addSeparator();
+	menu->addAction(m_UI->actShowDebugLog);
+	m_UI->btnTools->setMenu(menu);
 
 	updateFilterList();
 	m_UpdateTimer.start(100);
@@ -774,10 +801,97 @@ void ClassroomWindow::deleteFromDisk()
 void ClassroomWindow::showSongProperties()
 {
 	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
 	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
 	DlgSongProperties dlg(m_Components, selSong, this);
 	dlg.exec();
 	updateSongItem(*selItem);
+}
+
+
+
+
+
+void ClassroomWindow::showSongs()
+{
+	auto selItem = m_UI->lwSongs->currentItem();
+	DlgSongs dlg(m_Components, nullptr, true, this);
+	dlg.exec();
+	if (selItem != nullptr)
+	{
+		updateSongItem(*selItem);
+	}
+}
+
+
+
+
+
+void ClassroomWindow::showFilters()
+{
+	DlgManageFilters dlg(m_Components, this);
+	dlg.exec();
+	updateFilterList();
+}
+
+
+
+
+
+void ClassroomWindow::showBackgroundTasks()
+{
+	DlgBackgroundTaskList dlg(this);
+	dlg.exec();
+}
+
+
+
+
+
+void ClassroomWindow::showRemovedSongs()
+{
+	DlgRemovedSongs dlg(m_Components, this);
+	dlg.exec();
+}
+
+
+
+
+
+void ClassroomWindow::importDB()
+{
+	DlgImportDB dlg(this);
+	if (dlg.exec() != QDialog::Accepted)
+	{
+		return;
+	}
+
+	Database fromDB(m_Components);
+	fromDB.open(dlg.m_FileName);
+	DatabaseImport import(fromDB, *m_Components.get<Database>(), dlg.m_Options);
+}
+
+
+
+
+
+void ClassroomWindow::libraryMaintenance()
+{
+	DlgLibraryMaintenance dlg(m_Components, this);
+	dlg.exec();
+}
+
+
+
+
+
+void ClassroomWindow::showDebugLog()
+{
+	DlgDebugLog dlg(this);
+	dlg.exec();
 }
 
 

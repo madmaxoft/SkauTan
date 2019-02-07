@@ -52,6 +52,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="btnTools">
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="text">
+           <string>&amp;Tools</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -427,6 +437,62 @@
   <action name="actSetColor">
    <property name="text">
     <string>Set color:</string>
+   </property>
+  </action>
+  <action name="actShowSongs">
+   <property name="text">
+    <string>Songs...</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows all songs in the library</string>
+   </property>
+  </action>
+  <action name="actShowFilters">
+   <property name="text">
+    <string>Filters...</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows all filters</string>
+   </property>
+  </action>
+  <action name="actShowDebugLog">
+   <property name="text">
+    <string>DebugLog...</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows the debug messages recorded so far</string>
+   </property>
+  </action>
+  <action name="actBackgroundTasks">
+   <property name="text">
+    <string>Background tasks...</string>
+   </property>
+   <property name="toolTip">
+    <string>Show the tasks running in the background</string>
+   </property>
+  </action>
+  <action name="actRemovedSongs">
+   <property name="text">
+    <string>Removed songs...</string>
+   </property>
+   <property name="toolTip">
+    <string>Shows the list of songs that have been removed from the library</string>
+   </property>
+  </action>
+  <action name="actImportDB">
+   <property name="text">
+    <string>Import data...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import data from another database</string>
+   </property>
+  </action>
+  <action name="actLibraryMaintenance">
+   <property name="text">
+    <string>Library maintenance...</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens a dialog with tools forlibrary maintenance</string>
    </property>
   </action>
  </widget>
