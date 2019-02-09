@@ -101,87 +101,123 @@ static QString stripBeginningNonAlpha(const QString & a_Input)
 
 /** Attempts to find the genre and MPM in the specified string.
 Detects strings such as "SW" and "SW30". Any found matches are set into a_OutputTag.
-Returns the string excluding the genre / MPM substring. */
-static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag)
+Returns the string excluding the genre / MPM substring.
+If a long description of the genre is found, it is only stripped if the BPM is present as well
+or a_StripLongGenre is true. If the entire string specifies a genre (there are no characters outside
+the regexp match), the entire string is stripped. */
+static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag, bool a_StripLongGenre = true)
 {
-	// Pairs of regexp -> genre
-	static const std::vector<std::pair<QRegularExpression, QString>> genreMap =
+	// Regexp -> Genre, LongStrip
+	struct GenreRE
+	{
+		QRegularExpression m_RegExp;
+		QString m_Genre;
+		bool m_IsLongStrip;
+
+		GenreRE(
+			const char * a_RegExpStr,
+			const char * a_GenreStr,
+			bool a_IsLongStrip
+		):
+			m_RegExp(a_RegExpStr, QRegularExpression::CaseInsensitiveOption),
+			m_Genre(a_GenreStr),
+			m_IsLongStrip(a_IsLongStrip)
+		{
+		}
+	};
+
+	static const std::vector<GenreRE> genreMap =
 	{
 		// Shortcut-based genre + optional MPM:
-		{ QRegularExpression("(^|[\\W])SW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
-		{ QRegularExpression("(^|[\\W])LW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
-		{ QRegularExpression("(^|[\\W])EW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
-		{ QRegularExpression("(^|[\\W])TG(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
-		{ QRegularExpression("(^|[\\W])TA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
-		{ QRegularExpression("(^|[\\W])VW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
-		{ QRegularExpression("(^|[\\W])VV(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
-		{ QRegularExpression("(^|[\\W])WW(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
-		{ QRegularExpression("(^|[\\W])SF(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SF" },
-		{ QRegularExpression("(^|[\\W])QS(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
-		{ QRegularExpression("(^|[\\W])SB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
-		{ QRegularExpression("(^|[\\W])SA(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
-		{ QRegularExpression("(^|[\\W])SL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SL" },
-		{ QRegularExpression("(^|[\\W])CH(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
-		{ QRegularExpression("(^|[\\W])CC(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
-		{ QRegularExpression("(^|[\\W])RU(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
-		{ QRegularExpression("(^|[\\W])RB(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
-		{ QRegularExpression("(^|[\\W])PD(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PD" },
-		{ QRegularExpression("(^|[\\W])JI(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
-		{ QRegularExpression("(^|[\\W])JV(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
-		{ QRegularExpression("(^|[\\W])BL(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "BL" },
-		{ QRegularExpression("(^|[\\W])PO(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "PO" },
-
-		// Full genre name + optional MPM:
-		{ QRegularExpression("(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
-		{ QRegularExpression("(^|[\\W])valcik\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
-		{ QRegularExpression("(^|[\\W])v[.-]?\\s?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "v. waltz" matches SW too
-		{ QRegularExpression("(^|[\\W])vien(nese|n?a)[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },  // Must be earlier than SW, because "vienna waltz" matches SW too
-		{ QRegularExpression("(^|[\\W])(slow[-\\s]?)?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "SW" },
-		{ QRegularExpression("(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "TG" },
-		{ QRegularExpression("(^|[\\W])slow[-\\s]?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",     QRegularExpression::CaseInsensitiveOption), "SF" },
-		{ QRegularExpression("(^|[\\W])quick[-\\s]?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          QRegularExpression::CaseInsensitiveOption), "QS" },
-		{ QRegularExpression("(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SB" },
-		{ QRegularExpression("(^|[\\W])cha[-\\s]?cha(\\-?cha)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",   QRegularExpression::CaseInsensitiveOption), "CH" },
-		{ QRegularExpression("(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   QRegularExpression::CaseInsensitiveOption), "RU" },
-		{ QRegularExpression("(^|[\\W])paso[-\\s]?(doble)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       QRegularExpression::CaseInsensitiveOption), "PD" },
-		{ QRegularExpression("(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      QRegularExpression::CaseInsensitiveOption), "JI" },
-		{ QRegularExpression("(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "BL" },
-		{ QRegularExpression("(^|[\\W])polk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                  QRegularExpression::CaseInsensitiveOption), "PO" },
-		{ QRegularExpression("(^|[\\W])mazurk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                QRegularExpression::CaseInsensitiveOption), "MA" },
-		{ QRegularExpression("(^|[\\W])salsa\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     QRegularExpression::CaseInsensitiveOption), "SL" },
-		{ QRegularExpression("(^|[\\W])rozcvi[cč]k[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           QRegularExpression::CaseInsensitiveOption), "RO" },
+		{ "(^|[\\W])SW\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SW", false },
+		{ "(^|[\\W])LW\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SW", false },
+		{ "(^|[\\W])EW\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SW", false },
+		{ "(^|[\\W])TG\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "TG", false },
+		{ "(^|[\\W])TA\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "TG", false },
+		{ "(^|[\\W])VW\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "VW", false },
+		{ "(^|[\\W])VV\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "VW", false },
+		{ "(^|[\\W])WW\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "VW", false },
+		{ "(^|[\\W])SF\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SF", false },
+		{ "(^|[\\W])QS\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "QS", false },
+		{ "(^|[\\W])SB\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SB", false },
+		{ "(^|[\\W])SA\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SB", false },
+		{ "(^|[\\W])SL\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "SL", false },
+		{ "(^|[\\W])CH\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "CH", false },
+		{ "(^|[\\W])CC\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "CH", false },
+		{ "(^|[\\W])CCC\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", "CH", false },
+		{ "(^|[\\W])RU\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "RU", false },
+		{ "(^|[\\W])RB\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "RU", false },
+		{ "(^|[\\W])PD\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "PD", false },
+		{ "(^|[\\W])JI\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "JI", false },
+		{ "(^|[\\W])JV\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "JI", false },
+		{ "(^|[\\W])BL\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "BL", false },
+		{ "(^|[\\W])PO\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",  "PO", false },
 
 		// Single-letter genre + MPM (only some genres):
-		{ QRegularExpression("(^|[\\W])W(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SW" },
-		{ QRegularExpression("(^|[\\W])T(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "TG" },
-		{ QRegularExpression("(^|[\\W])V(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "VW" },
-		{ QRegularExpression("(^|[\\W])Q(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "QS" },
-		{ QRegularExpression("(^|[\\W])S(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "SB" },
-		{ QRegularExpression("(^|[\\W])C(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "CH" },
-		{ QRegularExpression("(^|[\\W])R(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "RU" },
-		{ QRegularExpression("(^|[\\W])J(?<mpm>\\d+)(?<end>[\\W]|$)", QRegularExpression::CaseInsensitiveOption), "JI" },
+		{ "(^|[\\W])W(?<mpm>\\d+)(?<end>[\\W]|$)", "SW", false },
+		{ "(^|[\\W])T(?<mpm>\\d+)(?<end>[\\W]|$)", "TG", false },
+		{ "(^|[\\W])V(?<mpm>\\d+)(?<end>[\\W]|$)", "VW", false },
+		{ "(^|[\\W])Q(?<mpm>\\d+)(?<end>[\\W]|$)", "QS", false },
+		{ "(^|[\\W])S(?<mpm>\\d+)(?<end>[\\W]|$)", "SB", false },
+		{ "(^|[\\W])C(?<mpm>\\d+)(?<end>[\\W]|$)", "CH", false },
+		{ "(^|[\\W])R(?<mpm>\\d+)(?<end>[\\W]|$)", "RU", false },
+		{ "(^|[\\W])J(?<mpm>\\d+)(?<end>[\\W]|$)", "JI", false },
+
+		// Long genre name + optional MPM:
+		{ "(^|[\\W])valčík\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    "VW", true },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
+		{ "(^|[\\W])valcik\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                    "VW", true },  // Must be earlier than SW, because many VW songs contain "waltz" that would match SW too
+		{ "(^|[\\W])v[.-]?\\s?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           "VW", true },  // Must be earlier than SW, because "v. waltz" matches SW too
+		{ "(^|[\\W])vien(nese|n?a)[-\\s]waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)", "VW", true },  // Must be earlier than SW, because "vienna waltz" matches SW too
+		{ "(^|[\\W])(slow[-\\s]?)?waltz\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       "SW", true },
+		{ "(^|[\\W])tango\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     "TG", true },
+		{ "(^|[\\W])slow[-\\s]?fox(trot)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",     "SF", true },
+		{ "(^|[\\W])quick[-\\s]?step\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",          "QS", true },
+		{ "(^|[\\W])samba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     "SB", true },
+		{ "(^|[\\W])cha[-\\s]?cha(\\-?cha)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",   "CH", true },
+		{ "(^|[\\W])rh?umba\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                   "RU", true },
+		{ "(^|[\\W])paso[-\\s]?(doble)?\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",       "PD", true },
+		{ "(^|[\\W])jive\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                      "JI", true },
+		{ "(^|[\\W])blues\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     "BL", true },
+		{ "(^|[\\W])polk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                  "PO", true },
+		{ "(^|[\\W])mazurk[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                "MA", true },
+		{ "(^|[\\W])salsa\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",                     "SL", true },
+		{ "(^|[\\W])rozcvi[cč]k[ay]\\s?(?<mpm>\\d*)(?<end>[\\W]|$)",           "RO", true },
 	};
 
 	for (const auto & p: genreMap)
 	{
-		auto match = p.first.match(a_Input);
+		auto match = p.m_RegExp.match(a_Input);
 		if (!match.hasMatch())
 		{
 			continue;
 		}
-		if (!a_OutputTag.m_Genre.isEmpty() && (a_OutputTag.m_Genre.value() != p.second))
+		if (!a_OutputTag.m_Genre.isEmpty() && (a_OutputTag.m_Genre.value() != p.m_Genre))
 		{
-			qDebug() << "String \"" << a_Input << "\" has matched genre " << p.second
+			qDebug() << "String \"" << a_Input << "\" has matched genre " << p.m_Genre
 				<< ", but already has genre " << a_OutputTag.m_Genre.value() << ", ignoring the match";
 			continue;
 		}
 		bool isOK = false;
 		auto mpm = match.captured("mpm").toInt(&isOK);
+		auto mpmIsPresent = false;
 		if (isOK && (mpm > 10) && (mpm < 300))
 		{
 			a_OutputTag.m_MeasuresPerMinute = mpm;
+			mpmIsPresent = true;
 		}
-		a_OutputTag.m_Genre = p.second;
+		a_OutputTag.m_Genre = p.m_Genre;
+		if (p.m_IsLongStrip)
+		{
+			if ((match.capturedStart(1) == 0) && (match.capturedEnd("end") == a_Input.length()))
+			{
+				// The entire string is simply the genre, strip it always
+				return QString();
+			}
+		}
+		if (!a_StripLongGenre && !mpmIsPresent && p.m_IsLongStrip)
+		{
+			return a_Input;
+		}
 		auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1)) : QString();
 		return prefix + " " + a_Input.mid(match.capturedEnd("end"));
 	}
@@ -192,12 +228,13 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 
 
 
-/** Detects and removes MPM from the "[30 BPM]" substring.
+/** Detects and removes MPM from the "[30 BPM]" substring or a single number being the entire string.
 If the substring is found and the MPM is in the (10, 300) range, it is set into the song.
 Returns the input string after removing the potential match.
 Assumes that the match is not in the middle of "author - title", but rather at either end. */
 static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 {
+	// Search for strings like "28mpm" inside:
 	static const QRegularExpression re("(.*?)(\\d+)\\s?[bmt]pm(.*)", QRegularExpression::CaseInsensitiveOption);
 	auto match = re.match(a_Input);
 	if (match.hasMatch())
@@ -209,20 +246,12 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 			a_OutputTag.m_MeasuresPerMinute = mpm;
 		}
 		auto prefix = match.captured(1);
-		if (prefix.length() < 4)
-		{
-			prefix.clear();
-		}
 		if (prefix.endsWith('['))
 		{
 			prefix.chop(1);
 			prefix = prefix.trimmed();
 		}
 		auto suffix = match.captured(3);
-		if (suffix.length() < 4)
-		{
-			suffix.clear();
-		}
 		if (suffix.startsWith(']'))
 		{
 			suffix = suffix.remove(0, 1).trimmed();
@@ -238,6 +267,17 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 			return prefix;
 		}
 	}
+
+	// If the input is a number without anything else, consider it MPM as long as it's not too low / too high:
+	bool isOK = true;
+	auto mpm = a_Input.toInt(&isOK);
+	if (isOK && isReasonableMpm(mpm))
+	{
+		a_OutputTag.m_MeasuresPerMinute = mpm;
+		return QString();
+	}
+
+	// No match, return the input unchanged:
 	return a_Input;
 }
 
@@ -247,7 +287,7 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 
 /** Extracts as much metadata form the input string as possible.
 The extracted data is saved into a_OutputTag and, if appropriate, removed from the string. */
-static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
+static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 {
 	// First process all parentheses, brackets and braces:
 	QString intermediate;
@@ -286,7 +326,9 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 					if (subBlock == outBlock)
 					{
 						// No extractable information within this parenthesis, just append all of it:
+						intermediate.append('(');
 						intermediate.append(subBlock);
+						intermediate.append(')');
 					}
 					else
 					{
@@ -304,14 +346,149 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 		intermediate.append(a_Input.mid(last, len - last));
 	}
 
+	/*
 	// If anything was extracted from the parentheses, don't extract anything from the leftover text:
 	if (hasExtracted)
 	{
-		return intermediate.simplified();
+		return stripBeginningNonAlpha(intermediate).simplified();
 	}
+	*/
 
 	// Nothing useful in parentheses, run extraction on the bare text:
-	return tryMatchGenreMPM(tryMatchBPM(intermediate, a_OutputTag), a_OutputTag).simplified();
+	return stripBeginningNonAlpha(
+		tryMatchGenreMPM(
+			tryMatchBPM(intermediate, a_OutputTag),
+			a_OutputTag, false
+		)
+	).simplified();
+}
+
+
+
+
+
+/** Returns true if the input string is one of the "forbidden" parts, such as "unknown", "various" etc. */
+static bool isForbiddenPart(const QString & a_Input)
+{
+	static const QRegularExpression reForbidden[] =
+	{
+		QRegularExpression("^various$",             QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^various\\sartists?$",  QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^VA$"),                 // case-sensitive
+		QRegularExpression("^unknown$",             QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^unknown\\sartists?$",  QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^artist$",              QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^neznamy\\sinterpret$", QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^neznámý\\sinterpret$", QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^track$",               QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^track\\s?\\d+$",       QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^unknown\\s?\\d+$",     QRegularExpression::CaseInsensitiveOption),
+		QRegularExpression("^stopa\\s?\\d+$",       QRegularExpression::CaseInsensitiveOption),
+	};
+
+	for (const auto & re: reForbidden)
+	{
+		if (re.match(a_Input).hasMatch())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+
+
+/** Breaks the string into parts delimited by dashes or slashes,
+then extracts as much metadata from each part as possible.
+The extracted data is saved into a_OutputTag and, if appropriate, removed from the string. */
+static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
+{
+	// Break the input into parts by all dashes and slashes:
+	QStringList parts;
+	int last = 0;
+	int len = a_Input.length();
+	for (int i = 0; i < len; ++i)
+	{
+		switch (a_Input[i].unicode())
+		{
+			case '/':
+			case '-':
+			{
+				if (i > last)
+				{
+					parts.append(a_Input.mid(last, i - last));
+				}
+				last = i + 1;
+				break;
+			}
+		}
+	}
+	if (last < len)
+	{
+		parts.append(a_Input.mid(last, len - last));
+	}
+
+	// Process each part:
+	QString res;
+	for (const auto & part: parts)
+	{
+		auto simple = part.simplified();
+		if (isForbiddenPart(simple))
+		{
+			continue;
+		}
+		auto parsed = extractFromPart(simple, a_OutputTag);
+		if (parsed.isEmpty() || isForbiddenPart(parsed))
+		{
+			continue;
+		}
+		if (!res.isEmpty())
+		{
+			res.append(" - ");
+		}
+		res.append(parsed);
+	}
+	return res;
+}
+
+
+
+
+
+/** If the tag has empty author or title, attempts to split the other value into two.
+Handles strings such as "author - title" in a single tag entry.
+The tag is changed in-place. */
+static void trySplitAuthorTitle(Song::Tag & a_Tag)
+{
+	if (
+		(a_Tag.m_Author.isEmpty() && a_Tag.m_Title.isEmpty()) ||
+		(!a_Tag.m_Author.isEmpty() && !a_Tag.m_Title.isEmpty())
+	)
+	{
+		// Nothing to be done in this case
+		return;
+	}
+
+	// Split into halves on the '-' closest to the string middle:
+	auto src = a_Tag.m_Author.isEmpty() ? a_Tag.m_Title.value() : a_Tag.m_Author.value();
+	auto halfLen = src.length() / 2;
+	for (int i = 0; i < halfLen; ++i)
+	{
+		if (src[halfLen + i] == '-')
+		{
+			a_Tag.m_Author = src.left(halfLen + i - 1).simplified();
+			a_Tag.m_Title = src.mid(halfLen + i + 1).simplified();
+			return;
+		}
+		else if (src[halfLen - i] == '-')
+		{
+			a_Tag.m_Author = src.left(halfLen - i - 1).simplified();
+			a_Tag.m_Title = src.mid(halfLen - i + 1).simplified();
+			return;
+		}
+	}
 }
 
 
@@ -440,6 +617,7 @@ Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
 			res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
 		}
 	}
+	trySplitAuthorTitle(res);
 	return res;
 }
 
@@ -481,10 +659,12 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 {
 	Song::Tag songTag;
 	auto idxLastSlash = a_FileName.lastIndexOf('/');
+	/*
 	if (idxLastSlash < 0)
 	{
 		return songTag;
 	}
+	*/
 
 	// Auto-detect genre from the parent folders names:
 	auto parents = a_FileName.split('/', QString::SkipEmptyParts);
@@ -506,21 +686,9 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	}
 	fileBareName = extract(fileBareName, songTag);
 
-	// Remove a possible numerical prefix ("01 - ", "01.", "(01)" etc.)
-	fileBareName = stripBeginningNonAlpha(fileBareName);
-
 	// Try split into author - title:
-	auto idxSeparator = fileBareName.indexOf(" - ");
-	if (idxSeparator < 0)
-	{
-		// No separator, consider the entire filename the title:
-		songTag.m_Title = fileBareName;
-	}
-	else
-	{
-		songTag.m_Author = fileBareName.mid(0, idxSeparator).trimmed();
-		songTag.m_Title = fileBareName.mid(idxSeparator + 3).trimmed();
-	}
+	songTag.m_Title = fileBareName;
+	trySplitAuthorTitle(songTag);
 	validateSongTag(songTag);
 	return songTag;
 }

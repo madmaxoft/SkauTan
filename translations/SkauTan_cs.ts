@@ -2604,7 +2604,7 @@ Tato operace je nevratná!</translation>
 <context>
     <name>MetadataScanner</name>
     <message>
-        <location filename="../src/MetadataScanner.cpp" line="535"/>
+        <location filename="../src/MetadataScanner.cpp" line="703"/>
         <source>Scan metadata: %1</source>
         <translation>Čtení metadat: %1</translation>
     </message>
