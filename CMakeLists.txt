@@ -439,6 +439,7 @@ endforeach()
 # Special handling: The WaveformDisplay.hpp file needs to be accessible from moc_PlayerWindow.h compiled from PlayerWindow.cpp:
 set_source_files_properties (
 	src/UI/PlayerWindow.cpp
+	src/UI/ClassroomWindow.cpp
 	PROPERTIES COMPILE_FLAGS "-I${CMAKE_CURRENT_SOURCE_DIR}/src/UI"
 )
 

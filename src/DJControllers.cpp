@@ -13,6 +13,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // DJControllers:
 
+const char * DJControllers::CONTEXT_PROPERTY_NAME = "SkauTan_DJControllers_Context";
+
+
+
+
+
 DJControllers::DJControllers(QObject * a_Parent):
 	Super(a_Parent),
 	m_NextRegID(0)
@@ -93,7 +99,7 @@ void DJControllers::unregisterWheelHandler(quint64 a_RegID)
 DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(const QString & a_Context, DJControllers::KeyHandler a_Callback)
 {
 	auto regID = m_NextRegID++;
-	m_KeyHandlers.push_back({regID, a_Context, a_Callback});
+	m_KeyHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
 	return std::make_shared<KeyHandlerReg>(*this, regID);
 }
 
@@ -104,7 +110,7 @@ DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(const Q
 DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(const QString & a_Context, DJControllers::SliderHandler a_Callback)
 {
 	auto regID = m_NextRegID++;
-	m_SliderHandlers.push_back({regID, a_Context, a_Callback});
+	m_SliderHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
 	return std::make_shared<SliderHandlerReg>(*this, regID);
 }
 
@@ -115,7 +121,7 @@ DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(c
 DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(const QString & a_Context, DJControllers::WheelHandler a_Callback)
 {
 	auto regID = m_NextRegID++;
-	m_WheelHandlers.push_back({regID, a_Context, a_Callback});
+	m_WheelHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
 	return std::make_shared<WheelHandlerReg>(*this, regID);
 }
 

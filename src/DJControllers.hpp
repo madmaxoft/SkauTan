@@ -5,6 +5,7 @@
 
 
 
+#include <atomic>
 #include <QThread>
 #include <QTimer>
 #include "ComponentCollection.hpp"
@@ -91,7 +92,7 @@ public:
 
 
 	/** The QObject's property used to store the context name. */
-	static constexpr char CONTEXT_PROPERTY_NAME[] = "SkauTan_DJControllers_Context";
+	static const char * CONTEXT_PROPERTY_NAME;
 
 
 	/** Creates a new empty instance. */

@@ -24,13 +24,15 @@ static QString formatMPM(const DatedOptional<double> & a_SongMPM)
 
 
 
+
 static QString levelAlgorithmToStr(TempoDetector::ELevelAlgorithm a_Alg)
 {
 	switch (a_Alg)
 	{
-		case TempoDetector::laSumDist: return "SumDist";
-		case TempoDetector::laMinMax:  return "MinMax";
+		case TempoDetector::laSumDist:               return "SumDist";
+		case TempoDetector::laMinMax:                return "MinMax";
 		case TempoDetector::laDiscreetSineTransform: return "DiscreetSineTransform";
+		case TempoDetector::laSumDistMinMax:         return "SumDistMinMax";
 	}
 	assert(!"Unknown level algorithm");
 	return "<unknown>";
