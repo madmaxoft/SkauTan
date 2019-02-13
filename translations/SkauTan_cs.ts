@@ -2312,28 +2312,28 @@ Tato operace je nevratná!</translation>
         <translation>&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="59"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="61"/>
         <source>Detection in progress...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="240"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="242"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="328"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="330"/>
         <source>SkauTan: Save debug audio with Beats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="330"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="351"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="332"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="353"/>
         <source>RAW audio file (*.raw)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="349"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="351"/>
         <source>SkauTan: Save debug audio with Levels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3593,12 +3593,12 @@ Poslední změna: %2</translation>
 <context>
     <name>WaveformDisplay</name>
     <message>
-        <location filename="../src/UI/WaveformDisplay.cpp" line="243"/>
+        <location filename="../src/UI/WaveformDisplay.cpp" line="242"/>
         <source>Set skip-start here</source>
         <translation>Nastavit sem přeskočení</translation>
     </message>
     <message>
-        <location filename="../src/UI/WaveformDisplay.cpp" line="244"/>
+        <location filename="../src/UI/WaveformDisplay.cpp" line="243"/>
         <source>Remove skip-start</source>
         <translation>Stornovat nastavené přeskočení</translation>
     </message>

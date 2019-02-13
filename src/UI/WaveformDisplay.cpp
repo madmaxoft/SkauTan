@@ -5,6 +5,7 @@
 #include <QContextMenuEvent>
 #include "../Audio/Player.hpp"
 #include "../PlaylistItemSong.hpp"
+#include "../Utils.hpp"
 
 
 
@@ -85,7 +86,7 @@ void WaveformDisplay::paint(QPainter & a_Painter, const QPoint & a_Origin, int a
 		auto skipStart = m_CurrentSong->skipStart();
 		if (skipStart.isPresent())
 		{
-			auto left = static_cast<int>(m_Width * skipStart.value() / m_PlaybackBuffer->duration());
+			auto left = timeToScreen(skipStart.value());
 			a_Painter.setPen(QColor(255, 0, 0));
 			a_Painter.drawLine(left, 0, left, a_Height);
 		}
@@ -154,10 +155,9 @@ void WaveformDisplay::setSkipStart(int a_PosX)
 		qDebug() << "Not a song, ignoring.";
 		return;
 	}
-	auto bufferBytes = static_cast<qint32>(m_PlaybackBuffer->bufferLimit());
-	auto songLength = static_cast<double>(m_PlaybackBuffer->format().durationForBytes(bufferBytes)) / 1000000;
-	qDebug() << "Setting skip-start for " << m_CurrentSong->fileName() << " to " << a_PosX * songLength / width();
-	m_CurrentSong->setSkipStart(a_PosX * songLength / width());
+	auto skipStart = screenToTime(a_PosX);
+	qDebug() << "Setting skip-start for " << m_CurrentSong->fileName() << " to " << skipStart;
+	m_CurrentSong->setSkipStart(skipStart);
 	emit songChanged(m_CurrentSong);
 	update();
 }
@@ -228,8 +228,7 @@ void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
 	{
 		return;
 	}
-	qint64 x = std::max(std::min(a_Event->pos().x(), width()), 0);  // clamp x between 0 and width()
-	m_Player->seekTo(m_PlaybackBuffer->duration() * x / width());
+	m_Player->seekTo(screenToTime(a_Event->pos().x()));
 }
 
 
@@ -247,6 +246,28 @@ void WaveformDisplay::contextMenuEvent(QContextMenuEvent * a_Event)
 	connect(actSetSkipStart, &QAction::triggered, [this, x]() { setSkipStart (x); });
 	connect(actDelSkipStart, &QAction::triggered, [this]() { delSkipStart(); });
 	menu.exec(a_Event->globalPos());
+}
+
+
+
+
+
+int WaveformDisplay::timeToScreen(double a_Seconds)
+{
+	assert(m_PlaybackBuffer != nullptr);
+	return static_cast<int>(m_Width * a_Seconds / m_PlaybackBuffer->duration());
+}
+
+
+
+
+
+double WaveformDisplay::screenToTime(int a_PosX)
+{
+	assert(m_PlaybackBuffer != nullptr);
+	assert(m_Width > 0);
+	auto x = Utils::clamp(a_PosX, 0, m_Width);
+	return m_PlaybackBuffer->duration() * x / m_Width;
 }
 
 
@@ -283,7 +304,7 @@ void WaveformDisplay::playerFinishedPlayback()
 
 void WaveformDisplay::updateOnTimer()
 {
-	// Recaulculate the peaks, unless we already have the full data:
+	// Recalculate the peaks, unless we already have the full data:
 	if (!m_IsPeakDataComplete)
 	{
 		calculatePeaks();
