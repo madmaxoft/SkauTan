@@ -48,29 +48,64 @@ void WaveformDisplay::setPlayer(Player & a_Player)
 
 
 
-void WaveformDisplay::paint(QPainter & a_Painter, const QPoint & a_Origin, int a_Height)
+void WaveformDisplay::paint(QPainter & a_Painter, int a_Height)
 {
 	if (m_PlaybackBuffer == nullptr)
 	{
 		return;
 	}
+	Utils::QPainterSaver saver(a_Painter);
+
+	// Paint the skip-start background:
+	int skipStartPx = 0;
+	if ((m_CurrentSong != nullptr) && m_CurrentSong->skipStart().isPresent())
+	{
+		skipStartPx = timeToScreen(m_CurrentSong->skipStart().value());
+		a_Painter.setBrush(QColor(128, 0, 0));
+		a_Painter.drawRect(0, 0, skipStartPx, a_Height);
+	}
+
+	// Paint the duration limit background:
+	int durationLimitCutoffPx = m_Width;
+	auto durLimit = m_Player->currentTrack()->durationLimit();
+	if (durLimit >= 0)
+	{
+		auto dlc = m_Player->currentPosition() + durLimit - m_Player->totalTime();
+		durationLimitCutoffPx = timeToScreen(dlc);
+		a_Painter.setBrush(QColor(128, 0, 0));
+		a_Painter.drawRect(durationLimitCutoffPx, 0, m_Width, a_Height);
+	}
 
 	// Paint the waveform:
 	int halfHeight = a_Height / 2;
-	int mid = a_Origin.y() + halfHeight;
-	a_Painter.setPen(QColor(128, 128, 128));
+	int mid = halfHeight;
+	a_Painter.setPen(QColor(255, 128, 128));
 	for (int i = 0; i < m_Width; ++i)
 	{
-		int left = a_Origin.x() + i;
+		if (i == skipStartPx)
+		{
+			a_Painter.setPen(QColor(128, 128, 128));
+		}
+		if (i == durationLimitCutoffPx)
+		{
+			a_Painter.setPen(QColor(255, 128, 128));
+		}
 		int v = m_Peaks[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
-		a_Painter.drawLine(left, mid - v, left, mid + v);
+		a_Painter.drawLine(i, mid - v, i, mid + v);
 	}
-	a_Painter.setPen(QColor(255, 255, 255));
+	a_Painter.setPen(QColor(255, 192, 192));
 	for (int i = 0; i < m_Width; ++i)
 	{
-		int left = a_Origin.x() + i;
+		if (i == skipStartPx)
+		{
+			a_Painter.setPen(QColor(255, 255, 255));
+		}
+		if (i == durationLimitCutoffPx)
+		{
+			a_Painter.setPen(QColor(255, 192, 192));
+		}
 		int v = m_Sums[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
-		a_Painter.drawLine(left, mid - v, left, mid + v);
+		a_Painter.drawLine(i, mid - v, i, mid + v);
 	}
 
 	// Paint the player position:
@@ -80,16 +115,18 @@ void WaveformDisplay::paint(QPainter & a_Painter, const QPoint & a_Origin, int a
 	int left = static_cast<int>(static_cast<float>(m_Width) * pos / total);
 	a_Painter.drawLine(left, 0, left, a_Height);
 
-	// Paint the skip-start:
-	if (m_CurrentSong != nullptr)
+	// Paint the skip-start end-line:
+	if (skipStartPx > 0)
 	{
-		auto skipStart = m_CurrentSong->skipStart();
-		if (skipStart.isPresent())
-		{
-			auto left = timeToScreen(skipStart.value());
-			a_Painter.setPen(QColor(255, 0, 0));
-			a_Painter.drawLine(left, 0, left, a_Height);
-		}
+		a_Painter.setPen(QColor(255, 0, 0));
+		a_Painter.drawLine(skipStartPx, 0, skipStartPx, a_Height);
+	}
+
+	// Paint the duration limit end-line:
+	if (durationLimitCutoffPx < m_Width)
+	{
+		a_Painter.setPen(QColor(255, 0, 0));
+		a_Painter.drawLine(durationLimitCutoffPx, 0, durationLimitCutoffPx, a_Height);
 	}
 }
 
@@ -186,7 +223,7 @@ void WaveformDisplay::paintEvent(QPaintEvent * a_Event)
 {
 	QPainter painter(this);
 	painter.fillRect(a_Event->rect(), QBrush(QColor(0, 0, 0)));
-	paint(painter, QPoint(0, 0), a_Event->rect().height());
+	paint(painter, a_Event->rect().height());
 }
 
 
