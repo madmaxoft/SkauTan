@@ -227,6 +227,7 @@ set (SOURCES
 	src/UI/Dlg/DlgChooseImportTemplates.cpp
 	src/UI/Dlg/DlgDebugLog.cpp
 	src/UI/Dlg/DlgEditFilter.cpp
+	src/UI/Dlg/DlgEditMultipleSongs.cpp
 	src/UI/Dlg/DlgHistory.cpp
 	src/UI/Dlg/DlgImportDB.cpp
 	src/UI/Dlg/DlgLibraryMaintenance.cpp
@@ -303,6 +304,7 @@ set (HEADERS
 	src/UI/Dlg/DlgChooseImportTemplates.hpp
 	src/UI/Dlg/DlgDebugLog.hpp
 	src/UI/Dlg/DlgEditFilter.hpp
+	src/UI/Dlg/DlgEditMultipleSongs.hpp
 	src/UI/Dlg/DlgHistory.hpp
 	src/UI/Dlg/DlgImportDB.hpp
 	src/UI/Dlg/DlgLibraryMaintenance.hpp
@@ -351,6 +353,7 @@ set (UI
 	src/UI/Dlg/DlgChooseImportTemplates.ui
 	src/UI/Dlg/DlgDebugLog.ui
 	src/UI/Dlg/DlgEditFilter.ui
+	src/UI/Dlg/DlgEditMultipleSongs.ui
 	src/UI/Dlg/DlgHistory.ui
 	src/UI/Dlg/DlgImportDB.ui
 	src/UI/Dlg/DlgLibraryMaintenance.ui

@@ -18,6 +18,7 @@
 #include "DlgSongProperties.hpp"
 #include "DlgTempoDetect.hpp"
 #include "DlgTapTempo.hpp"
+#include "DlgEditMultipleSongs.hpp"
 
 
 
@@ -540,7 +541,7 @@ void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
 	m_UI->actAddToPlaylist->setEnabled(!sel.isEmpty());
 	m_UI->actInsertIntoPlaylist->setEnabled(!sel.isEmpty());
 	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
-	m_UI->actProperties->setEnabled(sel.count() == 1);
+	m_UI->actProperties->setEnabled(!sel.isEmpty());
 	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
 	m_UI->actRate->setEnabled(!sel.isEmpty());
 	m_UI->actTempoDetector->setEnabled(sel.count() == 1);
@@ -562,9 +563,22 @@ void DlgSongs::showProperties()
 	{
 		return;
 	}
-	auto song = songFromIndex(sel[0]);
-	DlgSongProperties dlg(m_Components, song, this);
-	dlg.exec();
+	if (sel.size() == 1)
+	{
+		auto song = songFromIndex(sel[0]);
+		DlgSongProperties dlg(m_Components, song, this);
+		dlg.exec();
+	}
+	else
+	{
+		std::vector<SongPtr> songs;
+		for (const auto & s: sel)
+		{
+			songs.push_back(songFromIndex(s));
+		}
+		DlgEditMultipleSongs dlg(m_Components, std::move(songs), this);
+		dlg.exec();
+	}
 }
 
 

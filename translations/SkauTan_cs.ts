@@ -496,6 +496,49 @@ Tato operace je nevratná!</translation>
     </message>
 </context>
 <context>
+    <name>DlgEditMultipleSongs</name>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="14"/>
+        <source>SkauTan: Edit multiple songs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="22"/>
+        <source>Songs:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="43"/>
+        <source>Set author:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="53"/>
+        <source>Set title:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="63"/>
+        <source>Set genre:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="73"/>
+        <source>Set MPM:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="100"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgEditMultipleSongs.ui" line="107"/>
+        <source>&amp;OK</source>
+        <translation type="unfinished">&amp;OK</translation>
+    </message>
+</context>
+<context>
     <name>DlgEditTemplate</name>
     <message>
         <source>SkauTan: Edit template</source>
@@ -1663,8 +1706,8 @@ Tato operace je nevratná!</translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgSongs.ui" line="259"/>
-        <source>Properties</source>
-        <translation type="unfinished"></translation>
+        <source>Properties...</source>
+        <translation type="unfinished">Vlastnosti...</translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgSongs.ui" line="262"/>
@@ -1742,72 +1785,72 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="196"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="197"/>
         <source>Total songs: %1</source>
         <translation>Celkem skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="200"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="201"/>
         <source>Total songs: %1 (filtered out of %2)</source>
         <translation>Celkem skladeb: %1 (filtrováno z %2)</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="210"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="211"/>
         <source>All songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="211"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="212"/>
         <source>Songs without ID3 tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="212"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="213"/>
         <source>Songs with no genre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="213"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="214"/>
         <source>Songs with no tempo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="214"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="215"/>
         <source>Songs with warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="215"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="216"/>
         <source>Songs not matching any filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="216"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="217"/>
         <source>Songs with duplicates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="217"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="218"/>
         <source>Songs with skip-start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="299"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="300"/>
         <source>SkauTan: Choose files to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="317"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="318"/>
         <source>SkauTan: Choose folder to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="347"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="348"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished">SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="348"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="349"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1816,12 +1859,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="387"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="388"/>
         <source>SkauTan: Delete songs?</source>
         <translation type="unfinished">SkauTan: vymazat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="388"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="389"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1830,12 +1873,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="579"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="593"/>
         <source>SkauTan: Rate songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="580"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="594"/>
         <source>Rating:</source>
         <translation type="unfinished"></translation>
     </message>
