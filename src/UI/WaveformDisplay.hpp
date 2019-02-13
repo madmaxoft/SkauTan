@@ -99,6 +99,13 @@ protected:
 	virtual void mouseReleaseEvent(QMouseEvent * a_Event) override;
 	virtual void contextMenuEvent(QContextMenuEvent * a_Event) override;
 
+	/** Converts the time within the song into a screen X coord. */
+	int timeToScreen(double a_Seconds);
+
+	/** Converts the screen X coord into timestamp within the song.
+	Clamps the X coord into the valid range, if needed. */
+	double screenToTime(int a_PosX);
+
 
 signals:
 
