@@ -3593,12 +3593,12 @@ Poslední změna: %2</translation>
 <context>
     <name>WaveformDisplay</name>
     <message>
-        <location filename="../src/UI/WaveformDisplay.cpp" line="242"/>
+        <location filename="../src/UI/WaveformDisplay.cpp" line="279"/>
         <source>Set skip-start here</source>
         <translation>Nastavit sem přeskočení</translation>
     </message>
     <message>
-        <location filename="../src/UI/WaveformDisplay.cpp" line="243"/>
+        <location filename="../src/UI/WaveformDisplay.cpp" line="280"/>
         <source>Remove skip-start</source>
         <translation>Stornovat nastavené přeskočení</translation>
     </message>

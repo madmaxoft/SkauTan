@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QListWidget>
 #include <QByteArray>
+#include <QPainter>
 
 
 
@@ -148,4 +149,33 @@ QString toHex(const QByteArray & a_Data)
 
 
 
+QPainterSaver::QPainterSaver(QPainter & a_Painter):
+	m_Painter(&a_Painter)
+{
+	a_Painter.save();
 }
+
+
+
+
+
+QPainterSaver::QPainterSaver(QPainter * a_Painter):
+	m_Painter(a_Painter)
+{
+	a_Painter->save();
+}
+
+
+
+
+
+QPainterSaver::~QPainterSaver()
+{
+	m_Painter->restore();
+}
+
+
+
+
+
+}  // namespace Utils

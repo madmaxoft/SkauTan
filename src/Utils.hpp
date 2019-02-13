@@ -10,6 +10,7 @@ class QString;
 class QListWidget;
 class QVariant;
 class QByteArray;
+class QPainter;
 
 
 
@@ -69,7 +70,37 @@ bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data);
 /** Returns a string that represents the data in hex. */
 QString toHex(const QByteArray & a_Data);
 
+
+
+
+
+
+/** RAII class for saving and restoring QPainter state. */
+class QPainterSaver
+{
+public:
+
+	/** Creates a new instance, saves the QPainter state. */
+	QPainterSaver(QPainter & a_Painter);
+
+	/** Creates a new instance, saves the QPainter state. */
+	QPainterSaver(QPainter * a_Painter);
+
+	/** Restores the QPainter state. */
+	~QPainterSaver();
+
+
+protected:
+
+	/** The painter whose state will be restored on exit. */
+	QPainter * m_Painter;
 };
+
+
+
+
+
+};  // namespace Utils
 
 
 

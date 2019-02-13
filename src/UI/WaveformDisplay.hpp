@@ -44,7 +44,7 @@ public:
 	void setPlayer(Player & a_Player);
 
 	/** Paints the display for the specified paint event. */
-	void paint(QPainter & a_Painter, const QPoint & a_Origin, int a_Height);
+	void paint(QPainter & a_Painter, int a_Height);
 
 	/** Sets the new width and height for the display.
 	Recalculates the peaks. */
