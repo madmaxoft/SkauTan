@@ -667,7 +667,7 @@ void Format::decode()
 			if (ret < 0)
 			{
 				qWarning() << "Error while sending a packet to the decoder: " << ret;
-				return;
+				// return;
 			}
 
 			while (ret >= 0)
@@ -689,6 +689,18 @@ void Format::decode()
 		av_packet_unref(&packet);
 	}
 	qDebug() << "Decoding done.";
+}
+
+
+
+
+
+std::shared_ptr<PlaybackBuffer> Format::decodeEntireAudio(const QAudioFormat & a_Format)
+{
+	auto res = std::make_shared<PlaybackBuffer>(a_Format);
+	routeAudioTo(res.get());
+	decode();
+	return res;
 }
 
 

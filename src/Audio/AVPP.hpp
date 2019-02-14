@@ -225,6 +225,11 @@ namespace AVPP
 		Blocks until the entire input is decoded (or seeked out of, using seekTo() from another thread). */
 		void decode();
 
+		/** Decodes the entire audio data in the input file and returns it as a playable buffer.
+		a_Format specifies the output format for the buffer. */
+		std::shared_ptr<PlaybackBuffer> decodeEntireAudio(const QAudioFormat & a_Format);
+
+
 	protected:
 
 		/** The context itself. */
