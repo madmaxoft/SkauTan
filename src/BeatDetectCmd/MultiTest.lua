@@ -30,7 +30,6 @@ local beatDetectCmdExe = isWindows and "BeatDetectCmd.exe" or "BeatDetectCmd"
 --[[ Returns a table of the detected values, as returned from BeatDetectCmd:
 {
 	fileName = "file.mp3",
-	confidences = { {mpm, confidence}, ... },
 	histogram = { {mpm, count}, ... },
 	beats = { {beat index, sound-level}, ... },
 }
@@ -101,16 +100,11 @@ end
 
 
 --- Outputs the detection results
--- a_DetectionRes is a dict table of SongFileName -> {array of {mpm = .., confidence = ..}}
+-- a_DetectionRes is a dict table of SongFileName -> {tempo = .., confidence = ..}}
 local function outputDetectionResults(a_DetectionRes)
 	print("{")
 	for songFileName, info in pairs(a_DetectionRes) do
-		print("\t[\"" .. songFileName .. "\"] =")
-		print("\t{")
-		for _, cg in ipairs(info.confidences or {}) do
-			print("\t\t{ mpm = " .. (cg[1] or "-1") .. ", confidence = " .. (cg[2] or "-1") .. "},")
-		end
-		print("\t},")
+		print("\t[\"" .. songFileName .. "\"] = {tempo = " .. (info.tempo or 0) .. ", confidence = " .. (info.confidence or 0) .. "},")
 	end
 	print("}")
 end

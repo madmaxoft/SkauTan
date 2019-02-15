@@ -142,6 +142,8 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 		cout << "\t\t" << lev << "," << endl;
 	}
 	cout << "\t}," << endl;
+	cout << "\ttempo = " << res->m_Tempo << "," << endl;
+	cout << "\tconfidence = " << res->m_Confidence << "," << endl;
 	if (g_ShouldIncludeID3)
 	{
 		outputId3Tag(song->fileName());
