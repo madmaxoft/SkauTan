@@ -121,7 +121,6 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	cerr << "-----------------------------------------------" << endl;;
 	cerr << "Detected data for " << a_FileName.toStdString() << ":" << endl;
 	cerr << "Total number of beats: " << res->m_Beats.size() << endl;
-	cerr << "Total number of histogram entries: " << res->m_Histogram.size() << endl;
 	cerr << "Confidence for compatible tempo groups:" << endl;
 	for (const auto & c: res->m_Confidences)
 	{
@@ -131,13 +130,6 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	// Output the results to stdout as a Lua source, so that it can be consumed by a script:
 	cout << "return" << endl << "{" << endl;
 	cout << "\tfileName = \"" << luaEscapeString(a_FileName) << "\"," << endl;
-	cout << "\thistogram =" << endl;
-	cout << "\t{" << endl;
-	for (const auto & h: res->m_Histogram)
-	{
-		cout << "\t\t{ " << h.first << ", " << h.second << "}," << endl;
-	}
-	cout << "\t}," << endl;
 	cout << "\tconfidences =" << endl;
 	cout << "\t{" << endl;
 	for (const auto & c: res->m_Confidences)
@@ -190,16 +182,6 @@ void printUsage()
 	cerr << "  -w <N>          ... Set window size to N (default: " << defaultOptions.m_WindowSize << ")" << endl;
 	cerr << "  -s <N>          ... Set the stride to N (default: " << defaultOptions.m_Stride << ")" << endl;
 	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.m_LevelPeak << ")" << endl;
-	cerr << "  -c <N>          ... Set the histogram cutoff (default: " << defaultOptions.m_HistogramCutoff << ")" << endl;
-	cerr << "  -f <min> <max>  ... Fold the histogram into the specified tempo range (default: ";
-	if (defaultOptions.m_ShouldFoldHistogram)
-	{
-		cerr << "-f " << defaultOptions.m_HistogramFoldMin << ' ' << defaultOptions.m_HistogramFoldMax << ")" << endl;
-	}
-	else
-	{
-		cerr << "do not fold)" << endl;
-	}
 	cerr << "  -b <filename>   ... Output debug audio with beats to file" << endl;
 	cerr << "  -d <filename>   ... Output debug audio with levels to file" << endl;
 	cerr << "  -h              ... Print this help" << endl;
@@ -251,30 +233,12 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 					i += 1;
 					break;
 				}
-				case 'c':
-				case 'C':
-				{
-					NEED_ARG(1);
-					a_Options.m_HistogramCutoff = static_cast<size_t>(stoll(a_Args[i + 1]));
-					i += 1;
-					break;
-				}
 				case 'd':
 				case 'D':
 				{
 					NEED_ARG(1);
 					a_Options.m_DebugAudioLevelsFileName = QString::fromStdString(a_Args[i + 1]);
 					i += 1;
-					break;
-				}
-				case 'f':
-				case 'F':
-				{
-					NEED_ARG(2);
-					a_Options.m_ShouldFoldHistogram = true;
-					a_Options.m_HistogramFoldMin = stoi(a_Args[i + 1]);
-					a_Options.m_HistogramFoldMax = stoi(a_Args[i + 2]);
-					i += 2;
 					break;
 				}
 				case 'i':

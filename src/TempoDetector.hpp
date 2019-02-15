@@ -63,22 +63,6 @@ public:
 		/** The number of levels to check before and after current level to filter out non-peak levels. */
 		size_t m_LevelPeak;
 
-		/** Number of histogram entries that are used for the confidence calculation. */
-		size_t m_HistogramCutoff;
-
-		/** If set to true, the histogram is folded before calculating confidences.
-		Tempos lower than m_HistogramFoldMin are dropped.
-		Tempos higher than m_HistogramFoldMax are halved until they are lower, then half their count is added. */
-		bool m_ShouldFoldHistogram;
-
-		/** The minimum tempo to keep when folding the histogram.
-		Tempos lower than this are dropped from the histogram. */
-		int m_HistogramFoldMin;
-
-		/** The maximum tempo to keep when folding the histogram.
-		Tempos higher than this are halved until they are lower, then half their count is added. */
-		int m_HistogramFoldMax;
-
 		/** If true, the levels are normalized across m_NormalizeLevelsWindowSize elements. */
 		bool m_ShouldNormalizeLevels;
 
@@ -115,19 +99,16 @@ public:
 		Options m_Options;
 
 		/** The detected tempo. */
-		int m_Tempo;
+		double m_Tempo;
 
 		/** The confidence of the detection. Ranges from 0 to 100, higher means more confident. */
-		int m_Confidence;
+		double m_Confidence;
 
 		/** A confidence-desc-sorted vector of tempo -> confidence.
 		The first item corresponds to m_Tempo, m_Confidence. */
-		std::vector<std::pair<int, int>> m_Confidences;
+		std::vector<std::pair<double, double>> m_Confidences;
 
-		/** The raw histogram of tempo -> number of occurences. */
-		std::map<int, size_t> m_Histogram;
-
-		/** A sorted vector of beat indices into m_Levels and their weight. */
+		/** A time-sorted vector of beat indices (into m_Levels) and their weight. */
 		std::vector<std::pair<size_t, qint32>> m_Beats;
 
 		/** A vector of all levels calculated for the audio. */
