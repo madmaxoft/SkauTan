@@ -110,10 +110,6 @@ public:
 		/** The confidence of the detection. Ranges from 0 to 100, higher means more confident. */
 		double m_Confidence;
 
-		/** A confidence-desc-sorted vector of tempo -> confidence.
-		The first item corresponds to m_Tempo, m_Confidence. */
-		std::vector<std::pair<double, double>> m_Confidences;
-
 		/** A time-sorted vector of beat indices (into m_Levels) and their weight. */
 		std::vector<std::pair<size_t, qint32>> m_Beats;
 
