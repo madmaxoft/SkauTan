@@ -62,13 +62,9 @@ public:
 		debugLevelsInAudioData(buf, res->m_Levels);
 		res->m_Beats = detectBeats(res->m_Levels);
 		debugBeatsInAudioData(buf, res->m_Beats);
-		res->m_Histogram = beatsToHistogram(res->m_Beats);
-		if (m_Options.m_ShouldFoldHistogram)
-		{
-			foldHistogram(res->m_Histogram);
-		}
-		auto bestTen = sortHistogram(res->m_Histogram, m_Options.m_HistogramCutoff);
-		res->m_Confidences = calcConfidences(bestTen);
+
+		// TODO: Calculate confidences in tempos
+
 		if (!res->m_Confidences.empty())
 		{
 			res->m_Tempo = res->m_Confidences[0].first;
@@ -541,62 +537,6 @@ public:
 
 
 
-	/** "Folds" the histogram:
-	Values below m_Options.m_HistogramFoldMin are dropped.
-	Values above m_Options.m_HistogramFoldMax are halved until they are lower, then half their weight is added. */
-	std::map<int, size_t> foldHistogram(const std::map<int, size_t> & a_Histogram)
-	{
-		std::map<int, size_t> res;
-		for (const auto & v: a_Histogram)
-		{
-			auto tempo = v.first;
-			if (tempo < m_Options.m_HistogramFoldMin)
-			{
-				continue;
-			}
-			if (tempo <= m_Options.m_HistogramFoldMax)
-			{
-				res[tempo] += v.second;
-				continue;
-			}
-			while (tempo > m_Options.m_HistogramFoldMax)
-			{
-				tempo /= 2;
-			}
-			res[tempo] += v.second / 2;
-		}
-		return res;
-	}
-
-
-
-
-
-	/** Sorts the histogram by the counts and returns up to a_Count most common values. */
-	std::vector<std::pair<int, size_t>> sortHistogram(const std::map<int, size_t> & a_Histogram, size_t a_Count)
-	{
-		std::vector<std::pair<int, size_t>> sorted;
-		for (const auto & v: a_Histogram)
-		{
-			sorted.emplace_back(v.first, v.second);
-		}
-		using itemType = decltype(sorted[0]);
-		std::sort(sorted.begin(), sorted.end(), [](itemType v1, itemType v2)
-			{
-				return (v1.second > v2.second);
-			}
-		);
-		if (a_Count < sorted.size())
-		{
-			sorted.resize(a_Count);
-		}
-		return sorted;
-	}
-
-
-
-
-
 	/** Converts the distance between levels to a BPM value. */
 	double distToBPM(size_t a_Dist)
 	{
@@ -770,10 +710,6 @@ TempoDetector::Options::Options():
 	m_WindowSize(1024),
 	m_Stride(256),
 	m_LevelPeak(13),
-	m_HistogramCutoff(10),
-	m_ShouldFoldHistogram(true),
-	m_HistogramFoldMin(16),
-	m_HistogramFoldMax(240),
 	m_ShouldNormalizeLevels(true),
 	m_NormalizeLevelsWindowSize(31)
 {
@@ -800,13 +736,6 @@ bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
 	COMPARE(m_WindowSize)
 	COMPARE(m_Stride)
 	COMPARE(m_LevelPeak)
-	COMPARE(m_HistogramCutoff)
-	COMPARE(m_ShouldFoldHistogram)
-	if (m_ShouldFoldHistogram)
-	{
-		COMPARE(m_HistogramFoldMin)
-		COMPARE(m_HistogramFoldMax)
-	}
 	COMPARE(m_ShouldNormalizeLevels)
 	if (m_ShouldNormalizeLevels)
 	{
@@ -821,22 +750,10 @@ bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
 
 bool TempoDetector::Options::operator ==(const TempoDetector::Options & a_Other)
 {
-	if (
-		m_ShouldFoldHistogram &&
-		(
-			(m_HistogramFoldMin != a_Other.m_HistogramFoldMin) ||
-			(m_HistogramFoldMax != a_Other.m_HistogramFoldMax)
-		)
-	)
-	{
-		return false;
-	}
 	return (
 		(m_LevelAlgorithm == a_Other.m_LevelAlgorithm) &&
 		(m_WindowSize == a_Other.m_WindowSize) &&
 		(m_Stride == a_Other.m_Stride) &&
-		(m_LevelPeak == a_Other.m_LevelPeak) &&
-		(m_HistogramCutoff == a_Other.m_HistogramCutoff) &&
-		(m_ShouldFoldHistogram == a_Other.m_ShouldFoldHistogram)
+		(m_LevelPeak == a_Other.m_LevelPeak)
 	);
 }

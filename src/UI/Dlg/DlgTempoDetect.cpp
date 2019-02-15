@@ -174,10 +174,6 @@ void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
 	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.m_WindowSize));
 	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.m_Stride));
 	m_UI->leLevelPeak->setText(       QString::number(a_Options.m_LevelPeak));
-	m_UI->leHistogramCutoff->setText( QString::number(a_Options.m_HistogramCutoff));
-	m_UI->leFoldHistogramMin->setText(QString::number(a_Options.m_HistogramFoldMin));
-	m_UI->leFoldHistogramMax->setText(QString::number(a_Options.m_HistogramFoldMax));
-	m_UI->chbFoldHistogram->setChecked(a_Options.m_ShouldFoldHistogram);
 	m_IsInternalChange = false;
 }
 
@@ -192,13 +188,6 @@ TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 	options.m_WindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
 	options.m_Stride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
 	options.m_LevelPeak = static_cast<size_t>(m_UI->leLevelPeak->text().toLongLong());
-	options.m_HistogramCutoff = static_cast<size_t>(m_UI->leHistogramCutoff->text().toLongLong());
-	options.m_ShouldFoldHistogram = m_UI->chbFoldHistogram->isChecked();
-	if (options.m_ShouldFoldHistogram)
-	{
-		options.m_HistogramFoldMin = m_UI->leFoldHistogramMin->text().toInt();
-		options.m_HistogramFoldMax = m_UI->leFoldHistogramMax->text().toInt();
-	}
 	return options;
 }
 
@@ -231,9 +220,6 @@ void DlgTempoDetect::updateHistoryRow(int a_Row)
 	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.m_Stride)));
 	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
 	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
-	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.m_HistogramCutoff)));
-	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(opt.m_ShouldFoldHistogram ? QString::number(opt.m_HistogramFoldMin) : QString()));
-	m_UI->twDetectionHistory->setItem(a_Row, 7,  new QTableWidgetItem(opt.m_ShouldFoldHistogram ? QString::number(opt.m_HistogramFoldMax) : QString()));
 	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->m_Tempo)));
 	if (m_Song->primaryGenre().isPresent())
 	{
