@@ -61,7 +61,7 @@ public:
 		res->m_Beats = detectBeats(res->m_Levels);
 		debugBeatsInAudioData(buf, res->m_Beats);
 
-		std::tie(res->m_Tempo, res->m_Confidence) = calcConfidences(res->m_Beats, res->m_Levels);
+		std::tie(res->m_Tempo, res->m_Confidence) = detectTempoFromBeats(res->m_Beats, res->m_Levels);
 
 		return res;
 	}
@@ -70,10 +70,10 @@ public:
 
 
 
-	/** Calculates the best match for the tempo, and its confidence.
+	/** Calculates the best match for the tempo, and its confidence, based on the detected beats.
 	Uses self-similarity matching to calculate the confidence for each tempo value.
 	The returned confidence ranges from 0 to 100. */
-	std::pair<double, double> calcConfidences(
+	std::pair<double, double> detectTempoFromBeats(
 		std::vector<std::pair<size_t, qint32>> & a_Beats,
 		std::vector<qint32> & a_Levels
 	)
@@ -108,7 +108,8 @@ public:
 		{
 			if (!isCloseEnoughMpm(sim.second, bestMpm))
 			{
-				return {bestMpm, 1 - sim.first / bestSimilarity};
+				auto confidence = 100 - 100 * sim.first / bestSimilarity;
+				return {bestMpm, Utils::clamp<double>(confidence, 0, 100)};
 			}
 		}
 		return {0, 0};

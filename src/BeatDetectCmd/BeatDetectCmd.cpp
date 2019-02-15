@@ -121,22 +121,12 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	cerr << "-----------------------------------------------" << endl;;
 	cerr << "Detected data for " << a_FileName.toStdString() << ":" << endl;
 	cerr << "Total number of beats: " << res->m_Beats.size() << endl;
-	cerr << "Confidence for compatible tempo groups:" << endl;
-	for (const auto & c: res->m_Confidences)
-	{
-		cerr << "  " << c.first << ": " << c.second << endl;
-	}
+	cerr << "Detected tempo: " << res->m_Tempo << endl;
+	cerr << "Confidence: " << res->m_Confidence << endl;
 
 	// Output the results to stdout as a Lua source, so that it can be consumed by a script:
 	cout << "return" << endl << "{" << endl;
 	cout << "\tfileName = \"" << luaEscapeString(a_FileName) << "\"," << endl;
-	cout << "\tconfidences =" << endl;
-	cout << "\t{" << endl;
-	for (const auto & c: res->m_Confidences)
-	{
-		cout << "\t\t{ " << c.first << ", " << c.second << "}," << endl;
-	}
-	cout << "\t}," << endl;
 	cout << "\tbeats =" << endl;
 	cout << "\t{" << endl;
 	const auto & levels = res->m_Levels;
