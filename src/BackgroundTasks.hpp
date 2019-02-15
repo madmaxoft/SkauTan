@@ -36,36 +36,7 @@ public:
 
 	/** Base class for code that needs to be executed in the background.
 	Users should subclass and provide the execute() method implementation. */
-	class Task
-	{
-	public:
-
-		Task(const QString & a_Name) : m_Name(a_Name), m_ShouldTerminate(false) {}
-
-		// Force a virtual destructor
-		virtual ~Task() {}
-
-		/** Runs the actual code for this task.
-		Called from within an Executor in a background thread. */
-		virtual void execute() = 0;
-
-		/** Called by the Executor if the entire BackgroundTasks instance is being destroyed.
-		The task should terminate as soon as possible.
-		The default implementation sets a flag that can be checked periodically. */
-		virtual void abort() { m_ShouldTerminate = true; }
-
-		/** Returns the user-visible task name. */
-		const QString & name() const { return m_Name; }
-
-	protected:
-
-		/** The name of the task, as shown to the user. */
-		const QString m_Name;
-
-		/** Flag that is set when the task should terminate as soon as possible. */
-		std::atomic<bool> m_ShouldTerminate;
-	};
-
+	class Task;
 	using TaskPtr = std::shared_ptr<Task>;
 
 
@@ -158,6 +129,43 @@ private slots:
 
 	/** Received from the executors' threads, invokes the taskFinished() signal for the specified task. */
 	void emitTaskFinished(BackgroundTasks::TaskPtr a_Task);
+};
+
+
+
+
+
+class BackgroundTasks::Task:
+	public QObject
+{
+	Q_OBJECT
+
+public:
+
+	Task(const QString & a_Name) : m_Name(a_Name), m_ShouldTerminate(false) {}
+
+	// Force a virtual destructor
+	virtual ~Task() {}
+
+	/** Runs the actual code for this task.
+	Called from within an Executor in a background thread. */
+	virtual void execute() = 0;
+
+	/** Called by the Executor if the entire BackgroundTasks instance is being destroyed.
+	The task should terminate as soon as possible.
+	The default implementation sets a flag that can be checked periodically. */
+	virtual void abort() { m_ShouldTerminate = true; }
+
+	/** Returns the user-visible task name. */
+	const QString & name() const { return m_Name; }
+
+protected:
+
+	/** The name of the task, as shown to the user. */
+	const QString m_Name;
+
+	/** Flag that is set when the task should terminate as soon as possible. */
+	std::atomic<bool> m_ShouldTerminate;
 };
 
 
