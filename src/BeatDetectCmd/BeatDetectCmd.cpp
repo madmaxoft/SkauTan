@@ -181,7 +181,7 @@ void printUsage()
 	cerr << "                        2: DiscreetSineTransform" << endl;
 	cerr << "  -w <N>          ... Set window size to N (default: " << defaultOptions.m_WindowSize << ")" << endl;
 	cerr << "  -s <N>          ... Set the stride to N (default: " << defaultOptions.m_Stride << ")" << endl;
-	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.m_LevelPeak << ")" << endl;
+	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.m_LocalMaxDistance << ")" << endl;
 	cerr << "  -b <filename>   ... Output debug audio with beats to file" << endl;
 	cerr << "  -d <filename>   ... Output debug audio with levels to file" << endl;
 	cerr << "  -h              ... Print this help" << endl;
@@ -259,7 +259,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'P':
 				{
 					NEED_ARG(1);
-					a_Options.m_LevelPeak = static_cast<size_t>(stoll(a_Args[i + 1]));
+					a_Options.m_LocalMaxDistance = static_cast<size_t>(stoll(a_Args[i + 1]));
 					i += 1;
 					break;
 				}

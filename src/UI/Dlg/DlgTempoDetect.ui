@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>864</width>
-    <height>787</height>
+    <height>596</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -173,17 +173,17 @@
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="7" column="0" colspan="3">
-        <widget class="QPushButton" name="btnSaveDebugBeats">
-         <property name="text">
-          <string>Save raw audio with Beats...</string>
+       <item row="0" column="2">
+        <widget class="QLineEdit" name="leSampleRate">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="3">
-        <widget class="QCheckBox" name="chbFoldHistogram">
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Fold histogram</string>
+          <string>Sample rate:</string>
          </property>
         </widget>
        </item>
@@ -194,65 +194,56 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="2">
+       <item row="7" column="0" colspan="3">
+        <widget class="QPushButton" name="btnSaveDebugBeats">
+         <property name="text">
+          <string>Save raw audio with Beats...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
         <widget class="QLabel" name="label_10">
          <property name="text">
           <string>Local maximum distance:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="2">
-        <widget class="QLineEdit" name="leFoldHistogramMin">
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="leLocalMaxDistance">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="2" column="2">
+        <widget class="QLineEdit" name="leMinTempo">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Max:</string>
+          <string>Max tempo:</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QLineEdit" name="leLevelPeak">
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="leMaxTempo">
          <property name="inputMethodHints">
           <set>Qt::ImhDigitsOnly</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="2">
-        <widget class="QLineEdit" name="leFoldHistogramMax">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="1">
+       <item row="2" column="0" colspan="2">
         <widget class="QLabel" name="label_11">
          <property name="text">
-          <string>Min:</string>
+          <string>Min tempo:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="5" column="0" colspan="3">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -265,62 +256,23 @@
          </property>
         </spacer>
        </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="leHistogramCutoff">
-         <property name="inputMethodHints">
-          <set>Qt::ImhDigitsOnly</set>
+       <item row="4" column="0" colspan="2">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Level normalization window:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>Histogram Cut-off:</string>
+       <item row="4" column="2">
+        <widget class="QLineEdit" name="leNormalizeLevelsWindowSize">
+         <property name="inputMethodHints">
+          <set>Qt::ImhDigitsOnly</set>
          </property>
         </widget>
        </item>
       </layout>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_14">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Detected tempo:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTableWidget" name="twDetectedResults">
-     <attribute name="horizontalHeaderHighlightSections">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string>Tempo</string>
-      </property>
-      <property name="textAlignment">
-       <set>AlignTrailing|AlignVCenter</set>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Confidence</string>
-      </property>
-      <property name="textAlignment">
-       <set>AlignTrailing|AlignVCenter</set>
-      </property>
-     </column>
-    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label_13">
@@ -369,27 +321,33 @@
      </column>
      <column>
       <property name="text">
-       <string>LvlPeak</string>
+       <string>SampleRate</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>LocDist</string>
+       <string>LocMaxDist</string>
+      </property>
+      <property name="toolTip">
+       <string>Local maximum distance</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>HistCutOff</string>
+       <string>MinTempo</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>FoldMin</string>
+       <string>MaxTempo</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>FoldMax</string>
+       <string>LvlNormWin</string>
+      </property>
+      <property name="toolTip">
+       <string>Level normalization window size</string>
       </property>
      </column>
      <column>
@@ -410,17 +368,12 @@
      </column>
      <column>
       <property name="text">
-       <string/>
-      </property>
-     </column>
-     <column>
-      <property name="text">
        <string>Confidence</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>RelConf</string>
+       <string/>
       </property>
      </column>
     </widget>
@@ -458,14 +411,11 @@
   <tabstop>lwLevelAlgorithm</tabstop>
   <tabstop>lwWindowSize</tabstop>
   <tabstop>lwStride</tabstop>
-  <tabstop>leLevelPeak</tabstop>
-  <tabstop>leHistogramCutoff</tabstop>
-  <tabstop>chbFoldHistogram</tabstop>
-  <tabstop>leFoldHistogramMin</tabstop>
-  <tabstop>leFoldHistogramMax</tabstop>
+  <tabstop>leLocalMaxDistance</tabstop>
+  <tabstop>leMinTempo</tabstop>
+  <tabstop>leMaxTempo</tabstop>
   <tabstop>btnSaveDebugLevels</tabstop>
   <tabstop>btnSaveDebugBeats</tabstop>
-  <tabstop>twDetectedResults</tabstop>
   <tabstop>twDetectionHistory</tabstop>
   <tabstop>btnClose</tabstop>
  </tabstops>

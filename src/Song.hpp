@@ -299,6 +299,10 @@ public:
 	If the genre is not known, returns 0 .. MAX_USHORT */
 	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
 
+	/** Returns the tempo range to be used for tempo detection, based on the specified genre.
+	If the genre is not known, returns the generic range of 17 .. 80. */
+	static std::pair<int, int> detectionTempoRangeForGenre(const QString & a_Genre);
+
 	/** Returns the most likely MPM value given the MPM or BPM input and genre.
 	If the input is double, triple or quadruple of a competition range MPM, return 1/2, 1/3 or 1/4 of the input,
 	otherwise returns the input. */

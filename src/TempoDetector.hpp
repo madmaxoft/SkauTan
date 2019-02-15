@@ -61,13 +61,19 @@ public:
 		size_t m_Stride;
 
 		/** The number of levels to check before and after current level to filter out non-peak levels. */
-		size_t m_LevelPeak;
+		size_t m_LocalMaxDistance;
 
 		/** If true, the levels are normalized across m_NormalizeLevelsWindowSize elements. */
 		bool m_ShouldNormalizeLevels;
 
 		/** Number of neighboring levels to normalize against when m_ShouldNormalizeLevels is true. */
 		size_t m_NormalizeLevelsWindowSize;
+
+		/** The maximum tempo that is tested in the detection. */
+		int m_MaxTempo;
+
+		/** The minimum tempo that is tested in the detection. */
+		int m_MinTempo;
 
 		/** Name of file to store the audio levels for debugging purposes.
 		Creates a 16-bit int stereo RAW file,

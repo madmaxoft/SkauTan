@@ -277,6 +277,39 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 
 
 
+std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & a_Genre)
+{
+	// Map of genre -> tempo range
+	static const std::map<QString, std::pair<int, int>> detectionTempoRanges =
+	{
+		{"SW", {25, 33}},
+		{"TG", {28, 35}},
+		{"VW", {40, 65}},
+		{"SF", {25, 35}},
+		{"QS", {45, 55}},
+		{"SB", {34, 55}},
+		{"CH", {22, 35}},
+		{"RU", {17, 30}},
+		{"PD", {40, 68}},
+		{"JI", {28, 46}},
+		{"BL", {15, 30}},
+		{"PO", {40, 80}},
+		{"RO", {22, 35}},  // Same as CH
+	};
+
+	// Find the genre:
+	auto itr = detectionTempoRanges.find(a_Genre.toUpper());
+	if (itr == detectionTempoRanges.end())
+	{
+		return std::make_pair(17, 80);
+	}
+	return itr->second;
+}
+
+
+
+
+
 double Song::adjustMpm(double a_Input, const QString & a_Genre)
 {
 	auto mpmRange = competitionTempoRangeForGenre(a_Genre);
