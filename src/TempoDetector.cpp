@@ -23,9 +23,7 @@ public:
 
 
 
-	/** Processes the song - detects its tempo.
-	Returns a vector of pairs, tempo -> confidence, for the top tempos detected in the song.
-	The caller should process the confidences on their own. */
+	/** Processes the song - detects its tempo. */
 	std::shared_ptr<TempoDetector::Result> process()
 	{
 		qDebug() << "Detecting tempo in " << m_Song->fileName();
@@ -63,12 +61,104 @@ public:
 		res->m_Beats = detectBeats(res->m_Levels);
 		debugBeatsInAudioData(buf, res->m_Beats);
 
-		// TODO: Calculate confidences in tempos
+		std::tie(res->m_Tempo, res->m_Confidence) = calcConfidences(res->m_Beats, res->m_Levels);
 
-		if (!res->m_Confidences.empty())
+		return res;
+	}
+
+
+
+
+
+	/** Calculates the best match for the tempo, and its confidence.
+	Uses self-similarity matching to calculate the confidence for each tempo value.
+	The returned confidence ranges from 0 to 100. */
+	std::pair<double, double> calcConfidences(
+		std::vector<std::pair<size_t, qint32>> & a_Beats,
+		std::vector<qint32> & a_Levels
+	)
+	{
+		// Calculate the similarities:
+		qint32 maxLevel = 0;
+		auto beats = prepareBeats(a_Beats, a_Levels, maxLevel);
+		auto minOfs = Utils::floor<size_t>(mpmToBeatStrides(m_Options.m_MaxTempo));
+		auto maxOfs = Utils::ceil<size_t> (mpmToBeatStrides(m_Options.m_MinTempo));
+		std::vector<std::pair<double, double>> similarities;  // {similarity, mpm}
+		for (size_t ofs = minOfs; ofs <= maxOfs; ++ofs)
 		{
-			res->m_Tempo = res->m_Confidences[0].first;
-			res->m_Confidence = res->m_Confidences[0].second;
+			auto sim = calcSimilarityBeatsWeight(a_Beats, beats, ofs, maxLevel);
+			auto mpm = beatStridesToMpm(ofs);
+			similarities.push_back({sim, mpm});
+		}
+		if (similarities.empty())
+		{
+			return {0, 0};
+		}
+
+		// Find the second-best MPM (that isn't close enough to the best MPM):
+		std::sort(similarities.begin(), similarities.end(),
+			[](auto a_Sim1, auto a_Sim2)
+			{
+				return (a_Sim1.first > a_Sim2.first);
+			}
+		);
+		auto bestMpm = similarities[0].second;
+		auto bestSimilarity = similarities[0].first;
+		for (const auto & sim: similarities)
+		{
+			if (!isCloseEnoughMpm(sim.second, bestMpm))
+			{
+				return {bestMpm, 1 - sim.first / bestSimilarity};
+			}
+		}
+		return {0, 0};
+	}
+
+
+
+
+	/** Returns true if the two MPMs are close enough to be considered a single match. */
+	static bool isCloseEnoughMpm(double a_Mpm1, double a_Mpm2)
+	{
+		return (std::abs(a_Mpm1 - a_Mpm2) <= 1.5);
+	}
+
+
+
+
+
+	/** Calculates the self-similarity on a_Beats using the specified offset.
+	a_BeatMap is the helper map for quick beat lookups, created by prepareBeats().
+	The similarity is a number that can be compared to other similarities. */
+	double calcSimilarityBeatsWeight(
+		const std::vector<std::pair<size_t, qint32>> & a_Beats,
+		const std::map<size_t, qint32> & a_BeatMap,
+		size_t a_Offset,
+		qint32 a_MaxLevel
+	)
+	{
+		double res = 0;
+		for (const auto & beat: a_Beats)
+		{
+			auto idx = beat.first + a_Offset;
+			auto itr = a_BeatMap.find(idx);
+			if (itr != a_BeatMap.cend())
+			{
+				res += a_MaxLevel - std::abs(beat.second - itr->second);
+				continue;
+			}
+			itr = a_BeatMap.find(idx + 1);
+			if (itr != a_BeatMap.cend())
+			{
+				res += a_MaxLevel - std::abs(beat.second - itr->second) / 2;
+				continue;
+			}
+			itr = a_BeatMap.find(idx - 1);
+			if (itr != a_BeatMap.cend())
+			{
+				res += a_MaxLevel - std::abs(beat.second - itr->second) / 2;
+				continue;
+			}
 		}
 		return res;
 	}
@@ -77,60 +167,50 @@ public:
 
 
 
-	/** Groups the tempos in the histogram by their compatibility and calculates the confidence for each group.
-	Returns a vector of <tempo, confidence>, sorted from the highest confidence. */
-	std::vector<std::pair<int, int>> calcConfidences(std::vector<std::pair<int, size_t>> a_SortedHistogram)
+	/** Prepares a lookup-table of beats based on the input calculated beats.
+	Returns a map of beatIndex -> soundLevel for each detected beat. */
+	std::map<size_t, qint32> prepareBeats(
+		const std::vector<std::pair<size_t, qint32>> & a_Beats,
+		const std::vector<qint32> & a_Levels,
+		qint32 & a_OutMaxLevel
+	)
 	{
-		std::vector<std::pair<int, size_t>> compatibilityGroups;  // pairs of <baseTempo, sumCount>
-		size_t total = 1;  // Don't want zero divisor
-		while (!a_SortedHistogram.empty())
+		std::map<size_t, qint32> res;
+		qint32 maxLevel = 0;
+		for (const auto & beat: a_Beats)
 		{
-			// Find the lowest leftover tempo:
-			int lowestTempo = a_SortedHistogram[0].first;
-			for (const auto & h: a_SortedHistogram)
+			auto level = std::abs(a_Levels[beat.first]);
+			res[beat.first] = level;
+			if (level > maxLevel)
 			{
-				if (h.first < lowestTempo)
-				{
-					lowestTempo = h.first;
-				}
+				maxLevel = level;
 			}
-
-			// Build the compatibility group:
-			size_t count = 0;
-			for (auto itr = a_SortedHistogram.begin(); itr != a_SortedHistogram.end();)
-			{
-				if (isCompatibleTempo(lowestTempo, itr->first))
-				{
-					count += itr->second;
-					itr = a_SortedHistogram.erase(itr);
-				}
-				else
-				{
-					++itr;
-				}
-			}
-			compatibilityGroups.emplace_back(lowestTempo, count);
-			total += count;
 		}
-
-		// Convert the compatibility groups' sumCounts into confidences:
-		std::vector<std::pair<int, int>> res;
-		for (const auto & cg: compatibilityGroups)
-		{
-			res.emplace_back(
-				cg.first,
-				static_cast<int>(100 * cg.second / total)
-			);
-		}
-
-		// Sort the compatibility groups:
-		using CgType = decltype(res[0]);
-		std::sort(res.begin(), res.end(), [](CgType a_Val1, CgType a_Val2)
-			{
-				return (a_Val1.second > a_Val2.second);
-			}
-		);
+		a_OutMaxLevel = maxLevel;
 		return res;
+	}
+
+
+
+
+
+	/** Converts the number of strides (across calculated beats) that make up a time interval,
+	into the corresponding MPM, rounded to 2 decimal places.
+	The inverse function is mpmToBeatStrides() */
+	double beatStridesToMpm(double a_BeatStrides)
+	{
+		auto mpm = (m_Options.m_SampleRate * 60 / static_cast<int>(m_Options.m_Stride)) / a_BeatStrides;
+		return std::floor(mpm * 100 + 0.5) / 100;
+	}
+
+
+
+
+
+	/** Converts the MPM to the stride length (across calculated beats) representing the tempo. */
+	double mpmToBeatStrides(double a_Mpm)
+	{
+		return ((m_Options.m_SampleRate * 60 / static_cast<int>(m_Options.m_Stride)) / a_Mpm);
 	}
 
 
@@ -460,11 +540,11 @@ public:
 
 		// Calculate beats and their weight:
 		std::vector<std::pair<size_t, qint32>> weightedBeats;
-		auto maxIdx = a_Levels.size() - m_Options.m_LevelPeak;
-		for (size_t i = m_Options.m_LevelPeak; i < maxIdx; ++i)
+		auto maxIdx = a_Levels.size() - m_Options.m_LocalMaxDistance;
+		for (size_t i = m_Options.m_LocalMaxDistance; i < maxIdx; ++i)
 		{
 			bool isLocalMaximum = true;
-			for (size_t j = i - m_Options.m_LevelPeak; j < i + m_Options.m_LevelPeak; ++j)
+			for (size_t j = i - m_Options.m_LocalMaxDistance; j < i + m_Options.m_LocalMaxDistance; ++j)
 			{
 				if ((i != j) && (climbs[j] >= climbs[i]))
 				{
@@ -705,13 +785,15 @@ void TempoDetector::queueScanSong(SongPtr a_Song, const TempoDetector::Options &
 
 
 TempoDetector::Options::Options():
-	m_SampleRate(48000),
-	m_LevelAlgorithm(laSumDist),
-	m_WindowSize(1024),
-	m_Stride(256),
-	m_LevelPeak(13),
+	m_SampleRate(500),
+	m_LevelAlgorithm(laSumDistMinMax),
+	m_WindowSize(11),
+	m_Stride(8),
+	m_LocalMaxDistance(13),
 	m_ShouldNormalizeLevels(true),
-	m_NormalizeLevelsWindowSize(31)
+	m_NormalizeLevelsWindowSize(31),
+	m_MaxTempo(200),
+	m_MinTempo(15)
 {
 }
 
@@ -735,12 +817,14 @@ bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
 	COMPARE(m_LevelAlgorithm)
 	COMPARE(m_WindowSize)
 	COMPARE(m_Stride)
-	COMPARE(m_LevelPeak)
+	COMPARE(m_LocalMaxDistance)
 	COMPARE(m_ShouldNormalizeLevels)
 	if (m_ShouldNormalizeLevels)
 	{
 		COMPARE(m_NormalizeLevelsWindowSize);
 	}
+	COMPARE(m_MaxTempo);
+	COMPARE(m_MinTempo);
 	return false;
 }
 
@@ -751,9 +835,14 @@ bool TempoDetector::Options::operator <(const TempoDetector::Options & a_Other)
 bool TempoDetector::Options::operator ==(const TempoDetector::Options & a_Other)
 {
 	return (
+		(m_SampleRate == a_Other.m_SampleRate) &&
 		(m_LevelAlgorithm == a_Other.m_LevelAlgorithm) &&
 		(m_WindowSize == a_Other.m_WindowSize) &&
 		(m_Stride == a_Other.m_Stride) &&
-		(m_LevelPeak == a_Other.m_LevelPeak)
+		(m_LocalMaxDistance == a_Other.m_LocalMaxDistance) &&
+		(m_ShouldNormalizeLevels == a_Other.m_ShouldNormalizeLevels) &&
+		(m_NormalizeLevelsWindowSize == a_Other.m_NormalizeLevelsWindowSize) &&
+		(m_MaxTempo == a_Other.m_MaxTempo) &&
+		(m_MinTempo == a_Other.m_MinTempo)
 	);
 }

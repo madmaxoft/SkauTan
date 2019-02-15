@@ -67,9 +67,6 @@ private:
 	/** The tempo detector instance on which to run the detections. */
 	std::unique_ptr<TempoDetector> m_Detector;
 
-	/** The "Detection in progress" label shown over the result list. */
-	std::unique_ptr<QLabel> m_ProgressLabel;
-
 
 	/** Fills in the values for options into the UI selectors. */
 	void initOptionsUi();
@@ -79,9 +76,6 @@ private:
 
 	/** Reads the UI settings and returns an Options object initialized by those settings. */
 	TempoDetector::Options readOptionsFromUi();
-
-	/** Fills the result into the UI and stores it in History (updates if present). */
-	void fillInResults(const TempoDetector::Result & a_Results);
 
 	/** Updates the specified row in the History view. */
 	void updateHistoryRow(int a_Row);

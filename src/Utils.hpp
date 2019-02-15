@@ -5,6 +5,12 @@
 
 
 
+#include <cmath>
+
+
+
+
+
 // Fwd:
 class QString;
 class QListWidget;
@@ -44,6 +50,26 @@ template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
 template <typename T> bool isInRange(T a_Value, T a_Min, T a_Max)
 {
 	return (a_Value >= a_Min) && (a_Value <= a_Max);
+}
+
+
+
+
+
+/** Performs floor and static_cast at the same time. */
+template <typename T> T floor(double a_Value)
+{
+	return static_cast<T>(std::floor(a_Value));
+}
+
+
+
+
+
+/** Performs ceil and static_cast at the same time. */
+template <typename T> T ceil(double a_Value)
+{
+	return static_cast<T>(std::ceil(a_Value));
 }
 
 
