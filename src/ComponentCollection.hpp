@@ -40,6 +40,7 @@ public:
 		ckDJControllers,
 		ckLocalVoteServer,
 		ckInstallConfiguration,
+		ckTempoDetectTaskRepeater,
 	};
 
 

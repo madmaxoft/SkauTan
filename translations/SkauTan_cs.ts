@@ -2243,23 +2243,38 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="372"/>
-        <source>LvlPeak</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="324"/>
+        <source>SampleRate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="179"/>
-        <source>Save raw audio with Beats...</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="329"/>
+        <source>LocMaxDist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="332"/>
+        <source>Local maximum distance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="337"/>
+        <source>MinTempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="342"/>
+        <source>MaxTempo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="200"/>
-        <source>Local maximum distance:</source>
+        <source>Save raw audio with Beats...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="186"/>
-        <source>Fold histogram</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="207"/>
+        <source>Local maximum distance:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2268,115 +2283,93 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="251"/>
-        <source>Min:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="214"/>
-        <source>Max:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="278"/>
-        <source>Histogram Cut-off:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="295"/>
-        <source>Detected tempo:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="309"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="397"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="355"/>
         <source>Tempo</source>
         <translation>Tempo</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="317"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="418"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="371"/>
         <source>Confidence</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="334"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="286"/>
         <source>History:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="357"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="228"/>
+        <source>Max tempo:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="242"/>
+        <source>Min tempo:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="186"/>
+        <source>Sample rate:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="262"/>
+        <source>Level normalization window:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="309"/>
         <source>LevelAlg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="362"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="314"/>
         <source>Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="367"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="319"/>
         <source>Stride</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="377"/>
-        <source>LocDist</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="347"/>
+        <source>LvlNormWin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="382"/>
-        <source>HistCutOff</source>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="350"/>
+        <source>Level normalization window size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="387"/>
-        <source>FoldMin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="392"/>
-        <source>FoldMax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="408"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="366"/>
         <source>MPM</source>
         <translation>t/min</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="423"/>
-        <source>RelConf</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="446"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.ui" line="399"/>
         <source>&amp;Close</source>
         <translation>&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="61"/>
-        <source>Detection in progress...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="242"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="251"/>
         <source>Use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="330"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="315"/>
         <source>SkauTan: Save debug audio with Beats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="332"/>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="353"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="317"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="338"/>
         <source>RAW audio file (*.raw)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="351"/>
+        <location filename="../src/UI/Dlg/DlgTempoDetect.cpp" line="336"/>
         <source>SkauTan: Save debug audio with Levels</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3146,25 +3139,25 @@ Tato operace je nevratná!</translation>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/main.cpp" line="101"/>
+        <location filename="../src/main.cpp" line="102"/>
         <source>SkauTan: Error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="102"/>
+        <location filename="../src/main.cpp" line="103"/>
         <source>Cannot import default templates, the definition file is inaccessible.
 %1</source>
         <translation>Nelze importovat vestavěné šablony, definice není přístupná.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="224"/>
-        <location filename="../src/main.cpp" line="233"/>
+        <location filename="../src/main.cpp" line="227"/>
+        <location filename="../src/main.cpp" line="236"/>
         <source>SkauTan: Fatal error</source>
         <translation>SkauTan: Chyba</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="225"/>
+        <location filename="../src/main.cpp" line="228"/>
         <source>SkauTan has detected a fatal error:
 
 %1</source>
@@ -3173,7 +3166,7 @@ Tato operace je nevratná!</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="234"/>
+        <location filename="../src/main.cpp" line="237"/>
         <source>SkauTan has detected an unknown fatal error. Use a debugger to view detailed runtime log.</source>
         <translation>SkauTan detekoval neznámou chybu. Použijte debugger pro zobrazení detailního logu.</translation>
     </message>
@@ -3219,17 +3212,17 @@ Tato operace je nevratná!</translation>
         <translation type="vanished">&lt;žádné&gt;</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="309"/>
+        <location filename="../src/UI/SongModel.cpp" line="351"/>
         <source>File name</source>
         <translation>Soubor</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="310"/>
+        <location filename="../src/UI/SongModel.cpp" line="352"/>
         <source>Length</source>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="311"/>
+        <location filename="../src/UI/SongModel.cpp" line="353"/>
         <source>Last played</source>
         <translation>Hráno naposled</translation>
     </message>
@@ -3245,103 +3238,120 @@ Last modified: %2</source>
 Poslední změna: %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="312"/>
+        <location filename="../src/UI/SongModel.cpp" line="300"/>
+        <source>The detected tempo is suspicious: outside the competition range (%1 - %2).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/SongModel.cpp" line="354"/>
         <source>Local rating</source>
         <translation>Lokální hodnocení</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="313"/>
+        <location filename="../src/UI/SongModel.cpp" line="355"/>
         <source>Community rating</source>
         <translation>Komunitní hodnocení</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="314"/>
+        <location filename="../src/UI/SongModel.cpp" line="356"/>
         <source>Author (M)</source>
         <comment>Manual</comment>
         <translation>Autor (M)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="315"/>
+        <location filename="../src/UI/SongModel.cpp" line="357"/>
         <source>Title (M)</source>
         <comment>Manual</comment>
         <translation>Název (M)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="316"/>
+        <location filename="../src/UI/SongModel.cpp" line="358"/>
         <source>Genre (M)</source>
         <comment>Manual</comment>
         <translation>Žánr (M)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="317"/>
+        <location filename="../src/UI/SongModel.cpp" line="359"/>
         <source>MPM (M)</source>
         <comment>Manual</comment>
         <translation>t/min (M)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="318"/>
+        <location filename="../src/UI/SongModel.cpp" line="360"/>
         <source>Author (F)</source>
         <comment>FileName</comment>
         <translation>Autor (S)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="319"/>
+        <location filename="../src/UI/SongModel.cpp" line="361"/>
         <source>Title (F)</source>
         <comment>FileName</comment>
         <translation>Název (S)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="320"/>
+        <location filename="../src/UI/SongModel.cpp" line="362"/>
         <source>Genre (F)</source>
         <comment>FileName</comment>
         <translation>Žánr (S)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="321"/>
+        <location filename="../src/UI/SongModel.cpp" line="363"/>
         <source>MPM (F)</source>
         <comment>FileName</comment>
         <translation>t/min (S)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="322"/>
+        <location filename="../src/UI/SongModel.cpp" line="364"/>
         <source>Author (T)</source>
         <comment>ID3 Tag</comment>
         <translation>Autor (T)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="323"/>
+        <location filename="../src/UI/SongModel.cpp" line="365"/>
         <source>Title (T)</source>
         <comment>ID3 Tag</comment>
         <translation>Název (T)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="324"/>
+        <location filename="../src/UI/SongModel.cpp" line="366"/>
         <source>Genre (T)</source>
         <comment>ID3 Tag</comment>
         <translation>Žánr (T)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="325"/>
+        <location filename="../src/UI/SongModel.cpp" line="367"/>
         <source>MPM (T)</source>
         <comment>ID3 Tag</comment>
         <translation>t/min (T)</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="326"/>
+        <location filename="../src/UI/SongModel.cpp" line="368"/>
+        <source>Detected tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/SongModel.cpp" line="369"/>
         <source># flt</source>
         <comment>Num matching favorite filters</comment>
         <translation>Filtrů</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="327"/>
+        <location filename="../src/UI/SongModel.cpp" line="370"/>
         <source># dup</source>
         <comment>Num duplicates</comment>
         <translation>Duplikátů</translation>
     </message>
     <message>
-        <location filename="../src/UI/SongModel.cpp" line="328"/>
+        <location filename="../src/UI/SongModel.cpp" line="371"/>
         <source>Skip-start</source>
         <translation>Přeskočit</translation>
+    </message>
+</context>
+<context>
+    <name>SongTempoDetectTask</name>
+    <message>
+        <source>Detect tempo: %1</source>
+        <translation type="obsolete">Detekce tempa: %1</translation>
     </message>
 </context>
 <context>
@@ -3626,9 +3636,22 @@ Poslední změna: %2</translation>
     </message>
 </context>
 <context>
+    <name>TempoDetectTask</name>
+    <message>
+        <location filename="../src/TempoDetectTask.cpp" line="18"/>
+        <source>Detect tempo: unknown song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/TempoDetectTask.cpp" line="22"/>
+        <source>Detect tempo: %1</source>
+        <translation type="unfinished">Detekce tempa: %1</translation>
+    </message>
+</context>
+<context>
     <name>TempoDetector</name>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="753"/>
+        <location filename="../src/TempoDetector.cpp" line="774"/>
         <source>Detect tempo: %1</source>
         <translation>Detekce tempa: %1</translation>
     </message>

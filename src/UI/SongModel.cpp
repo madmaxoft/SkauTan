@@ -119,6 +119,29 @@ static QString formatSkipStart(const DatedOptional<double> & a_SkipStart)
 
 
 
+/** Returns true if the song's detected tempo is not empty and outside competition range. */
+static bool isDetectedTempoOutsideCompetitionRange(SongPtr a_Song)
+{
+	auto tempo = a_Song->sharedData()->m_DetectedTempo;
+	if (!tempo.isPresent())
+	{
+		return false;
+	}
+	auto genre = a_Song->primaryGenre().valueOrDefault();
+	auto competitionRange = Song::competitionTempoRangeForGenre(genre);
+	if (competitionRange.first <= 0)
+	{
+		// Unknown genre
+		return false;
+	}
+	auto tempoVal = tempo.value();
+	return (tempoVal < competitionRange.first) || (tempoVal > competitionRange.second);
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // SongModel:
 
@@ -238,6 +261,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colId3Title:                  return song->tagId3().m_Title.valueOrDefault();
 				case colId3Genre:                  return song->tagId3().m_Genre.valueOrDefault();
 				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
+				case colDetectedTempo:             return formatMPM(song->sharedData()->m_DetectedTempo);
 				case colNumMatchingFilters:        return numMatchingFilters(song);
 				case colNumDuplicates:             return numDuplicates(song);
 				case colSkipStart:                 return formatSkipStart(song->skipStart());
@@ -248,6 +272,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		{
 			switch (a_Index.column())
 			{
+				case colDetectedTempo:      return (isDetectedTempoOutsideCompetitionRange(song)) ? QColor(255, 255, 192) : QVariant();
 				case colNumMatchingFilters: return (numMatchingFilters(song) > 0) ? QVariant() : QColor(255, 192, 192);
 				case colNumDuplicates:      return (numDuplicates(song) < 2) ? QVariant() : QColor(255, 192, 192);
 				case colSkipStart:          return (song->skipStart().valueOrDefault() > 0) ? QColor(255, 255, 192) : QVariant();
@@ -266,6 +291,22 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colManualTitle:             return formatLastModTooltip(song->tagManual().m_Title);
 				case colManualGenre:             return formatLastModTooltip(song->tagManual().m_Genre);
 				case colManualMeasuresPerMinute: return formatLastModTooltip(song->tagManual().m_MeasuresPerMinute);
+				case colDetectedTempo:
+				{
+					if (isDetectedTempoOutsideCompetitionRange(song))
+					{
+						auto range = Song::competitionTempoRangeForGenre(song->primaryGenre().valueOrDefault());
+						return (
+							tr("The detected tempo is suspicious: outside the competition range (%1 - %2).")
+								.arg(range.first).arg(range.second) + "\n" +
+							formatLastModTooltip(song->sharedData()->m_DetectedTempo)
+						);
+					}
+					else
+					{
+						return formatLastModTooltip(song->sharedData()->m_DetectedTempo);
+					}
+				}
 			}
 			return song->getWarnings().join("\n");
 		}
@@ -279,6 +320,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 				case colManualMeasuresPerMinute:
 				case colId3MeasuresPerMinute:
 				case colFileNameMeasuresPerMinute:
+				case colDetectedTempo:
 				case colSkipStart:
 				{
 					return Qt::AlignRight;
@@ -323,6 +365,7 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 		case colId3Title:                  return tr("Title (T)", "ID3 Tag");
 		case colId3Genre:                  return tr("Genre (T)", "ID3 Tag");
 		case colId3MeasuresPerMinute:      return tr("MPM (T)", "ID3 Tag");
+		case colDetectedTempo:             return tr("Detected tempo");
 		case colNumMatchingFilters:        return tr("# flt", "Num matching favorite filters");
 		case colNumDuplicates:             return tr("# dup", "Num duplicates");
 		case colSkipStart:                 return tr("Skip-start");
