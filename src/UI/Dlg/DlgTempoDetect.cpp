@@ -227,7 +227,7 @@ TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 void DlgTempoDetect::updateHistoryRow(int a_Row)
 {
 	const auto & res = m_History[static_cast<size_t>(a_Row)];
-	const auto & opt = res->m_Options;
+	const auto & opt = res->m_Options[0];
 	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.m_LevelAlgorithm)));
 	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.m_WindowSize)));
 	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.m_Stride)));
@@ -278,7 +278,7 @@ void DlgTempoDetect::detectTempo()
 	auto options = readOptionsFromUi();
 	for (const auto & h: m_History)
 	{
-		if (h->m_Options == options)
+		if (h->m_Options[0] == options)
 		{
 			// This set of options has already been calculated, bail out:
 			return;
@@ -286,7 +286,7 @@ void DlgTempoDetect::detectTempo()
 	}
 
 	// Start the detection:
-	m_Detector->queueScanSong(m_Song, options);
+	m_Detector->queueScanSong(m_Song, {options});
 }
 
 
@@ -322,7 +322,7 @@ void DlgTempoDetect::saveDebugBeats()
 	}
 	auto options = readOptionsFromUi();
 	options.m_DebugAudioBeatsFileName = fileName;
-	m_Detector->queueScanSong(m_Song, options);
+	m_Detector->queueScanSong(m_Song, {options});
 }
 
 
@@ -343,7 +343,7 @@ void DlgTempoDetect::saveDebugLevels()
 	}
 	auto options = readOptionsFromUi();
 	options.m_DebugAudioLevelsFileName = fileName;
-	m_Detector->queueScanSong(m_Song, options);
+	m_Detector->queueScanSong(m_Song, {options});
 }
 
 

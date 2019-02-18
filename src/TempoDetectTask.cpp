@@ -58,7 +58,7 @@ void TempoDetectTask::enqueue(ComponentCollection & a_Components, Song::SharedDa
 
 
 
-void TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD)
+bool TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD)
 {
 	STOPWATCH("Detect tempo")
 
@@ -70,7 +70,6 @@ void TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDat
 	opt.m_LevelAlgorithm = TempoDetector::laSumDistMinMax;
 	opt.m_ShouldNormalizeLevels = true;
 	opt.m_NormalizeLevelsWindowSize = 31;
-	opt.m_WindowSize = 11;
 	opt.m_Stride = 8;
 	opt.m_LocalMaxDistance = 13;
 	for (auto s: duplicates)
@@ -82,11 +81,17 @@ void TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDat
 			break;
 		}
 	}
+	std::vector<TempoDetector::Options> opts;
+	for (auto ws: {11, 13, 15, 17, 19})
+	{
+		opt.m_WindowSize = static_cast<size_t>(ws);
+		opts.push_back(opt);
+	}
 
 	// Detect from the first available duplicate:
 	for (auto s: duplicates)
 	{
-		auto res = td.scanSong(s->shared_from_this(), opt);
+		auto res = td.scanSong(s->shared_from_this(), opts);
 		if (res == nullptr)
 		{
 			// Reading the audio data failed, try another file (perhaps the file was removed):
@@ -101,9 +106,10 @@ void TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDat
 		a_SongSD->m_DetectedTempo = res->m_Tempo;
 		auto db = a_Components.get<Database>();
 		db->saveSongSharedData(a_SongSD);
-		return;
+		return true;
 	}
 	qWarning() << "Cannot detect tempo in song hash " << a_SongSD->m_Hash << ", none of the files provided data for analysis.";
+	return false;
 }
 
 
@@ -155,6 +161,14 @@ Song::SharedDataPtr TempoDetectTaskRepeater::pickNextSong()
 	for (auto itr = sdm.cbegin(), end = sdm.cend(); itr != end; ++itr)
 	{
 		auto sd = itr->second;
+		{
+			std::lock_guard<std::mutex> lock(m_MtxFailedSongs);
+			if (m_FailedSongs.find(sd) != m_FailedSongs.end())
+			{
+				// Has failed recently, skip it
+				continue;
+			}
+		}
 		if (
 			sd->m_TagManual.m_MeasuresPerMinute.isPresent() ||
 			sd->m_DetectedTempo.isPresent()
@@ -202,7 +216,11 @@ void TempoDetectTaskRepeater::enqueueAnother()
 		auto taskName = TempoDetectTask::createTaskName(sd);
 		BackgroundTasks::get().enqueue(taskName, [this, sd]()
 			{
-				TempoDetectTask::detect(m_Components, sd);
+				if (!TempoDetectTask::detect(m_Components, sd))
+				{
+					std::lock_guard<std::mutex> lock(m_MtxFailedSongs);
+					m_FailedSongs.insert(sd);
+				}
 				if (!m_ShouldAbort.load())
 				{
 					enqueueAnother();

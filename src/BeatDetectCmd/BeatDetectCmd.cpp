@@ -116,7 +116,7 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	auto sd = std::make_shared<Song::SharedData>(QByteArray(), 0);  // Dummy SharedData
 	SongPtr song = std::make_shared<Song>(a_FileName, sd);
 	TempoDetector td;
-	auto res = td.scanSong(song, a_Options);
+	auto res = td.scanSong(song, {a_Options});
 
 	cerr << "-----------------------------------------------" << endl;;
 	cerr << "Detected data for " << a_FileName.toStdString() << ":" << endl;

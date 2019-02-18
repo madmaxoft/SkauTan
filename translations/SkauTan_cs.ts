@@ -3651,7 +3651,7 @@ Poslední změna: %2</translation>
 <context>
     <name>TempoDetector</name>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="774"/>
+        <location filename="../src/TempoDetector.cpp" line="769"/>
         <source>Detect tempo: %1</source>
         <translation>Detekce tempa: %1</translation>
     </message>
