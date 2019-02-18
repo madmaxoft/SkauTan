@@ -722,6 +722,7 @@ void Format::outputAudioData(AVFrame * a_Frame)
 		{
 			qWarning() << "Cannot create audio resampler.";
 			m_ShouldTerminate = true;
+			m_AudioOutput->abortWithError();
 			return;
 		}
 	}
