@@ -10,10 +10,17 @@
 
 
 
+/** If defined the pre-aggregation tempos will be output to qDebug(). */
+// #define DEBUG_OUTPUT_AGGREGATION
+
+
+
+
+
 class Detector
 {
 public:
-	Detector(SongPtr a_Song, const TempoDetector::Options & a_Options):
+	Detector(SongPtr a_Song, const std::vector<TempoDetector::Options> & a_Options):
 		m_Song(a_Song),
 		m_Options(a_Options)
 	{
@@ -26,7 +33,12 @@ public:
 	/** Processes the song - detects its tempo. */
 	std::shared_ptr<TempoDetector::Result> process()
 	{
-		qDebug() << "Detecting tempo in " << m_Song->fileName();
+		if (m_Options.empty())
+		{
+			qWarning() << "Tempo detection started with no options given.";
+			assert(!"Tempo detection started with no options given.");
+			return nullptr;
+		}
 
 		// Decode the entire file into memory:
 		auto context = AVPP::Format::createContext(m_Song->fileName());
@@ -36,7 +48,7 @@ public:
 			return nullptr;
 		}
 		QAudioFormat fmt;
-		fmt.setSampleRate(m_Options.m_SampleRate);
+		fmt.setSampleRate(m_Options[0].m_SampleRate);
 		fmt.setChannelCount(1);
 		fmt.setSampleSize(16);
 		fmt.setSampleType(QAudioFormat::SignedInt);
@@ -49,21 +61,132 @@ public:
 			return nullptr;
 		}
 		context->decode();
+		if (buf.shouldAbort())
+		{
+			qDebug() << "Decoding audio failed: " << m_Song->fileName();
+			return nullptr;
+		}
 
+		// Run the audio through the detector, once per each options item:
 		auto res = std::make_shared<TempoDetector::Result>();
 		res->m_Options = m_Options;
-		res->m_Levels = calcLevels(buf);
-		if (m_Options.m_ShouldNormalizeLevels)
+		for (const auto & opt: m_Options)
 		{
-			res->m_Levels = normalizeLevels(res->m_Levels);
+			res->m_Levels = calcLevels(opt, buf);
+			if (opt.m_ShouldNormalizeLevels)
+			{
+				res->m_Levels = normalizeLevels(opt, res->m_Levels);
+			}
+			debugLevelsInAudioData(opt, buf, res->m_Levels);
+			res->m_Beats = detectBeats(opt, res->m_Levels);
+			debugBeatsInAudioData(opt, buf, res->m_Beats);
+			if (!res->m_Beats.empty())
+			{
+				res->m_Tempos.push_back(detectTempoFromBeats(opt, res->m_Beats, res->m_Levels));
+			}
 		}
-		debugLevelsInAudioData(buf, res->m_Levels);
-		res->m_Beats = detectBeats(res->m_Levels);
-		debugBeatsInAudioData(buf, res->m_Beats);
-
-		std::tie(res->m_Tempo, res->m_Confidence) = detectTempoFromBeats(res->m_Beats, res->m_Levels);
+		if (res->m_Tempos.empty())
+		{
+			return nullptr;
+		}
+		std::tie(res->m_Tempo, res->m_Confidence) = aggregateDetectedTempos(res->m_Tempos);
 
 		return res;
+	}
+
+
+
+
+
+	/** Processes the (potentionally multiple) tempos detected from different options, and produces
+	the final tempo and confidence result. */
+	std::pair<double, double> aggregateDetectedTempos(const std::vector<std::pair<double, double>> & a_Tempos)
+	{
+		/*
+		// DEBUG:
+		qDebug() << "Aggregating detected tempos:";
+		for (const auto & tempo: a_Tempos)
+		{
+			qDebug() << "  tempo: " << tempo.first << "; confidence: " << tempo.second;
+		}
+		*/
+
+		assert(!a_Tempos.empty());
+		// If there's just one result, use it directly:
+		if (a_Tempos.size() == 1)
+		{
+			return a_Tempos[0];
+		}
+
+		// For multiple results, aggregate the compatible tempos and their confidences:
+		std::vector<std::pair<double, double>> processedTempos;
+		for (const auto & tin: a_Tempos)
+		{
+			bool hasFound = false;
+			for (auto & tout: processedTempos)
+			{
+				if (isCompatibleTempo(tout.first, tin.first))
+				{
+					// There's a compatible tempo already in the processedTempos, add my confidence to it:
+					tout.second += tin.second;
+					hasFound = true;
+					break;
+				}
+			}
+			if (!hasFound)
+			{
+				processedTempos.push_back(tin);
+			}
+		}  // for tin: a_Tempos[]
+		assert(!processedTempos.empty());
+		std::sort(processedTempos.begin(), processedTempos.end(),
+			[](auto a_Tempo1, auto a_Tempo2)
+			{
+				return (a_Tempo1.second > a_Tempo2.second);
+			}
+		);
+
+		#ifdef DEBUG_OUTPUT_AGGREGATION
+			qDebug() << "Processed aggregated tempos:";
+			for (const auto & tempo: processedTempos)
+			{
+				qDebug() << "  tempo: " << tempo.first << "; confidence: " << tempo.second;
+			}
+		#endif  // DEBUG_OUTPUT_AGGREGATION
+
+		if (processedTempos.size() == 1)
+		{
+			return processedTempos[0];
+		}
+
+		// Pick the tempos with the highest sum of confidence, then use the confidences as weights for averaging the contributing tempos:
+		auto pickedTempo = processedTempos[0];
+		double sumTempo = 0, sumConfidence = 0;
+		double sumNegConfidence = 0;  // Sum of confidences for tempos NOT matching
+		for (const auto & tin: a_Tempos)
+		{
+			if (isCompatibleTempo(tin.first, pickedTempo.first))
+			{
+				sumTempo += tin.first * tin.second;
+				sumConfidence += tin.second;
+			}
+			else
+			{
+				sumNegConfidence += tin.second;
+			}
+		}
+		auto res = std::floor(sumTempo / sumConfidence * 10 + 0.5) / 10;  // keep only 1 decimal digit
+		return {res, 100 * sumConfidence / (sumConfidence + sumNegConfidence)};
+	}
+
+
+
+
+
+	/** Returns true if the two tempos are compatible - close enough to each other. */
+	static bool isCompatibleTempo(double a_Tempo1, double a_Tempo2)
+	{
+		return (std::abs(a_Tempo1 - a_Tempo2) < 1.2);
 	}
 
 
@@ -74,6 +197,7 @@ public:
 	Uses self-similarity matching to calculate the confidence for each tempo value.
 	The returned confidence ranges from 0 to 100. */
 	std::pair<double, double> detectTempoFromBeats(
+		const TempoDetector::Options & a_Options,
 		std::vector<std::pair<size_t, qint32>> & a_Beats,
 		std::vector<qint32> & a_Levels
 	)
@@ -81,13 +205,13 @@ public:
 		// Calculate the similarities:
 		qint32 maxLevel = 0;
 		auto beats = prepareBeats(a_Beats, a_Levels, maxLevel);
-		auto minOfs = Utils::floor<size_t>(mpmToBeatStrides(m_Options.m_MaxTempo));
-		auto maxOfs = Utils::ceil<size_t> (mpmToBeatStrides(m_Options.m_MinTempo));
+		auto minOfs = Utils::floor<size_t>(mpmToBeatStrides(a_Options, a_Options.m_MaxTempo));
+		auto maxOfs = Utils::ceil<size_t> (mpmToBeatStrides(a_Options, a_Options.m_MinTempo));
 		std::vector<std::pair<double, double>> similarities;  // {similarity, mpm}
 		for (size_t ofs = minOfs; ofs <= maxOfs; ++ofs)
 		{
 			auto sim = calcSimilarityBeatsWeight(a_Beats, beats, ofs, maxLevel);
-			auto mpm = beatStridesToMpm(ofs);
+			auto mpm = beatStridesToMpm(a_Options, ofs);
 			similarities.push_back({sim, mpm});
 		}
 		if (similarities.empty())
@@ -104,6 +228,10 @@ public:
 		);
 		auto bestMpm = similarities[0].second;
 		auto bestSimilarity = similarities[0].first;
+		if (bestSimilarity < 1)
+		{
+			qDebug() << "Bad similarity: " << bestSimilarity;
+		}
 		for (const auto & sim: similarities)
 		{
 			if (!isCloseEnoughMpm(sim.second, bestMpm))
@@ -198,9 +326,12 @@ public:
 	/** Converts the number of strides (across calculated beats) that make up a time interval,
 	into the corresponding MPM, rounded to 2 decimal places.
 	The inverse function is mpmToBeatStrides() */
-	double beatStridesToMpm(double a_BeatStrides)
+	double beatStridesToMpm(
+		const TempoDetector::Options & a_Options,
+		double a_BeatStrides
+	)
 	{
-		auto mpm = (m_Options.m_SampleRate * 60 / static_cast<int>(m_Options.m_Stride)) / a_BeatStrides;
+		auto mpm = (a_Options.m_SampleRate * 60 / static_cast<int>(a_Options.m_Stride)) / a_BeatStrides;
 		return std::floor(mpm * 100 + 0.5) / 100;
 	}
 
@@ -209,9 +340,9 @@ public:
 
 
 	/** Converts the MPM to the stride length (across calculated beats) representing the tempo. */
-	double mpmToBeatStrides(double a_Mpm)
+	double mpmToBeatStrides(const TempoDetector::Options & a_Options, double a_Mpm)
 	{
-		return ((m_Options.m_SampleRate * 60 / static_cast<int>(m_Options.m_Stride)) / a_Mpm);
+		return ((a_Options.m_SampleRate * 60 / static_cast<int>(a_Options.m_Stride)) / a_Mpm);
 	}
 
 
@@ -220,14 +351,14 @@ public:
 
 	/** Calculates levels of the audio data.
 	Uses the appropriate algorithm according to m_Options. */
-	std::vector<qint32> calcLevels(const PlaybackBuffer & a_Buffer)
+	std::vector<qint32> calcLevels(const TempoDetector::Options & a_Options, const PlaybackBuffer & a_Buffer)
 	{
-		switch (m_Options.m_LevelAlgorithm)
+		switch (a_Options.m_LevelAlgorithm)
 		{
-			case TempoDetector::laSumDist:               return calcLevelsSumDist(a_Buffer);
-			case TempoDetector::laDiscreetSineTransform: return calcLevelsDST(a_Buffer);
-			case TempoDetector::laMinMax:                return calcLevelsMinMax(a_Buffer);
-			case TempoDetector::laSumDistMinMax:         return calcLevelsSumDistMinMax(a_Buffer);
+			case TempoDetector::laSumDist:               return calcLevelsSumDist      (a_Options, a_Buffer);
+			case TempoDetector::laDiscreetSineTransform: return calcLevelsDST          (a_Options, a_Buffer);
+			case TempoDetector::laMinMax:                return calcLevelsMinMax       (a_Options, a_Buffer);
+			case TempoDetector::laSumDistMinMax:         return calcLevelsSumDistMinMax(a_Options, a_Buffer);
 		}
 		assert(!"Invalid level algorithm");
 		qWarning() << "Invalid level algorithm";
@@ -241,28 +372,28 @@ public:
 	/** Calculates the loudness levels from the input audio data.
 	This simply assumes that the more the waveform changes, the louder it is, hence the level is just
 	a sum of the distances between neighboring samples across the window.*/
-	std::vector<qint32> calcLevelsSumDist(const PlaybackBuffer & a_Buffer)
+	std::vector<qint32> calcLevelsSumDist(const TempoDetector::Options & a_Options, const PlaybackBuffer & a_Buffer)
 	{
 		std::vector<qint32> res;
 		auto numSamples = a_Buffer.bufferLimit() / sizeof(qint16);
-		res.reserve(numSamples / m_Options.m_Stride);
+		res.reserve(numSamples / a_Options.m_Stride);
 		auto audio = reinterpret_cast<const qint16 *>(a_Buffer.audioData().data());
 
 		// Calculate the first window:
 		qint32 current = 0;
-		for (size_t i = 0; i < m_Options.m_WindowSize; ++i)
+		for (size_t i = 0; i < a_Options.m_WindowSize; ++i)
 		{
 			current += std::abs(audio[i] - audio[i + 1]);
 		}
 		res.push_back(current);
 
 		// Calculate the next windows, relatively to the current one:
-		size_t maxPos = numSamples - m_Options.m_WindowSize - m_Options.m_Stride - 1;
-		for (size_t curPos = 0; curPos < maxPos; curPos += m_Options.m_Stride)
+		size_t maxPos = numSamples - a_Options.m_WindowSize - a_Options.m_Stride - 1;
+		for (size_t curPos = 0; curPos < maxPos; curPos += a_Options.m_Stride)
 		{
-			for (size_t i = 0; i < m_Options.m_Stride; ++i)
+			for (size_t i = 0; i < a_Options.m_Stride; ++i)
 			{
-				current += std::abs(audio[curPos + i + m_Options.m_WindowSize] - audio[curPos + i + m_Options.m_WindowSize + 1]);
+				current += std::abs(audio[curPos + i + a_Options.m_WindowSize] - audio[curPos + i + a_Options.m_WindowSize + 1]);
 				current -= std::abs(audio[curPos + i] - audio[curPos + i + 1]);
 			}
 			res.push_back(current);
@@ -276,33 +407,33 @@ public:
 	/** Calculates the loudness levels from the input audio data.
 	This simply assumes that the more the waveform changes, the louder it is, hence the level is just
 	a sum of the distances between neighboring samples across the window.*/
-	std::vector<qint32> calcLevelsSumDistMinMax(const PlaybackBuffer & a_Buffer)
+	std::vector<qint32> calcLevelsSumDistMinMax(const TempoDetector::Options & a_Options, const PlaybackBuffer & a_Buffer)
 	{
 		std::vector<qint32> res;
 		auto numSamples = a_Buffer.bufferLimit() / sizeof(qint16);
-		res.reserve(numSamples / m_Options.m_Stride);
+		res.reserve(numSamples / a_Options.m_Stride);
 		auto audio = reinterpret_cast<const qint16 *>(a_Buffer.audioData().data());
 
 		// Calculate the first window:
 		qint32 current = 0;
-		for (size_t i = 0; i < m_Options.m_WindowSize; ++i)
+		for (size_t i = 0; i < a_Options.m_WindowSize; ++i)
 		{
 			current += std::abs(audio[i] - audio[i + 1]);
 		}
 		res.push_back(current);
 
 		// Calculate the next windows, relatively to the current one:
-		size_t maxPos = numSamples - m_Options.m_WindowSize - m_Options.m_Stride - 1;
-		for (size_t curPos = 0; curPos < maxPos; curPos += m_Options.m_Stride)
+		size_t maxPos = numSamples - a_Options.m_WindowSize - a_Options.m_Stride - 1;
+		for (size_t curPos = 0; curPos < maxPos; curPos += a_Options.m_Stride)
 		{
-			for (size_t i = 0; i < m_Options.m_Stride; ++i)
+			for (size_t i = 0; i < a_Options.m_Stride; ++i)
 			{
-				current += std::abs(audio[curPos + i + m_Options.m_WindowSize] - audio[curPos + i + m_Options.m_WindowSize + 1]);
+				current += std::abs(audio[curPos + i + a_Options.m_WindowSize] - audio[curPos + i + a_Options.m_WindowSize + 1]);
 				current -= std::abs(audio[curPos + i] - audio[curPos + i + 1]);
 			}
 			auto minVal = audio[curPos];
 			auto maxVal = minVal;
-			for (size_t i = 0; i < m_Options.m_WindowSize; ++i)
+			for (size_t i = 0; i < a_Options.m_WindowSize; ++i)
 			{
 				auto val = audio[curPos + i];
 				if (val > maxVal)
@@ -324,20 +455,20 @@ public:
 
 	/** Calculates the loudness levels from the input audio data.
 	The level is calculated as the difference between the max and min value in the sample range. */
-	std::vector<qint32> calcLevelsMinMax(const PlaybackBuffer & a_Buffer)
+	std::vector<qint32> calcLevelsMinMax(const TempoDetector::Options & a_Options, const PlaybackBuffer & a_Buffer)
 	{
 		std::vector<qint32> res;
 		auto numSamples = a_Buffer.bufferLimit() / sizeof(qint16);
-		res.reserve(numSamples / m_Options.m_Stride);
+		res.reserve(numSamples / a_Options.m_Stride);
 		auto audio = reinterpret_cast<const qint16 *>(a_Buffer.audioData().data());
 
 		// Calculate each window:
-		size_t maxPos = numSamples - m_Options.m_WindowSize - m_Options.m_Stride - 1;
-		for (size_t curPos = 0; curPos < maxPos; curPos += m_Options.m_Stride)
+		size_t maxPos = numSamples - a_Options.m_WindowSize - a_Options.m_Stride - 1;
+		for (size_t curPos = 0; curPos < maxPos; curPos += a_Options.m_Stride)
 		{
 			auto minVal = audio[curPos];
 			auto maxVal = minVal;
-			for (size_t i = 0; i < m_Options.m_WindowSize; ++i)
+			for (size_t i = 0; i < a_Options.m_WindowSize; ++i)
 			{
 				auto val = audio[curPos + i];
 				if (val > maxVal)
@@ -361,15 +492,15 @@ public:
 	The idea is that a change in what we think of as levels should be across all frequencies.
 	So we sample a few frequency bands and calculate the levels from those.
 	Doesn't seem to work so well as the Simple method. */
-	std::vector<qint32> calcLevelsDST(const PlaybackBuffer & a_Buffer)
+	std::vector<qint32> calcLevelsDST(const TempoDetector::Options & a_Options, const PlaybackBuffer & a_Buffer)
 	{
 		std::vector<qint32> res;
 		auto numSamples = a_Buffer.bufferLimit() / sizeof(qint16);
-		res.reserve(numSamples / m_Options.m_Stride);
+		res.reserve(numSamples / a_Options.m_Stride);
 		auto audio = reinterpret_cast<const qint16 *>(a_Buffer.audioData().data());
 
 		// Calculate each window's level:
-		size_t maxPos = numSamples - m_Options.m_WindowSize - m_Options.m_Stride - 1;
+		size_t maxPos = numSamples - a_Options.m_WindowSize - a_Options.m_Stride - 1;
 		static const float freq[] = {
 			600,  //   80 Hz
 			250,  //  192 Hz
@@ -379,10 +510,10 @@ public:
 		static const size_t NUM_FREQ = sizeof(freq) / sizeof(*freq);
 		float qint32Min = std::numeric_limits<qint32>::min();
 		float qint32Max = std::numeric_limits<qint32>::max();
-		for (size_t curPos = 0; curPos < maxPos; curPos += m_Options.m_Stride)
+		for (size_t curPos = 0; curPos < maxPos; curPos += a_Options.m_Stride)
 		{
 			float freqCoeff[NUM_FREQ] = {};
-			for (size_t i = 0; i < m_Options.m_WindowSize; ++i)
+			for (size_t i = 0; i < a_Options.m_WindowSize; ++i)
 			{
 				auto sampleIndex = i + curPos;
 				auto sampleIndexF = static_cast<float>(i + curPos);
@@ -408,18 +539,19 @@ public:
 	/** Outputs a debug audio file with one channel of the original audio data and the other channel
 	of the detected levels. */
 	void debugLevelsInAudioData(
+		const TempoDetector::Options & a_Options,
 		const PlaybackBuffer & a_Buf,
 		const std::vector<qint32> & a_Levels
 	)
 	{
-		if (m_Options.m_DebugAudioLevelsFileName.isEmpty())
+		if (a_Options.m_DebugAudioLevelsFileName.isEmpty())
 		{
 			return;
 		}
-		QFile f(m_Options.m_DebugAudioLevelsFileName);
+		QFile f(a_Options.m_DebugAudioLevelsFileName);
 		if (!f.open(QIODevice::WriteOnly))
 		{
-			qDebug() << "Cannot open debug file " << m_Options.m_DebugAudioLevelsFileName;
+			qDebug() << "Cannot open debug file " << a_Options.m_DebugAudioLevelsFileName;
 			return;
 		}
 		size_t maxIdx = a_Levels.size();
@@ -433,14 +565,14 @@ public:
 		}
 		auto audio = reinterpret_cast<const qint16 *>(a_Buf.audioData().data());
 		std::vector<qint16> interlaced;
-		interlaced.resize(m_Options.m_Stride * 2);
+		interlaced.resize(a_Options.m_Stride * 2);
 		for (size_t i = 0; i < maxIdx; ++i)
 		{
 			float outF = static_cast<float>(a_Levels[i]) / maxLevel;
 			qint16 outLevel = static_cast<qint16>(Utils::clamp<qint32>(static_cast<qint32>(outF * 65535) - 32768, -32768, 32767));
-			for (size_t j = 0; j < m_Options.m_Stride; ++j)
+			for (size_t j = 0; j < a_Options.m_Stride; ++j)
 			{
-				interlaced[2 * j] = audio[i * m_Options.m_Stride + j];
+				interlaced[2 * j] = audio[i * a_Options.m_Stride + j];
 				interlaced[2 * j + 1] = outLevel;
 			}
 			f.write(
@@ -455,6 +587,7 @@ public:
 
 	/** Normalizes the input levels across the m_NormalizeLevelsWindowSize neighbors. */
 	std::vector<qint32> normalizeLevels(
+		const TempoDetector::Options & a_Options,
 		const std::vector<qint32> & a_Levels
 	)
 	{
@@ -462,7 +595,7 @@ public:
 		std::vector<qint32> normalizedLevels;
 		auto count = a_Levels.size();
 		normalizedLevels.resize(count);
-		auto win = m_Options.m_NormalizeLevelsWindowSize;
+		auto win = a_Options.m_NormalizeLevelsWindowSize;
 		for (size_t i = 0; i < count; ++i)
 		{
 			size_t startIdx = (i < win) ? 0 : i - win;
@@ -483,32 +616,6 @@ public:
 			normalizedLevels[i] = static_cast<qint32>(65536.0f * (a_Levels[i] - lMin) / (lMax - lMin + 1));
 		}
 		return normalizedLevels;
-
-		/*
-		// Normalize against the local average
-		std::vector<qint32> normalizedLevels;
-		normalizedLevels.resize(a_Levels.size());
-		qint32 sum = 0;
-		for (size_t i = 0; i < m_Options.m_NormalizeLevelsWindowSize; ++i)
-		{
-			sum += a_Levels[i];
-			normalizedLevels[i] = 0;
-		}
-		size_t maxIdx = a_Levels.size() - m_Options.m_NormalizeLevelsWindowSize;
-		size_t halfSize = m_Options.m_NormalizeLevelsWindowSize / 2;
-		for (size_t i = 0; i < maxIdx; ++i)
-		{
-			normalizedLevels[i + halfSize] = static_cast<qint16>(Utils::clamp<qint32>(
-				static_cast<qint32>(327670.0f * a_Levels[i + halfSize] / sum), -32768, 32767
-			));
-			sum = sum + a_Levels[i + m_Options.m_NormalizeLevelsWindowSize] - a_Levels[i];
-		}
-		for (size_t i = maxIdx; i < a_Levels.size(); ++i)
-		{
-			normalizedLevels[i] = 0;
-		}
-		return normalizedLevels;
-		*/
 	}
 
 
@@ -516,7 +623,10 @@ public:
 
 	/** Detects the beats within the provided audio levels.
 	Returns a vector containing the indices (into a_Levels) where beats have been located. */
-	std::vector<std::pair<size_t, qint32>> detectBeats(const std::vector<qint32> & a_Levels)
+	std::vector<std::pair<size_t, qint32>> detectBeats(
+		const TempoDetector::Options & a_Options,
+		const std::vector<qint32> & a_Levels
+	)
 	{
 		// Calculate the climbing tendencies in a_Levels:
 		std::vector<qint32> climbs;
@@ -541,11 +651,11 @@ public:
 
 		// Calculate beats and their weight:
 		std::vector<std::pair<size_t, qint32>> weightedBeats;
-		auto maxIdx = a_Levels.size() - m_Options.m_LocalMaxDistance;
-		for (size_t i = m_Options.m_LocalMaxDistance; i < maxIdx; ++i)
+		auto maxIdx = a_Levels.size() - a_Options.m_LocalMaxDistance;
+		for (size_t i = a_Options.m_LocalMaxDistance; i < maxIdx; ++i)
 		{
 			bool isLocalMaximum = true;
-			for (size_t j = i - m_Options.m_LocalMaxDistance; j < i + m_Options.m_LocalMaxDistance; ++j)
+			for (size_t j = i - a_Options.m_LocalMaxDistance; j < i + a_Options.m_LocalMaxDistance; ++j)
 			{
 				if ((i != j) && (climbs[j] >= climbs[i]))
 				{
@@ -568,7 +678,7 @@ public:
 				return (b1.second > b2.second);
 			}
 		);
-		size_t songLengthSec = a_Levels.size() * m_Options.m_Stride / static_cast<size_t>(m_Options.m_SampleRate);
+		size_t songLengthSec = a_Levels.size() * a_Options.m_Stride / static_cast<size_t>(a_Options.m_SampleRate);
 		size_t wantedNumBeats = 240 * songLengthSec / 60;
 		if (weightedBeats.size() > wantedNumBeats)
 		{
@@ -587,60 +697,21 @@ public:
 
 
 
-	/** Calculates the histogram of beat distances.
-	Returns a map of bpm -> number of occurences. */
-	std::map<int, size_t> beatsToHistogram(
-		const std::vector<std::pair<size_t, qint32>> & a_Beats
-	)
-	{
-		std::map<int, size_t> beatDiffMap;  // Maps beat time difference -> number of occurrences of such differrence
-		auto numBeats = a_Beats.size();
-		for (size_t i = 0; i < numBeats; ++i)
-		{
-			auto start = i - std::min<size_t>(i, 2);
-			auto end = std::min(i + 2, numBeats);
-			auto currBeat = a_Beats[i].first;
-			for (size_t j = start; j < end; ++j)
-			{
-				if (i == j)
-				{
-					continue;
-				}
-				auto dist = (i > j) ? (currBeat - a_Beats[j].first) : (a_Beats[j].first - currBeat);
-				auto bpm = static_cast<int>(std::round(distToBPM(dist)));
-				beatDiffMap[bpm] += 1;
-			}
-		}
-		return beatDiffMap;
-	}
-
-
-
-
-
-	/** Converts the distance between levels to a BPM value. */
-	double distToBPM(size_t a_Dist)
-	{
-		return 60.0 / (m_Options.m_Stride * static_cast<double>(a_Dist) / m_Options.m_SampleRate);
-	}
-
-
-
-
 	/** Outputs the debug audio data with mixed-in beats. */
 	void debugBeatsInAudioData(
+		const TempoDetector::Options & a_Options,
 		const PlaybackBuffer & a_Buf,
 		const std::vector<std::pair<size_t, qint32>> & a_Beats
 	)
 	{
-		if (m_Options.m_DebugAudioBeatsFileName.isEmpty())
+		if (a_Options.m_DebugAudioBeatsFileName.isEmpty())
 		{
 			return;
 		}
-		QFile f(m_Options.m_DebugAudioBeatsFileName);
+		QFile f(a_Options.m_DebugAudioBeatsFileName);
 		if (!f.open(QIODevice::WriteOnly))
 		{
-			qDebug() << "Cannot open debug file " << m_Options.m_DebugAudioBeatsFileName;
+			qDebug() << "Cannot open debug file " << a_Options.m_DebugAudioBeatsFileName;
 			return;
 		}
 		qint32 maxBeatWeight = 0;
@@ -656,7 +727,7 @@ public:
 		size_t maxIdx = a_Beats.back().first;
 		qint16 mixStrength = 0;
 		std::vector<qint16> interlaced;
-		interlaced.resize(m_Options.m_Stride * 2);
+		interlaced.resize(a_Options.m_Stride * 2);
 		for (size_t i = 0; i < maxIdx; ++i)
 		{
 			if (i == a_Beats[lastBeatIdx].first)
@@ -664,11 +735,11 @@ public:
 				mixStrength = static_cast<qint16>(a_Beats[lastBeatIdx].second * levelCoeff);
 				lastBeatIdx += 1;
 			}
-			auto audio = reinterpret_cast<const qint16 *>(a_Buf.audioData().data()) + i * m_Options.m_Stride;
-			for (size_t j = 0; j < m_Options.m_Stride; ++j)
+			auto audio = reinterpret_cast<const qint16 *>(a_Buf.audioData().data()) + i * a_Options.m_Stride;
+			for (size_t j = 0; j < a_Options.m_Stride; ++j)
 			{
 				interlaced[2 * j] = audio[j];
-				auto m = static_cast<int>(mixStrength * sin(static_cast<float>(j + m_Options.m_Stride * i) * 2000 / m_Options.m_SampleRate));
+				auto m = static_cast<int>(mixStrength * sin(static_cast<float>(j + a_Options.m_Stride * i) * 2000 / a_Options.m_SampleRate));
 				interlaced[2 * j + 1]  = static_cast<qint16>(Utils::clamp<int>(m, -32768, 32767));
 			}
 			mixStrength = static_cast<qint16>(mixStrength * 0.8);
@@ -682,60 +753,13 @@ public:
 
 
 
-	/** Calculates the confidence in the detected tempo, from the histogram. */
-	int calcConfidence(const std::vector<std::pair<int, size_t>> & a_BeatHistogram)
-	{
-		if (a_BeatHistogram.empty())
-		{
-			return 0;
-		}
-		auto finalGuess = a_BeatHistogram[0].first;
-		size_t pro = 0, against = 0;
-		for (const auto & h: a_BeatHistogram)
-		{
-			if (isCompatibleTempo(finalGuess, h.first))
-			{
-				pro += h.second;
-			}
-			else
-			{
-				against = h.second;
-			}
-		}
-		return static_cast<int>(100 * pro / (pro + against));
-	}
-
-
-
-
-
-	/** Returns true if the two tempos are "compatible" - they are the same up to a factor. */
-	static bool isCompatibleTempo(int a_Tempo1, int a_Tempo2)
-	{
-		for (const auto & m: {1, 2, 3, 4, 6, 8, 12, 16})
-		{
-			if (
-				(std::abs(a_Tempo1 - a_Tempo2 * m) < m) ||
-				(std::abs(a_Tempo1 * m - a_Tempo2) < m)
-			)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-
-
-
 protected:
 
 	/** The song to scan. */
 	SongPtr m_Song;
 
 	/** The options for the detection. */
-	const TempoDetector::Options & m_Options;
+	const std::vector<TempoDetector::Options> & m_Options;
 };
 
 
@@ -755,7 +779,7 @@ TempoDetector::TempoDetector():
 
 
 
-std::shared_ptr<TempoDetector::Result> TempoDetector::scanSong(SongPtr a_Song, const Options & a_Options)
+std::shared_ptr<TempoDetector::Result> TempoDetector::scanSong(SongPtr a_Song, const std::vector<Options> & a_Options)
 {
 	Detector d(a_Song, a_Options);
 	auto result = d.process();
@@ -767,11 +791,12 @@ std::shared_ptr<TempoDetector::Result> TempoDetector::scanSong(SongPtr a_Song, c
 
 
 
-void TempoDetector::queueScanSong(SongPtr a_Song, const TempoDetector::Options & a_Options)
+void TempoDetector::queueScanSong(SongPtr a_Song, const std::vector<Options> & a_Options)
 {
-	TempoDetector::Options options(a_Options);
+	auto options = a_Options;  // Make a copy for the background thread
 	m_QueueLength += 1;
-	BackgroundTasks::enqueue(tr("Detect tempo: %1").arg(a_Song->fileName()), [this, a_Song, options]()
+	BackgroundTasks::enqueue(tr("Detect tempo: %1").arg(a_Song->fileName()),
+		[this, a_Song, options]()
 		{
 			Detector d(a_Song, options);
 			auto result = d.process();

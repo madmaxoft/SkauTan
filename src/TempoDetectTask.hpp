@@ -6,6 +6,8 @@
 
 
 #include <atomic>
+#include <set>
+#include <mutex>
 #include <QObject>
 #include "BackgroundTasks.hpp"
 #include "Song.hpp"
@@ -41,8 +43,9 @@ public:
 	static void enqueue(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD);
 
 	/** Runs the detection synchronously on the specified song.
-	Called internally from this task, and externally from the TempoDetectTaskRepeater. */
-	static void detect(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD);
+	Called internally from this class, and externally from the TempoDetectTaskRepeater.
+	Returns true if detection was successful, false on failure. */
+	static bool detect(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD);
 
 	/** Returns the name to be used for the task in the user-visible UI. */
 	static QString createTaskName(Song::SharedDataPtr a_SongSD);
@@ -85,6 +88,13 @@ protected:
 	/** If true, the enqueueing loop will not enqueue any more tasks and will terminate after the current
 	detection finishes. */
 	std::atomic<bool> m_ShouldAbort;
+
+	/** The songs that have failed to provide a tempo; these will be skipped until program restart.
+	Protected against multithreaded access by m_MtxFailedSongs. */
+	std::set<Song::SharedDataPtr> m_FailedSongs;
+
+	/** Mutex for protecting m_FailedSongs agains multithreaded access. */
+	std::mutex m_MtxFailedSongs;
 
 
 	/** Picks a song from the DB that should be processed next.

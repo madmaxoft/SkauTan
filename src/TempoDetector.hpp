@@ -102,19 +102,32 @@ public:
 	struct Result
 	{
 		/** The options used to calculate this result. */
-		Options m_Options;
+		std::vector<Options> m_Options;
 
-		/** The detected tempo. */
+		/** The final detected tempo. 0 if not detected. */
 		double m_Tempo;
 
 		/** The confidence of the detection. Ranges from 0 to 100, higher means more confident. */
 		double m_Confidence;
 
-		/** A time-sorted vector of beat indices (into m_Levels) and their weight. */
+		/** The tempos detected with the individual m_Options items, one pair per options item. */
+		std::vector<std::pair<double, double>> m_Tempos;
+
+		/** A time-sorted vector of beat indices (into m_Levels) and their weight.
+		Only contains the beats from the last m_Options item. */
 		std::vector<std::pair<size_t, qint32>> m_Beats;
 
-		/** A vector of all levels calculated for the audio. */
+		/** A vector of all levels calculated for the audio.
+		Only contains the levels from the last m_Options item. */
 		std::vector<qint32> m_Levels;
+
+
+		/** Creates an "invalid" result - no confidence, no detected tempo. */
+		Result():
+			m_Tempo(0),
+			m_Confidence(0)
+		{
+		}
 	};
 
 	using ResultPtr = std::shared_ptr<Result>;
@@ -125,12 +138,18 @@ public:
 	/** Returns the number of songs that are queued for scanning. */
 	int queueLength() { return m_QueueLength.load(); }
 
-	/** Scans the specified song synchronously. */
-	std::shared_ptr<Result> scanSong(SongPtr a_Song, const Options & a_Options = Options());
+	/** Scans the specified song synchronously.
+	Each item in a_Options is used to scan the song, and the individual results are then aggregated into a single tempo value.
+	Note that samplerate is only taken from the first item in a_Options, the other items' samplerates
+	are ignored (can't change the samplerate once the song is decoded). */
+	std::shared_ptr<Result> scanSong(SongPtr a_Song, const std::vector<Options> & a_Options = {Options()});
 
 	/** Queues the specified song for scanning in a background task.
+	Each item in a_Options is used to scan the song, and the individual results are then aggregated into a single tempo value.
+	Note that samplerate is only taken from the first item in a_Options, the other items' samplerates
+	are ignored (can't change the samplerate once the song is decoded).
 	Once the song is scanned, the songScanned() signal is emitted. */
-	void queueScanSong(SongPtr a_Song, const Options & a_Options = Options());
+	void queueScanSong(SongPtr a_Song, const std::vector<Options> & a_Options = {Options()});
 
 
 protected:
