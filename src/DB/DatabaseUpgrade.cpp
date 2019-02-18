@@ -769,12 +769,21 @@ static const std::vector<VersionScript> g_VersionScripts =
 		"UPDATE Templates SET Position = ( SELECT COUNT(RowID) FROM Templates as t2 WHERE t2.RowID < Templates.RowID )",
 	}),  // Version 13 to Version 14
 
+
 	// Version 14 to Version 15
 	// #225: ClassroomMode: add BgColor to SongSharedData
 	VersionScript({
 		"ALTER TABLE SongSharedData ADD COLUMN BgColor   TEXT",
 		"ALTER TABLE SongSharedData ADD COLUMN BgColorLM DATETIME",
 	}),  // Version 14 to Version 15
+
+
+	// Version 15 to Version 16
+	// #239: ClassroomMode: add DetectedTempo to SongSharedData
+	VersionScript({
+		"ALTER TABLE SongSharedData ADD COLUMN DetectedTempo   TEXT",
+		"ALTER TABLE SongSharedData ADD COLUMN DetectedTempoLM DATETIME",
+	}),  // Version 15 to Version 16
 };
 
 

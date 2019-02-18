@@ -1457,6 +1457,8 @@ void Database::loadSongSharedData()
 	auto fiNotesLM                 = query.record().indexOf("NotesLM");
 	auto fiBgColor                 = query.record().indexOf("BgColor");
 	auto fiBgColorLM               = query.record().indexOf("BgColorLM");
+	auto fiDetectedTempo           = query.record().indexOf("DetectedTempo");
+	auto fiDetectedTempoLM         = query.record().indexOf("DetectedTempoLM");
 	std::array<int, 4> fisManual
 	{{
 		query.record().indexOf("ManualAuthor"),
@@ -1490,7 +1492,8 @@ void Database::loadSongSharedData()
 			tagFromFields(rec, fisManual, fisManualLM),
 			datedOptionalFromFields<double>(rec, fiSkipStart, fiSkipStartLM),
 			datedOptionalFromFields<QString>(rec, fiNotes, fiNotesLM),
-			datedOptionalFromFields<QColor> (rec, fiBgColor, fiBgColorLM)
+			datedOptionalFromFields<QColor> (rec, fiBgColor, fiBgColorLM),
+			datedOptionalFromFields<double> (rec, fiDetectedTempo, fiDetectedTempoLM)
 		);
 		m_SongSharedData[hash] = data;
 	}
@@ -2237,7 +2240,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		"ManualMeasuresPerMinute = ?, ManualMeasuresPerMinuteLM = ?,"
 		"SkipStart = ?, SkipStartLM = ?, "
 		"Notes = ?, NotesLM = ?, "
-		"BgColor = ?, BgColorLM = ? "
+		"BgColor = ?, BgColorLM = ?, "
+		"DetectedTempo = ?, DetectedTempoLM = ? "
 		"WHERE Hash = ?")
 	)
 	{
@@ -2270,6 +2274,8 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 	query.addBindValue(a_SharedData->m_Notes.lastModification());
 	query.addBindValue(a_SharedData->m_BgColor.toVariant());
 	query.addBindValue(a_SharedData->m_BgColor.lastModification());
+	query.addBindValue(a_SharedData->m_DetectedTempo.toVariant());
+	query.addBindValue(a_SharedData->m_DetectedTempo.lastModification());
 	query.addBindValue(a_SharedData->m_Hash);
 	if (!query.exec())
 	{

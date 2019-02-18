@@ -50,6 +50,7 @@ public:
 		colFileNameTitle,
 		colFileNameGenre,
 		colFileNameMeasuresPerMinute,
+		colDetectedTempo,
 		colNumMatchingFilters,
 		colNumDuplicates,
 		colSkipStart,

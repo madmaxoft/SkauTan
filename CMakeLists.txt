@@ -260,6 +260,7 @@ set (SOURCES
 	src/Stopwatch.cpp
 	src/Template.cpp
 	src/TempoDetector.cpp
+	src/TempoDetectTask.cpp
 	src/Utils.cpp
 )
 
@@ -339,6 +340,7 @@ set (HEADERS
 	src/Stopwatch.hpp
 	src/Template.hpp
 	src/TempoDetector.hpp
+	src/TempoDetectTask.hpp
 	src/Utils.hpp
 )
 

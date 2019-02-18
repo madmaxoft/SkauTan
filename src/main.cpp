@@ -17,6 +17,7 @@
 #include "Template.hpp"
 #include "Settings.hpp"
 #include "TempoDetector.hpp"
+#include "TempoDetectTask.hpp"
 #include "Utils.hpp"
 #include "DJControllers.hpp"
 #include "LocalVoteServer.hpp"
@@ -139,12 +140,13 @@ int main(int argc, char *argv[])
 		// Create the main app objects:
 		ComponentCollection cc;
 		cc.addComponent(instConf);
-		auto mainDB = cc.addNew<Database>(cc);
-		auto scanner = cc.addNew<MetadataScanner>();
-		auto lhCalc = cc.addNew<LengthHashCalculator>();
-		auto player = cc.addNew<Player>();
-		auto midiControllers = cc.addNew<DJControllers>();
-		auto voteServer      = cc.addNew<LocalVoteServer>(cc);
+		auto mainDB              = cc.addNew<Database>(cc);
+		auto scanner             = cc.addNew<MetadataScanner>();
+		auto lhCalc              = cc.addNew<LengthHashCalculator>();
+		auto player              = cc.addNew<Player>();
+		auto midiControllers     = cc.addNew<DJControllers>();
+		auto voteServer          = cc.addNew<LocalVoteServer>(cc);
+		auto tempoDetectRepeater = cc.addNew<TempoDetectTaskRepeater>(cc);
 
 		// Connect the main objects together:
 		app.connect(mainDB.get(),     &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);
@@ -207,6 +209,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Run the app:
+		tempoDetectRepeater->start();
 		auto res = app.exec();
 
 		// Save the server state:

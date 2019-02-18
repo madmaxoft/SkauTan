@@ -118,11 +118,12 @@ public:
 		DatedOptional<QDateTime> m_LastPlayed;
 		Rating m_Rating;
 		Tag m_TagManual;
-		mutable QMutex m_Mtx;  // Mutex protecting m_Duplicates against multithreaded access
-		std::vector<Song *> m_Duplicates;  // All songs having the same hash
-		DatedOptional<double> m_SkipStart;  // Where to start playing
+		mutable QMutex m_Mtx;                   ///< Mutex protecting m_Duplicates against multithreaded access
+		std::vector<Song *> m_Duplicates;       ///< All songs having the same hash
+		DatedOptional<double> m_SkipStart;      ///< Where to start playing
 		DatedOptional<QString> m_Notes;
-		DatedOptional<QColor> m_BgColor;
+		DatedOptional<QColor> m_BgColor;        ///< BgColor used for displaying the song in ClassroomWindow
+		DatedOptional<double> m_DetectedTempo;  ///< Tempo that was detected using TempoDetect
 
 		SharedData(
 			const QByteArray & a_Hash,
@@ -132,7 +133,8 @@ public:
 			Tag && a_TagManual,
 			DatedOptional<double> && a_SkipStart,
 			DatedOptional<QString> && a_Notes,
-			DatedOptional<QColor> && a_BgColor
+			DatedOptional<QColor> && a_BgColor,
+			DatedOptional<double> && a_DetectedTempo
 		):
 			m_Hash(a_Hash),
 			m_Length(std::move(a_Length)),
@@ -141,7 +143,8 @@ public:
 			m_TagManual(std::move(a_TagManual)),
 			m_SkipStart(std::move(a_SkipStart)),
 			m_Notes(std::move(a_Notes)),
-			m_BgColor(std::move(a_BgColor))
+			m_BgColor(std::move(a_BgColor)),
+			m_DetectedTempo(std::move(a_DetectedTempo))
 		{
 		}
 
