@@ -4,7 +4,7 @@
 #include <QDebug>
 #include "../src/Audio/AVPP.hpp"
 #include "../src/Audio/PlaybackBuffer.hpp"
-#include "../Src/Utils.hpp"
+#include "../src/Utils.hpp"
 
 
 
