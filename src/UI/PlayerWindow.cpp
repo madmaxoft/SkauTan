@@ -387,9 +387,9 @@ void PlayerWindow::setUpDjControllers()
 	const QString CONTEXT = "PlayerWindow";
 	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, CONTEXT);
 	auto djc = m_Components.get<DJControllers>();
-	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, [this](int a_Key) { handleDjControllerKey(a_Key); });
-	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, [this](int a_Slider, qreal a_Value) { handleDjControllerSlider(a_Slider, a_Value); });
-	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, [this](int a_Wheel, int a_NumSteps) { handleDjControllerWheel(a_Wheel, a_NumSteps); });
+	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, this, "handleDjControllerKey");
+	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, this, "handleDjControllerSlider");
+	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, this, "handleDjControllerWheel");
 }
 
 

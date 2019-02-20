@@ -48,9 +48,18 @@ protected:
 
 public:
 
-	using KeyHandler = std::function<void(int a_Key)>;
-	using SliderHandler = std::function<void(int a_Slider, qreal a_Value)>;
-	using WheelHandler = std::function<void(int a_Wheel, int a_NumSteps)>;
+	/** Wrapper for the handler function name and the object on which it should be invoked. */
+	struct Handler
+	{
+		QObject * m_DestinationObject;
+		std::string m_FunctionName;
+
+		Handler(QObject * a_DestinationObject, const char * a_FunctionName):
+			m_DestinationObject(a_DestinationObject),
+			m_FunctionName(a_FunctionName)
+		{
+		}
+	};
 
 
 	/** RAII class for unregistering callbacks upon its destruction. */
@@ -104,19 +113,22 @@ public:
 	Returns a registration object that unregisters the callback when destroyed. */
 	KeyHandlerRegPtr registerContextKeyHandler(
 		const QString & a_Context,
-		KeyHandler a_Callback
+		QObject * a_Destination,
+		const char * a_CallbackName
 	);
 
 	/** Registers a handler for slider events in the specified context. */
 	SliderHandlerRegPtr registerContextSliderHandler(
 		const QString & a_Context,
-		SliderHandler a_Callback
+		QObject * a_Destination,
+		const char * a_CallbackName
 	);
 
 	/** Registers a handler for wheel events in the specified context. */
 	WheelHandlerRegPtr registerContextWheelHandler(
 		const QString & a_Context,
-		WheelHandler a_Callback
+		QObject * a_Destination,
+		const char * a_CallbackName
 	);
 
 
@@ -135,13 +147,13 @@ private:
 	std::atomic<quint64> m_NextRegID;
 
 	/** The registered key handlers. */
-	std::vector<std::tuple<quint64, QString, KeyHandler>> m_KeyHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> m_KeyHandlers;
 
 	/** The registered slider handlers. */
-	std::vector<std::tuple<quint64, QString, SliderHandler>> m_SliderHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> m_SliderHandlers;
 
 	/** The registered wheel handlers. */
-	std::vector<std::tuple<quint64, QString, WheelHandler>> m_WheelHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> m_WheelHandlers;
 
 
 	/** Sends a message to turn the specified LED on or off. */

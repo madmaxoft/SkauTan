@@ -115,6 +115,9 @@ private:
 	/** Sets up all that is needed to support the DJ controllers in this window. */
 	void setUpDjControllers();
 
+
+public slots:
+
 	/** Handler for keypresses on the DJ controller. */
 	void handleDjControllerKey(int a_Key);
 
