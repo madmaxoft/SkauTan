@@ -3638,12 +3638,12 @@ Poslední změna: %2</translation>
 <context>
     <name>TempoDetectTask</name>
     <message>
-        <location filename="../src/TempoDetectTask.cpp" line="18"/>
+        <location filename="../src/TempoDetectTask.cpp" line="46"/>
         <source>Detect tempo: unknown song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/TempoDetectTask.cpp" line="22"/>
+        <location filename="../src/TempoDetectTask.cpp" line="50"/>
         <source>Detect tempo: %1</source>
         <translation type="unfinished">Detekce tempa: %1</translation>
     </message>
