@@ -402,11 +402,11 @@ void ClassroomWindow::applySearchFilterToSongs()
 	m_UI->lwSongs->clear();
 	for (const auto & song: m_AllFilterSongs)
 	{
-		auto item = std::make_unique<QListWidgetItem>();
-		item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
-		updateSongItem(*item);
-		if (m_SearchFilter.match(item->text()).hasMatch())
+		if (m_SearchFilter.match(songDisplayText(*song)).hasMatch())
 		{
+			auto item = std::make_unique<QListWidgetItem>();
+			item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
+			updateSongItem(*item);
 			m_UI->lwSongs->addItem(item.release());
 		}
 	}
@@ -422,9 +422,9 @@ void ClassroomWindow::setUpDjControllers()
 	const QString CONTEXT = "ClassroomWindow";
 	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, CONTEXT);
 	auto djc = m_Components.get<DJControllers>();
-	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, [this](int a_Key) { handleDjControllerKey(a_Key); });
-	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, [this](int a_Slider, qreal a_Value) { handleDjControllerSlider(a_Slider, a_Value); });
-	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, [this](int a_Wheel, int a_NumSteps) { handleDjControllerWheel(a_Wheel, a_NumSteps); });
+	m_DjKeyHandler    = djc->registerContextKeyHandler(   CONTEXT, this, "handleDjControllerKey");
+	m_DjSliderHandler = djc->registerContextSliderHandler(CONTEXT, this, "handleDjControllerSlider");
+	m_DjWheelHandler  = djc->registerContextWheelHandler( CONTEXT, this, "handleDjControllerWheel");
 }
 
 
@@ -443,6 +443,8 @@ void ClassroomWindow::handleDjControllerKey(int a_Key)
 		}
 		case AbstractController::skEnter1:
 		case AbstractController::skEnter2:
+		case AbstractController::skCue1:
+		case AbstractController::skCue2:
 		{
 			playSelectedSong();
 			return;
@@ -699,6 +701,10 @@ void ClassroomWindow::durationLimitEdited(const QString & a_NewText)
 void ClassroomWindow::playSelectedSong()
 {
 	auto selItem = m_UI->lwSongs->currentItem();
+	if (selItem == nullptr)
+	{
+		return;
+	}
 	startPlayingSong(selItem->data(Qt::UserRole).value<SongPtr>());
 }
 

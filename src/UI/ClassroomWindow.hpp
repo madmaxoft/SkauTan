@@ -127,6 +127,9 @@ private:
 	/** Initializes the window to accept input by DJ controllers. */
 	void setUpDjControllers();
 
+
+public slots:
+
 	/** Handler for keypresses on the DJ controller. */
 	void handleDjControllerKey(int a_Key);
 
@@ -135,14 +138,6 @@ private:
 
 	/** Handler for wheel moves on the DJ controller. */
 	void handleDjControllerWheel(int a_Wheel, int a_NumSteps);
-
-	/** Moves the selection in lwFilters by the specified number of steps up or down.
-	If not all steps can be taken, they are ignored silently. */
-	void moveFilterSelection(int a_NumSteps);
-
-	/** Moves the selection in lwSongs by the specified number of steps up or down.
-	If not all steps can be taken, they are ignored silently. */
-	void moveSongSelection(int a_NumSteps);
 
 
 private slots:

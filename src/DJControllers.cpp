@@ -96,10 +96,19 @@ void DJControllers::unregisterWheelHandler(quint64 a_RegID)
 
 
 
-DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(const QString & a_Context, DJControllers::KeyHandler a_Callback)
+DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(
+	const QString & a_Context,
+	QObject * a_DestinationObject,
+	const char * a_CallbackName
+)
 {
 	auto regID = m_NextRegID++;
-	m_KeyHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
+	m_KeyHandlers.push_back(
+		std::make_tuple(
+			regID, a_Context,
+			Handler(a_DestinationObject, a_CallbackName)
+		)
+	);
 	return std::make_shared<KeyHandlerReg>(*this, regID);
 }
 
@@ -107,10 +116,19 @@ DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(const Q
 
 
 
-DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(const QString & a_Context, DJControllers::SliderHandler a_Callback)
+DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(
+	const QString & a_Context,
+	QObject * a_DestinationObject,
+	const char * a_CallbackName
+)
 {
 	auto regID = m_NextRegID++;
-	m_SliderHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
+	m_SliderHandlers.push_back(
+		std::make_tuple(
+			regID, a_Context,
+			Handler(a_DestinationObject, a_CallbackName)
+		)
+	);
 	return std::make_shared<SliderHandlerReg>(*this, regID);
 }
 
@@ -118,10 +136,19 @@ DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(c
 
 
 
-DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(const QString & a_Context, DJControllers::WheelHandler a_Callback)
+DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(
+	const QString & a_Context,
+	QObject * a_DestinationObject,
+	const char * a_CallbackName
+)
 {
 	auto regID = m_NextRegID++;
-	m_WheelHandlers.push_back(std::make_tuple(regID, a_Context, a_Callback));
+	m_WheelHandlers.push_back(
+		std::make_tuple(
+			regID, a_Context,
+			Handler(a_DestinationObject, a_CallbackName)
+		)
+	);
 	return std::make_shared<WheelHandlerReg>(*this, regID);
 }
 
@@ -243,7 +270,13 @@ void DJControllers::controllerKeyPressed(int a_Key)
 	{
 		if (std::get<1>(handler) == context)
 		{
-			std::get<2>(handler)(a_Key);
+			auto & reg = std::get<2>(handler);
+			QMetaObject::invokeMethod(
+				reg.m_DestinationObject,
+				reg.m_FunctionName.c_str(),
+				Qt::QueuedConnection,
+				Q_ARG(int, a_Key)
+			);
 		}
 	}
 }
@@ -260,7 +293,14 @@ void DJControllers::controllerSliderSet(int a_Slider, qreal a_Value)
 	{
 		if (std::get<1>(handler) == context)
 		{
-			std::get<2>(handler)(a_Slider, a_Value);
+			auto & reg = std::get<2>(handler);
+			QMetaObject::invokeMethod(
+				reg.m_DestinationObject,
+				reg.m_FunctionName.c_str(),
+				Qt::QueuedConnection,
+				Q_ARG(int, a_Slider),
+				Q_ARG(qreal, a_Value)
+			);
 		}
 	}
 }
@@ -277,7 +317,14 @@ void DJControllers::controllerWheelMoved(int a_Wheel, int a_NumSteps)
 	{
 		if (std::get<1>(handler) == context)
 		{
-			std::get<2>(handler)(a_Wheel, a_NumSteps);
+			auto & reg = std::get<2>(handler);
+			QMetaObject::invokeMethod(
+				reg.m_DestinationObject,
+				reg.m_FunctionName.c_str(),
+				Qt::QueuedConnection,
+				Q_ARG(int, a_Wheel),
+				Q_ARG(int, a_NumSteps)
+			);
 		}
 	}
 }
