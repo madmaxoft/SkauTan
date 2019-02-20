@@ -9,6 +9,34 @@
 
 
 
+/** Returns a vector of TempoDetector Options to be used for detecting in the specified tempo range. */
+static std::vector<TempoDetector::Options> getTempoDetectorOptions(const std::pair<int, int> & a_TempoRange)
+{
+	TempoDetector::Options opt;
+	opt.m_SampleRate = 500;
+	opt.m_LevelAlgorithm = TempoDetector::laSumDistMinMax;
+	opt.m_MinTempo = a_TempoRange.first;
+	opt.m_MaxTempo = a_TempoRange.second;
+	opt.m_ShouldNormalizeLevels = true;
+	opt.m_NormalizeLevelsWindowSize = 31;
+	opt.m_Stride = 8;
+	opt.m_LocalMaxDistance = 13;
+	std::vector<TempoDetector::Options> opts;
+	for (auto ws: {11, 13, 15, 17, 19})
+	{
+		opt.m_WindowSize = static_cast<size_t>(ws);
+		opts.push_back(opt);
+	}
+	return opts;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// TempoDetectTask:
+
 QString TempoDetectTask::createTaskName(Song::SharedDataPtr a_SongSD)
 {
 	assert(a_SongSD != nullptr);
@@ -60,35 +88,23 @@ void TempoDetectTask::enqueue(ComponentCollection & a_Components, Song::SharedDa
 
 bool TempoDetectTask::detect(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD)
 {
-	STOPWATCH("Detect tempo")
-
 	// Prepare the detection options, esp. the tempo range, if genre is known:
+	auto tempoRange = Song::detectionTempoRangeForGenre("unknown");
 	auto duplicates = a_SongSD->duplicates();
-	TempoDetector td;
-	TempoDetector::Options opt;
-	opt.m_SampleRate = 500;
-	opt.m_LevelAlgorithm = TempoDetector::laSumDistMinMax;
-	opt.m_ShouldNormalizeLevels = true;
-	opt.m_NormalizeLevelsWindowSize = 31;
-	opt.m_Stride = 8;
-	opt.m_LocalMaxDistance = 13;
 	for (auto s: duplicates)
 	{
 		auto genre = s->primaryGenre();
 		if (genre.isPresent())
 		{
-			std::tie(opt.m_MinTempo, opt.m_MaxTempo) = Song::detectionTempoRangeForGenre(genre.value());
+			tempoRange = Song::detectionTempoRangeForGenre(genre.value());
 			break;
 		}
 	}
-	std::vector<TempoDetector::Options> opts;
-	for (auto ws: {11, 13, 15, 17, 19})
-	{
-		opt.m_WindowSize = static_cast<size_t>(ws);
-		opts.push_back(opt);
-	}
+	auto opts = getTempoDetectorOptions(tempoRange);
 
 	// Detect from the first available duplicate:
+	STOPWATCH("Detect tempo")
+	TempoDetector td;
 	for (auto s: duplicates)
 	{
 		auto res = td.scanSong(s->shared_from_this(), opts);
