@@ -109,27 +109,27 @@ static const struct SimpleControllerDef
 			{ 0x5a, AbstractController::skEnter1 },
 		},  // keyMap
 		{
-			{ AbstractController::slKeyCue1,       0x33 },
-			{ AbstractController::slKeyPlayPause1, 0x3b },
-			{ AbstractController::slKeySync1,      0x40 },
-			{ AbstractController::slKeyPfl1,       0x65 },
-			{ AbstractController::slKeyCue2,       0x3c },
-			{ AbstractController::slKeyPlayPause2, 0x42 },
-			{ AbstractController::slKeySync2,      0x47 },
-			{ AbstractController::slKeyPfl2,       0x66 },
+			{ 0x33, AbstractController::slKeyCue1},
+			{ 0x3b, AbstractController::slKeyPlayPause1},
+			{ 0x40, AbstractController::slKeySync1},
+			{ 0x65, AbstractController::slKeyPfl1},
+			{ 0x3c, AbstractController::slKeyCue2},
+			{ 0x42, AbstractController::slKeyPlayPause2},
+			{ 0x47, AbstractController::slKeySync2},
+			{ 0x66, AbstractController::slKeyPfl2},
 		},  // ledMap
 		{
-			{ AbstractController::ssMasterVolume, 0x17 },
-			{ AbstractController::ssVolume1,      0x08 },
-			{ AbstractController::ssVolume2,      0x09 },
-			{ AbstractController::ssCrossfade1,   0x0a },
-			{ AbstractController::ssPitch1,       0x0d },
-			{ AbstractController::ssPitch2,       0x0e },
+			{ 0x17, AbstractController::ssMasterVolume},
+			{ 0x08, AbstractController::ssVolume1},
+			{ 0x09, AbstractController::ssVolume2},
+			{ 0x0a, AbstractController::ssCrossfade1},
+			{ 0x0d, AbstractController::ssPitch1},
+			{ 0x0e, AbstractController::ssPitch2},
 		},  // sliderMap
 		{
-			{ AbstractController::swBrowse, 0x1a},
-			{ AbstractController::swJog1,   0x19 },
-			{ AbstractController::swJog2,   0x18 },
+			{ 0x1a, AbstractController::swBrowse},
+			{ 0x19, AbstractController::swJog1},
+			{ 0x18, AbstractController::swJog2},
 		},  // wheelMap
 	},  // Numark DJ2Go
 };

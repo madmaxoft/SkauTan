@@ -149,14 +149,14 @@ void SimpleMidiController::processMidiInMessage(double a_TimeStamp, const QByteA
 			auto slider = m_SliderMap.find(msgBytes[1]);
 			if (slider != m_SliderMap.end())
 			{
-				auto value = static_cast<double>(a_Message[2]) / 127;
+				auto value = static_cast<double>(msgBytes[2]) / 127;
 				emit sliderSet(slider->second, value);
 				return;
 			}
 			auto wheel = m_WheelMap.find(msgBytes[1]);
 			if (wheel != m_WheelMap.end())
 			{
-				auto numSteps = (a_Message[2] < 0x40) ? a_Message[2] : (128 - a_Message[2]);
+				auto numSteps = (msgBytes[2] < 0x40) ? msgBytes[2] : (msgBytes[2] - 128);
 				emit wheelMoved(wheel->second, numSteps);
 				return;
 			}
