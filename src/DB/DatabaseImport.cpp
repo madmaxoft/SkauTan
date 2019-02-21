@@ -69,6 +69,23 @@ void DatabaseImport::importManualTag()
 
 
 
+void DatabaseImport::importDetectedTempo()
+{
+	for (auto & sd: m_From.songSharedDataMap())
+	{
+		auto dest  = m_To.sharedDataFromHash(sd.first);
+		if (dest == nullptr)
+		{
+			continue;
+		}
+		dest->m_DetectedTempo.updateIfNewer(sd.second->m_DetectedTempo);
+	}
+}
+
+
+
+
+
 void DatabaseImport::importLastPlayedDate()
 {
 	for (auto & sd: m_From.songSharedDataMap())

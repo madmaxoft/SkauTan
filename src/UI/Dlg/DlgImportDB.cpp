@@ -12,14 +12,15 @@ DlgImportDB::DlgImportDB(QWidget * a_Parent) :
 	m_UI(new Ui::DlgImportDB)
 {
 	m_UI->setupUi(this);
-	m_UI->chbManualTag->setChecked      (Settings::loadValue("DlgImportDB", "chbManualTag.isChecked", true).toBool());
-	m_UI->chbLastPlayedDate->setChecked (Settings::loadValue("DlgImportDB", "chbLastPlayedDate.isChecked", true).toBool());
-	m_UI->chbLocalRating->setChecked    (Settings::loadValue("DlgImportDB", "chbLocalRating.isChecked", true).toBool());
+	m_UI->chbManualTag->setChecked      (Settings::loadValue("DlgImportDB", "chbManualTag.isChecked",       true).toBool());
+	m_UI->chbDetectedTempo->setChecked  (Settings::loadValue("DlgImportDB", "chbDetectedTempo.isChecked",   true).toBool());
+	m_UI->chbLastPlayedDate->setChecked (Settings::loadValue("DlgImportDB", "chbLastPlayedDate.isChecked",  true).toBool());
+	m_UI->chbLocalRating->setChecked    (Settings::loadValue("DlgImportDB", "chbLocalRating.isChecked",     true).toBool());
 	m_UI->chbCommunityRating->setChecked(Settings::loadValue("DlgImportDB", "chbCommunityRating.isChecked", true).toBool());
 	m_UI->chbPlaybackHistory->setChecked(Settings::loadValue("DlgImportDB", "chbPlaybackHistory.isChecked", true).toBool());
-	m_UI->chbSkipStart->setChecked      (Settings::loadValue("DlgImportDB", "chbSkipStart.isChecked", true).toBool());
+	m_UI->chbSkipStart->setChecked      (Settings::loadValue("DlgImportDB", "chbSkipStart.isChecked",       true).toBool());
 	m_UI->chbDeletionHistory->setChecked(Settings::loadValue("DlgImportDB", "chbDeletionHistory.isChecked", true).toBool());
-	m_UI->chbSongColors->setChecked     (Settings::loadValue("DlgImportDB", "chbSongColors.isChecked", true).toBool());
+	m_UI->chbSongColors->setChecked     (Settings::loadValue("DlgImportDB", "chbSongColors.isChecked",      true).toBool());
 
 	connect(m_UI->btnBrowse, &QPushButton::clicked, this, &DlgImportDB::browseForDB);
 	connect(m_UI->btnCancel, &QPushButton::clicked, this, &DlgImportDB::reject);
@@ -41,6 +42,7 @@ DlgImportDB::DlgImportDB(QWidget * a_Parent) :
 DlgImportDB::~DlgImportDB()
 {
 	Settings::saveValue("DlgImportDB", "chbManualTag.isChecked",       m_UI->chbManualTag->isChecked());
+	Settings::saveValue("DlgImportDB", "chbDetectedTempo.isChecked",   m_UI->chbDetectedTempo->isChecked());
 	Settings::saveValue("DlgImportDB", "chbLastPlayedDate.isChecked",  m_UI->chbLastPlayedDate->isChecked());
 	Settings::saveValue("DlgImportDB", "chbLocalRating.isChecked",     m_UI->chbLocalRating->isChecked());
 	Settings::saveValue("DlgImportDB", "chbCommunityRating.isChecked", m_UI->chbCommunityRating->isChecked());
@@ -59,6 +61,7 @@ void DlgImportDB::onFinished(int a_Result)
 	Q_UNUSED(a_Result);
 
 	m_Options.m_ShouldImportManualTag       = m_UI->chbManualTag->isChecked();
+	m_Options.m_ShouldImportDetectedTempo   = m_UI->chbDetectedTempo->isChecked();
 	m_Options.m_ShouldImportLastPlayedDate  = m_UI->chbLastPlayedDate->isChecked();
 	m_Options.m_ShouldImportLocalRating     = m_UI->chbLocalRating->isChecked();
 	m_Options.m_ShouldImportCommunityRating = m_UI->chbCommunityRating->isChecked();
