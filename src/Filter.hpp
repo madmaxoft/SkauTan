@@ -96,12 +96,13 @@ public:
 			nspPrimaryAuthor             = 19,  // The first of Manual-, Id3-, FileName-Author that is non-null
 			nspPrimaryTitle              = 20,  // The first of Manual-, Id3-, FileName-Title that is non-null
 			nspPrimaryGenre              = 21,  // The first of Manual-, Id3-, FileName-Genre that is non-null
-			nspPrimaryMeasuresPerMinute  = 22,  // The first of Manual-, Id3-, FileName-MPM that is non-null
+			nspPrimaryMeasuresPerMinute  = 22,  // The first of Manual-, Id3-, FileName- or Detected-MPM that is non-null
 			nspWarningCount              = 23,
 			nspRatingRhythmClarity       = 24,
 			nspRatingGenreTypicality     = 25,
 			nspRatingPopularity          = 26,
 			nspNotes                     = 27,
+			nspDetectedTempo             = 28,
 		};
 
 
