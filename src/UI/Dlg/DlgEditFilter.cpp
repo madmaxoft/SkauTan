@@ -54,6 +54,7 @@ static Filter::Node::SongProperty g_SongProperties[] =
 	Filter::Node::nspRatingGenreTypicality,
 	Filter::Node::nspRatingPopularity,
 	Filter::Node::nspNotes,
+	Filter::Node::nspDetectedTempo,
 };
 
 static Filter::Node::Comparison g_Comparisons[] =

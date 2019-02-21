@@ -381,6 +381,7 @@ Filter::Node::SongProperty Filter::Node::intToSongProperty(int a_SongProperty)
 		case nspRatingGenreTypicality:     return nspRatingGenreTypicality;
 		case nspRatingPopularity:          return nspRatingPopularity;
 		case nspNotes:                     return nspNotes;
+		case nspDetectedTempo:             return nspDetectedTempo;
 	}
 	throw std::runtime_error(QString("Unknown node SongProperty: %1").arg(a_SongProperty).toUtf8().constData());
 }
@@ -421,6 +422,7 @@ QString Filter::Node::songPropertyCaption(Filter::Node::SongProperty a_Prop)
 		case nspRatingGenreTypicality:     return Filter::tr("Genre typicality rating", "SongPropertyCaption");
 		case nspRatingPopularity:          return Filter::tr("Popularity rating",       "SongPropertyCaption");
 		case nspNotes:                     return Filter::tr("Notes",                   "SongPropertyCaption");
+		case nspDetectedTempo:             return Filter::tr("Detected tempo",          "SongPropertyCaption");
 	}
 	assert(!"Unknown node SongProperty");
 	return QString();
@@ -513,7 +515,8 @@ bool Filter::Node::isComparisonSatisfiedBy(const Song & a_Song) const
 			return (
 				isNumberComparisonSatisfiedBy(a_Song.tagManual().m_MeasuresPerMinute) ||
 				isNumberComparisonSatisfiedBy(a_Song.tagFileName().m_MeasuresPerMinute) ||
-				isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute)
+				isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute) ||
+				isNumberComparisonSatisfiedBy(a_Song.detectedTempo())
 			);
 		}
 		case nspManualAuthor:              return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author);
@@ -534,12 +537,21 @@ bool Filter::Node::isComparisonSatisfiedBy(const Song & a_Song) const
 		case nspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor());
 		case nspPrimaryTitle:              return isStringComparisonSatisfiedBy(a_Song.primaryTitle());
 		case nspPrimaryGenre:              return isStringComparisonSatisfiedBy(a_Song.primaryGenre());
-		case nspPrimaryMeasuresPerMinute:  return isNumberComparisonSatisfiedBy(a_Song.primaryMeasuresPerMinute());
+		case nspPrimaryMeasuresPerMinute:
+		{
+			auto mpm = a_Song.primaryMeasuresPerMinute();
+			if (!mpm.isPresent())
+			{
+				mpm = a_Song.detectedTempo();
+			}
+			return isNumberComparisonSatisfiedBy(mpm);
+		}
 		case nspWarningCount:              return isValidNumberComparisonSatisfiedBy(a_Song.getWarnings().count());
 		case nspRatingRhythmClarity:       return isNumberComparisonSatisfiedBy(a_Song.rating().m_RhythmClarity);
 		case nspRatingGenreTypicality:     return isNumberComparisonSatisfiedBy(a_Song.rating().m_GenreTypicality);
 		case nspRatingPopularity:          return isNumberComparisonSatisfiedBy(a_Song.rating().m_Popularity);
 		case nspNotes:                     return isStringComparisonSatisfiedBy(a_Song.notes());
+		case nspDetectedTempo:             return isNumberComparisonSatisfiedBy(a_Song.detectedTempo());
 	}
 	assert(!"Unknown song property in comparison");
 	return false;

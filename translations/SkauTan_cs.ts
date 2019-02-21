@@ -454,34 +454,34 @@ Tato operace je nevratná!</translation>
         <translation>&amp;Zavřít</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="204"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="205"/>
         <source>And</source>
         <comment>FilterTreeEditor</comment>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="205"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="206"/>
         <source>Or</source>
         <comment>FilterTreeEditor</comment>
         <translation>Nebo</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="623"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="624"/>
         <source>Really remove the selected filter node, including its subtree?</source>
         <translation>Opravdu odebrat označený uzel, včetně pod-uzlů?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="627"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="628"/>
         <source>Really remove the selected filter node?</source>
         <translation>Opravdu odebrat označený uzel?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="631"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="632"/>
         <source>SkauTan: Remove filter node?</source>
         <translation>SkauTan: Odebrat podmínkový uzel?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="705"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="706"/>
         <source>Matching songs: %n</source>
         <translation>
             <numerusform>Vyhovujících skladeb: %n</numerusform>
@@ -490,7 +490,7 @@ Tato operace je nevratná!</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="732"/>
+        <location filename="../src/UI/Dlg/DlgEditFilter.cpp" line="733"/>
         <source>SkauTan: Choose template item color</source>
         <translation>SkauTan: Vybrat barvu položky</translation>
     </message>
@@ -2431,217 +2431,223 @@ Tato operace je nevratná!</translation>
         <translation> nebo </translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="396"/>
+        <location filename="../src/Filter.cpp" line="397"/>
         <source>Author [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="397"/>
+        <location filename="../src/Filter.cpp" line="398"/>
         <source>Title [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="398"/>
+        <location filename="../src/Filter.cpp" line="399"/>
         <source>Genre [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="399"/>
+        <location filename="../src/Filter.cpp" line="400"/>
         <source>Length</source>
         <comment>SongPropertyCaption</comment>
         <translation>Délka</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="400"/>
+        <location filename="../src/Filter.cpp" line="401"/>
         <source>MPM [any]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [kdekoliv]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="401"/>
+        <location filename="../src/Filter.cpp" line="402"/>
         <source>Local Rating</source>
         <comment>SongPropertyCaption</comment>
         <translation>Lokální hodnocení</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="402"/>
+        <location filename="../src/Filter.cpp" line="403"/>
         <source>LastPlayed</source>
         <comment>SongPropertyCaption</comment>
         <translation>Hráno naposled</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="403"/>
+        <location filename="../src/Filter.cpp" line="404"/>
         <source>Author [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [M]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="404"/>
+        <location filename="../src/Filter.cpp" line="405"/>
         <source>Title [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [M]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="405"/>
+        <location filename="../src/Filter.cpp" line="406"/>
         <source>Genre [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [M]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="406"/>
+        <location filename="../src/Filter.cpp" line="407"/>
         <source>MPM [M]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [M]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="407"/>
+        <location filename="../src/Filter.cpp" line="408"/>
         <source>Author [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [S]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="408"/>
+        <location filename="../src/Filter.cpp" line="409"/>
         <source>Title [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [S]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="409"/>
+        <location filename="../src/Filter.cpp" line="410"/>
         <source>Genre [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [S]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="410"/>
+        <location filename="../src/Filter.cpp" line="411"/>
         <source>MPM [F]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [S]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="411"/>
+        <location filename="../src/Filter.cpp" line="412"/>
         <source>Author [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [T]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="412"/>
+        <location filename="../src/Filter.cpp" line="413"/>
         <source>Title [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [T]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="413"/>
+        <location filename="../src/Filter.cpp" line="414"/>
         <source>Genre [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [T]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="414"/>
+        <location filename="../src/Filter.cpp" line="415"/>
         <source>MPM [T]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [T]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="415"/>
+        <location filename="../src/Filter.cpp" line="416"/>
         <source>Author [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Autor [primární]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="416"/>
+        <location filename="../src/Filter.cpp" line="417"/>
         <source>Title [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Název [primární]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="417"/>
+        <location filename="../src/Filter.cpp" line="418"/>
         <source>Genre [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>Žánr [primární]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="418"/>
+        <location filename="../src/Filter.cpp" line="419"/>
         <source>MPM [Primary]</source>
         <comment>SongPropertyCaption</comment>
         <translation>t/min [primární]</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="419"/>
+        <location filename="../src/Filter.cpp" line="420"/>
         <source>Warning count</source>
         <comment>SongPropertyCaption</comment>
         <translation>Počet varování</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="420"/>
+        <location filename="../src/Filter.cpp" line="421"/>
         <source>Rhythm clarity rating</source>
         <comment>SongPropertyCaption</comment>
         <translation>Hodnocení zřetelnosti rytmu</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="421"/>
+        <location filename="../src/Filter.cpp" line="422"/>
         <source>Genre typicality rating</source>
         <comment>SongPropertyCaption</comment>
         <translation>Hodnocení typičnosti žánru</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="422"/>
+        <location filename="../src/Filter.cpp" line="423"/>
         <source>Popularity rating</source>
         <comment>SongPropertyCaption</comment>
         <translation>Hodnocení oblíbenosti</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="423"/>
+        <location filename="../src/Filter.cpp" line="424"/>
         <source>Notes</source>
         <comment>SongPropertyCaption</comment>
         <translation>Poznámky</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="437"/>
+        <location filename="../src/Filter.cpp" line="425"/>
+        <source>Detected tempo</source>
+        <comment>SongPropertyCaption</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/Filter.cpp" line="439"/>
         <source>==</source>
         <comment>Comparison</comment>
         <translation>==</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="438"/>
+        <location filename="../src/Filter.cpp" line="440"/>
         <source>!=</source>
         <comment>Comparison</comment>
         <translation>!=</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="439"/>
+        <location filename="../src/Filter.cpp" line="441"/>
         <source>contains</source>
         <comment>Comparison</comment>
         <translation>obsahuje</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="440"/>
+        <location filename="../src/Filter.cpp" line="442"/>
         <source>doesn&apos;t contain</source>
         <comment>Comparison</comment>
         <translation>neobsahuje</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="441"/>
+        <location filename="../src/Filter.cpp" line="443"/>
         <source>&gt;</source>
         <comment>Comparison</comment>
         <translation>&gt;</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="442"/>
+        <location filename="../src/Filter.cpp" line="444"/>
         <source>&gt;=</source>
         <comment>Comparison</comment>
         <translation>&gt;=</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="443"/>
+        <location filename="../src/Filter.cpp" line="445"/>
         <source>&lt;</source>
         <comment>Comparison</comment>
         <translation>&lt;</translation>
     </message>
     <message>
-        <location filename="../src/Filter.cpp" line="444"/>
+        <location filename="../src/Filter.cpp" line="446"/>
         <source>&lt;=</source>
         <comment>Comparison</comment>
         <translation>&lt;=</translation>
