@@ -858,6 +858,22 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 			}
 			break;
 		}  // case fltSkipStart
+
+		case fltFailedTempoDetect:
+		{
+			if (
+				!song->detectedTempo().isPresent() ||          // Tempo not detected yet
+				!song->primaryMeasuresPerMinute().isPresent()  // Tempo not present in tag
+			)
+			{
+				return false;  // Cannot compare tempo, don't show such song
+			}
+			auto tagTempo = song->primaryMeasuresPerMinute().value();
+			if (std::abs(tagTempo - song->detectedTempo().value()) < 1)
+			{
+				return false;  // Don't want songs with matching tempo
+			}
+		}  // case fltFailedTempoDetect
 	}
 	return songMatchesSearchString(song);
 }

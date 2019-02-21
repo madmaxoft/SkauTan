@@ -176,14 +176,15 @@ public:
 	/** Special filters that can be applied to songs. */
 	enum EFilter
 	{
-		fltNone,                   //< No filtering
-		fltNoId3,                  //< Songs with an empty / missing ID3 tag
-		fltNoGenre,                //< Songs with an empty / missing primary genre
-		fltNoMeasuresPerMinute,    //< Songs missing their MPM
-		fltWarnings,               //< Songs with warnings
-		fltNoFilterMatch,          //< Songs matching no Filter
-		fltDuplicates,             //< Songs that have duplicates
-		fltSkipStart,              //< Songs that have a skip-start defined
+		fltNone,                   ///< No filtering
+		fltNoId3,                  ///< Songs with an empty / missing ID3 tag
+		fltNoGenre,                ///< Songs with an empty / missing primary genre
+		fltNoMeasuresPerMinute,    ///< Songs missing their MPM
+		fltWarnings,               ///< Songs with warnings
+		fltNoFilterMatch,          ///< Songs matching no Filter
+		fltDuplicates,             ///< Songs that have duplicates
+		fltSkipStart,              ///< Songs that have a skip-start defined
+		fltFailedTempoDetect,      ///< Songs for which the tempo detection produced different tempo than stored in ID3 / Manual tag
 	};
 
 
