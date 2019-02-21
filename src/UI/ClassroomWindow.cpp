@@ -136,6 +136,14 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & a_Components):
 	menu->addAction(m_UI->actShowDebugLog);
 	m_UI->btnTools->setMenu(menu);
 
+	// Add the context-menu actions to lwSongs, so that their shortcuts work:
+	m_UI->lwSongs->addActions({
+		m_UI->actPlay,
+		m_UI->actRemoveFromLibrary,
+		m_UI->actDeleteFromDisk,
+		m_UI->actProperties,
+	});
+
 	updateFilterList();
 	m_UpdateTimer.start(100);
 }

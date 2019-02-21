@@ -428,6 +428,9 @@
    <property name="toolTip">
     <string>Display / edit the song's properties</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+3</string>
+   </property>
   </action>
   <action name="actRate">
    <property name="text">
