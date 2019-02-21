@@ -39,8 +39,13 @@ class TempoDetectTask:
 
 public:
 
-	/** Enqueues the specified song to be scanned. */
-	static void enqueue(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD);
+	/** Enqueues the specified song to be scanned.
+	If a_CallAfterFinished is non-nullptr, it is called after the detection finishes, in the detection thread. */
+	static void enqueue(
+		ComponentCollection & a_Components,
+		Song::SharedDataPtr a_SongSD,
+		std::function<void(void)> a_CallAfterFinished = nullptr
+	);
 
 	/** Runs the detection synchronously on the specified song.
 	Called internally from this class, and externally from the TempoDetectTaskRepeater.

@@ -293,13 +293,6 @@
      <item row="4" column="1" colspan="4">
       <widget class="QLineEdit" name="leManualAuthor"/>
      </item>
-     <item row="3" column="1" colspan="4">
-      <widget class="QLineEdit" name="leLength">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="1" colspan="4">
       <widget class="QLineEdit" name="leHash">
        <property name="readOnly">
@@ -363,6 +356,27 @@
        </property>
        <property name="text">
         <string>Copy</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="leLength">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="label_23">
+       <property name="text">
+        <string>MPM [detected]:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3" colspan="2">
+      <widget class="QLineEdit" name="leDetectedMeasuresPerMinute">
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
