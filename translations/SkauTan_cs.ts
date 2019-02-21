@@ -3684,13 +3684,13 @@ Poslední změna: %2</translation>
 <context>
     <name>TempoDetector</name>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="826"/>
-        <location filename="../src/TempoDetector.cpp" line="851"/>
+        <location filename="../src/TempoDetector.cpp" line="833"/>
+        <location filename="../src/TempoDetector.cpp" line="858"/>
         <source>Detect tempo: %1</source>
         <translation>Detekce tempa: %1</translation>
     </message>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="847"/>
+        <location filename="../src/TempoDetector.cpp" line="854"/>
         <source>Detect tempo: unknown song</source>
         <translation type="unfinished"></translation>
     </message>
