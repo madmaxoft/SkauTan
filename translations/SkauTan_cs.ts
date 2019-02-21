@@ -1414,7 +1414,7 @@ Tato operace je nevratná!</translation>
         <translation>Hash:</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="332"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="329"/>
         <source>Duplicates:</source>
         <translation>Duplikáty:</translation>
     </message>
@@ -1494,7 +1494,7 @@ Tato operace je nevratná!</translation>
         <translation>Žánr [ID3]:</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="312"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="309"/>
         <source>Shared Data:</source>
         <translation>Sdílená data:</translation>
     </message>
@@ -1515,63 +1515,68 @@ Tato operace je nevratná!</translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="264"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="345"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="358"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="342"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="355"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="372"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="369"/>
         <source>MPM [detected]:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="403"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="386"/>
+        <source>&amp;Tap tempo...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="410"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Storno</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="410"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="417"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="422"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="429"/>
         <source>Remove from library...</source>
         <translation>Odebrat z knihovny...</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="425"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="432"/>
         <source>Removes the song from the library, keeps the disk file</source>
         <translation>Odebere označenou skladbu z knihovny, soubor na disku zůstane</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="428"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="435"/>
         <source>Del</source>
         <translation>Del</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="433"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="440"/>
         <source>Delete from disk...</source>
         <translation>Smazat z disku...</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="436"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="443"/>
         <source>Removes song from library AND deletes the file from the disk</source>
         <translation>Smaže označené skladby z knihovny i z disku</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="124"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="126"/>
         <source>%1 (detection in progress)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="128"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="130"/>
         <source>unknown (detection in progress)</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="116"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="118"/>
         <source>%1:%2 (%n seconds)</source>
         <comment>SongLength</comment>
         <translation>
@@ -1581,40 +1586,40 @@ Tato operace je nevratná!</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="704"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="728"/>
         <source>unknown (detection failed)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="340"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="342"/>
         <source>%3/backup-%2-%1</source>
         <comment>Backup filename format</comment>
         <translation>%3-zaloha-%2-%1</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="349"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="375"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="351"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="377"/>
         <source>SkauTan: Unable to write ID3</source>
         <translation>SkauTan: Nelze zapsat ID3 tag</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="350"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="352"/>
         <source>SkauTan cannot create a backup copy of file %1 before writing the ID3 tag. Without creating a backup the ID3 tag cannot be written. Your changes to the ID3 tag were lost.</source>
         <translation>Nepodařilo se vytvořit záložní kopii souboru %1 před zapsáním ID3 tagu. Bez vytvoření zálohy nelze pokračovat v zápisu tagu. Vaše změny ID3 tagu byly ztraceny.</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="376"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="378"/>
         <source>SkauTan detected that the ID3 tag in file %1 is corrupt, changing it damaged the file. The file has been restored from backup, your changes to the ID3 tag were lost.</source>
         <translation>ID3 tag v souboru %1 je poškozen, pokus o jeho změnu poškodil celý soubor. Soubor byl obnoven ze zálohy a vaše změny ID3 tagy byly ztraceny.</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="585"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="621"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="587"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="623"/>
         <source>SkauTan: Remove songs?</source>
         <translation>SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="586"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="588"/>
         <source>Are you sure you want to remove the song %1 from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1623,7 +1628,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="622"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="624"/>
         <source>Are you sure you want to delete the file %1 from the disk? The file will be deleted and all its properties set in the library will be lost.
 
 This operation cannot be undone!</source>

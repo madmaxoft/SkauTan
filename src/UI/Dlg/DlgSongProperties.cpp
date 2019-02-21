@@ -14,6 +14,7 @@
 #include "../../BackgroundTasks.hpp"
 #include "../../LengthHashCalculator.hpp"
 #include "../../TempoDetector.hpp"
+#include "DlgTapTempo.hpp"
 
 
 
@@ -88,6 +89,7 @@ DlgSongProperties::DlgSongProperties(
 	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,             this, &DlgSongProperties::copyId3Tag);
 	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,             this, &DlgSongProperties::copyPid3Tag);
 	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,             this, &DlgSongProperties::copyFilenameTag);
+	connect(m_UI->btnTapTempo,               &QPushButton::clicked,             this, &DlgSongProperties::showTapTempo);
 	connect(td.get(),                        &TempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
 
 	// Set the read-only edit boxes' palette to greyed-out:
@@ -680,6 +682,28 @@ void DlgSongProperties::copyFilenameTag()
 		.arg(m_UI->leFilenameGenre->text())
 		.arg(bpmToCopy(m_UI->leFilenameMeasuresPerMinute->text()))
 	);
+}
+
+
+
+
+
+void DlgSongProperties::showTapTempo()
+{
+	DlgTapTempo dlg(m_Components, m_Song, this);
+	if (dlg.exec() == QDialog::Rejected)
+	{
+		return;
+	}
+	m_TagManual.m_MeasuresPerMinute = m_Song->tagManual().m_MeasuresPerMinute;  // Reload from the saved value
+	if (m_TagManual.m_MeasuresPerMinute.isPresent())
+	{
+		m_UI->leManualMeasuresPerMinute->setText(QLocale::system().toString(m_TagManual.m_MeasuresPerMinute.value()));
+	}
+	else
+	{
+		m_UI->leManualMeasuresPerMinute->clear();
+	}
 }
 
 

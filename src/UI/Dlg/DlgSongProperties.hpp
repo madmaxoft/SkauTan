@@ -149,6 +149,9 @@ private slots:
 	/** Copies to clipboard the Filename-based tag contents. */
 	void copyFilenameTag();
 
+	/** Shows the TapTempo dialog, and if saved, updates the manual tempo. */
+	void showTapTempo();
+
 	/** The specified song has had its detected tempo updated.
 	If this is the shown song, updates the UI to show the tempo. */
 	void songTempoDetected(Song::SharedDataPtr a_SongSD);

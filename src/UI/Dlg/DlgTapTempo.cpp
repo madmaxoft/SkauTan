@@ -112,9 +112,9 @@ void DlgTapTempo::buttonPressed()
 		return;
 	}
 	auto elapsed = m_Timer.restart();
-	if (elapsed > 3000)
+	if (elapsed > 4000)
 	{
-		// Longer than 3 seconds - we assume the user has abandoned the previous attempt and is re-starting
+		// Longer than 4 seconds - we assume the user has abandoned the previous attempt and is re-starting
 		clearTimePoints();
 		return;
 	}
@@ -132,5 +132,5 @@ void DlgTapTempo::saveAndClose()
 		m_Song->setManualMeasuresPerMinute(static_cast<int>(detectMPM() * 10) / 10.0);
 		m_Components.get<Database>()->saveSong(m_Song);
 	}
-	reject();
+	accept();
 }
