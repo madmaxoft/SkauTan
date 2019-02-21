@@ -326,7 +326,8 @@ public:
 
 
 	/** Prepares a lookup-table of beats based on the input calculated beats.
-	Returns a map of beatIndex -> soundLevel for each detected beat. */
+	Returns a map of beatIndex -> soundLevel for each detected beat.
+	Cuts 10 % off the beginning and 10 % off the end of the song, timewise. */
 	std::map<size_t, qint32> prepareBeats(
 		const std::vector<std::pair<size_t, qint32>> & a_Beats,
 		const std::vector<qint32> & a_Levels,
@@ -334,9 +335,15 @@ public:
 	)
 	{
 		std::map<size_t, qint32> res;
+		auto minIdx = static_cast<size_t>(a_Beats.back().first * 0.1);
+		auto maxIdx = static_cast<size_t>(a_Beats.back().first * 0.9);
 		qint32 maxLevel = 0;
 		for (const auto & beat: a_Beats)
 		{
+			if ((beat.first < minIdx) || (beat.first > maxIdx))
+			{
+				continue;
+			}
 			auto level = std::abs(a_Levels[beat.first]);
 			res[beat.first] = level;
 			if (level > maxLevel)
