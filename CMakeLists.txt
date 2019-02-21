@@ -410,6 +410,32 @@ set (HEADERS_BEATDETECTCMD
 
 
 
+
+# TempoDetectCmd
+set (SOURCES_TEMPODETECTCMD
+	src/TempoDetectCmd/Stubs.cpp
+	src/TempoDetectCmd/TempoDetectCmd.cpp
+	src/Audio/AVPP.cpp
+	src/Audio/PlaybackBuffer.cpp
+	src/MetadataScanner.cpp
+	src/Song.cpp
+	src/TempoDetector.cpp
+	src/Stopwatch.cpp
+)
+
+set (HEADERS_TEMPODETECTCMD
+	src/Audio/AVPP.hpp
+	src/Audio/PlaybackBuffer.hpp
+	src/MetadataScanner.hpp
+	src/Song.hpp
+	src/TempoDetector.hpp
+	src/Stopwatch.hpp
+)
+
+
+
+
+
 # Process translations (update, compile):
 set(ts_lst_file "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/ts_lst_file")
 set(lst_file_srcs)
@@ -535,6 +561,50 @@ if (MSVC)
 	)
 else ()
 	target_link_libraries(BeatDetectCmd
+		z
+	)
+endif ()
+
+
+
+
+
+# TempoDetect commandline utility:
+add_executable(TempoDetectCmd
+	${SOURCES_TEMPODETECTCMD}
+	${HEADERS_TEMPODETECTCMD}
+)
+
+target_link_libraries(TempoDetectCmd
+	Qt5::Core
+	Qt5::Multimedia
+
+	# Ffmpeg libraries (assumed installed on the build system):
+	${AVFORMAT}
+	${AVUTIL}
+	${AVCODEC}
+	${SWRESAMPLE}
+
+	# TagLib libraries (assumed installed on the build system):
+	$<$<CONFIG:Debug>:${TAGLIB_DEBUG}>
+	$<$<CONFIG:Release>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:RelWithDebInfo>:${TAGLIB_RELEASE}>
+	$<$<CONFIG:MinSizeRel>:${TAGLIB_RELEASE}>
+)
+
+
+
+
+
+if (MSVC)
+	target_link_libraries(TempoDetectCmd
+		$<$<CONFIG:Debug>:${ZLIB_DEBUG}>
+		$<$<CONFIG:Release>:${ZLIB_RELEASE}>
+		$<$<CONFIG:RelWithDebInfo>:${ZLIB_RELEASE}>
+		$<$<CONFIG:MinSizeRel>:${ZLIB_RELEASE}>
+	)
+else ()
+	target_link_libraries(TempoDetectCmd
 		z
 	)
 endif ()
