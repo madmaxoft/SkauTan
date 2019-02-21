@@ -96,6 +96,13 @@ private:
 	void updateParsedId3();
 
 
+public slots:
+
+	/** Updates the leDetectedMeasuresPerMinute text to reflect the current detected tempo (or lack there-of).
+	Invoked after the TempoDetector detects the tempo. */
+	void updateDetectedMpm();
+
+
 private slots:
 
 	/** Applies all changesets in m_ChageSets and closes the dialog. */

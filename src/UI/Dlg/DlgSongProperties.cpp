@@ -13,6 +13,7 @@
 #include "../../MetadataScanner.hpp"
 #include "../../BackgroundTasks.hpp"
 #include "../../LengthHashCalculator.hpp"
+#include "../../TempoDetectTask.hpp"
 
 
 
@@ -66,6 +67,17 @@ DlgSongProperties::DlgSongProperties(
 		m_UI->actRemoveFromLibrary,
 		m_UI->actDeleteFromDisk,
 	});
+	QString detectedMpm;
+	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	{
+		detectedMpm = tr("%1 (detection in progress)").arg(m_Song->sharedData()->m_DetectedTempo.value());
+	}
+	else
+	{
+		detectedMpm = tr("unknown (detection in progress)");
+	}
+	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
+	TempoDetectTask::enqueue(m_Components, m_Song->sharedData(), [this](){QMetaObject::invokeMethod(this, "updateDetectedMpm");});
 
 	// Connect the signals:
 	connect(m_UI->btnCancel,                 &QPushButton::clicked,           this, &DlgSongProperties::reject);
@@ -93,6 +105,7 @@ DlgSongProperties::DlgSongProperties(
 	p.setColor(QPalette::Inactive, QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
 	m_UI->leHash->setPalette(p);
 	m_UI->leLength->setPalette(p);
+	m_UI->leDetectedMeasuresPerMinute->setPalette(p);
 	m_UI->lePid3Author->setPalette(p);
 	m_UI->lePid3Title->setPalette(p);
 	m_UI->lePid3Genre->setPalette(p);
@@ -297,6 +310,25 @@ void DlgSongProperties::updateParsedId3()
 	{
 		m_UI->lePid3MeasuresPerMinute->clear();
 	}
+}
+
+
+
+
+
+void DlgSongProperties::updateDetectedMpm()
+{
+	QString detectedMpm;
+	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	{
+		const auto loc = QLocale::system();
+		detectedMpm = loc.toString(m_Song->sharedData()->m_DetectedTempo.value());
+	}
+	else
+	{
+		detectedMpm = tr("unknown (detection failed)");
+	}
+	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
 }
 
 

@@ -55,7 +55,11 @@ QString TempoDetectTask::createTaskName(Song::SharedDataPtr a_SongSD)
 
 
 
-void TempoDetectTask::enqueue(ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD)
+void TempoDetectTask::enqueue(
+	ComponentCollection & a_Components,
+	Song::SharedDataPtr a_SongSD,
+	std::function<void(void)> a_CallAfterFinished
+)
 {
 	// Prefer to use a task class, because we're unsure on how exactly C++'s lambda captures work with
 	// references given through function's parameters across threads.
@@ -65,21 +69,32 @@ void TempoDetectTask::enqueue(ComponentCollection & a_Components, Song::SharedDa
 		using Super = BackgroundTasks::Task;
 		ComponentCollection & m_Components;
 		Song::SharedDataPtr m_SongSD;
+		std::function<void(void)> m_CallAfterFinished;
 	public:
-		DTask(const QString & a_TaskName, ComponentCollection & a_Components, Song::SharedDataPtr a_SongSD):
+		DTask(
+			const QString & a_TaskName,
+			ComponentCollection & a_Components,
+			Song::SharedDataPtr a_SongSD,
+			std::function<void(void)> a_CallAfterFinished
+		):
 			Super(a_TaskName),
 			m_Components(a_Components),
-			m_SongSD(a_SongSD)
+			m_SongSD(a_SongSD),
+			m_CallAfterFinished(a_CallAfterFinished)
 		{
 		}
 		virtual void execute() override
 		{
 			TempoDetectTask::detect(m_Components, m_SongSD);
+			if (m_CallAfterFinished != nullptr)
+			{
+				m_CallAfterFinished();
+			}
 		}
 	};
 
 	auto taskName = createTaskName(a_SongSD);
-	BackgroundTasks::get().addTask(std::make_shared<DTask>(taskName, a_Components, a_SongSD));
+	BackgroundTasks::get().addTask(std::make_shared<DTask>(taskName, a_Components, a_SongSD, a_CallAfterFinished));
 }
 
 
