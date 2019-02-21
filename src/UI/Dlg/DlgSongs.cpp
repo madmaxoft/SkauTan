@@ -208,14 +208,15 @@ void DlgSongs::updateSongStats()
 
 void DlgSongs::initFilterSearch()
 {
-	m_UI->cbFilter->addItem(tr("All songs"),                      SongModelFilter::fltNone);
-	m_UI->cbFilter->addItem(tr("Songs without ID3 tag"),          SongModelFilter::fltNoId3);
-	m_UI->cbFilter->addItem(tr("Songs with no genre"),            SongModelFilter::fltNoGenre);
-	m_UI->cbFilter->addItem(tr("Songs with no tempo"),            SongModelFilter::fltNoMeasuresPerMinute);
-	m_UI->cbFilter->addItem(tr("Songs with warnings"),            SongModelFilter::fltWarnings);
-	m_UI->cbFilter->addItem(tr("Songs not matching any filters"), SongModelFilter::fltNoFilterMatch);
-	m_UI->cbFilter->addItem(tr("Songs with duplicates"),          SongModelFilter::fltDuplicates);
-	m_UI->cbFilter->addItem(tr("Songs with skip-start"),          SongModelFilter::fltSkipStart);
+	m_UI->cbFilter->addItem(tr("All songs"),                          SongModelFilter::fltNone);
+	m_UI->cbFilter->addItem(tr("Songs without ID3 tag"),              SongModelFilter::fltNoId3);
+	m_UI->cbFilter->addItem(tr("Songs with no genre"),                SongModelFilter::fltNoGenre);
+	m_UI->cbFilter->addItem(tr("Songs with no tempo"),                SongModelFilter::fltNoMeasuresPerMinute);
+	m_UI->cbFilter->addItem(tr("Songs with warnings"),                SongModelFilter::fltWarnings);
+	m_UI->cbFilter->addItem(tr("Songs not matching any filters"),     SongModelFilter::fltNoFilterMatch);
+	m_UI->cbFilter->addItem(tr("Songs with duplicates"),              SongModelFilter::fltDuplicates);
+	m_UI->cbFilter->addItem(tr("Songs with skip-start"),              SongModelFilter::fltSkipStart);
+	m_UI->cbFilter->addItem(tr("Songs where tempo detection failed"), SongModelFilter::fltFailedTempoDetect);
 
 	// Bind signals / slots:
 	// Cannot bind overloaded signal via fn ptr in older Qt, need to use SIGNAL() / SLOT()
