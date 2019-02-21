@@ -312,7 +312,7 @@ std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & a_Genre)
 
 double Song::adjustMpm(double a_Input, const QString & a_Genre)
 {
-	auto mpmRange = competitionTempoRangeForGenre(a_Genre);
+	auto mpmRange = detectionTempoRangeForGenre(a_Genre);
 	if (mpmRange.first < 0)
 	{
 		// No known competition range, don't adjust anything
@@ -325,8 +325,8 @@ double Song::adjustMpm(double a_Input, const QString & a_Genre)
 		return a_Input;
 	}
 
-	// Half, third or quarter the input, if the result is in range:
-	double divisor[] = {2, 3, 4};
+	// Half, quarter, or third (last) the input, if the result is in range:
+	double divisor[] = {2, 4, 3};
 	for (auto d: divisor)
 	{
 		if ((a_Input >= mpmRange.first * d) && (a_Input <= mpmRange.second * d))
