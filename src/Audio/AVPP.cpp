@@ -577,7 +577,6 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 	}
 	m_AudioOutput = a_PlaybackBuffer;
 	a_PlaybackBuffer->setDuration(static_cast<double>(m_Context->duration) / 1000000);
-	qDebug() << "Audio routing established, stream index is " << m_AudioStreamIdx;
 	return true;
 }
 
@@ -711,7 +710,6 @@ void Format::outputAudioData(AVFrame * a_Frame)
 {
 	if (m_Resampler == nullptr)
 	{
-		qDebug() << "Creating audio resampler...";
 		m_Resampler.reset(Resampler::create(
 			a_Frame->channel_layout,
 			a_Frame->sample_rate,
