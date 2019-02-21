@@ -606,6 +606,7 @@ if (MSVC)
 else ()
 	target_link_libraries(TempoDetectCmd
 		z
+		pthread
 	)
 endif ()
 
