@@ -17,6 +17,35 @@
 
 
 
+/** Returns a vector of TempoDetector Options to be used for detecting in the specified tempo range. */
+static std::vector<TempoDetector::Options> optimalOptions(const std::pair<int, int> & a_TempoRange)
+{
+	TempoDetector::Options opt;
+	opt.m_SampleRate = 500;
+	opt.m_LevelAlgorithm = TempoDetector::laSumDistMinMax;
+	opt.m_MinTempo = a_TempoRange.first;
+	opt.m_MaxTempo = a_TempoRange.second;
+	opt.m_ShouldNormalizeLevels = true;
+	opt.m_NormalizeLevelsWindowSize = 31;
+	opt.m_Stride = 8;
+	opt.m_LocalMaxDistance = 13;
+	std::vector<TempoDetector::Options> opts;
+	for (auto ws: {11, 13, 15, 17, 19})
+	{
+		opt.m_WindowSize = static_cast<size_t>(ws);
+		opts.push_back(opt);
+	}
+	return opts;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Detector:
+
+/** The actual tempo detector. The TempoDetector interface class uses this to detect the tempo. */
 class Detector
 {
 public:
@@ -770,9 +799,8 @@ protected:
 // TempoDetector:
 
 TempoDetector::TempoDetector():
-	m_QueueLength(0)
+	m_ScanQueueLength(0)
 {
-
 }
 
 
@@ -794,13 +822,13 @@ std::shared_ptr<TempoDetector::Result> TempoDetector::scanSong(SongPtr a_Song, c
 void TempoDetector::queueScanSong(SongPtr a_Song, const std::vector<Options> & a_Options)
 {
 	auto options = a_Options;  // Make a copy for the background thread
-	m_QueueLength += 1;
+	m_ScanQueueLength += 1;
 	BackgroundTasks::enqueue(tr("Detect tempo: %1").arg(a_Song->fileName()),
 		[this, a_Song, options]()
 		{
 			Detector d(a_Song, options);
 			auto result = d.process();
-			m_QueueLength -= 1;
+			m_ScanQueueLength -= 1;
 			emit songScanned(a_Song, result);
 		}
 	);
@@ -809,6 +837,87 @@ void TempoDetector::queueScanSong(SongPtr a_Song, const std::vector<Options> & a
 
 
 
+
+QString TempoDetector::createTaskName(Song::SharedDataPtr a_SongSD)
+{
+	assert(a_SongSD != nullptr);
+	auto duplicates = a_SongSD->duplicates();
+	if (duplicates.empty())
+	{
+		return tr("Detect tempo: unknown song");
+	}
+	else
+	{
+		return tr("Detect tempo: %1").arg(duplicates[0]->fileName());
+	}
+}
+
+
+
+
+
+bool TempoDetector::detect(Song::SharedDataPtr a_SongSD)
+{
+	// Prepare the detection options, esp. the tempo range, if genre is known:
+	auto tempoRange = Song::detectionTempoRangeForGenre("unknown");
+	auto duplicates = a_SongSD->duplicates();
+	for (auto s: duplicates)
+	{
+		auto genre = s->primaryGenre();
+		if (genre.isPresent())
+		{
+			tempoRange = Song::detectionTempoRangeForGenre(genre.value());
+			break;
+		}
+	}
+	auto opts = optimalOptions(tempoRange);
+
+	// Detect from the first available duplicate:
+	STOPWATCH("Detect tempo")
+	for (auto s: duplicates)
+	{
+		auto res = scanSong(s->shared_from_this(), opts);
+		if (res == nullptr)
+		{
+			// Reading the audio data failed, try another file (perhaps the file was removed):
+			continue;
+		}
+		if (res->m_Tempo <= 0)
+		{
+			// Tempo detection failed, reading another file won't help
+			break;
+		}
+		qDebug() << "Detected tempo in " << s->fileName() << ": " << res->m_Tempo;
+		a_SongSD->m_DetectedTempo = res->m_Tempo;
+		emit songTempoDetected(a_SongSD);
+		return true;
+	}
+	qWarning() << "Cannot detect tempo in song hash " << a_SongSD->m_Hash << ", none of the files provided data for analysis.";
+	return false;
+}
+
+
+
+
+
+void TempoDetector::queueDetect(Song::SharedDataPtr a_SongSD)
+{
+	assert(a_SongSD != nullptr);
+	BackgroundTasks::enqueue(
+		createTaskName(a_SongSD),
+		[a_SongSD, this]()
+		{
+			detect(a_SongSD);
+		}
+	);
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// TempoDetector::Options:
 
 TempoDetector::Options::Options():
 	m_SampleRate(500),

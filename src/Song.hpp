@@ -215,6 +215,7 @@ public:
 	const Rating &   rating()     const { return m_SharedData->m_Rating; }
 	const DatedOptional<double> skipStart() const;
 	const DatedOptional<QColor> & bgColor() const { return m_SharedData->m_BgColor; }
+	const DatedOptional<double> detectedTempo() const { return m_SharedData->m_DetectedTempo; }
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;

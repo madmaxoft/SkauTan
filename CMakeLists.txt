@@ -243,6 +243,7 @@ set (SOURCES
 
 	# Other sources:
 	src/BackgroundTasks.cpp
+	src/BackgroundTempoDetector.cpp
 	src/ComponentCollection.cpp
 	src/DebugLogger.cpp
 	src/DJControllers.cpp
@@ -260,7 +261,6 @@ set (SOURCES
 	src/Stopwatch.cpp
 	src/Template.cpp
 	src/TempoDetector.cpp
-	src/TempoDetectTask.cpp
 	src/Utils.cpp
 )
 
@@ -321,6 +321,7 @@ set (HEADERS
 
 	# Other headers:
 	src/BackgroundTasks.hpp
+	src/BackgroundTempoDetector.hpp
 	src/ComponentCollection.hpp
 	src/DebugLogger.hpp
 	src/DJControllers.hpp
@@ -340,7 +341,6 @@ set (HEADERS
 	src/Stopwatch.hpp
 	src/Template.hpp
 	src/TempoDetector.hpp
-	src/TempoDetectTask.hpp
 	src/Utils.hpp
 )
 
@@ -395,6 +395,7 @@ set (SOURCES_BEATDETECTCMD
 	src/MetadataScanner.cpp
 	src/Song.cpp
 	src/TempoDetector.cpp
+	src/Stopwatch.cpp
 )
 
 set (HEADERS_BEATDETECTCMD
@@ -403,6 +404,7 @@ set (HEADERS_BEATDETECTCMD
 	src/MetadataScanner.hpp
 	src/Song.hpp
 	src/TempoDetector.hpp
+	src/Stopwatch.hpp
 )
 
 

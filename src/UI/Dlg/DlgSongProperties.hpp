@@ -96,13 +96,6 @@ private:
 	void updateParsedId3();
 
 
-public slots:
-
-	/** Updates the leDetectedMeasuresPerMinute text to reflect the current detected tempo (or lack there-of).
-	Invoked after the TempoDetector detects the tempo. */
-	void updateDetectedMpm();
-
-
 private slots:
 
 	/** Applies all changesets in m_ChageSets and closes the dialog. */
@@ -155,6 +148,10 @@ private slots:
 
 	/** Copies to clipboard the Filename-based tag contents. */
 	void copyFilenameTag();
+
+	/** The specified song has had its detected tempo updated.
+	If this is the shown song, updates the UI to show the tempo. */
+	void songTempoDetected(Song::SharedDataPtr a_SongSD);
 };
 
 

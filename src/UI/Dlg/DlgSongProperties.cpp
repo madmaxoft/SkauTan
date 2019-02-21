@@ -13,7 +13,7 @@
 #include "../../MetadataScanner.hpp"
 #include "../../BackgroundTasks.hpp"
 #include "../../LengthHashCalculator.hpp"
-#include "../../TempoDetectTask.hpp"
+#include "../../TempoDetector.hpp"
 
 
 
@@ -67,37 +67,28 @@ DlgSongProperties::DlgSongProperties(
 		m_UI->actRemoveFromLibrary,
 		m_UI->actDeleteFromDisk,
 	});
-	QString detectedMpm;
-	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
-	{
-		detectedMpm = tr("%1 (detection in progress)").arg(m_Song->sharedData()->m_DetectedTempo.value());
-	}
-	else
-	{
-		detectedMpm = tr("unknown (detection in progress)");
-	}
-	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
-	TempoDetectTask::enqueue(m_Components, m_Song->sharedData(), [this](){QMetaObject::invokeMethod(this, "updateDetectedMpm");});
 
 	// Connect the signals:
-	connect(m_UI->btnCancel,                 &QPushButton::clicked,           this, &DlgSongProperties::reject);
-	connect(m_UI->btnOK,                     &QPushButton::clicked,           this, &DlgSongProperties::applyAndClose);
-	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,          this, &DlgSongProperties::authorTextEdited);
-	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,          this, &DlgSongProperties::titleTextEdited);
-	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,  this, &DlgSongProperties::genreSelected);
-	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,          this, &DlgSongProperties::measuresPerMinuteTextEdited);
-	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,    this, &DlgSongProperties::notesChanged);
-	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged, this, &DlgSongProperties::switchDuplicate);
-	connect(m_UI->leId3Author,               &QLineEdit::textEdited,          this, &DlgSongProperties::id3AuthorEdited);
-	connect(m_UI->leId3Title,                &QLineEdit::textEdited,          this, &DlgSongProperties::id3TitleEdited);
-	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,          this, &DlgSongProperties::id3GenreEdited);
-	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,          this, &DlgSongProperties::id3CommentEdited);
-	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,          this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
-	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,             this, &DlgSongProperties::removeFromLibrary);
-	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,             this, &DlgSongProperties::deleteFromDisk);
-	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,           this, &DlgSongProperties::copyId3Tag);
-	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,           this, &DlgSongProperties::copyPid3Tag);
-	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,           this, &DlgSongProperties::copyFilenameTag);
+	auto td = m_Components.get<TempoDetector>();
+	connect(m_UI->btnCancel,                 &QPushButton::clicked,             this, &DlgSongProperties::reject);
+	connect(m_UI->btnOK,                     &QPushButton::clicked,             this, &DlgSongProperties::applyAndClose);
+	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,            this, &DlgSongProperties::authorTextEdited);
+	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,            this, &DlgSongProperties::titleTextEdited);
+	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,    this, &DlgSongProperties::genreSelected);
+	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,            this, &DlgSongProperties::measuresPerMinuteTextEdited);
+	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,      this, &DlgSongProperties::notesChanged);
+	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged,   this, &DlgSongProperties::switchDuplicate);
+	connect(m_UI->leId3Author,               &QLineEdit::textEdited,            this, &DlgSongProperties::id3AuthorEdited);
+	connect(m_UI->leId3Title,                &QLineEdit::textEdited,            this, &DlgSongProperties::id3TitleEdited);
+	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,            this, &DlgSongProperties::id3GenreEdited);
+	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,            this, &DlgSongProperties::id3CommentEdited);
+	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,            this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
+	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,               this, &DlgSongProperties::removeFromLibrary);
+	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,               this, &DlgSongProperties::deleteFromDisk);
+	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,             this, &DlgSongProperties::copyId3Tag);
+	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,             this, &DlgSongProperties::copyPid3Tag);
+	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,             this, &DlgSongProperties::copyFilenameTag);
+	connect(td.get(),                        &TempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -127,6 +118,16 @@ DlgSongProperties::DlgSongProperties(
 			.arg(QString::number(numSeconds % 60), 2, '0')
 		);
 	}
+	QString detectedMpm;
+	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	{
+		detectedMpm = tr("%1 (detection in progress)").arg(m_Song->sharedData()->m_DetectedTempo.value());
+	}
+	else
+	{
+		detectedMpm = tr("unknown (detection in progress)");
+	}
+	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
 	m_UI->leManualAuthor->setText(m_TagManual.m_Author.valueOrDefault());
 	m_UI->leManualTitle->setText(m_TagManual.m_Title.valueOrDefault());
 	m_UI->cbManualGenre->setCurrentText(m_TagManual.m_Genre.valueOrDefault());
@@ -142,6 +143,7 @@ DlgSongProperties::DlgSongProperties(
 	m_IsInternalChange = false;
 	fillDuplicates();
 	selectSong(*m_Song);
+	m_Components.get<TempoDetector>()->queueDetect(m_Song->sharedData());
 }
 
 
@@ -310,25 +312,6 @@ void DlgSongProperties::updateParsedId3()
 	{
 		m_UI->lePid3MeasuresPerMinute->clear();
 	}
-}
-
-
-
-
-
-void DlgSongProperties::updateDetectedMpm()
-{
-	QString detectedMpm;
-	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
-	{
-		const auto loc = QLocale::system();
-		detectedMpm = loc.toString(m_Song->sharedData()->m_DetectedTempo.value());
-	}
-	else
-	{
-		detectedMpm = tr("unknown (detection failed)");
-	}
-	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
 }
 
 
@@ -697,4 +680,28 @@ void DlgSongProperties::copyFilenameTag()
 		.arg(m_UI->leFilenameGenre->text())
 		.arg(bpmToCopy(m_UI->leFilenameMeasuresPerMinute->text()))
 	);
+}
+
+
+
+
+
+void DlgSongProperties::songTempoDetected(Song::SharedDataPtr a_SongSD)
+{
+	if (a_SongSD != m_Song->sharedData())
+	{
+		return;
+	}
+
+	QString detectedMpm;
+	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	{
+		const auto loc = QLocale::system();
+		detectedMpm = loc.toString(m_Song->sharedData()->m_DetectedTempo.value());
+	}
+	else
+	{
+		detectedMpm = tr("unknown (detection failed)");
+	}
+	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
 }
