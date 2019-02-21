@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>517</width>
-    <height>334</height>
+    <height>363</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,6 +78,13 @@
      </property>
      <property name="checked">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chbDetectedTempo">
+     <property name="text">
+      <string>Detected tempo</string>
      </property>
     </widget>
    </item>

@@ -19,6 +19,7 @@ public:
 	struct Options
 	{
 		bool m_ShouldImportManualTag;
+		bool m_ShouldImportDetectedTempo;
 		bool m_ShouldImportLastPlayedDate;
 		bool m_ShouldImportLocalRating;
 		bool m_ShouldImportCommunityRating;
@@ -47,6 +48,7 @@ private:
 
 
 	void importManualTag();
+	void importDetectedTempo();
 	void importLastPlayedDate();
 	void importLocalRating();
 	void importCommunityRating();

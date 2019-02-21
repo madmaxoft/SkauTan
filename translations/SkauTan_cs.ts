@@ -878,56 +878,61 @@ Tato operace je nevratná!</translation>
     </message>
     <message>
         <location filename="../src/UI/Dlg/DlgImportDB.ui" line="87"/>
+        <source>Detected tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="94"/>
         <source>Last played date</source>
         <translation>Datum posledního přehrání</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="97"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="104"/>
         <source>Complete playback history</source>
         <translation>Kompletní historie přehrávání</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="104"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="111"/>
         <source>Local rating</source>
         <translation>Lokální hodnocení</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="111"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="118"/>
         <source>Community rating</source>
         <translation>Komunitní hodnocení</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="118"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="125"/>
         <source>Skip-start</source>
         <translation>Nastavení skladeb &quot;Přeskočit&quot;</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="128"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="135"/>
         <source>Song deletion history</source>
         <translation>Historie smazaných skladeb</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="138"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="145"/>
         <source>Song colors</source>
         <translation>Barvy skladeb</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="176"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="183"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Storno</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="186"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.ui" line="193"/>
         <source>&amp;Import</source>
         <translation>&amp;Importovat</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="79"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="82"/>
         <source>SkauTan: Import data from DB</source>
         <translation>SkauTan: Importovat data</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="81"/>
+        <location filename="../src/UI/Dlg/DlgImportDB.cpp" line="84"/>
         <source>SkauTan Database (*.sqlite)</source>
         <translation>Databáze SkauTan (*.sqlite)</translation>
     </message>
