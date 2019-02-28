@@ -548,8 +548,13 @@ void Player::jumpTo(int a_ItemIdx)
 			fadeOut(psFadeOutToTrack);
 			break;
 		}
-		case psStopped:
 		case psPaused:
+		{
+			m_State = psStopped;
+			startPlayback();
+			break;
+		}
+		case psStopped:
 		{
 			startPlayback();
 			break;
