@@ -184,22 +184,22 @@
         <translation>Režim playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="226"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="235"/>
         <source>Currently playing: %1</source>
         <translation>Zrovna přehráváno: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="746"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="755"/>
         <source>SkauTan: Remove song?</source>
         <translation>SkauTan: Odebrat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="792"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="801"/>
         <source>SkauTan: Delete song?</source>
         <translation>SkauTan: Vymazat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="747"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="756"/>
         <source>Are you sure you want to remove the selected song from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -208,7 +208,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="793"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="802"/>
         <source>Are you sure you want to delete the selected song from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>

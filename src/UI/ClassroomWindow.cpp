@@ -45,6 +45,15 @@ static QString songDisplayText(const Song & a_Song)
 		auto mpmVal = std::floor(mpm.value() + 0.5);
 		res.prepend(QString("[%1] ").arg(mpmVal));
 	}
+	else
+	{
+		const auto & detectedTempo = a_Song.detectedTempo();
+		if (detectedTempo.isPresent())
+		{
+			auto mpmVal = std::floor(detectedTempo.value() + 0.5);
+			res.prepend(QString("[%1] ").arg(mpmVal));
+		}
+	}
 	return res;
 }
 
