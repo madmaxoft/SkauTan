@@ -20,7 +20,7 @@ BackgroundTasks::BackgroundTasks()
 		auto executorPtr = executor.get();
 		executor->setObjectName(QString("BackgroundTasks::Executor::%1").arg(i));
 		m_Executors.push_back(std::move(executor));
-		executorPtr->start();
+		executorPtr->start(QThread::LowestPriority);
 	}
 }
 
