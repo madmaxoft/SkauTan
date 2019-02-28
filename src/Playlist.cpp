@@ -282,7 +282,6 @@ void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
 	m_Items.insert(m_Items.begin() + a_Index, a_Item);
 	if (a_Index <= m_CurrentItemIdx)
 	{
-		qDebug() << "Inserting item in front of current, adjusting current";
 		m_CurrentItemIdx += 1;
 	}
 	emit itemInserted(a_Index, a_Item.get());
