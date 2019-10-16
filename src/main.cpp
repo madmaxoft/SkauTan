@@ -16,7 +16,7 @@
 #include "PlaylistItemSong.hpp"
 #include "Template.hpp"
 #include "Settings.hpp"
-#include "TempoDetector.hpp"
+#include "SongTempoDetector.hpp"
 #include "Utils.hpp"
 #include "DJControllers.hpp"
 #include "LocalVoteServer.hpp"

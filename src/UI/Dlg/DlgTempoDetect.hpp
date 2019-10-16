@@ -9,7 +9,7 @@
 #include <vector>
 #include <QDialog>
 #include "../../Song.hpp"
-#include "../../TempoDetector.hpp"
+#include "../../SongTempoDetector.hpp"
 
 
 
@@ -65,7 +65,7 @@ private:
 	int m_TempoDetectDelay;
 
 	/** The tempo detector instance on which to run the detections. */
-	std::unique_ptr<TempoDetector> m_Detector;
+	std::unique_ptr<SongTempoDetector> m_Detector;
 
 	/** The "Detection in progress" label shown over the result list. */
 	std::unique_ptr<QLabel> m_ProgressLabel;
@@ -75,10 +75,10 @@ private:
 	void initOptionsUi();
 
 	/** Updates the UI to match the specified options. */
-	void selectOptions(const TempoDetector::Options & a_Options);
+	void selectOptions(const SongTempoDetector::Options & a_Options);
 
 	/** Reads the UI settings and returns an Options object initialized by those settings. */
-	TempoDetector::Options readOptionsFromUi();
+	SongTempoDetector::Options readOptionsFromUi();
 
 	/** Fills the result into the UI and stores it in History (updates if present). */
 	void fillInResults(const TempoDetector::Result & a_Results);

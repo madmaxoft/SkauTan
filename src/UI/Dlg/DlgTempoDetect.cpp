@@ -51,7 +51,7 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	m_Components(a_Components),
 	m_Song(a_Song),
 	m_TempoDetectDelay(0),
-	m_Detector(new TempoDetector)
+	m_Detector(new SongTempoDetector)
 {
 	// Init the UI:
 	m_UI->setupUi(this);
@@ -76,7 +76,7 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	connect(m_UI->lwStride,           &QListWidget::currentRowChanged, this, &DlgTempoDetect::detectTempo);
 	connect(m_UI->btnSaveDebugBeats,  &QPushButton::pressed,           this, &DlgTempoDetect::saveDebugBeats);
 	connect(m_UI->btnSaveDebugLevels, &QPushButton::pressed,           this, &DlgTempoDetect::saveDebugLevels);
-	connect(m_Detector.get(),         &TempoDetector::songScanned,     this, &DlgTempoDetect::songScanned);
+	connect(m_Detector.get(),         &SongTempoDetector::songScanned, this, &DlgTempoDetect::songScanned);
 
 	// Start the timer for delayed tempo detection:
 	auto timer = new QTimer(this);
@@ -95,7 +95,7 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	timer->start(50);
 
 	// Fill in the default options:
-	selectOptions(TempoDetector::Options());
+	selectOptions(SongTempoDetector::Options());
 
 	// Fill in the song details:
 	auto info = m_Song->tagId3().m_Author.valueOrDefault();
@@ -160,24 +160,24 @@ void DlgTempoDetect::initOptionsUi()
 	(new QListWidgetItem("8192", m_UI->lwStride))->setData(Qt::UserRole, 8192);
 
 	// Select the defaults:
-	selectOptions(TempoDetector::Options());
+	selectOptions(SongTempoDetector::Options());
 }
 
 
 
 
 
-void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
+void DlgTempoDetect::selectOptions(const SongTempoDetector::Options & a_Options)
 {
 	m_IsInternalChange = true;
-	Utils::selectItemWithData(m_UI->lwLevelAlgorithm, a_Options.m_LevelAlgorithm);
-	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.m_WindowSize));
-	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.m_Stride));
-	m_UI->leLevelPeak->setText(       QString::number(a_Options.m_LevelPeak));
-	m_UI->leHistogramCutoff->setText( QString::number(a_Options.m_HistogramCutoff));
-	m_UI->leFoldHistogramMin->setText(QString::number(a_Options.m_HistogramFoldMin));
-	m_UI->leFoldHistogramMax->setText(QString::number(a_Options.m_HistogramFoldMax));
-	m_UI->chbFoldHistogram->setChecked(a_Options.m_ShouldFoldHistogram);
+	Utils::selectItemWithData(m_UI->lwLevelAlgorithm, a_Options.mLevelAlgorithm);
+	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.mWindowSize));
+	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.mStride));
+	m_UI->leLevelPeak->setText(       QString::number(a_Options.mLevelPeak));
+	m_UI->leHistogramCutoff->setText( QString::number(a_Options.mHistogramCutoff));
+	m_UI->leFoldHistogramMin->setText(QString::number(a_Options.mHistogramFoldMin));
+	m_UI->leFoldHistogramMax->setText(QString::number(a_Options.mHistogramFoldMax));
+	m_UI->chbFoldHistogram->setChecked(a_Options.mShouldFoldHistogram);
 	m_IsInternalChange = false;
 }
 
@@ -185,19 +185,19 @@ void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
 
 
 
-TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
+SongTempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 {
-	TempoDetector::Options options;
-	options.m_LevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(m_UI->lwLevelAlgorithm->currentItem()->data(Qt::UserRole).toInt());
-	options.m_WindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
-	options.m_Stride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
-	options.m_LevelPeak = static_cast<size_t>(m_UI->leLevelPeak->text().toLongLong());
-	options.m_HistogramCutoff = static_cast<size_t>(m_UI->leHistogramCutoff->text().toLongLong());
-	options.m_ShouldFoldHistogram = m_UI->chbFoldHistogram->isChecked();
-	if (options.m_ShouldFoldHistogram)
+	SongTempoDetector::Options options;
+	options.mLevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(m_UI->lwLevelAlgorithm->currentItem()->data(Qt::UserRole).toInt());
+	options.mWindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
+	options.mStride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
+	options.mLevelPeak = static_cast<size_t>(m_UI->leLevelPeak->text().toLongLong());
+	options.mHistogramCutoff = static_cast<size_t>(m_UI->leHistogramCutoff->text().toLongLong());
+	options.mShouldFoldHistogram = m_UI->chbFoldHistogram->isChecked();
+	if (options.mShouldFoldHistogram)
 	{
-		options.m_HistogramFoldMin = m_UI->leFoldHistogramMin->text().toInt();
-		options.m_HistogramFoldMax = m_UI->leFoldHistogramMax->text().toInt();
+		options.mHistogramFoldMin = m_UI->leFoldHistogramMin->text().toInt();
+		options.mHistogramFoldMax = m_UI->leFoldHistogramMax->text().toInt();
 	}
 	return options;
 }
@@ -210,7 +210,7 @@ void DlgTempoDetect::fillInResults(const TempoDetector::Result & a_Results)
 {
 	m_UI->twDetectedResults->clearContents();
 	int row = 0;
-	for (const auto & c: a_Results.m_Confidences)
+	for (const auto & c: a_Results.mConfidences)
 	{
 		m_UI->twDetectedResults->setItem(row, 0, new QTableWidgetItem(QString::number(c.first)));
 		m_UI->twDetectedResults->setItem(row, 1, new QTableWidgetItem(QString::number(c.second)));
@@ -225,19 +225,19 @@ void DlgTempoDetect::fillInResults(const TempoDetector::Result & a_Results)
 void DlgTempoDetect::updateHistoryRow(int a_Row)
 {
 	const auto & res = m_History[static_cast<size_t>(a_Row)];
-	const auto & opt = res->m_Options;
-	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.m_LevelAlgorithm)));
-	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.m_WindowSize)));
-	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.m_Stride)));
-	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
-	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.m_LevelPeak)));
-	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.m_HistogramCutoff)));
-	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(opt.m_ShouldFoldHistogram ? QString::number(opt.m_HistogramFoldMin) : QString()));
-	m_UI->twDetectionHistory->setItem(a_Row, 7,  new QTableWidgetItem(opt.m_ShouldFoldHistogram ? QString::number(opt.m_HistogramFoldMax) : QString()));
-	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->m_Tempo)));
+	const auto & opt = res->mOptions;
+	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.mLevelAlgorithm)));
+	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.mWindowSize)));
+	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.mStride)));
+	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.mLevelPeak)));
+	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.mLevelPeak)));
+	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.mHistogramCutoff)));
+	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(opt.mShouldFoldHistogram ? QString::number(opt.mHistogramFoldMin) : QString()));
+	m_UI->twDetectionHistory->setItem(a_Row, 7,  new QTableWidgetItem(opt.mShouldFoldHistogram ? QString::number(opt.mHistogramFoldMax) : QString()));
+	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->mTempo)));
 	if (m_Song->primaryGenre().isPresent())
 	{
-		auto mpm = Song::adjustMpm(res->m_Tempo, m_Song->primaryGenre().valueOrDefault());
+		auto mpm = Song::adjustMpm(res->mTempo, m_Song->primaryGenre().valueOrDefault());
 		m_UI->twDetectionHistory->setItem(a_Row, 9,  new QTableWidgetItem(QString::number(mpm, 'f', 1)));
 		auto btn = new QPushButton(tr("Use"));
 		m_UI->twDetectionHistory->setCellWidget(a_Row, 10, btn);
@@ -249,10 +249,10 @@ void DlgTempoDetect::updateHistoryRow(int a_Row)
 			}
 		);
 	}
-	m_UI->twDetectionHistory->setItem(a_Row, 11, new QTableWidgetItem(QString::number(res->m_Confidence)));
-	if ((res->m_Confidences.size() > 1) && (res->m_Confidences[0].second > 0))
+	m_UI->twDetectionHistory->setItem(a_Row, 11, new QTableWidgetItem(QString::number(res->mConfidence)));
+	if ((res->mConfidences.size() > 1) && (res->mConfidences[0].second > 0))
 	{
-		auto confRel = static_cast<int>(100 * res->m_Confidences[1].second / res->m_Confidences[0].second);
+		auto confRel = static_cast<int>(100 * res->mConfidences[1].second / res->mConfidences[0].second);
 		m_UI->twDetectionHistory->setItem(a_Row, 12, new QTableWidgetItem(QString::number(confRel)));
 	}
 	m_UI->twDetectionHistory->resizeRowToContents(a_Row);
@@ -276,7 +276,7 @@ void DlgTempoDetect::detectTempo()
 	auto options = readOptionsFromUi();
 	for (const auto & h: m_History)
 	{
-		if (h->m_Options == options)
+		if (h->mOptions == options)
 		{
 			// This set of options has already been calculated, use cached results:
 			fillInResults(*h);
@@ -301,9 +301,9 @@ void DlgTempoDetect::songScanned(SongPtr a_Song, TempoDetector::ResultPtr a_Resu
 
 	// Display the results:
 	m_UI->twDetectedResults->clearContents();
-	m_UI->twDetectedResults->setRowCount(static_cast<int>(a_Result->m_Confidences.size()));
+	m_UI->twDetectedResults->setRowCount(static_cast<int>(a_Result->mConfidences.size()));
 	int row = 0;
-	for (const auto & c: a_Result->m_Confidences)
+	for (const auto & c: a_Result->mConfidences)
 	{
 		m_UI->twDetectedResults->setItem(row, 0, new QTableWidgetItem(QString::number(c.first)));
 		m_UI->twDetectedResults->setItem(row, 1, new QTableWidgetItem(QString::number(c.second)));
@@ -336,7 +336,7 @@ void DlgTempoDetect::saveDebugBeats()
 		return;
 	}
 	auto options = readOptionsFromUi();
-	options.m_DebugAudioBeatsFileName = fileName;
+	options.mDebugAudioBeatsFileName = fileName;
 	m_Detector->queueScanSong(m_Song, options);
 }
 
@@ -357,7 +357,7 @@ void DlgTempoDetect::saveDebugLevels()
 		return;
 	}
 	auto options = readOptionsFromUi();
-	options.m_DebugAudioLevelsFileName = fileName;
+	options.mDebugAudioLevelsFileName = fileName;
 	m_Detector->queueScanSong(m_Song, options);
 }
 

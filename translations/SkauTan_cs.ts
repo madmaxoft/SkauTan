@@ -3345,6 +3345,14 @@ Poslední změna: %2</translation>
     </message>
 </context>
 <context>
+    <name>SongTempoDetector</name>
+    <message>
+        <location filename="../src/SongTempoDetector.cpp" line="178"/>
+        <source>Detect tempo: %1</source>
+        <translation type="unfinished">Detekce tempa: %1</translation>
+    </message>
+</context>
+<context>
     <name>TagImportExport</name>
     <message>
         <location filename="../src/DB/TagImportExport.cpp" line="91"/>
@@ -3628,9 +3636,8 @@ Poslední změna: %2</translation>
 <context>
     <name>TempoDetector</name>
     <message>
-        <location filename="../src/TempoDetector.cpp" line="753"/>
         <source>Detect tempo: %1</source>
-        <translation>Detekce tempa: %1</translation>
+        <translation type="vanished">Detekce tempa: %1</translation>
     </message>
 </context>
 <context>

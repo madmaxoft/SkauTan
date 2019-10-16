@@ -1,36 +1,29 @@
-#ifndef TEMPODETECTOR_H
-#define TEMPODETECTOR_H
-
-
-
+#pragma once
 
 #include <memory>
+#include <vector>
+#include <map>
 #include <atomic>
-#include <QObject>
+#include <string>
 
 
 
 
 
-// fwd:
-class Song;
-using SongPtr = std::shared_ptr<Song>;
+using Int16 = int16_t;
+using Int32 = int32_t;
+using UInt32 = uint32_t;
 
 
 
 
 
 /** Implements the tempo detection using several different algorithms.
-Songs can be scanned synchronously or asynchronously using BackgroundTasks.
 The scan finishes with a Result object that contains the calculated values, it is up to the caller to
-process the results and potentially set them into the song metadata, display to the user etc. */
-class TempoDetector:
-	public QObject
+process the results and potentially set them into the song metadata, display to the user etc.
+This is a reusable class that has no dependencies on external libs (Qt, LibAV etc). */
+class TempoDetector
 {
-	Q_OBJECT
-	using Super = QObject;
-
-
 public:
 
 
@@ -48,61 +41,50 @@ public:
 	/** Holds the options for the detection. */
 	struct Options
 	{
-		/** The sample rate to which the song is converted before detecting. */
-		int m_SampleRate;
+		/** The sample rate at which the samples are delivered.
+		Used mainly to limit BPM to reasonable values. */
+		int mSampleRate;
 
 		/** The algorithm to use for detecting loudness levels in the audio. */
-		ELevelAlgorithm m_LevelAlgorithm;
+		ELevelAlgorithm mLevelAlgorithm;
 
-		/** The length of audio data to process for one levels sample. */
-		size_t m_WindowSize;
+		/** The number of samples to process for one levels sample. */
+		size_t mWindowSize;
 
 		/** The distance between successive levels, in samples. */
-		size_t m_Stride;
+		size_t mStride;
 
 		/** The number of levels to check before and after current level to filter out non-peak levels. */
-		size_t m_LevelPeak;
+		size_t mLevelPeak;
 
 		/** Number of histogram entries that are used for the confidence calculation. */
-		size_t m_HistogramCutoff;
+		size_t mHistogramCutoff;
 
 		/** If set to true, the histogram is folded before calculating confidences.
-		Tempos lower than m_HistogramFoldMin are dropped.
-		Tempos higher than m_HistogramFoldMax are halved until they are lower, then half their count is added. */
-		bool m_ShouldFoldHistogram;
+		Tempos lower than mHistogramFoldMin are dropped.
+		Tempos higher than mHistogramFoldMax are halved until they are lower, then half their count is added. */
+		bool mShouldFoldHistogram;
 
 		/** The minimum tempo to keep when folding the histogram.
 		Tempos lower than this are dropped from the histogram. */
-		int m_HistogramFoldMin;
+		int mHistogramFoldMin;
 
 		/** The maximum tempo to keep when folding the histogram.
 		Tempos higher than this are halved until they are lower, then half their count is added. */
-		int m_HistogramFoldMax;
+		int mHistogramFoldMax;
 
-		/** If true, the levels are normalized across m_NormalizeLevelsWindowSize elements. */
-		bool m_ShouldNormalizeLevels;
+		/** If true, the levels are normalized across mNormalizeLevelsWindowSize elements. */
+		bool mShouldNormalizeLevels;
 
-		/** Number of neighboring levels to normalize against when m_ShouldNormalizeLevels is true. */
-		size_t m_NormalizeLevelsWindowSize;
-
-		/** Name of file to store the audio levels for debugging purposes.
-		Creates a 16-bit int stereo RAW file,
-		left channel contains the original audiodata, right channel contains level values.
-		If empty, no debug file is created. */
-		QString m_DebugAudioLevelsFileName;
-
-		/** Name of file to store the audio beats for debugging purposes.
-		Creates a 16-bit int stereo RAW file,
-		left channel contains the original audiodata, right channel contains a "ping" for each detected beat.
-		If empty, no debug file is created. */
-		QString m_DebugAudioBeatsFileName;
+		/** Number of neighboring levels to normalize against when mShouldNormalizeLevels is true. */
+		size_t mNormalizeLevelsWindowSize;
 
 		Options(const Options &) = default;
 		Options(Options &&) = default;
 		Options();
 
 		bool operator < (const Options & a_Other);
-		bool operator ==(const Options & a_Other);
+		bool operator == (const Options & a_Other);
 		Options & operator = (const Options & a_Other) = default;
 	};
 
@@ -112,59 +94,33 @@ public:
 	struct Result
 	{
 		/** The options used to calculate this result. */
-		Options m_Options;
+		Options mOptions;
 
 		/** The detected tempo. */
-		int m_Tempo;
+		int mTempo;
 
 		/** The confidence of the detection. Ranges from 0 to 100, higher means more confident. */
-		int m_Confidence;
+		int mConfidence;
 
 		/** A confidence-desc-sorted vector of tempo -> confidence.
-		The first item corresponds to m_Tempo, m_Confidence. */
-		std::vector<std::pair<int, int>> m_Confidences;
+		The first item corresponds to mTempo, mConfidence. */
+		std::vector<std::pair<int, int>> mConfidences;
 
 		/** The raw histogram of tempo -> number of occurences. */
-		std::map<int, size_t> m_Histogram;
+		std::map<int, size_t> mHistogram;
 
-		/** A sorted vector of beat indices into m_Levels and their weight. */
-		std::vector<std::pair<size_t, qint32>> m_Beats;
+		/** A sorted vector of beat indices into mLevels and their weight. */
+		std::vector<std::pair<size_t, Int32>> mBeats;
 
 		/** A vector of all levels calculated for the audio. */
-		std::vector<qint32> m_Levels;
+		std::vector<Int32> mLevels;
 	};
 
 	using ResultPtr = std::shared_ptr<Result>;
 
 
-	TempoDetector();
-
-	/** Returns the number of songs that are queued for scanning. */
-	int queueLength() { return m_QueueLength.load(); }
-
-	/** Scans the specified song synchronously. */
-	std::shared_ptr<Result> scanSong(SongPtr a_Song, const Options & a_Options = Options());
-
-	/** Queues the specified song for scanning in a background task.
-	Once the song is scanned, the songScanned() signal is emitted. */
-	void queueScanSong(SongPtr a_Song, const Options & a_Options = Options());
-
-
-protected:
-
-	/** The number of songs that are queued for scanning. */
-	std::atomic<int> m_QueueLength;
-
-
-signals:
-
-	/** Emitted after a song has been scanned. */
-	void songScanned(SongPtr a_Song, TempoDetector::ResultPtr a_Result);
+	/** Scans the specified sound data and returns the analysis result.
+	The aSamples is a pointer to a contiguous array of mono 16-bit signed samples at 500Hz samplerate.
+	aNumSamples is the number of samples to read from a_Samples. */
+	static ResultPtr scan(const Int16 * aSamples, size_t aNumSamples, const Options & aOptions = Options());
 };
-
-Q_DECLARE_METATYPE(TempoDetector::ResultPtr);
-
-
-
-
-#endif // TEMPODETECTOR_H
