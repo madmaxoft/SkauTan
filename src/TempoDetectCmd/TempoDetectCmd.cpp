@@ -2,9 +2,10 @@
 #include <thread>
 #include <vector>
 #include <string>
+#include <mutex>
 #include <QString>
 #include <QFile>
-#include "../TempoDetector.hpp"
+#include "../SongTempoDetector.hpp"
 #include "../Song.hpp"
 #include "../MetadataScanner.hpp"
 
@@ -39,7 +40,7 @@ Settable through the "-i" cmdline param. */
 static bool g_ShouldIncludeID3 = false;
 
 /** The global instance of the tempo detector. */
-static TempoDetector g_TempoDetector;
+static SongTempoDetector g_TempoDetector;
 
 /** FileNames to process.
 After a filename is sent to processing, it is removed from this vector.

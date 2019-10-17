@@ -2,7 +2,7 @@
 #include <cassert>
 #include "ComponentCollection.hpp"
 #include "DB/Database.hpp"
-#include "TempoDetector.hpp"
+#include "SongTempoDetector.hpp"
 #include "Stopwatch.hpp"
 
 
@@ -106,8 +106,8 @@ void BackgroundTempoDetector::enqueueAnother()
 		return;
 	}
 	m_IsRunning = true;
-	auto taskName = TempoDetector::createTaskName(sd);
-	auto td = m_Components.get<TempoDetector>();
+	auto taskName = SongTempoDetector::createTaskName(sd);
+	auto td = m_Components.get<SongTempoDetector>();
 	BackgroundTasks::get().enqueue(taskName, [this, sd, td]()
 		{
 			if (!td->detect(sd))

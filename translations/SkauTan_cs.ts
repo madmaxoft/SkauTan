@@ -3401,6 +3401,20 @@ Poslední změna: %2</translation>
     </message>
 </context>
 <context>
+    <name>SongTempoDetector</name>
+    <message>
+        <location filename="../src/SongTempoDetector.cpp" line="219"/>
+        <location filename="../src/SongTempoDetector.cpp" line="242"/>
+        <source>Detect tempo: %1</source>
+        <translation type="unfinished">Detekce tempa: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/SongTempoDetector.cpp" line="238"/>
+        <source>Detect tempo: unknown song</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TagImportExport</name>
     <message>
         <location filename="../src/DB/TagImportExport.cpp" line="91"/>
@@ -3679,20 +3693,6 @@ Poslední změna: %2</translation>
         <source>&lt;=</source>
         <comment>Comparison</comment>
         <translation type="vanished">&lt;=</translation>
-    </message>
-</context>
-<context>
-    <name>TempoDetector</name>
-    <message>
-        <location filename="../src/TempoDetector.cpp" line="833"/>
-        <location filename="../src/TempoDetector.cpp" line="858"/>
-        <source>Detect tempo: %1</source>
-        <translation>Detekce tempa: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/TempoDetector.cpp" line="854"/>
-        <source>Detect tempo: unknown song</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

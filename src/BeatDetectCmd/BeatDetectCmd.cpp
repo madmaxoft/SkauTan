@@ -1,7 +1,7 @@
 #include <iostream>
 #include <QString>
 #include <QFile>
-#include "../TempoDetector.hpp"
+#include "../SongTempoDetector.hpp"
 #include "../Song.hpp"
 #include "../MetadataScanner.hpp"
 
@@ -103,7 +103,7 @@ static void outputId3Tag(const QString & a_FileName)
 
 
 
-void processFile(const QString & a_FileName, const TempoDetector::Options & a_Options)
+void processFile(const QString & a_FileName, const SongTempoDetector::Options & a_Options)
 {
 	if (!QFile::exists(a_FileName))
 	{
@@ -115,35 +115,35 @@ void processFile(const QString & a_FileName, const TempoDetector::Options & a_Op
 	cerr << "Detecting..." << endl;
 	auto sd = std::make_shared<Song::SharedData>(QByteArray(), 0);  // Dummy SharedData
 	SongPtr song = std::make_shared<Song>(a_FileName, sd);
-	TempoDetector td;
+	SongTempoDetector td;
 	auto res = td.scanSong(song, {a_Options});
 
 	cerr << "-----------------------------------------------" << endl;;
 	cerr << "Detected data for " << a_FileName.toStdString() << ":" << endl;
-	cerr << "Total number of beats: " << res->m_Beats.size() << endl;
-	cerr << "Detected tempo: " << res->m_Tempo << endl;
-	cerr << "Confidence: " << res->m_Confidence << endl;
+	cerr << "Total number of beats: " << res->mBeats.size() << endl;
+	cerr << "Detected tempo: " << res->mTempo << endl;
+	cerr << "Confidence: " << res->mConfidence << endl;
 
 	// Output the results to stdout as a Lua source, so that it can be consumed by a script:
 	cout << "return" << endl << "{" << endl;
 	cout << "\tfileName = \"" << luaEscapeString(a_FileName) << "\"," << endl;
 	cout << "\tbeats =" << endl;
 	cout << "\t{" << endl;
-	const auto & levels = res->m_Levels;
-	for (const auto & b: res->m_Beats)
+	const auto & levels = res->mLevels;
+	for (const auto & b: res->mBeats)
 	{
 		cout << "\t\t{ " << b.first << ", " << levels[b.first] << ", " << b.second << "}," << endl;
 	}
 	cout << "\t}," << endl;
 	cout << "\tsoundLevels =" << endl;
 	cout << "\t{" << endl;
-	for (const auto lev: res->m_Levels)
+	for (const auto lev: res->mLevels)
 	{
 		cout << "\t\t" << lev << "," << endl;
 	}
 	cout << "\t}," << endl;
-	cout << "\ttempo = " << res->m_Tempo << "," << endl;
-	cout << "\tconfidence = " << res->m_Confidence << "," << endl;
+	cout << "\ttempo = " << res->mTempo << "," << endl;
+	cout << "\tconfidence = " << res->mConfidence << "," << endl;
 	if (g_ShouldIncludeID3)
 	{
 		outputId3Tag(song->fileName());
@@ -167,18 +167,18 @@ void printUsage()
 	cerr << "BeatDetectCmd [options] [filename]" << endl;
 	cerr << endl;
 	cerr << "Available options:" << endl;
-	cerr << "  -a <N>          ... Use sound-level algorithm N (default: " << defaultOptions.m_LevelAlgorithm << ")" << endl;
+	cerr << "  -a <N>          ... Use sound-level algorithm N (default: " << defaultOptions.mLevelAlgorithm << ")" << endl;
 	cerr << "                        0: SumDist" << endl;
 	cerr << "                        1: MinMax" << endl;
 	cerr << "                        2: DiscreetSineTransform" << endl;
-	cerr << "  -w <N>          ... Set window size to N (default: " << defaultOptions.m_WindowSize << ")" << endl;
-	cerr << "  -s <N>          ... Set the stride to N (default: " << defaultOptions.m_Stride << ")" << endl;
-	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.m_LocalMaxDistance << ")" << endl;
+	cerr << "  -w <N>          ... Set window size to N (default: " << defaultOptions.mWindowSize << ")" << endl;
+	cerr << "  -s <N>          ... Set the stride to N (default: " << defaultOptions.mStride << ")" << endl;
+	cerr << "  -p <N>          ... Set the number of levels to check for peak (default: " << defaultOptions.mLocalMaxDistance << ")" << endl;
 	cerr << "  -b <filename>   ... Output debug audio with beats to file" << endl;
 	cerr << "  -d <filename>   ... Output debug audio with levels to file" << endl;
 	cerr << "  -h              ... Print this help" << endl;
 	cerr << "  -i              ... Include the ID3 information from the file in the output" << endl;
-	cerr << "  -r <samplerate> ... Convert the file to samplerate (default: " << defaultOptions.m_SampleRate << ")" << endl;
+	cerr << "  -r <samplerate> ... Convert the file to samplerate (default: " << defaultOptions.mSampleRate << ")" << endl;
 	cerr << "  -n <N> <file>   ... Output debug audio with levels normalized in N samples to file" << endl;
 }
 
@@ -193,7 +193,7 @@ void printUsage()
 		return 1; \
 	} \
 
-int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Options)
+int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Options)
 {
 	size_t argc = a_Args.size();
 	for (size_t i = 0; i < argc; ++i)
@@ -213,7 +213,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'A':
 				{
 					NEED_ARG(1);
-					a_Options.m_LevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(stoi(a_Args[i + 1]));
+					a_Options.mLevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(stoi(a_Args[i + 1]));
 					i += 1;
 					break;
 				}
@@ -221,7 +221,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'B':
 				{
 					NEED_ARG(1);
-					a_Options.m_DebugAudioBeatsFileName = QString::fromStdString(a_Args[i + 1].c_str());
+					a_Options.mDebugAudioBeatsFileName = QString::fromStdString(a_Args[i + 1].c_str());
 					i += 1;
 					break;
 				}
@@ -229,7 +229,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'D':
 				{
 					NEED_ARG(1);
-					a_Options.m_DebugAudioLevelsFileName = QString::fromStdString(a_Args[i + 1]);
+					a_Options.mDebugAudioLevelsFileName = QString::fromStdString(a_Args[i + 1]);
 					i += 1;
 					break;
 				}
@@ -243,7 +243,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'N':
 				{
 					NEED_ARG(1);
-					a_Options.m_NormalizeLevelsWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
+					a_Options.mNormalizeLevelsWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
 					i += 1;
 					break;
 				}
@@ -251,7 +251,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'P':
 				{
 					NEED_ARG(1);
-					a_Options.m_LocalMaxDistance = static_cast<size_t>(stoll(a_Args[i + 1]));
+					a_Options.mLocalMaxDistance = static_cast<size_t>(stoll(a_Args[i + 1]));
 					i += 1;
 					break;
 				}
@@ -259,7 +259,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'R':
 				{
 					NEED_ARG(1);
-					a_Options.m_SampleRate = stoi(a_Args[i + 1]);
+					a_Options.mSampleRate = stoi(a_Args[i + 1]);
 					i += 1;
 					break;
 				}
@@ -267,7 +267,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'S':
 				{
 					NEED_ARG(1);
-					a_Options.m_Stride = static_cast<size_t>(stoll(a_Args[i + 1]));
+					a_Options.mStride = static_cast<size_t>(stoll(a_Args[i + 1]));
 					i += 1;
 					break;
 				}
@@ -275,7 +275,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 				case 'W':
 				{
 					NEED_ARG(1);
-					a_Options.m_WindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
+					a_Options.mWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
 					i += 1;
 					break;
 				}
@@ -296,7 +296,7 @@ int processArgs(const vector<string> & a_Args, TempoDetector::Options & a_Option
 
 int main(int argc, char *argv[])
 {
-	TempoDetector::Options options;
+	SongTempoDetector::Options options;
 	vector<string> args;
 	for (int i = 1; i < argc; ++i)
 	{

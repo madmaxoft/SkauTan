@@ -1,41 +1,27 @@
-#ifndef TEMPODETECTOR_H
-#define TEMPODETECTOR_H
+#pragma once
 
-
-
-
-#include <set>
-#include <mutex>
 #include <memory>
-#include <atomic>
-#include <QObject>
-#include "ComponentCollection.hpp"
-#include "Song.hpp"
+#include <vector>
+#include <map>
 
 
 
 
 
-/** Component that detects tempo in songs.
-Implements the tempo detection using several different algorithms.
-This encapsulates both the low-level scanning, and the higher-level options management for optimal scan results.
-Terminology:
-	- "scan" = detect tempo, return as a separate result (works on single SongPtr)
-	- "detect" = detect tempo, set result directly into songSD (works on Song::SharedDataPtr, picks the first decodable file)
-Songs can be scanned synchronously or asynchronously using BackgroundTasks.
-The scan finishes with a Result object that contains the calculated values, it is up to the caller to
-process the results and potentially set them into the song metadata, display to the user etc.
-Also upon a finished scan a signal is emitted that can be hooked to. */
-class TempoDetector:
-	public QObject,
-	public ComponentCollection::Component<ComponentCollection::ckTempoDetector>
+using Int16 = int16_t;
+using Int32 = int32_t;
+using UInt32 = uint32_t;
+
+
+
+
+
+/** Implements the tempo detection using several different algorithms.
+A single scan yields a Result object.
+Results from multiple scans can be aggregated together into a single value. */
+class TempoDetector
 {
-	Q_OBJECT
-	using Super = ComponentCollection::Component<ComponentCollection::ckTempoDetector>;
-
-
 public:
-
 
 	/** Specifies the algorithm to use for detecting levels in the audio. */
 	enum ELevelAlgorithm
@@ -52,43 +38,31 @@ public:
 	struct Options
 	{
 		/** The sample rate to which the song is converted before detecting. */
-		int m_SampleRate;
+		int mSampleRate;
 
 		/** The algorithm to use for detecting loudness levels in the audio. */
-		ELevelAlgorithm m_LevelAlgorithm;
+		ELevelAlgorithm mLevelAlgorithm;
 
-		/** The length of audio data to process for one levels sample. */
-		size_t m_WindowSize;
+		/** The number of audio samples to process for one levels sample. */
+		size_t mWindowSize;
 
 		/** The distance between successive levels, in samples. */
-		size_t m_Stride;
+		size_t mStride;
 
 		/** The number of levels to check before and after current level to filter out non-peak levels. */
-		size_t m_LocalMaxDistance;
+		size_t mLocalMaxDistance;
 
-		/** If true, the levels are normalized across m_NormalizeLevelsWindowSize elements. */
-		bool m_ShouldNormalizeLevels;
+		/** If true, the levels are normalized across mNormalizeLevelsWindowSize elements. */
+		bool mShouldNormalizeLevels;
 
-		/** Number of neighboring levels to normalize against when m_ShouldNormalizeLevels is true. */
-		size_t m_NormalizeLevelsWindowSize;
+		/** Number of neighboring levels to normalize against when mShouldNormalizeLevels is true. */
+		size_t mNormalizeLevelsWindowSize;
 
 		/** The maximum tempo that is tested in the detection. */
-		int m_MaxTempo;
+		int mMaxTempo;
 
 		/** The minimum tempo that is tested in the detection. */
-		int m_MinTempo;
-
-		/** Name of file to store the audio levels for debugging purposes.
-		Creates a 16-bit int stereo RAW file,
-		left channel contains the original audiodata, right channel contains level values.
-		If empty, no debug file is created. */
-		QString m_DebugAudioLevelsFileName;
-
-		/** Name of file to store the audio beats for debugging purposes.
-		Creates a 16-bit int stereo RAW file,
-		left channel contains the original audiodata, right channel contains a "ping" for each detected beat.
-		If empty, no debug file is created. */
-		QString m_DebugAudioBeatsFileName;
+		int mMinTempo;
 
 		Options(const Options &) = default;
 		Options(Options &&) = default;
@@ -105,97 +79,42 @@ public:
 	struct Result
 	{
 		/** The options used to calculate this result. */
-		std::vector<Options> m_Options;
+		Options mOptions;
 
-		/** The final detected tempo. 0 if not detected. */
-		double m_Tempo;
+		/** The final detected tempo (BPM). negative if not detected. */
+		double mTempo;
 
 		/** The confidence of the detection. Ranges from 0 to 100, higher means more confident. */
-		double m_Confidence;
+		double mConfidence;
 
-		/** The tempos detected with the individual m_Options items, one pair per options item. */
-		std::vector<std::pair<double, double>> m_Tempos;
-
-		/** A time-sorted vector of beat indices (into m_Levels) and their weight.
-		Only contains the beats from the last m_Options item. */
-		std::vector<std::pair<size_t, qint32>> m_Beats;
+		/** A time-sorted vector of beat indices (into mLevels) and their weight.
+		Only contains the beats from the last mOptions item. */
+		std::vector<std::pair<size_t, Int32>> mBeats;
 
 		/** A vector of all levels calculated for the audio.
-		Only contains the levels from the last m_Options item. */
-		std::vector<qint32> m_Levels;
+		Only contains the levels from the last mOptions item. */
+		std::vector<Int32> mLevels;
 
 
 		/** Creates an "invalid" result - no confidence, no detected tempo. */
 		Result():
-			m_Tempo(0),
-			m_Confidence(0)
+			mTempo(-1),
+			mConfidence(0)
 		{
 		}
 	};
 
 	using ResultPtr = std::shared_ptr<Result>;
 
-	TempoDetector();
 
 
-	////////////////////////////////////////////////////////////////////////////////
-	// Low-level interface: single scan using explicit options:
+	/** Scans the specified audiodata synchronously, using the specified options.
+	aSamples is a pointer to a contiguous block of 16-bit mono samples, aNumSamples in length.
+	The samples are interpreted as having the samplerate of aOptions.mSampleRate.
+	Results from multiple scans over the same song may be aggregated with aggregateResults(). */
+	static ResultPtr scan(const Int16 * aSamples, size_t aNumSamples, const Options & aOptions);
 
-	/** Scans the specified song synchronously, using the specified options.
-	Each item in a_Options is used to scan the song, and the individual results are then aggregated into a single tempo value.
-	Note that samplerate is only taken from the first item in a_Options, the other items' samplerates
-	are ignored (can't change the samplerate once the song is decoded).
-	Emits the songScanned() signal upon successful scan, but doesn't store the detected tempo in a_Song. */
-	std::shared_ptr<Result> scanSong(SongPtr a_Song, const std::vector<Options> & a_Options = {Options()});
-
-	/** Queues the specified song for scanning in a background task.
-	Each item in a_Options is used to scan the song, and the individual results are then aggregated into a single tempo value.
-	Note that samplerate is only taken from the first item in a_Options, the other items' samplerates
-	are ignored (can't change the samplerate once the song is decoded).
-	Once the song is scanned, the songScanned() signal is emitted, but the detected tempo is NOT stored in a_Song. */
-	void queueScanSong(SongPtr a_Song, const std::vector<Options> & a_Options = {Options()});
-
-	/** Returns the number of songs that are queued for scanning. */
-	int scanQueueLength() { return m_ScanQueueLength.load(); }
-
-
-	////////////////////////////////////////////////////////////////////////////////
-	// High-level interface: Single scan using optimal options:
-
-	/** Returns a name to be used for the background detection task on the specified song. */
-	static QString createTaskName(Song::SharedDataPtr a_SongSD);
-
-	/** Runs the detection synchronously on the specified song.
-	Called internally from this class, and externally from the task repeater.
-	The detected tempo is set directly into the song upon success (but not saved in the DB).
-	Returns true if detection was successful, false on failure.
-	Emits the songScanned() and songTempoDetected() signals. */
-	bool detect(Song::SharedDataPtr a_SongSD);
-
-	/** Queues the detection on the specified song to be run asynchronously in a BackgroundTask.
-	The detected tempo is set directly into the song upon success (but not saved in the DB).
-	Emits the songScanned() and songTempoDetected() signals upon success, nothing on failure. */
-	void queueDetect(Song::SharedDataPtr a_SongSD);
-
-
-protected:
-
-	/** The number of songs that are queued for scanning. */
-	std::atomic<int> m_ScanQueueLength;
-
-
-signals:
-
-	/** Emitted after a song has been scanned. */
-	void songScanned(SongPtr a_Song, TempoDetector::ResultPtr a_Result);
-
-	/** Emitted after a song has been scanned and its tempo was stored. */
-	void songTempoDetected(Song::SharedDataPtr a_Song);
+	/** Aggregates results from multiple scans (using varying options) into a single tempo + confidence value.
+	Returns the tempo (BPM) and confidence (0 .. 100; higher means more confident). */
+	static std::pair<double, double> aggregateResults(const std::vector<ResultPtr> & aResults);
 };
-
-Q_DECLARE_METATYPE(TempoDetector::ResultPtr);
-
-
-
-
-#endif // TEMPODETECTOR_H
