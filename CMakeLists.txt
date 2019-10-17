@@ -258,6 +258,7 @@ set (SOURCES
 	src/PlaylistItemSong.cpp
 	src/Settings.cpp
 	src/Song.cpp
+	src/SongTempoDetector.cpp
 	src/Stopwatch.cpp
 	src/Template.cpp
 	src/TempoDetector.cpp
@@ -338,6 +339,7 @@ set (HEADERS
 	src/PlaylistItemSong.hpp
 	src/Settings.hpp
 	src/Song.hpp
+	src/SongTempoDetector.hpp
 	src/Stopwatch.hpp
 	src/Template.hpp
 	src/TempoDetector.hpp
@@ -394,6 +396,7 @@ set (SOURCES_BEATDETECTCMD
 	src/Audio/PlaybackBuffer.cpp
 	src/MetadataScanner.cpp
 	src/Song.cpp
+	src/SongTempoDetector.cpp
 	src/TempoDetector.cpp
 	src/Stopwatch.cpp
 )
@@ -403,6 +406,7 @@ set (HEADERS_BEATDETECTCMD
 	src/Audio/PlaybackBuffer.hpp
 	src/MetadataScanner.hpp
 	src/Song.hpp
+	src/SongTempoDetector.hpp
 	src/TempoDetector.hpp
 	src/Stopwatch.hpp
 )
@@ -419,6 +423,7 @@ set (SOURCES_TEMPODETECTCMD
 	src/Audio/PlaybackBuffer.cpp
 	src/MetadataScanner.cpp
 	src/Song.cpp
+	src/SongTempoDetector.cpp
 	src/TempoDetector.cpp
 	src/Stopwatch.cpp
 )
@@ -428,6 +433,7 @@ set (HEADERS_TEMPODETECTCMD
 	src/Audio/PlaybackBuffer.hpp
 	src/MetadataScanner.hpp
 	src/Song.hpp
+	src/SongTempoDetector.hpp
 	src/TempoDetector.hpp
 	src/Stopwatch.hpp
 )

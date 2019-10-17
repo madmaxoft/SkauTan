@@ -51,7 +51,7 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	m_Components(a_Components),
 	m_Song(a_Song),
 	m_TempoDetectDelay(0),
-	m_Detector(new TempoDetector)
+	m_Detector(new SongTempoDetector)
 {
 	// Init the UI:
 	m_UI->setupUi(this);
@@ -72,7 +72,7 @@ DlgTempoDetect::DlgTempoDetect(ComponentCollection & a_Components, SongPtr a_Son
 	connect(m_UI->lwStride,                    &QListWidget::currentRowChanged, this, &DlgTempoDetect::detectTempo);
 	connect(m_UI->btnSaveDebugBeats,           &QPushButton::pressed,           this, &DlgTempoDetect::saveDebugBeats);
 	connect(m_UI->btnSaveDebugLevels,          &QPushButton::pressed,           this, &DlgTempoDetect::saveDebugLevels);
-	connect(m_Detector.get(),                  &TempoDetector::songScanned,     this, &DlgTempoDetect::songScanned);
+	connect(m_Detector.get(),                  &SongTempoDetector::songScanned, this, &DlgTempoDetect::songScanned);
 
 	// Start the timer for delayed tempo detection:
 	auto timer = new QTimer(this);
@@ -177,9 +177,9 @@ void DlgTempoDetect::initOptionsUi()
 	(new QListWidgetItem("8192", m_UI->lwStride))->setData(Qt::UserRole, 8192);
 
 	// Select the defaults:
-	TempoDetector::Options opt;
+	SongTempoDetector::Options opt;
 	auto genre = m_Song->primaryGenre().valueOrDefault();
-	std::tie(opt.m_MinTempo, opt.m_MaxTempo) = Song::detectionTempoRangeForGenre(genre);
+	std::tie(opt.mMinTempo, opt.mMaxTempo) = Song::detectionTempoRangeForGenre(genre);
 	selectOptions(opt);
 }
 
@@ -187,17 +187,17 @@ void DlgTempoDetect::initOptionsUi()
 
 
 
-void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
+void DlgTempoDetect::selectOptions(const SongTempoDetector::Options & a_Options)
 {
 	m_IsInternalChange = true;
-	Utils::selectItemWithData(m_UI->lwLevelAlgorithm, a_Options.m_LevelAlgorithm);
-	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.m_WindowSize));
-	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.m_Stride));
-	m_UI->leSampleRate->setText(QString::number(a_Options.m_SampleRate));
-	m_UI->leLocalMaxDistance->setText(QString::number(a_Options.m_LocalMaxDistance));
-	m_UI->leMinTempo->setText(QString::number(a_Options.m_MinTempo));
-	m_UI->leMaxTempo->setText(QString::number(a_Options.m_MaxTempo));
-	m_UI->leNormalizeLevelsWindowSize->setText(QString::number(a_Options.m_NormalizeLevelsWindowSize));
+	Utils::selectItemWithData(m_UI->lwLevelAlgorithm, a_Options.mLevelAlgorithm);
+	Utils::selectItemWithData(m_UI->lwWindowSize,     static_cast<qulonglong>(a_Options.mWindowSize));
+	Utils::selectItemWithData(m_UI->lwStride,         static_cast<qulonglong>(a_Options.mStride));
+	m_UI->leSampleRate->setText(QString::number(a_Options.mSampleRate));
+	m_UI->leLocalMaxDistance->setText(QString::number(a_Options.mLocalMaxDistance));
+	m_UI->leMinTempo->setText(QString::number(a_Options.mMinTempo));
+	m_UI->leMaxTempo->setText(QString::number(a_Options.mMaxTempo));
+	m_UI->leNormalizeLevelsWindowSize->setText(QString::number(a_Options.mNormalizeLevelsWindowSize));
 	m_IsInternalChange = false;
 }
 
@@ -205,18 +205,18 @@ void DlgTempoDetect::selectOptions(const TempoDetector::Options & a_Options)
 
 
 
-TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
+SongTempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 {
-	TempoDetector::Options options;
-	options.m_LevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(m_UI->lwLevelAlgorithm->currentItem()->data(Qt::UserRole).toInt());
-	options.m_WindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
-	options.m_Stride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
-	options.m_SampleRate = m_UI->leSampleRate->text().toInt();
-	options.m_LocalMaxDistance = static_cast<size_t>(m_UI->leLocalMaxDistance->text().toLongLong());
-	options.m_MinTempo = m_UI->leMinTempo->text().toInt();
-	options.m_MaxTempo = m_UI->leMaxTempo->text().toInt();
-	options.m_NormalizeLevelsWindowSize = static_cast<size_t>(m_UI->leNormalizeLevelsWindowSize->text().toLongLong());
-	options.m_ShouldNormalizeLevels = (options.m_NormalizeLevelsWindowSize > 0);
+	SongTempoDetector::Options options;
+	options.mLevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(m_UI->lwLevelAlgorithm->currentItem()->data(Qt::UserRole).toInt());
+	options.mWindowSize = static_cast<size_t>(m_UI->lwWindowSize->currentItem()->data(Qt::UserRole).toLongLong());
+	options.mStride = static_cast<size_t>(m_UI->lwStride->currentItem()->data(Qt::UserRole).toLongLong());
+	options.mSampleRate = m_UI->leSampleRate->text().toInt();
+	options.mLocalMaxDistance = static_cast<size_t>(m_UI->leLocalMaxDistance->text().toLongLong());
+	options.mMinTempo = m_UI->leMinTempo->text().toInt();
+	options.mMaxTempo = m_UI->leMaxTempo->text().toInt();
+	options.mNormalizeLevelsWindowSize = static_cast<size_t>(m_UI->leNormalizeLevelsWindowSize->text().toLongLong());
+	options.mShouldNormalizeLevels = (options.mNormalizeLevelsWindowSize > 0);
 	return options;
 }
 
@@ -227,27 +227,27 @@ TempoDetector::Options DlgTempoDetect::readOptionsFromUi()
 void DlgTempoDetect::updateHistoryRow(int a_Row)
 {
 	const auto & res = m_History[static_cast<size_t>(a_Row)];
-	const auto & opt = res->m_Options[0];
-	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.m_LevelAlgorithm)));
-	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.m_WindowSize)));
-	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.m_Stride)));
-	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.m_SampleRate)));
-	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.m_LocalMaxDistance)));
-	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.m_MinTempo)));
-	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(QString::number(opt.m_MaxTempo)));
-	m_UI->twDetectionHistory->setItem(a_Row, 7,  new QTableWidgetItem(QString::number(opt.m_NormalizeLevelsWindowSize)));
-	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->m_Tempo)));
+	const auto & opt = res->mOptions;
+	m_UI->twDetectionHistory->setItem(a_Row, 0,  new QTableWidgetItem(levelAlgorithmToStr(opt.mLevelAlgorithm)));
+	m_UI->twDetectionHistory->setItem(a_Row, 1,  new QTableWidgetItem(QString::number(opt.mWindowSize)));
+	m_UI->twDetectionHistory->setItem(a_Row, 2,  new QTableWidgetItem(QString::number(opt.mStride)));
+	m_UI->twDetectionHistory->setItem(a_Row, 3,  new QTableWidgetItem(QString::number(opt.mSampleRate)));
+	m_UI->twDetectionHistory->setItem(a_Row, 4,  new QTableWidgetItem(QString::number(opt.mLocalMaxDistance)));
+	m_UI->twDetectionHistory->setItem(a_Row, 5,  new QTableWidgetItem(QString::number(opt.mMinTempo)));
+	m_UI->twDetectionHistory->setItem(a_Row, 6,  new QTableWidgetItem(QString::number(opt.mMaxTempo)));
+	m_UI->twDetectionHistory->setItem(a_Row, 7,  new QTableWidgetItem(QString::number(opt.mNormalizeLevelsWindowSize)));
+	m_UI->twDetectionHistory->setItem(a_Row, 8,  new QTableWidgetItem(QString::number(res->mTempo)));
 	double mpm;
 	if (m_Song->primaryGenre().isPresent())
 	{
-		mpm = Song::adjustMpm(res->m_Tempo, m_Song->primaryGenre().valueOrDefault());
+		mpm = Song::adjustMpm(res->mTempo, m_Song->primaryGenre().valueOrDefault());
 	}
 	else
 	{
-		mpm = res->m_Tempo;
+		mpm = res->mTempo;
 	}
 	m_UI->twDetectionHistory->setItem(a_Row, 9,  new QTableWidgetItem(QString::number(mpm, 'f', 1)));
-	m_UI->twDetectionHistory->setItem(a_Row, 10, new QTableWidgetItem(QString::number(res->m_Confidence)));
+	m_UI->twDetectionHistory->setItem(a_Row, 10, new QTableWidgetItem(QString::number(res->mConfidence)));
 	auto btn = new QPushButton(tr("Use"));
 	m_UI->twDetectionHistory->setCellWidget(a_Row, 11, btn);
 	connect(btn, &QPushButton::pressed, [this, mpm]()
@@ -278,7 +278,7 @@ void DlgTempoDetect::detectTempo()
 	auto options = readOptionsFromUi();
 	for (const auto & h: m_History)
 	{
-		if (h->m_Options[0] == options)
+		if (h->mOptions == options)
 		{
 			// This set of options has already been calculated, bail out:
 			return;
@@ -321,7 +321,7 @@ void DlgTempoDetect::saveDebugBeats()
 		return;
 	}
 	auto options = readOptionsFromUi();
-	options.m_DebugAudioBeatsFileName = fileName;
+	options.mDebugAudioBeatsFileName = fileName;
 	m_Detector->queueScanSong(m_Song, {options});
 }
 
@@ -342,7 +342,7 @@ void DlgTempoDetect::saveDebugLevels()
 		return;
 	}
 	auto options = readOptionsFromUi();
-	options.m_DebugAudioLevelsFileName = fileName;
+	options.mDebugAudioLevelsFileName = fileName;
 	m_Detector->queueScanSong(m_Song, {options});
 }
 

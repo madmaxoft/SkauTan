@@ -16,7 +16,7 @@
 #include "PlaylistItemSong.hpp"
 #include "Template.hpp"
 #include "Settings.hpp"
-#include "TempoDetector.hpp"
+#include "SongTempoDetector.hpp"
 #include "BackgroundTempoDetector.hpp"
 #include "Utils.hpp"
 #include "DJControllers.hpp"
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 		auto player           = cc.addNew<Player>();
 		auto midiControllers  = cc.addNew<DJControllers>();
 		auto voteServer       = cc.addNew<LocalVoteServer>(cc);
-		auto tempoDetector    = cc.addNew<TempoDetector>();
+		auto tempoDetector    = cc.addNew<SongTempoDetector>();
 		auto bkgTempoDetector = cc.addNew<BackgroundTempoDetector>(cc);
 
 		// Connect the main objects together:
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 		app.connect(voteServer.get(),    &LocalVoteServer::addVoteRhythmClarity,      mainDB.get(),        &Database::addVoteRhythmClarity);
 		app.connect(voteServer.get(),    &LocalVoteServer::addVoteGenreTypicality,    mainDB.get(),        &Database::addVoteGenreTypicality);
 		app.connect(voteServer.get(),    &LocalVoteServer::addVotePopularity,         mainDB.get(),        &Database::addVotePopularity);
-		app.connect(tempoDetector.get(), &TempoDetector::songTempoDetected,           mainDB.get(),        &Database::saveSongSharedData);
+		app.connect(tempoDetector.get(), &SongTempoDetector::songTempoDetected,       mainDB.get(),        &Database::saveSongSharedData);
 		app.connect(player.get(),  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
 			{
 				// Update the "last played" value in the DB:

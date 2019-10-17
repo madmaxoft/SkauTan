@@ -13,7 +13,7 @@
 #include "../../MetadataScanner.hpp"
 #include "../../BackgroundTasks.hpp"
 #include "../../LengthHashCalculator.hpp"
-#include "../../TempoDetector.hpp"
+#include "../../SongTempoDetector.hpp"
 #include "DlgTapTempo.hpp"
 
 
@@ -70,27 +70,27 @@ DlgSongProperties::DlgSongProperties(
 	});
 
 	// Connect the signals:
-	auto td = m_Components.get<TempoDetector>();
-	connect(m_UI->btnCancel,                 &QPushButton::clicked,             this, &DlgSongProperties::reject);
-	connect(m_UI->btnOK,                     &QPushButton::clicked,             this, &DlgSongProperties::applyAndClose);
-	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,            this, &DlgSongProperties::authorTextEdited);
-	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,            this, &DlgSongProperties::titleTextEdited);
-	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,    this, &DlgSongProperties::genreSelected);
-	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,            this, &DlgSongProperties::measuresPerMinuteTextEdited);
-	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,      this, &DlgSongProperties::notesChanged);
-	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged,   this, &DlgSongProperties::switchDuplicate);
-	connect(m_UI->leId3Author,               &QLineEdit::textEdited,            this, &DlgSongProperties::id3AuthorEdited);
-	connect(m_UI->leId3Title,                &QLineEdit::textEdited,            this, &DlgSongProperties::id3TitleEdited);
-	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,            this, &DlgSongProperties::id3GenreEdited);
-	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,            this, &DlgSongProperties::id3CommentEdited);
-	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,            this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
-	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,               this, &DlgSongProperties::removeFromLibrary);
-	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,               this, &DlgSongProperties::deleteFromDisk);
-	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,             this, &DlgSongProperties::copyId3Tag);
-	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,             this, &DlgSongProperties::copyPid3Tag);
-	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,             this, &DlgSongProperties::copyFilenameTag);
-	connect(m_UI->btnTapTempo,               &QPushButton::clicked,             this, &DlgSongProperties::showTapTempo);
-	connect(td.get(),                        &TempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
+	auto td = m_Components.get<SongTempoDetector>();
+	connect(m_UI->btnCancel,                 &QPushButton::clicked,                 this, &DlgSongProperties::reject);
+	connect(m_UI->btnOK,                     &QPushButton::clicked,                 this, &DlgSongProperties::applyAndClose);
+	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,                this, &DlgSongProperties::authorTextEdited);
+	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,                this, &DlgSongProperties::titleTextEdited);
+	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,        this, &DlgSongProperties::genreSelected);
+	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,                this, &DlgSongProperties::measuresPerMinuteTextEdited);
+	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,          this, &DlgSongProperties::notesChanged);
+	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged,       this, &DlgSongProperties::switchDuplicate);
+	connect(m_UI->leId3Author,               &QLineEdit::textEdited,                this, &DlgSongProperties::id3AuthorEdited);
+	connect(m_UI->leId3Title,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3TitleEdited);
+	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3GenreEdited);
+	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,                this, &DlgSongProperties::id3CommentEdited);
+	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,                this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
+	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,                   this, &DlgSongProperties::removeFromLibrary);
+	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,                   this, &DlgSongProperties::deleteFromDisk);
+	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,                 this, &DlgSongProperties::copyId3Tag);
+	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,                 this, &DlgSongProperties::copyPid3Tag);
+	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,                 this, &DlgSongProperties::copyFilenameTag);
+	connect(m_UI->btnTapTempo,               &QPushButton::clicked,                 this, &DlgSongProperties::showTapTempo);
+	connect(td.get(),                        &SongTempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -145,7 +145,7 @@ DlgSongProperties::DlgSongProperties(
 	m_IsInternalChange = false;
 	fillDuplicates();
 	selectSong(*m_Song);
-	m_Components.get<TempoDetector>()->queueDetect(m_Song->sharedData());
+	m_Components.get<SongTempoDetector>()->queueDetect(m_Song->sharedData());
 }
 
 
