@@ -9,10 +9,10 @@
 
 
 
-BackgroundTempoDetector::BackgroundTempoDetector(ComponentCollection & a_Components):
-	m_Components(a_Components),
-	m_IsRunning(false),
-	m_ShouldAbort(true)
+BackgroundTempoDetector::BackgroundTempoDetector(ComponentCollection & aComponents):
+	mComponents(aComponents),
+	mIsRunning(false),
+	mShouldAbort(true)
 {
 }
 
@@ -22,12 +22,12 @@ BackgroundTempoDetector::BackgroundTempoDetector(ComponentCollection & a_Compone
 
 void BackgroundTempoDetector::start()
 {
-	if (m_IsRunning.load())
+	if (mIsRunning.load())
 	{
 		qDebug() << "Already running";
 		return;
 	}
-	m_ShouldAbort = false;
+	mShouldAbort = false;
 	enqueueAnother();
 }
 
@@ -37,7 +37,7 @@ void BackgroundTempoDetector::start()
 
 void BackgroundTempoDetector::stop()
 {
-	m_ShouldAbort = true;
+	mShouldAbort = true;
 }
 
 
@@ -47,22 +47,22 @@ void BackgroundTempoDetector::stop()
 Song::SharedDataPtr BackgroundTempoDetector::pickNextSong()
 {
 	// Return the first song that has no MPM set:
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	auto sdm = db->songSharedDataMap();
 	for (auto itr = sdm.cbegin(), end = sdm.cend(); itr != end; ++itr)
 	{
 		auto sd = itr->second;
 		{
-			std::lock_guard<std::mutex> lock(m_MtxFailedSongs);
-			if (m_FailedSongs.find(sd) != m_FailedSongs.end())
+			std::lock_guard<std::mutex> lock(mMtxFailedSongs);
+			if (mFailedSongs.find(sd) != mFailedSongs.end())
 			{
 				// Has failed recently, skip it
 				continue;
 			}
 		}
 		if (
-			sd->m_TagManual.m_MeasuresPerMinute.isPresent() ||
-			sd->m_DetectedTempo.isPresent()
+			sd->mTagManual.mMeasuresPerMinute.isPresent() ||
+			sd->mDetectedTempo.isPresent()
 		)
 		{
 			continue;
@@ -76,8 +76,8 @@ Song::SharedDataPtr BackgroundTempoDetector::pickNextSong()
 		for (const auto s: duplicates)
 		{
 			if (
-				s->tagFileName().m_MeasuresPerMinute.isPresent() ||
-				s->tagId3().m_MeasuresPerMinute.isPresent()
+				s->tagFileName().mMeasuresPerMinute.isPresent() ||
+				s->tagId3().mMeasuresPerMinute.isPresent()
 			)
 			{
 				hasMPM = true;
@@ -105,23 +105,23 @@ void BackgroundTempoDetector::enqueueAnother()
 	{
 		return;
 	}
-	m_IsRunning = true;
+	mIsRunning = true;
 	auto taskName = SongTempoDetector::createTaskName(sd);
-	auto td = m_Components.get<SongTempoDetector>();
+	auto td = mComponents.get<SongTempoDetector>();
 	BackgroundTasks::get().enqueue(taskName, [this, sd, td]()
 		{
 			if (!td->detect(sd))
 			{
-				std::lock_guard<std::mutex> lock(m_MtxFailedSongs);
-				m_FailedSongs.insert(sd);
+				std::lock_guard<std::mutex> lock(mMtxFailedSongs);
+				mFailedSongs.insert(sd);
 			}
-			if (!m_ShouldAbort.load())
+			if (!mShouldAbort.load())
 			{
 				enqueueAnother();
 			}
 			else
 			{
-				m_IsRunning = false;
+				mIsRunning = false;
 			}
 		}
 	);

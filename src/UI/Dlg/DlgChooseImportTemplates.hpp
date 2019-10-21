@@ -32,28 +32,28 @@ class DlgChooseImportTemplates:
 
 public:
 
-	explicit DlgChooseImportTemplates(std::vector<TemplatePtr> && a_Templates, QWidget * a_Parent = nullptr);
+	explicit DlgChooseImportTemplates(std::vector<TemplatePtr> && aTemplates, QWidget * aParent = nullptr);
 
 	virtual ~DlgChooseImportTemplates() override;
 
 	/** Returns the templates that the user chose for import. */
-	const std::vector<TemplatePtr> & chosenTemplates() const { return m_ChosenTemplates; }
+	const std::vector<TemplatePtr> & chosenTemplates() const { return mChosenTemplates; }
 
 
 private:
 
 	/** The templates to choose from. */
-	std::vector<TemplatePtr> m_Templates;
+	std::vector<TemplatePtr> mTemplates;
 
 	/** The chosen templates (after accepting the dialog). */
-	std::vector<TemplatePtr> m_ChosenTemplates;
+	std::vector<TemplatePtr> mChosenTemplates;
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgChooseImportTemplates> m_UI;
+	std::unique_ptr<Ui::DlgChooseImportTemplates> mUI;
 
 
-	/** Updates the row in m_UI->tblTemplates for the specified template. */
-	void updateTemplateRow(int a_Row, const Template & a_Template);
+	/** Updates the row in mUI->tblTemplates for the specified template. */
+	void updateTemplateRow(int aRow, const Template & aTemplate);
 
 
 private slots:
@@ -67,7 +67,7 @@ private slots:
 	void templateSelectionChanged();
 
 	/** Enables the Import button based on whether any template is checked. */
-	void templateCellChanged(int a_Row, int a_Column);
+	void templateCellChanged(int aRow, int aColumn);
 };
 
 

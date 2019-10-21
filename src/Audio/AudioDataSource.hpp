@@ -34,10 +34,10 @@ public:
 	/** Reads the audio data of the specified length into the provided destination.
 	Blocks until all data read, or aborted(). Decoding past the source end automatically aborts.
 	Returns the number of bytes read. */
-	virtual size_t read(void * a_Dest, size_t a_MaxLen) = 0;
+	virtual size_t read(void * aDest, size_t aMaxLen) = 0;
 
 	/** Seeks to the specified time. */
-	virtual void seekTo(double a_Seconds) = 0;
+	virtual void seekTo(double aSeconds) = 0;
 
 	/** Clears the audio data that may be buffered in this object.
 	Used when seeking or when setting the effect params, to improve the "reaction" time. */
@@ -62,7 +62,7 @@ public:
 	virtual bool waitForData() = 0;
 
 	/** Fades the data out and sets the termination flag, so that the output is terminated after the fadeout. */
-	virtual void fadeOut(int a_Msec) = 0;
+	virtual void fadeOut(int aMsec) = 0;
 
 	/** Returns the position in the playback, as fractional seconds. */
 	virtual double currentSongPosition() const = 0;
@@ -72,7 +72,7 @@ public:
 
 	/** Sets the relative tempo of the playback.
 	Tempo == 1 for normal, 0.5 for 2x slowed down and 2 for 2x sped up. */
-	virtual void setTempo(double a_Tempo) = 0;
+	virtual void setTempo(double aTempo) = 0;
 };
 
 using AudioDataSourcePtr = std::shared_ptr<AudioDataSource>;
@@ -89,77 +89,77 @@ class AudioDataSourceChain:
 	public AudioDataSource
 {
 public:
-	AudioDataSourceChain(std::shared_ptr<AudioDataSource> a_Lower):
-		m_Lower(a_Lower)
+	AudioDataSourceChain(std::shared_ptr<AudioDataSource> aLower):
+		mLower(aLower)
 	{
 	}
 
 
-	virtual size_t read(void * a_Dest, size_t a_MaxLen) override
+	virtual size_t read(void * aDest, size_t aMaxLen) override
 	{
-		return m_Lower->read(a_Dest, a_MaxLen);
+		return mLower->read(aDest, aMaxLen);
 	}
 
-	virtual void seekTo(double a_Seconds) override
+	virtual void seekTo(double aSeconds) override
 	{
-		return m_Lower->seekTo(a_Seconds);
+		return mLower->seekTo(aSeconds);
 	}
 
 	virtual void clear() override
 	{
-		return m_Lower->clear();
+		return mLower->clear();
 	}
 
 	virtual void abort() override
 	{
-		return m_Lower->abort();
+		return mLower->abort();
 	}
 
 	virtual void abortWithError() override
 	{
-		return m_Lower->abortWithError();
+		return mLower->abortWithError();
 	}
 
 	virtual bool shouldAbort() const override
 	{
-		return m_Lower->shouldAbort();
+		return mLower->shouldAbort();
 	}
 
 	virtual const QAudioFormat & format() const override
 	{
-		return m_Lower->format();
+		return mLower->format();
 	}
 
 	virtual bool waitForData() override
 	{
-		return m_Lower->waitForData();
+		return mLower->waitForData();
 	}
 
-	virtual void fadeOut(int a_Msec) override
+	virtual void fadeOut(int aMsec) override
 	{
-		return m_Lower->fadeOut(a_Msec);
+		return mLower->fadeOut(aMsec);
 	}
 
 	virtual double currentSongPosition() const override
 	{
-		return m_Lower->currentSongPosition();
+		return mLower->currentSongPosition();
 	}
 
 	virtual double remainingTime() const override
 	{
-		return m_Lower->remainingTime();
+		return mLower->remainingTime();
 	}
 
-	virtual void setTempo(double a_Tempo) override
+	virtual void setTempo(double aTempo) override
 	{
-		return m_Lower->setTempo(a_Tempo);
+		return mLower->setTempo(aTempo);
 	}
 
 
 protected:
 
 	/** The "lower" source to which the calls are redirected. */
-	std::shared_ptr<AudioDataSource> m_Lower;
+	std::shared_ptr<AudioDataSource> mLower;
 };
 
 
@@ -172,29 +172,29 @@ class AudioDataSourceIO:
 	public AudioDataSourceChain
 {
 public:
-	AudioDataSourceIO(std::shared_ptr<AudioDataSource> a_Source):
-		AudioDataSourceChain(a_Source)
+	AudioDataSourceIO(std::shared_ptr<AudioDataSource> aSource):
+		AudioDataSourceChain(aSource)
 	{
 		QIODevice::open(QIODevice::ReadOnly);
 	}
 
 	// QIODevice overrides:
-	virtual qint64 readData(char * a_Data, qint64 a_MaxLen) override
+	virtual qint64 readData(char * aData, qint64 aMaxLen) override
 	{
-		assert(a_MaxLen >= 0);
+		assert(aMaxLen >= 0);
 
 		// Skip zero-length reads:
-		if (a_MaxLen <= 0)
+		if (aMaxLen <= 0)
 		{
 			return 0;
 		}
 
-		auto res = static_cast<qint64>(AudioDataSourceChain::read(a_Data, static_cast<size_t>(a_MaxLen)));
+		auto res = static_cast<qint64>(AudioDataSourceChain::read(aData, static_cast<size_t>(aMaxLen)));
 		/*
 		#ifdef _DEBUG
 			static auto lastMsec = TimeSinceStart::msecElapsed();
 			auto msecNow = TimeSinceStart::msecElapsed();
-			qDebug() << "Requested " << a_MaxLen << " bytes, got " << res << " bytes; since last: "
+			qDebug() << "Requested " << aMaxLen << " bytes, got " << res << " bytes; since last: "
 				<< msecNow - lastMsec << " msec";
 			lastMsec = msecNow;
 		#endif  // _DEBUG
@@ -203,10 +203,10 @@ public:
 	}
 
 
-	virtual qint64 writeData(const char * a_Data, qint64 a_Len) override
+	virtual qint64 writeData(const char * aData, qint64 aLen) override
 	{
-		Q_UNUSED(a_Data);
-		Q_UNUSED(a_Len);
+		Q_UNUSED(aData);
+		Q_UNUSED(aLen);
 		assert(!"Writing data is forbidden");  // AudioDataSource is a read-only device
 		return -1;
 	}

@@ -38,46 +38,46 @@ class WaveformDisplay:
 
 public:
 
-	explicit WaveformDisplay(QWidget * a_Parent = nullptr);
+	explicit WaveformDisplay(QWidget * aParent = nullptr);
 
 	/** Sets the player whose waveform to display. */
-	void setPlayer(Player & a_Player);
+	void setPlayer(Player & aPlayer);
 
 	/** Paints the display for the specified paint event. */
-	void paint(QPainter & a_Painter, int a_Height);
+	void paint(QPainter & aPainter, int aHeight);
 
 	/** Sets the new width and height for the display.
 	Recalculates the peaks. */
-	void resize(int a_Width);
+	void resize(int aWidth);
 
 
 protected:
 
 	/** The player whose waveform to display. */
-	Player * m_Player;
+	Player * mPlayer;
 
 	/** The playback buffer that is being played by the player currently.
 	This object provides the waveform data.
 	May be nullptr. */
-	PlaybackBufferPtr m_PlaybackBuffer;
+	PlaybackBufferPtr mPlaybackBuffer;
 
 	/** The song currently displayed.
 	If the current track is not a song, this member is set to nullptr. */
-	SongPtr m_CurrentSong;
+	SongPtr mCurrentSong;
 
 	/** The calculated waveform peaks. */
-	std::vector<short> m_Peaks;
+	std::vector<short> mPeaks;
 
-	std::vector<int> m_Sums;
+	std::vector<int> mSums;
 
 	/** The timer used to provide updates while song decoding is in progress. */
-	QTimer m_UpdateTimer;
+	QTimer mUpdateTimer;
 
-	/** The width of the display, in pixels. Also the count of m_Peaks. */
-	int m_Width;
+	/** The width of the display, in pixels. Also the count of mPeaks. */
+	int mWidth;
 
 	/** True if the peak data has been rendered for the complete playback data (entire song). */
-	bool m_IsPeakDataComplete;
+	bool mIsPeakDataComplete;
 
 
 	/** Calculates the peaks for the current widget size and current PlaybackBuffer fill mark. */
@@ -85,7 +85,7 @@ protected:
 
 	/** Sets the song's skip-start to the time corresponding to the specified X position.
 	If the current track is not a song, ignored. */
-	void setSkipStart(int a_PosX);
+	void setSkipStart(int aPosX);
 
 	/** Removes the song's skip-start.
 	If the current track is not a song, ignored. */
@@ -93,24 +93,24 @@ protected:
 
 
 	// QWidget overrides:
-	virtual void paintEvent(QPaintEvent * a_Event) override;
-	virtual void resizeEvent(QResizeEvent * a_Event) override;
+	virtual void paintEvent(QPaintEvent * aEvent) override;
+	virtual void resizeEvent(QResizeEvent * aEvent) override;
 	virtual QSize sizeHint() const override;
-	virtual void mouseReleaseEvent(QMouseEvent * a_Event) override;
-	virtual void contextMenuEvent(QContextMenuEvent * a_Event) override;
+	virtual void mouseReleaseEvent(QMouseEvent * aEvent) override;
+	virtual void contextMenuEvent(QContextMenuEvent * aEvent) override;
 
 	/** Converts the time within the song into a screen X coord. */
-	int timeToScreen(double a_Seconds);
+	int timeToScreen(double aSeconds);
 
 	/** Converts the screen X coord into timestamp within the song.
 	Clamps the X coord into the valid range, if needed. */
-	double screenToTime(int a_PosX);
+	double screenToTime(int aPosX);
 
 
 signals:
 
 	/** Emitted after a song is changed as a result of user's operation within this widget. */
-	void songChanged(SongPtr a_Song);
+	void songChanged(SongPtr aSong);
 
 
 public slots:
@@ -119,12 +119,12 @@ public slots:
 protected slots:
 
 	/** Emitted by the player when it starts playing back an item. */
-	void playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer);
+	void playerStartedPlayback(IPlaylistItemPtr aItem, PlaybackBufferPtr aPlaybackBuffer);
 
 	/** Emitted by the player when it finishes playing back an item. */
 	void playerFinishedPlayback();
 
-	/** Emitted by m_UpdateTimer to update periodically. */
+	/** Emitted by mUpdateTimer to update periodically. */
 	void updateOnTimer();
 
 };

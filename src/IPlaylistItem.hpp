@@ -28,22 +28,22 @@ class IPlaylistItem
 public:
 	/** The datetime when the playback has started / will start.
 	Is null when the item is in the future and the playback hasn't started. */
-	QDateTime m_PlaybackStarted;
+	QDateTime mPlaybackStarted;
 
 	/** The datetime when the playback has ended / will end.
 	Is null when the item is in the future and the playback hasn't started. */
-	QDateTime m_PlaybackEnded;
+	QDateTime mPlaybackEnded;
 
 	/** The tempo coefficient associated with this track. */
-	qreal m_TempoCoeff;
+	qreal mTempoCoeff;
 
 	/** Set to true if the player fails to play this track. */
-	bool m_IsMarkedUnplayable;
+	bool mIsMarkedUnplayable;
 
 
 	IPlaylistItem():
-		m_TempoCoeff(1),
-		m_IsMarkedUnplayable(false)
+		mTempoCoeff(1),
+		mIsMarkedUnplayable(false)
 	{
 	}
 
@@ -75,7 +75,7 @@ public:
 	virtual double durationLimit() const = 0;
 
 	/** Sets a new duration limit, or removes the current limit if <0. */
-	virtual void setDurationLimit(double a_Seconds) = 0;
+	virtual void setDurationLimit(double aSeconds) = 0;
 
 
 	/** Returns the number of seconds that this track would play for.
@@ -96,35 +96,35 @@ public:
 	/** Returns the tempo coefficient currently associated with this track. */
 	virtual double tempoCoeff() const
 	{
-		return m_TempoCoeff;
+		return mTempoCoeff;
 	}
 
 
 	/** Sets the tempo coefficient associated with this track. */
-	virtual void setTempoCoeff(double a_TempoCoeff)
+	virtual void setTempoCoeff(double aTempoCoeff)
 	{
-		m_TempoCoeff = a_TempoCoeff;
+		mTempoCoeff = aTempoCoeff;
 	}
 
 
-	/** Updates m_PlaybackEnd based on the current remaining time for playback.
+	/** Updates mPlaybackEnd based on the current remaining time for playback.
 	Takes into account duration limit.
 	Returns true if the end was changed from its previous value, false if not. */
-	virtual bool updateEndTimeFromRemainingTime(double a_RemainingTime)
+	virtual bool updateEndTimeFromRemainingTime(double aRemainingTime)
 	{
-		auto remainingMSecs = static_cast<qint64>(a_RemainingTime * 1000);
+		auto remainingMSecs = static_cast<qint64>(aRemainingTime * 1000);
 		auto end = QDateTime::currentDateTimeUtc().addMSecs(remainingMSecs);
 		auto lim = durationLimit();
 		if (
 			(lim > 0) &&
-			(m_PlaybackStarted.msecsTo(end) > lim * 1000)
+			(mPlaybackStarted.msecsTo(end) > lim * 1000)
 		)
 		{
-			end = m_PlaybackStarted.addMSecs(static_cast<qint64>(lim * 1000));
+			end = mPlaybackStarted.addMSecs(static_cast<qint64>(lim * 1000));
 		}
-		if (m_PlaybackEnded != end)
+		if (mPlaybackEnded != end)
 		{
-			m_PlaybackEnded = end;
+			mPlaybackEnded = end;
 			return true;
 		}
 		return false;
@@ -132,14 +132,14 @@ public:
 
 	/** Starts decoding the item into the specified audio format.
 	Returns a PlaybackBuffer-derived class that is expected to provide the audio output data. */
-	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) = 0;
+	virtual PlaybackBuffer * startDecoding(const QAudioFormat & aFormat) = 0;
 
 	/** Returns whether the player has marked the track as unplayable. */
-	virtual bool isMarkedUnplayable() const { return m_IsMarkedUnplayable; }
+	virtual bool isMarkedUnplayable() const { return mIsMarkedUnplayable; }
 
 	/** Marks the track as unplayable.
 	Called by the Player on tracks that fail to play. */
-	virtual void markAsUnplayable() { m_IsMarkedUnplayable = true; }
+	virtual void markAsUnplayable() { mIsMarkedUnplayable = true; }
 };
 
 using IPlaylistItemPtr = std::shared_ptr<IPlaylistItem>;

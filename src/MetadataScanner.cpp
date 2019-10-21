@@ -19,17 +19,17 @@
 
 /** Sets the property in the TagLib property map to the specified value.
 If the value is not present, clears the property value instead. */
-static void setOrClearProp(TagLib::PropertyMap & a_Props, const char * a_PropName, const DatedOptional<QString> & a_Value)
+static void setOrClearProp(TagLib::PropertyMap & aProps, const char * aPropName, const DatedOptional<QString> & aValue)
 {
-	if (a_Value.isPresent())
+	if (aValue.isPresent())
 	{
-		a_Props[a_PropName] = TagLib::StringList(
-			TagLib::String(a_Value.value().toStdString(), TagLib::String::Type::UTF8)
+		aProps[aPropName] = TagLib::StringList(
+			TagLib::String(aValue.value().toStdString(), TagLib::String::Type::UTF8)
 		);
 	}
 	else
 	{
-		a_Props.erase(a_PropName);
+		aProps.erase(aPropName);
 	}
 }
 
@@ -39,26 +39,26 @@ static void setOrClearProp(TagLib::PropertyMap & a_Props, const char * a_PropNam
 
 /** Any textual invalid variant in the specified tag gets replaced with an empty string.
 Also adjusts MPM, based on the genre (if present). */
-static void validateSongTag(Song::Tag & a_Tag)
+static void validateSongTag(Song::Tag & aTag)
 {
-	if (a_Tag.m_Author.isEmpty())
+	if (aTag.mAuthor.isEmpty())
 	{
-		a_Tag.m_Author = QString("");
+		aTag.mAuthor = QString("");
 	}
-	if (a_Tag.m_Title.isEmpty())
+	if (aTag.mTitle.isEmpty())
 	{
-		a_Tag.m_Title = QString("");
+		aTag.mTitle = QString("");
 	}
-	if (a_Tag.m_Genre.isEmpty())
+	if (aTag.mGenre.isEmpty())
 	{
-		a_Tag.m_Genre = QString("");
+		aTag.mGenre = QString("");
 	}
 	else
 	{
 		// Valid genre, use it to adjust MPM, if needed:
-		if (a_Tag.m_MeasuresPerMinute.isPresent())
+		if (aTag.mMeasuresPerMinute.isPresent())
 		{
-			a_Tag.m_MeasuresPerMinute = Song::adjustMpm(a_Tag.m_MeasuresPerMinute.value(), a_Tag.m_Genre.value());
+			aTag.mMeasuresPerMinute = Song::adjustMpm(aTag.mMeasuresPerMinute.value(), aTag.mGenre.value());
 		}
 	}
 }
@@ -67,9 +67,9 @@ static void validateSongTag(Song::Tag & a_Tag)
 
 
 /** Returns whether the value is a reasonable MPM or BPM (in the (10, 300) range. */
-static bool isReasonableMpm(double a_Mpm)
+static bool isReasonableMpm(double aMpm)
 {
-	return (a_Mpm > 10) && (a_Mpm < 300);
+	return (aMpm > 10) && (aMpm < 300);
 }
 
 
@@ -77,19 +77,19 @@ static bool isReasonableMpm(double a_Mpm)
 
 
 /** Scans the string from the start, removes anything non-alpha. */
-static QString stripBeginningNonAlpha(const QString & a_Input)
+static QString stripBeginningNonAlpha(const QString & aInput)
 {
-	int len = a_Input.length();
+	int len = aInput.length();
 	for (int i = 0; i < len; ++i)
 	{
-		if (a_Input[i].isLetter())
+		if (aInput[i].isLetter())
 		{
 			// If there are any digits in front, include them in the result:
-			while ((i > 0) && a_Input[i - 1].isLetterOrNumber())
+			while ((i > 0) && aInput[i - 1].isLetterOrNumber())
 			{
 				--i;
 			}
-			return a_Input.mid(i, len - i);
+			return aInput.mid(i, len - i);
 		}
 	}
 	return QString();
@@ -100,28 +100,28 @@ static QString stripBeginningNonAlpha(const QString & a_Input)
 
 
 /** Attempts to find the genre and MPM in the specified string.
-Detects strings such as "SW" and "SW30". Any found matches are set into a_OutputTag.
+Detects strings such as "SW" and "SW30". Any found matches are set into aOutputTag.
 Returns the string excluding the genre / MPM substring.
 If a long description of the genre is found, it is only stripped if the BPM is present as well
-or a_StripLongGenre is true. If the entire string specifies a genre (there are no characters outside
+or aStripLongGenre is true. If the entire string specifies a genre (there are no characters outside
 the regexp match), the entire string is stripped. */
-static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag, bool a_StripLongGenre = true)
+static QString tryMatchGenreMPM(const QString & aInput, Song::Tag & aOutputTag, bool aStripLongGenre = true)
 {
 	// Regexp -> Genre, LongStrip
 	struct GenreRE
 	{
-		QRegularExpression m_RegExp;
-		QString m_Genre;
-		bool m_IsLongStrip;
+		QRegularExpression mRegExp;
+		QString mGenre;
+		bool mIsLongStrip;
 
 		GenreRE(
-			const char * a_RegExpStr,
-			const char * a_GenreStr,
-			bool a_IsLongStrip
+			const char * aRegExpStr,
+			const char * aGenreStr,
+			bool aIsLongStrip
 		):
-			m_RegExp(a_RegExpStr, QRegularExpression::CaseInsensitiveOption),
-			m_Genre(a_GenreStr),
-			m_IsLongStrip(a_IsLongStrip)
+			mRegExp(aRegExpStr, QRegularExpression::CaseInsensitiveOption),
+			mGenre(aGenreStr),
+			mIsLongStrip(aIsLongStrip)
 		{
 		}
 	};
@@ -186,15 +186,15 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 
 	for (const auto & p: genreMap)
 	{
-		auto match = p.m_RegExp.match(a_Input);
+		auto match = p.mRegExp.match(aInput);
 		if (!match.hasMatch())
 		{
 			continue;
 		}
-		if (!a_OutputTag.m_Genre.isEmpty() && (a_OutputTag.m_Genre.value() != p.m_Genre))
+		if (!aOutputTag.mGenre.isEmpty() && (aOutputTag.mGenre.value() != p.mGenre))
 		{
-			qDebug() << "String \"" << a_Input << "\" has matched genre " << p.m_Genre
-				<< ", but already has genre " << a_OutputTag.m_Genre.value() << ", ignoring the match";
+			qDebug() << "String \"" << aInput << "\" has matched genre " << p.mGenre
+				<< ", but already has genre " << aOutputTag.mGenre.value() << ", ignoring the match";
 			continue;
 		}
 		bool isOK = false;
@@ -202,26 +202,26 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 		auto mpmIsPresent = false;
 		if (isOK && (mpm > 10) && (mpm < 300))
 		{
-			a_OutputTag.m_MeasuresPerMinute = mpm;
+			aOutputTag.mMeasuresPerMinute = mpm;
 			mpmIsPresent = true;
 		}
-		a_OutputTag.m_Genre = p.m_Genre;
-		if (p.m_IsLongStrip)
+		aOutputTag.mGenre = p.mGenre;
+		if (p.mIsLongStrip)
 		{
-			if ((match.capturedStart(1) == 0) && (match.capturedEnd("end") == a_Input.length()))
+			if ((match.capturedStart(1) == 0) && (match.capturedEnd("end") == aInput.length()))
 			{
 				// The entire string is simply the genre, strip it always
 				return QString();
 			}
 		}
-		if (!a_StripLongGenre && !mpmIsPresent && p.m_IsLongStrip)
+		if (!aStripLongGenre && !mpmIsPresent && p.mIsLongStrip)
 		{
-			return a_Input;
+			return aInput;
 		}
-		auto prefix = (match.capturedStart(1) > 0) ? a_Input.left(match.capturedStart(1)) : QString();
-		return prefix + " " + a_Input.mid(match.capturedEnd("end"));
+		auto prefix = (match.capturedStart(1) > 0) ? aInput.left(match.capturedStart(1)) : QString();
+		return prefix + " " + aInput.mid(match.capturedEnd("end"));
 	}
-	return a_Input;
+	return aInput;
 }
 
 
@@ -232,18 +232,18 @@ static QString tryMatchGenreMPM(const QString & a_Input, Song::Tag & a_OutputTag
 If the substring is found and the MPM is in the (10, 300) range, it is set into the song.
 Returns the input string after removing the potential match.
 Assumes that the match is not in the middle of "author - title", but rather at either end. */
-static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
+static QString tryMatchBPM(const QString & aInput, Song::Tag & aOutputTag)
 {
 	// Search for strings like "28mpm" inside:
 	static const QRegularExpression re("(.*?)(\\d+)\\s?[bmt]pm(.*)", QRegularExpression::CaseInsensitiveOption);
-	auto match = re.match(a_Input);
+	auto match = re.match(aInput);
 	if (match.hasMatch())
 	{
 		bool isOK = false;
 		auto mpm = match.captured(2).toInt(&isOK);
 		if (isOK && isReasonableMpm(mpm))
 		{
-			a_OutputTag.m_MeasuresPerMinute = mpm;
+			aOutputTag.mMeasuresPerMinute = mpm;
 		}
 		auto prefix = match.captured(1);
 		if (prefix.endsWith('['))
@@ -270,15 +270,15 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 
 	// If the input is a number without anything else, consider it MPM as long as it's not too low / too high:
 	bool isOK = true;
-	auto mpm = a_Input.toInt(&isOK);
+	auto mpm = aInput.toInt(&isOK);
 	if (isOK && isReasonableMpm(mpm))
 	{
-		a_OutputTag.m_MeasuresPerMinute = mpm;
+		aOutputTag.mMeasuresPerMinute = mpm;
 		return QString();
 	}
 
 	// No match, return the input unchanged:
-	return a_Input;
+	return aInput;
 }
 
 
@@ -286,18 +286,18 @@ static QString tryMatchBPM(const QString & a_Input, Song::Tag & a_OutputTag)
 
 
 /** Extracts as much metadata form the input string as possible.
-The extracted data is saved into a_OutputTag and, if appropriate, removed from the string. */
-static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
+The extracted data is saved into aOutputTag and, if appropriate, removed from the string. */
+static QString extractFromPart(const QString & aInput, Song::Tag & aOutputTag)
 {
 	// First process all parentheses, brackets and braces:
 	QString intermediate;
-	auto len = a_Input.length();
+	auto len = aInput.length();
 	int last = 0;  // last boundary of the outer-most parenthesis / bracket / brace
 	int numNestingLevels = 0;
 	bool hasExtracted = false;
 	for (int i = 0; i < len; ++i)
 	{
-		switch (a_Input[i].unicode())
+		switch (aInput[i].unicode())
 		{
 			case '(':
 			case '{':
@@ -307,7 +307,7 @@ static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 				{
 					if (i > last)
 					{
-						intermediate.append(a_Input.mid(last, i - last));
+						intermediate.append(aInput.mid(last, i - last));
 					}
 					last = i + 1;
 				}
@@ -321,8 +321,8 @@ static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 				numNestingLevels -= 1;
 				if (numNestingLevels == 0)
 				{
-					auto subBlock = a_Input.mid(last, i - last);
-					auto outBlock = tryMatchGenreMPM(tryMatchBPM(subBlock, a_OutputTag), a_OutputTag);
+					auto subBlock = aInput.mid(last, i - last);
+					auto outBlock = tryMatchGenreMPM(tryMatchBPM(subBlock, aOutputTag), aOutputTag);
 					if (subBlock == outBlock)
 					{
 						// No extractable information within this parenthesis, just append all of it:
@@ -340,10 +340,10 @@ static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 				break;
 			}
 		}
-	}  // for i - a_Input[]
+	}  // for i - aInput[]
 	if (last < len)
 	{
-		intermediate.append(a_Input.mid(last, len - last));
+		intermediate.append(aInput.mid(last, len - last));
 	}
 
 	/*
@@ -357,8 +357,8 @@ static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 	// Nothing useful in parentheses, run extraction on the bare text:
 	return stripBeginningNonAlpha(
 		tryMatchGenreMPM(
-			tryMatchBPM(intermediate, a_OutputTag),
-			a_OutputTag, false
+			tryMatchBPM(intermediate, aOutputTag),
+			aOutputTag, false
 		)
 	).simplified();
 }
@@ -368,7 +368,7 @@ static QString extractFromPart(const QString & a_Input, Song::Tag & a_OutputTag)
 
 
 /** Returns true if the input string is one of the "forbidden" parts, such as "unknown", "various" etc. */
-static bool isForbiddenPart(const QString & a_Input)
+static bool isForbiddenPart(const QString & aInput)
 {
 	static const QRegularExpression reForbidden[] =
 	{
@@ -388,7 +388,7 @@ static bool isForbiddenPart(const QString & a_Input)
 
 	for (const auto & re: reForbidden)
 	{
-		if (re.match(a_Input).hasMatch())
+		if (re.match(aInput).hasMatch())
 		{
 			return true;
 		}
@@ -402,23 +402,23 @@ static bool isForbiddenPart(const QString & a_Input)
 
 /** Breaks the string into parts delimited by dashes or slashes,
 then extracts as much metadata from each part as possible.
-The extracted data is saved into a_OutputTag and, if appropriate, removed from the string. */
-static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
+The extracted data is saved into aOutputTag and, if appropriate, removed from the string. */
+static QString extract(const QString & aInput, Song::Tag & aOutputTag)
 {
 	// Break the input into parts by all dashes and slashes:
 	QStringList parts;
 	int last = 0;
-	int len = a_Input.length();
+	int len = aInput.length();
 	for (int i = 0; i < len; ++i)
 	{
-		switch (a_Input[i].unicode())
+		switch (aInput[i].unicode())
 		{
 			case '/':
 			case '-':
 			{
 				if (i > last)
 				{
-					parts.append(a_Input.mid(last, i - last));
+					parts.append(aInput.mid(last, i - last));
 				}
 				last = i + 1;
 				break;
@@ -427,7 +427,7 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 	}
 	if (last < len)
 	{
-		parts.append(a_Input.mid(last, len - last));
+		parts.append(aInput.mid(last, len - last));
 	}
 
 	// Process each part:
@@ -439,7 +439,7 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 		{
 			continue;
 		}
-		auto parsed = extractFromPart(simple, a_OutputTag);
+		auto parsed = extractFromPart(simple, aOutputTag);
 		if (parsed.isEmpty() || isForbiddenPart(parsed))
 		{
 			continue;
@@ -460,11 +460,11 @@ static QString extract(const QString & a_Input, Song::Tag & a_OutputTag)
 /** If the tag has empty author or title, attempts to split the other value into two.
 Handles strings such as "author - title" in a single tag entry.
 The tag is changed in-place. */
-static void trySplitAuthorTitle(Song::Tag & a_Tag)
+static void trySplitAuthorTitle(Song::Tag & aTag)
 {
 	if (
-		(a_Tag.m_Author.isEmpty() && a_Tag.m_Title.isEmpty()) ||
-		(!a_Tag.m_Author.isEmpty() && !a_Tag.m_Title.isEmpty())
+		(aTag.mAuthor.isEmpty() && aTag.mTitle.isEmpty()) ||
+		(!aTag.mAuthor.isEmpty() && !aTag.mTitle.isEmpty())
 	)
 	{
 		// Nothing to be done in this case
@@ -472,20 +472,20 @@ static void trySplitAuthorTitle(Song::Tag & a_Tag)
 	}
 
 	// Split into halves on the '-' closest to the string middle:
-	auto src = a_Tag.m_Author.isEmpty() ? a_Tag.m_Title.value() : a_Tag.m_Author.value();
+	auto src = aTag.mAuthor.isEmpty() ? aTag.mTitle.value() : aTag.mAuthor.value();
 	auto halfLen = src.length() / 2;
 	for (int i = 0; i < halfLen; ++i)
 	{
 		if (src[halfLen + i] == '-')
 		{
-			a_Tag.m_Author = src.left(halfLen + i - 1).simplified();
-			a_Tag.m_Title = src.mid(halfLen + i + 1).simplified();
+			aTag.mAuthor = src.left(halfLen + i - 1).simplified();
+			aTag.mTitle = src.mid(halfLen + i + 1).simplified();
 			return;
 		}
 		else if (src[halfLen - i] == '-')
 		{
-			a_Tag.m_Author = src.left(halfLen - i - 1).simplified();
-			a_Tag.m_Title = src.mid(halfLen - i + 1).simplified();
+			aTag.mAuthor = src.left(halfLen - i - 1).simplified();
+			aTag.mTitle = src.mid(halfLen - i + 1).simplified();
 			return;
 		}
 	}
@@ -499,7 +499,7 @@ static void trySplitAuthorTitle(Song::Tag & a_Tag)
 // MetadataScanner:
 
 MetadataScanner::MetadataScanner():
-	m_QueueLength(0)
+	mQueueLength(0)
 {
 }
 
@@ -507,23 +507,23 @@ MetadataScanner::MetadataScanner():
 
 
 
-void MetadataScanner::writeTagToSong(SongPtr a_Song, const Tag & a_Tag)
+void MetadataScanner::writeTagToSong(SongPtr aSong, const Tag & aTag)
 {
-	auto fr = openTagFile(a_Song->fileName());
+	auto fr = openTagFile(aSong->fileName());
 	if (fr.isNull())
 	{
 		// File format not recognized
-		qDebug() << "Unable to parse file " << a_Song->fileName();
+		qDebug() << "Unable to parse file " << aSong->fileName();
 		return;
 	}
 	auto props = fr.file()->properties();
-	setOrClearProp(props, "ARTIST",  a_Tag.m_Author);
-	setOrClearProp(props, "TITLE",   a_Tag.m_Title);
-	setOrClearProp(props, "GENRE",   a_Tag.m_Genre);
-	setOrClearProp(props, "COMMENT", a_Tag.m_Comment);
-	if (a_Tag.m_MeasuresPerMinute.isPresent())
+	setOrClearProp(props, "ARTIST",  aTag.mAuthor);
+	setOrClearProp(props, "TITLE",   aTag.mTitle);
+	setOrClearProp(props, "GENRE",   aTag.mGenre);
+	setOrClearProp(props, "COMMENT", aTag.mComment);
+	if (aTag.mMeasuresPerMinute.isPresent())
 	{
-		props["BPM"] = TagLib::StringList(QString::number(a_Tag.m_MeasuresPerMinute.value()).toStdString());
+		props["BPM"] = TagLib::StringList(QString::number(aTag.mMeasuresPerMinute.value()).toStdString());
 	}
 	else
 	{
@@ -532,7 +532,7 @@ void MetadataScanner::writeTagToSong(SongPtr a_Song, const Tag & a_Tag)
 	auto refused = fr.file()->setProperties(props);
 	if (!refused.isEmpty())
 	{
-		qWarning() << "Failed to set the following properties on song " << a_Song->fileName();
+		qWarning() << "Failed to set the following properties on song " << aSong->fileName();
 		for (const auto & prop: refused)
 		{
 			qWarning()
@@ -543,39 +543,39 @@ void MetadataScanner::writeTagToSong(SongPtr a_Song, const Tag & a_Tag)
 	}
 	if (!fr.save())
 	{
-		qWarning() << "Failed to save the new tag into song " << a_Song->fileName();
+		qWarning() << "Failed to save the new tag into song " << aSong->fileName();
 	}
 
 	// Update the detected genre in the song:
-	a_Song->setId3Tag(parseId3Tag(a_Tag));
+	aSong->setId3Tag(parseId3Tag(aTag));
 }
 
 
 
 
 
-std::pair<bool, MetadataScanner::Tag> MetadataScanner::readTagFromFile(const QString & a_FileName) noexcept
+std::pair<bool, MetadataScanner::Tag> MetadataScanner::readTagFromFile(const QString & aFileName) noexcept
 {
 	MetadataScanner::Tag res;
-	auto fr = openTagFile(a_FileName);
+	auto fr = openTagFile(aFileName);
 	if (fr.isNull())
 	{
 		// File format not recognized
-		qDebug() << "Unable to parse file " << a_FileName;
+		qDebug() << "Unable to parse file " << aFileName;
 		return std::make_pair(false, res);
 	}
 	auto tag = fr.tag();
 	if (tag == nullptr)
 	{
-		qDebug() << "No TagLib-extractable information found in " << a_FileName;
+		qDebug() << "No TagLib-extractable information found in " << aFileName;
 		return std::make_pair(false, res);
 	}
 
 	// Extract the tag:
-	res.m_Author = QString::fromStdString(tag->artist().to8Bit(true));
-	res.m_Title = QString::fromStdString(tag->title().to8Bit(true));
-	res.m_Comment = QString::fromStdString(tag->comment().to8Bit(true));
-	res.m_Genre = QString::fromStdString(tag->genre().to8Bit(true));
+	res.mAuthor = QString::fromStdString(tag->artist().to8Bit(true));
+	res.mTitle = QString::fromStdString(tag->title().to8Bit(true));
+	res.mComment = QString::fromStdString(tag->comment().to8Bit(true));
+	res.mGenre = QString::fromStdString(tag->genre().to8Bit(true));
 
 	// Extract the MPM from BPM in the extended properties:
 	for (const auto & prop: fr.file()->properties())
@@ -586,7 +586,7 @@ std::pair<bool, MetadataScanner::Tag> MetadataScanner::readTagFromFile(const QSt
 			auto bpm = QString::fromStdString(prop.second.toString().to8Bit(true)).toDouble(&isOK);
 			if (isOK)
 			{
-				res.m_MeasuresPerMinute = bpm;
+				res.mMeasuresPerMinute = bpm;
 			}
 		}
 	}
@@ -597,24 +597,24 @@ std::pair<bool, MetadataScanner::Tag> MetadataScanner::readTagFromFile(const QSt
 
 
 
-Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
+Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & aFileTag)
 {
 	Song::Tag res;
-	/* genre = */   extract(a_FileTag.m_Genre.valueOrDefault(), res);
-	/* comment = */ extract(a_FileTag.m_Comment.valueOrDefault(), res);
-	res.m_Author =  extract(a_FileTag.m_Author.valueOrDefault(), res);
-	res.m_Title =   extract(a_FileTag.m_Title.valueOrDefault(), res);
-	if (a_FileTag.m_MeasuresPerMinute.isPresent())
+	/* genre = */   extract(aFileTag.mGenre.valueOrDefault(), res);
+	/* comment = */ extract(aFileTag.mComment.valueOrDefault(), res);
+	res.mAuthor =  extract(aFileTag.mAuthor.valueOrDefault(), res);
+	res.mTitle =   extract(aFileTag.mTitle.valueOrDefault(), res);
+	if (aFileTag.mMeasuresPerMinute.isPresent())
 	{
-		if (res.m_Genre.isPresent())
+		if (res.mGenre.isPresent())
 		{
 			// Use genre to adjust from BPM to MPM:
-			res.m_MeasuresPerMinute = Song::adjustMpm(a_FileTag.m_MeasuresPerMinute.value(), res.m_Genre.value());
+			res.mMeasuresPerMinute = Song::adjustMpm(aFileTag.mMeasuresPerMinute.value(), res.mGenre.value());
 		}
 		else
 		{
 			// No genre, cannot adjust
-			res.m_MeasuresPerMinute = a_FileTag.m_MeasuresPerMinute;
+			res.mMeasuresPerMinute = aFileTag.mMeasuresPerMinute;
 		}
 	}
 	trySplitAuthorTitle(res);
@@ -625,28 +625,28 @@ Song::Tag MetadataScanner::parseId3Tag(const MetadataScanner::Tag & a_FileTag)
 
 
 
-MetadataScanner::Tag MetadataScanner::applyTagChanges(const MetadataScanner::Tag & a_FileTag, const MetadataScanner::Tag & a_Changes)
+MetadataScanner::Tag MetadataScanner::applyTagChanges(const MetadataScanner::Tag & aFileTag, const MetadataScanner::Tag & aChanges)
 {
-	auto res = a_FileTag;
-	if (a_Changes.m_Author.isPresent())
+	auto res = aFileTag;
+	if (aChanges.mAuthor.isPresent())
 	{
-		res.m_Author = a_Changes.m_Author;
+		res.mAuthor = aChanges.mAuthor;
 	}
-	if (a_Changes.m_Title.isPresent())
+	if (aChanges.mTitle.isPresent())
 	{
-		res.m_Title = a_Changes.m_Title;
+		res.mTitle = aChanges.mTitle;
 	}
-	if (a_Changes.m_Genre.isPresent())
+	if (aChanges.mGenre.isPresent())
 	{
-		res.m_Genre = a_Changes.m_Genre;
+		res.mGenre = aChanges.mGenre;
 	}
-	if (a_Changes.m_Comment.isPresent())
+	if (aChanges.mComment.isPresent())
 	{
-		res.m_Comment = a_Changes.m_Comment;
+		res.mComment = aChanges.mComment;
 	}
-	if (a_Changes.m_MeasuresPerMinute.isPresent())
+	if (aChanges.mMeasuresPerMinute.isPresent())
 	{
-		res.m_MeasuresPerMinute = a_Changes.m_MeasuresPerMinute;
+		res.mMeasuresPerMinute = aChanges.mMeasuresPerMinute;
 	}
 	return res;
 }
@@ -655,10 +655,10 @@ MetadataScanner::Tag MetadataScanner::applyTagChanges(const MetadataScanner::Tag
 
 
 
-Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
+Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & aFileName)
 {
 	Song::Tag songTag;
-	auto idxLastSlash = a_FileName.lastIndexOf('/');
+	auto idxLastSlash = aFileName.lastIndexOf('/');
 	/*
 	if (idxLastSlash < 0)
 	{
@@ -667,18 +667,18 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	*/
 
 	// Auto-detect genre from the parent folders names:
-	auto parents = a_FileName.split('/', QString::SkipEmptyParts);
+	auto parents = aFileName.split('/', QString::SkipEmptyParts);
 	for (const auto & p: parents)
 	{
 		tryMatchGenreMPM(p, songTag);
-		if (!songTag.m_Genre.isEmpty())  // Did we assign a genre?
+		if (!songTag.mGenre.isEmpty())  // Did we assign a genre?
 		{
 			break;
 		}
 	}
 
 	// Detect and remove genre + MPM from filename substring:
-	auto fileBareName = a_FileName.mid(idxLastSlash + 1);
+	auto fileBareName = aFileName.mid(idxLastSlash + 1);
 	auto idxExt = fileBareName.lastIndexOf('.');
 	if (idxExt >= 0)
 	{
@@ -687,7 +687,7 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 	fileBareName = extract(fileBareName, songTag);
 
 	// Try split into author - title:
-	songTag.m_Title = fileBareName;
+	songTag.mTitle = fileBareName;
 	trySplitAuthorTitle(songTag);
 	validateSongTag(songTag);
 	return songTag;
@@ -697,15 +697,15 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & a_FileName)
 
 
 
-void MetadataScanner::enqueueScan(SongPtr a_Song, bool a_Prioritize)
+void MetadataScanner::enqueueScan(SongPtr aSong, bool aPrioritize)
 {
-	m_QueueLength += 1;
-	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(a_Song->fileName()), [this, a_Song]()
+	mQueueLength += 1;
+	BackgroundTasks::enqueue(tr("Scan metadata: %1").arg(aSong->fileName()), [this, aSong]()
 		{
-			scanSong(a_Song);
-			m_QueueLength -= 1;
+			scanSong(aSong);
+			mQueueLength -= 1;
 		},
-		a_Prioritize
+		aPrioritize
 	);
 }
 
@@ -713,13 +713,13 @@ void MetadataScanner::enqueueScan(SongPtr a_Song, bool a_Prioritize)
 
 
 
-TagLib::FileRef MetadataScanner::openTagFile(const QString & a_FileName)
+TagLib::FileRef MetadataScanner::openTagFile(const QString & aFileName)
 {
 	#ifdef _WIN32
 		// TagLib on Windows needs UTF16-BE filenames (#134):
-		return TagLib::FileRef(reinterpret_cast<const wchar_t *>(a_FileName.constData()), false);
+		return TagLib::FileRef(reinterpret_cast<const wchar_t *>(aFileName.constData()), false);
 	#else
-		return TagLib::FileRef(a_FileName.toUtf8().constData(), false);
+		return TagLib::FileRef(aFileName.toUtf8().constData(), false);
 	#endif
 }
 
@@ -727,35 +727,35 @@ TagLib::FileRef MetadataScanner::openTagFile(const QString & a_FileName)
 
 
 
-void MetadataScanner::queueScanSong(SongPtr a_Song)
+void MetadataScanner::queueScanSong(SongPtr aSong)
 {
-	enqueueScan(a_Song, false);
+	enqueueScan(aSong, false);
 }
 
 
 
 
 
-void MetadataScanner::queueScanSongPriority(SongPtr a_Song)
+void MetadataScanner::queueScanSongPriority(SongPtr aSong)
 {
-	enqueueScan(a_Song, true);
+	enqueueScan(aSong, true);
 }
 
 
 
 
 
-void MetadataScanner::scanSong(SongPtr a_Song)
+void MetadataScanner::scanSong(SongPtr aSong)
 {
-	auto id3Tag = readTagFromFile(a_Song->fileName());
+	auto id3Tag = readTagFromFile(aSong->fileName());
 	if (id3Tag.first)
 	{
 		auto parsedId3Tag = parseId3Tag(id3Tag.second);
 		validateSongTag(parsedId3Tag);
-		a_Song->setId3Tag(parsedId3Tag);
+		aSong->setId3Tag(parsedId3Tag);
 	}
-	auto fileTag = parseFileNameIntoMetadata(a_Song->fileName());
-	a_Song->setFileNameTag(fileTag);
+	auto fileTag = parseFileNameIntoMetadata(aSong->fileName());
+	aSong->setFileNameTag(fileTag);
 
-	emit songScanned(a_Song);
+	emit songScanned(aSong);
 }

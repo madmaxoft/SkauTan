@@ -279,11 +279,11 @@ bool SongTempoDetector::detect(Song::SharedDataPtr aSongSD)
 			break;
 		}
 		qDebug() << "Detected tempo in " << s->fileName() << ": " << res->mTempo;
-		aSongSD->m_DetectedTempo = res->mTempo;
+		aSongSD->mDetectedTempo = res->mTempo;
 		emit songTempoDetected(aSongSD);
 		return true;
 	}
-	qWarning() << "Cannot detect tempo in song hash " << aSongSD->m_Hash << ", none of the files provided data for analysis.";
+	qWarning() << "Cannot detect tempo in song hash " << aSongSD->mHash << ", none of the files provided data for analysis.";
 	return false;
 }
 

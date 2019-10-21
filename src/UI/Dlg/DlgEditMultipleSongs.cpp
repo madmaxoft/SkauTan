@@ -11,30 +11,30 @@
 
 
 DlgEditMultipleSongs::DlgEditMultipleSongs(
-	ComponentCollection & a_Components,
-	std::vector<std::shared_ptr<Song>> && a_Songs,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	std::vector<std::shared_ptr<Song>> && aSongs,
+	QWidget * aParent
 ):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_Songs(std::move(a_Songs)),
-	m_UI(new Ui::DlgEditMultipleSongs)
+	Super(aParent),
+	mComponents(aComponents),
+	mSongs(std::move(aSongs)),
+	mUI(new Ui::DlgEditMultipleSongs)
 {
-	assert(!m_Songs.empty());  // Need at least one song to edit
+	assert(!mSongs.empty());  // Need at least one song to edit
 
 	Settings::loadWindowPos("DlgEditMultipleSongs", *this);
-	m_UI->setupUi(this);
-	connect(m_UI->btnOK,     &QPushButton::clicked,  this, &DlgEditMultipleSongs::applyChangesAndClose);
-	connect(m_UI->btnCancel, &QPushButton::clicked,  this, &QDialog::reject);
-	connect(m_UI->leMPM,     &QLineEdit::textEdited, this, &DlgEditMultipleSongs::mpmTextEdited);
-	connect(m_UI->leAuthor, &QLineEdit::textEdited, [this](){ m_UI->chbAuthor->setChecked(true); });
-	connect(m_UI->leTitle,  &QLineEdit::textEdited, [this](){ m_UI->chbTitle->setChecked(true); });
-	connect(m_UI->leGenre,  &QLineEdit::textEdited, [this](){ m_UI->chbGenre->setChecked(true); });
+	mUI->setupUi(this);
+	connect(mUI->btnOK,     &QPushButton::clicked,  this, &DlgEditMultipleSongs::applyChangesAndClose);
+	connect(mUI->btnCancel, &QPushButton::clicked,  this, &QDialog::reject);
+	connect(mUI->leMPM,     &QLineEdit::textEdited, this, &DlgEditMultipleSongs::mpmTextEdited);
+	connect(mUI->leAuthor, &QLineEdit::textEdited, [this](){ mUI->chbAuthor->setChecked(true); });
+	connect(mUI->leTitle,  &QLineEdit::textEdited, [this](){ mUI->chbTitle->setChecked(true); });
+	connect(mUI->leGenre,  &QLineEdit::textEdited, [this](){ mUI->chbGenre->setChecked(true); });
 
 	// Insert the songs into the list widget:
-	for (const auto & song: m_Songs)
+	for (const auto & song: mSongs)
 	{
-		new QListWidgetItem(song->fileName(), m_UI->lwSongs);
+		new QListWidgetItem(song->fileName(), mUI->lwSongs);
 	}
 }
 
@@ -53,21 +53,21 @@ DlgEditMultipleSongs::~DlgEditMultipleSongs()
 
 void DlgEditMultipleSongs::applyChangesAndClose()
 {
-	auto db = m_Components.get<Database>();
-	auto shouldSetAuthor = m_UI->chbAuthor->isChecked();
-	auto shouldSetTitle  = m_UI->chbTitle->isChecked();
-	auto shouldSetGenre  = m_UI->chbGenre->isChecked();
-	auto shouldSetMPM    = m_UI->chbMPM->isChecked();
-	auto author = m_UI->leAuthor->text();
-	auto title  = m_UI->leTitle->text();
+	auto db = mComponents.get<Database>();
+	auto shouldSetAuthor = mUI->chbAuthor->isChecked();
+	auto shouldSetTitle  = mUI->chbTitle->isChecked();
+	auto shouldSetGenre  = mUI->chbGenre->isChecked();
+	auto shouldSetMPM    = mUI->chbMPM->isChecked();
+	auto author = mUI->leAuthor->text();
+	auto title  = mUI->leTitle->text();
 	bool isOK;
-	auto genre  = m_UI->leGenre->text();
-	auto mpm    = QLocale::system().toDouble(m_UI->leMPM->text(), &isOK);
+	auto genre  = mUI->leGenre->text();
+	auto mpm    = QLocale::system().toDouble(mUI->leMPM->text(), &isOK);
 	if (!isOK)
 	{
 		shouldSetMPM = false;
 	}
-	for (auto & song: m_Songs)
+	for (auto & song: mSongs)
 	{
 		if (shouldSetAuthor)
 		{
@@ -95,22 +95,22 @@ void DlgEditMultipleSongs::applyChangesAndClose()
 
 
 
-void DlgEditMultipleSongs::mpmTextEdited(const QString & a_NewText)
+void DlgEditMultipleSongs::mpmTextEdited(const QString & aNewText)
 {
-	m_UI->chbMPM->setChecked(true);
-	if (a_NewText.isEmpty())
+	mUI->chbMPM->setChecked(true);
+	if (aNewText.isEmpty())
 	{
-		m_UI->leMPM->setStyleSheet("");
+		mUI->leMPM->setStyleSheet("");
 		return;
 	}
 	bool isOK;
-	QLocale::system().toDouble(a_NewText, &isOK);
+	QLocale::system().toDouble(aNewText, &isOK);
 	if (isOK)
 	{
-		m_UI->leMPM->setStyleSheet("");
+		mUI->leMPM->setStyleSheet("");
 	}
 	else
 	{
-		m_UI->leMPM->setStyleSheet("background-color:#fcc");
+		mUI->leMPM->setStyleSheet("background-color:#fcc");
 	}
 }

@@ -33,36 +33,36 @@ class DlgPickTemplate:
 
 public:
 
-	explicit DlgPickTemplate(ComponentCollection & a_Components, QWidget * a_Parent = nullptr);
+	explicit DlgPickTemplate(ComponentCollection & aComponents, QWidget * aParent = nullptr);
 
 	virtual ~DlgPickTemplate() override;
 
 	/** Returns the template that the user selected, or nullptr if none selected. */
-	TemplatePtr selectedTemplate() const { return m_SelectedTemplate; }
+	TemplatePtr selectedTemplate() const { return mSelectedTemplate; }
 
 
 private:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The template that has been selected. */
-	TemplatePtr m_SelectedTemplate;
+	TemplatePtr mSelectedTemplate;
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgPickTemplate> m_UI;
+	std::unique_ptr<Ui::DlgPickTemplate> mUI;
 
 
 	/** Called for each keypress in the dialog, unless it is handled by the currently focused widget.
 	Used to monitor for the Enter and Esc keypresses. */
-	virtual void keyPressEvent(QKeyEvent * a_Event) override;
+	virtual void keyPressEvent(QKeyEvent * aEvent) override;
 
 
 protected slots:
 
 	/** Emitted by tblTemplates when a cell in it is dblclicked.
-	a_Row and a_Column are the cell coords. */
-	void cellDblClicked(int a_Row, int a_Column);
+	aRow and aColumn are the cell coords. */
+	void cellDblClicked(int aRow, int aColumn);
 };
 
 

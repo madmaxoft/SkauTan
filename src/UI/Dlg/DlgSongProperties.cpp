@@ -21,13 +21,13 @@
 
 
 /** Converts the BPM in text form to the number to be output into the CopyTag strings. */
-static double bpmToCopy(const QString & a_TextBpm)
+static double bpmToCopy(const QString & aTextBpm)
 {
-	if (a_TextBpm.isEmpty())
+	if (aTextBpm.isEmpty())
 	{
 		return -1;
 	}
-	return a_TextBpm.toDouble();
+	return aTextBpm.toDouble();
 }
 
 
@@ -38,114 +38,114 @@ static double bpmToCopy(const QString & a_TextBpm)
 // DlgSongProperties:
 
 DlgSongProperties::DlgSongProperties(
-	ComponentCollection & a_Components,
-	SongPtr a_Song,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	SongPtr aSong,
+	QWidget * aParent
 ) :
-	Super(a_Parent),
-	m_UI(new Ui::DlgSongProperties),
-	m_Components(a_Components),
-	m_Song(a_Song),
-	m_Duplicates(a_Song->duplicates())
+	Super(aParent),
+	mUI(new Ui::DlgSongProperties),
+	mComponents(aComponents),
+	mSong(aSong),
+	mDuplicates(aSong->duplicates())
 {
 	// Initialize the ChangeSets:
-	m_TagManual = m_Song->tagManual();
-	m_Notes = m_Song->notes();
+	mTagManual = mSong->tagManual();
+	mNotes = mSong->notes();
 	// TODO: move this to a background thread
-	for (auto & song: m_Duplicates)
+	for (auto & song: mDuplicates)
 	{
-		m_OriginalID3[song] = MetadataScanner::readTagFromFile(song->fileName());
+		mOriginalID3[song] = MetadataScanner::readTagFromFile(song->fileName());
 	}
 
 	// Initialize the UI:
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgSongProperties", *this);
 	auto genres = Song::recognizedGenres();
 	genres.insert(0, "");
-	m_UI->cbManualGenre->addItems(genres);
-	m_UI->cbManualGenre->setMaxVisibleItems(genres.count());
-	m_UI->lwDuplicates->addActions({
-		m_UI->actRemoveFromLibrary,
-		m_UI->actDeleteFromDisk,
+	mUI->cbManualGenre->addItems(genres);
+	mUI->cbManualGenre->setMaxVisibleItems(genres.count());
+	mUI->lwDuplicates->addActions({
+		mUI->actRemoveFromLibrary,
+		mUI->actDeleteFromDisk,
 	});
 
 	// Connect the signals:
-	auto td = m_Components.get<SongTempoDetector>();
-	connect(m_UI->btnCancel,                 &QPushButton::clicked,                 this, &DlgSongProperties::reject);
-	connect(m_UI->btnOK,                     &QPushButton::clicked,                 this, &DlgSongProperties::applyAndClose);
-	connect(m_UI->leManualAuthor,            &QLineEdit::textEdited,                this, &DlgSongProperties::authorTextEdited);
-	connect(m_UI->leManualTitle,             &QLineEdit::textEdited,                this, &DlgSongProperties::titleTextEdited);
-	connect(m_UI->cbManualGenre,             &QComboBox::currentTextChanged,        this, &DlgSongProperties::genreSelected);
-	connect(m_UI->leManualMeasuresPerMinute, &QLineEdit::textEdited,                this, &DlgSongProperties::measuresPerMinuteTextEdited);
-	connect(m_UI->pteNotes,                  &QPlainTextEdit::textChanged,          this, &DlgSongProperties::notesChanged);
-	connect(m_UI->lwDuplicates,              &QListWidget::currentRowChanged,       this, &DlgSongProperties::switchDuplicate);
-	connect(m_UI->leId3Author,               &QLineEdit::textEdited,                this, &DlgSongProperties::id3AuthorEdited);
-	connect(m_UI->leId3Title,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3TitleEdited);
-	connect(m_UI->leId3Genre,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3GenreEdited);
-	connect(m_UI->leId3Comment,              &QLineEdit::textEdited,                this, &DlgSongProperties::id3CommentEdited);
-	connect(m_UI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,                this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
-	connect(m_UI->actRemoveFromLibrary,      &QAction::triggered,                   this, &DlgSongProperties::removeFromLibrary);
-	connect(m_UI->actDeleteFromDisk,         &QAction::triggered,                   this, &DlgSongProperties::deleteFromDisk);
-	connect(m_UI->btnCopyId3Tag,             &QPushButton::clicked,                 this, &DlgSongProperties::copyId3Tag);
-	connect(m_UI->btnCopyPid3Tag,            &QPushButton::clicked,                 this, &DlgSongProperties::copyPid3Tag);
-	connect(m_UI->btnCopyFilenameTag,        &QPushButton::clicked,                 this, &DlgSongProperties::copyFilenameTag);
-	connect(m_UI->btnTapTempo,               &QPushButton::clicked,                 this, &DlgSongProperties::showTapTempo);
+	auto td = mComponents.get<SongTempoDetector>();
+	connect(mUI->btnCancel,                 &QPushButton::clicked,                 this, &DlgSongProperties::reject);
+	connect(mUI->btnOK,                     &QPushButton::clicked,                 this, &DlgSongProperties::applyAndClose);
+	connect(mUI->leManualAuthor,            &QLineEdit::textEdited,                this, &DlgSongProperties::authorTextEdited);
+	connect(mUI->leManualTitle,             &QLineEdit::textEdited,                this, &DlgSongProperties::titleTextEdited);
+	connect(mUI->cbManualGenre,             &QComboBox::currentTextChanged,        this, &DlgSongProperties::genreSelected);
+	connect(mUI->leManualMeasuresPerMinute, &QLineEdit::textEdited,                this, &DlgSongProperties::measuresPerMinuteTextEdited);
+	connect(mUI->pteNotes,                  &QPlainTextEdit::textChanged,          this, &DlgSongProperties::notesChanged);
+	connect(mUI->lwDuplicates,              &QListWidget::currentRowChanged,       this, &DlgSongProperties::switchDuplicate);
+	connect(mUI->leId3Author,               &QLineEdit::textEdited,                this, &DlgSongProperties::id3AuthorEdited);
+	connect(mUI->leId3Title,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3TitleEdited);
+	connect(mUI->leId3Genre,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3GenreEdited);
+	connect(mUI->leId3Comment,              &QLineEdit::textEdited,                this, &DlgSongProperties::id3CommentEdited);
+	connect(mUI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,                this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
+	connect(mUI->actRemoveFromLibrary,      &QAction::triggered,                   this, &DlgSongProperties::removeFromLibrary);
+	connect(mUI->actDeleteFromDisk,         &QAction::triggered,                   this, &DlgSongProperties::deleteFromDisk);
+	connect(mUI->btnCopyId3Tag,             &QPushButton::clicked,                 this, &DlgSongProperties::copyId3Tag);
+	connect(mUI->btnCopyPid3Tag,            &QPushButton::clicked,                 this, &DlgSongProperties::copyPid3Tag);
+	connect(mUI->btnCopyFilenameTag,        &QPushButton::clicked,                 this, &DlgSongProperties::copyFilenameTag);
+	connect(mUI->btnTapTempo,               &QPushButton::clicked,                 this, &DlgSongProperties::showTapTempo);
 	connect(td.get(),                        &SongTempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
 	p.setColor(QPalette::Active,   QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
 	p.setColor(QPalette::Inactive, QPalette::Base, p.color(QPalette::Disabled, QPalette::Base));
-	m_UI->leHash->setPalette(p);
-	m_UI->leLength->setPalette(p);
-	m_UI->leDetectedMeasuresPerMinute->setPalette(p);
-	m_UI->lePid3Author->setPalette(p);
-	m_UI->lePid3Title->setPalette(p);
-	m_UI->lePid3Genre->setPalette(p);
-	m_UI->lePid3MeasuresPerMinute->setPalette(p);
-	m_UI->leFilenameAuthor->setPalette(p);
-	m_UI->leFilenameTitle->setPalette(p);
-	m_UI->leFilenameGenre->setPalette(p);
-	m_UI->leFilenameMeasuresPerMinute->setPalette(p);
+	mUI->leHash->setPalette(p);
+	mUI->leLength->setPalette(p);
+	mUI->leDetectedMeasuresPerMinute->setPalette(p);
+	mUI->lePid3Author->setPalette(p);
+	mUI->lePid3Title->setPalette(p);
+	mUI->lePid3Genre->setPalette(p);
+	mUI->lePid3MeasuresPerMinute->setPalette(p);
+	mUI->leFilenameAuthor->setPalette(p);
+	mUI->leFilenameTitle->setPalette(p);
+	mUI->leFilenameGenre->setPalette(p);
+	mUI->leFilenameMeasuresPerMinute->setPalette(p);
 
 	// Fill in the data:
-	m_IsInternalChange = true;
-	m_UI->leHash->setText(Utils::toHex(a_Song->hash()));
-	auto length = m_Song->length();
+	mIsInternalChange = true;
+	mUI->leHash->setText(Utils::toHex(aSong->hash()));
+	auto length = mSong->length();
 	if (length.isPresent())
 	{
 		auto numSeconds = static_cast<int>(std::floor(length.value() + 0.5));
-		m_UI->leLength->setText(tr("%1:%2 (%n seconds)", "SongLength", numSeconds)
+		mUI->leLength->setText(tr("%1:%2 (%n seconds)", "SongLength", numSeconds)
 			.arg(QString::number(numSeconds / 60))
 			.arg(QString::number(numSeconds % 60), 2, '0')
 		);
 	}
 	QString detectedMpm;
-	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	if (mSong->sharedData()->mDetectedTempo.isPresent())
 	{
-		detectedMpm = tr("%1 (detection in progress)").arg(m_Song->sharedData()->m_DetectedTempo.value());
+		detectedMpm = tr("%1 (detection in progress)").arg(mSong->sharedData()->mDetectedTempo.value());
 	}
 	else
 	{
 		detectedMpm = tr("unknown (detection in progress)");
 	}
-	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
-	m_UI->leManualAuthor->setText(m_TagManual.m_Author.valueOrDefault());
-	m_UI->leManualTitle->setText(m_TagManual.m_Title.valueOrDefault());
-	m_UI->cbManualGenre->setCurrentText(m_TagManual.m_Genre.valueOrDefault());
-	if (m_TagManual.m_MeasuresPerMinute.isPresent())
+	mUI->leDetectedMeasuresPerMinute->setText(detectedMpm);
+	mUI->leManualAuthor->setText(mTagManual.mAuthor.valueOrDefault());
+	mUI->leManualTitle->setText(mTagManual.mTitle.valueOrDefault());
+	mUI->cbManualGenre->setCurrentText(mTagManual.mGenre.valueOrDefault());
+	if (mTagManual.mMeasuresPerMinute.isPresent())
 	{
-		m_UI->leManualMeasuresPerMinute->setText(QLocale::system().toString(m_TagManual.m_MeasuresPerMinute.value()));
+		mUI->leManualMeasuresPerMinute->setText(QLocale::system().toString(mTagManual.mMeasuresPerMinute.value()));
 	}
 	else
 	{
-		m_UI->leManualMeasuresPerMinute->clear();
+		mUI->leManualMeasuresPerMinute->clear();
 	}
-	m_UI->pteNotes->setPlainText(m_Notes.valueOrDefault());
-	m_IsInternalChange = false;
+	mUI->pteNotes->setPlainText(mNotes.valueOrDefault());
+	mIsInternalChange = false;
 	fillDuplicates();
-	selectSong(*m_Song);
-	m_Components.get<SongTempoDetector>()->queueDetect(m_Song->sharedData());
+	selectSong(*mSong);
+	mComponents.get<SongTempoDetector>()->queueDetect(mSong->sharedData());
 }
 
 
@@ -164,11 +164,11 @@ DlgSongProperties::~DlgSongProperties()
 void DlgSongProperties::fillDuplicates()
 {
 	int row = 0;
-	for (const auto & song: m_Duplicates)
+	for (const auto & song: mDuplicates)
 	{
 		auto item = new QListWidgetItem(song->fileName());
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(song));
-		m_UI->lwDuplicates->addItem(item);
+		mUI->lwDuplicates->addItem(item);
 		row += 1;
 	}
 }
@@ -177,97 +177,97 @@ void DlgSongProperties::fillDuplicates()
 
 
 
-void DlgSongProperties::selectSong(const Song & a_Song)
+void DlgSongProperties::selectSong(const Song & aSong)
 {
 	// Select the song in tblDuplicates:
-	m_IsInternalChange = true;
-	m_Song = songPtrFromRef(a_Song);
-	assert(m_Song != nullptr);
-	auto numRows = m_UI->lwDuplicates->count();
+	mIsInternalChange = true;
+	mSong = songPtrFromRef(aSong);
+	assert(mSong != nullptr);
+	auto numRows = mUI->lwDuplicates->count();
 	for (int row = 0; row < numRows; ++row)
 	{
-		auto itemSong = reinterpret_cast<const Song *>(m_UI->lwDuplicates->item(row)->data(Qt::UserRole).toULongLong());
-		if (itemSong == &a_Song)
+		auto itemSong = reinterpret_cast<const Song *>(mUI->lwDuplicates->item(row)->data(Qt::UserRole).toULongLong());
+		if (itemSong == &aSong)
 		{
-			m_UI->lwDuplicates->setCurrentRow(row);
+			mUI->lwDuplicates->setCurrentRow(row);
 			break;
 		}
 	}
 
 	// Fill in the ID3 tag, including user-made changes:
-	const auto & orig = m_OriginalID3[&a_Song];
+	const auto & orig = mOriginalID3[&aSong];
 	if (orig.first)
 	{
-		auto itr = m_TagID3Changes.find(&a_Song);
+		auto itr = mTagID3Changes.find(&aSong);
 		auto tag = orig.second;
-		if (itr != m_TagID3Changes.end())
+		if (itr != mTagID3Changes.end())
 		{
 			// The user made some changes, apply them into the tag:
 			tag = MetadataScanner::applyTagChanges(tag, itr->second);
 		}
-		m_UI->leId3Author->setText(tag.m_Author.valueOrDefault());
-		m_UI->leId3Title->setText(tag.m_Title.valueOrDefault());
-		m_UI->leId3Comment->setText(tag.m_Comment.valueOrDefault());
-		m_UI->leId3Genre->setText(tag.m_Genre.valueOrDefault());
-		if (tag.m_MeasuresPerMinute.isPresent())
+		mUI->leId3Author->setText(tag.mAuthor.valueOrDefault());
+		mUI->leId3Title->setText(tag.mTitle.valueOrDefault());
+		mUI->leId3Comment->setText(tag.mComment.valueOrDefault());
+		mUI->leId3Genre->setText(tag.mGenre.valueOrDefault());
+		if (tag.mMeasuresPerMinute.isPresent())
 		{
 			const auto loc = QLocale::system();
-			m_UI->leId3MeasuresPerMinute->setText(loc.toString(tag.m_MeasuresPerMinute.value()));
+			mUI->leId3MeasuresPerMinute->setText(loc.toString(tag.mMeasuresPerMinute.value()));
 		}
 		else
 		{
-			m_UI->leId3MeasuresPerMinute->clear();
+			mUI->leId3MeasuresPerMinute->clear();
 		}
 		// TODO: Indicate changed fields by using a different bg color or font
 	}
 	else
 	{
-		m_UI->leId3Author->clear();
-		m_UI->leId3Title->clear();
-		m_UI->leId3Comment->clear();
-		m_UI->leId3Genre->clear();
-		m_UI->leId3MeasuresPerMinute->clear();
+		mUI->leId3Author->clear();
+		mUI->leId3Title->clear();
+		mUI->leId3Comment->clear();
+		mUI->leId3Genre->clear();
+		mUI->leId3MeasuresPerMinute->clear();
 	}
-	m_UI->leId3Author->setReadOnly(!orig.first);
-	m_UI->leId3Title->setReadOnly(!orig.first);
-	m_UI->leId3Comment->setReadOnly(!orig.first);
-	m_UI->leId3Genre->setReadOnly(!orig.first);
-	m_UI->leId3MeasuresPerMinute->setReadOnly(!orig.first);
-	auto pal = orig.first ? m_UI->leManualAuthor->palette() : m_UI->leFilenameAuthor->palette();
-	m_UI->leId3Author->setPalette(pal);
-	m_UI->leId3Title->setPalette(pal);
-	m_UI->leId3Comment->setPalette(pal);
-	m_UI->leId3Genre->setPalette(pal);
-	m_UI->leId3MeasuresPerMinute->setPalette(pal);
+	mUI->leId3Author->setReadOnly(!orig.first);
+	mUI->leId3Title->setReadOnly(!orig.first);
+	mUI->leId3Comment->setReadOnly(!orig.first);
+	mUI->leId3Genre->setReadOnly(!orig.first);
+	mUI->leId3MeasuresPerMinute->setReadOnly(!orig.first);
+	auto pal = orig.first ? mUI->leManualAuthor->palette() : mUI->leFilenameAuthor->palette();
+	mUI->leId3Author->setPalette(pal);
+	mUI->leId3Title->setPalette(pal);
+	mUI->leId3Comment->setPalette(pal);
+	mUI->leId3Genre->setPalette(pal);
+	mUI->leId3MeasuresPerMinute->setPalette(pal);
 
 	// Fill in the parsed ID3 values, updated with the user-made changes:
 	updateParsedId3();
 
 	// Fill in the filename-deduced values:
-	m_UI->leFilenameAuthor->setText(a_Song.tagFileName().m_Author.valueOrDefault());
-	m_UI->leFilenameTitle->setText(a_Song.tagFileName().m_Title.valueOrDefault());
-	m_UI->leFilenameGenre->setText(a_Song.tagFileName().m_Genre.valueOrDefault());
-	if (a_Song.tagFileName().m_MeasuresPerMinute.isPresent())
+	mUI->leFilenameAuthor->setText(aSong.tagFileName().mAuthor.valueOrDefault());
+	mUI->leFilenameTitle->setText(aSong.tagFileName().mTitle.valueOrDefault());
+	mUI->leFilenameGenre->setText(aSong.tagFileName().mGenre.valueOrDefault());
+	if (aSong.tagFileName().mMeasuresPerMinute.isPresent())
 	{
 		const auto loc = QLocale::system();
-		m_UI->leFilenameMeasuresPerMinute->setText(loc.toString(a_Song.tagFileName().m_MeasuresPerMinute.value()));
+		mUI->leFilenameMeasuresPerMinute->setText(loc.toString(aSong.tagFileName().mMeasuresPerMinute.value()));
 	}
 	else
 	{
-		m_UI->leFilenameMeasuresPerMinute->clear();
+		mUI->leFilenameMeasuresPerMinute->clear();
 	}
-	m_IsInternalChange = false;
+	mIsInternalChange = false;
 }
 
 
 
 
 
-SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
+SongPtr DlgSongProperties::songPtrFromRef(const Song & aSong)
 {
-	for (const auto & song: m_Duplicates)
+	for (const auto & song: mDuplicates)
 	{
-		if (song == &a_Song)
+		if (song == &aSong)
 		{
 			return song->shared_from_this();
 		}
@@ -282,37 +282,37 @@ SongPtr DlgSongProperties::songPtrFromRef(const Song & a_Song)
 void DlgSongProperties::updateParsedId3()
 {
 	// If the ID3 tag is invalid, bail out:
-	const auto & orig = m_OriginalID3[m_Song.get()];
+	const auto & orig = mOriginalID3[mSong.get()];
 	if (!orig.first)
 	{
-		m_UI->lePid3Author->clear();
-		m_UI->lePid3Title->clear();
-		m_UI->lePid3Genre->clear();
-		m_UI->lePid3MeasuresPerMinute->clear();
+		mUI->lePid3Author->clear();
+		mUI->lePid3Title->clear();
+		mUI->lePid3Genre->clear();
+		mUI->lePid3MeasuresPerMinute->clear();
 		return;
 	}
 
 	// Create a merged tag value from the original and user-edits:
 	MetadataScanner::Tag toDisplay(orig.second);
-	auto itr = m_TagID3Changes.find(m_Song.get());
-	if (itr != m_TagID3Changes.end())
+	auto itr = mTagID3Changes.find(mSong.get());
+	if (itr != mTagID3Changes.end())
 	{
 		toDisplay = MetadataScanner::applyTagChanges(toDisplay, itr->second);
 	}
 
 	// Fill in the parsed values:
 	const auto parsedId3 = MetadataScanner::parseId3Tag(toDisplay);
-	m_UI->lePid3Author->setText(parsedId3.m_Author.valueOrDefault());
-	m_UI->lePid3Title->setText(parsedId3.m_Title.valueOrDefault());
-	m_UI->lePid3Genre->setText(parsedId3.m_Genre.valueOrDefault());
-	if (parsedId3.m_MeasuresPerMinute.isPresent())
+	mUI->lePid3Author->setText(parsedId3.mAuthor.valueOrDefault());
+	mUI->lePid3Title->setText(parsedId3.mTitle.valueOrDefault());
+	mUI->lePid3Genre->setText(parsedId3.mGenre.valueOrDefault());
+	if (parsedId3.mMeasuresPerMinute.isPresent())
 	{
 		const auto loc = QLocale::system();
-		m_UI->lePid3MeasuresPerMinute->setText(loc.toString(parsedId3.m_MeasuresPerMinute.value()));
+		mUI->lePid3MeasuresPerMinute->setText(loc.toString(parsedId3.mMeasuresPerMinute.value()));
 	}
 	else
 	{
-		m_UI->lePid3MeasuresPerMinute->clear();
+		mUI->lePid3MeasuresPerMinute->clear();
 	}
 }
 
@@ -323,19 +323,19 @@ void DlgSongProperties::updateParsedId3()
 void DlgSongProperties::applyAndClose()
 {
 	// Save the shared data:
-	m_Song->sharedData()->m_TagManual = m_TagManual;
-	m_Song->sharedData()->m_Notes = m_Notes;
-	auto db = m_Components.get<Database>();
-	db->saveSongSharedData(m_Song->sharedData());
+	mSong->sharedData()->mTagManual = mTagManual;
+	mSong->sharedData()->mNotes = mNotes;
+	auto db = mComponents.get<Database>();
+	db->saveSongSharedData(mSong->sharedData());
 
 	// Apply the tag changes:
-	for (auto song: m_Duplicates)
+	for (auto song: mDuplicates)
 	{
-		const auto itr = m_TagID3Changes.find(song);
-		if (itr != m_TagID3Changes.cend())
+		const auto itr = mTagID3Changes.find(song);
+		if (itr != mTagID3Changes.cend())
 		{
-			assert(m_OriginalID3[song].first);  // The original tag must be valid
-			auto tag = MetadataScanner::applyTagChanges(m_OriginalID3[song].second, itr->second);
+			assert(mOriginalID3[song].first);  // The original tag must be valid
+			auto tag = MetadataScanner::applyTagChanges(mOriginalID3[song].second, itr->second);
 
 			// Write the tag to a file after creating a backup:
 			QFileInfo fi(song->fileName());
@@ -398,11 +398,11 @@ void DlgSongProperties::applyAndClose()
 
 
 
-void DlgSongProperties::authorTextEdited(const QString & a_NewText)
+void DlgSongProperties::authorTextEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagManual.m_Author = a_NewText;
+		mTagManual.mAuthor = aNewText;
 	}
 }
 
@@ -410,11 +410,11 @@ void DlgSongProperties::authorTextEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::titleTextEdited(const QString & a_NewText)
+void DlgSongProperties::titleTextEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagManual.m_Title = a_NewText;
+		mTagManual.mTitle = aNewText;
 	}
 }
 
@@ -422,11 +422,11 @@ void DlgSongProperties::titleTextEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::genreSelected(const QString & a_NewGenre)
+void DlgSongProperties::genreSelected(const QString & aNewGenre)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagManual.m_Genre = a_NewGenre;
+		mTagManual.mGenre = aNewGenre;
 	}
 }
 
@@ -434,28 +434,28 @@ void DlgSongProperties::genreSelected(const QString & a_NewGenre)
 
 
 
-void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
+void DlgSongProperties::measuresPerMinuteTextEdited(const QString & aNewText)
 {
-	if (m_IsInternalChange)
+	if (mIsInternalChange)
 	{
 		return;
 	}
-	if (a_NewText.isEmpty())
+	if (aNewText.isEmpty())
 	{
-		m_UI->leManualMeasuresPerMinute->setStyleSheet("");
-		m_TagManual.m_MeasuresPerMinute.reset();
+		mUI->leManualMeasuresPerMinute->setStyleSheet("");
+		mTagManual.mMeasuresPerMinute.reset();
 		return;
 	}
 	bool isOK;
-	auto mpm = QLocale::system().toDouble(a_NewText, &isOK);
+	auto mpm = QLocale::system().toDouble(aNewText, &isOK);
 	if (isOK)
 	{
-		m_UI->leManualMeasuresPerMinute->setStyleSheet("");
-		m_TagManual.m_MeasuresPerMinute = mpm;
+		mUI->leManualMeasuresPerMinute->setStyleSheet("");
+		mTagManual.mMeasuresPerMinute = mpm;
 	}
 	else
 	{
-		m_UI->leManualMeasuresPerMinute->setStyleSheet("background-color:#fcc");
+		mUI->leManualMeasuresPerMinute->setStyleSheet("background-color:#fcc");
 	}
 }
 
@@ -465,21 +465,21 @@ void DlgSongProperties::measuresPerMinuteTextEdited(const QString & a_NewText)
 
 void DlgSongProperties::notesChanged()
 {
-	m_Notes = m_UI->pteNotes->toPlainText();
+	mNotes = mUI->pteNotes->toPlainText();
 }
 
 
 
 
 
-void DlgSongProperties::switchDuplicate(int a_Row)
+void DlgSongProperties::switchDuplicate(int aRow)
 {
-	if ((a_Row < 0) || (a_Row >= static_cast<int>(m_Duplicates.size())))
+	if ((aRow < 0) || (aRow >= static_cast<int>(mDuplicates.size())))
 	{
-		qWarning() << "Invalid row: " << a_Row << " out of " << m_Duplicates.size();
+		qWarning() << "Invalid row: " << aRow << " out of " << mDuplicates.size();
 		return;
 	}
-	auto song = m_Duplicates[static_cast<size_t>(a_Row)];
+	auto song = mDuplicates[static_cast<size_t>(aRow)];
 	selectSong(*song);
 }
 
@@ -487,11 +487,11 @@ void DlgSongProperties::switchDuplicate(int a_Row)
 
 
 
-void DlgSongProperties::id3AuthorEdited(const QString & a_NewText)
+void DlgSongProperties::id3AuthorEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagID3Changes[m_Song.get()].m_Author = a_NewText;
+		mTagID3Changes[mSong.get()].mAuthor = aNewText;
 		updateParsedId3();
 	}
 }
@@ -500,11 +500,11 @@ void DlgSongProperties::id3AuthorEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::id3TitleEdited(const QString & a_NewText)
+void DlgSongProperties::id3TitleEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagID3Changes[m_Song.get()].m_Title = a_NewText;
+		mTagID3Changes[mSong.get()].mTitle = aNewText;
 		updateParsedId3();
 	}
 }
@@ -513,11 +513,11 @@ void DlgSongProperties::id3TitleEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::id3GenreEdited(const QString & a_NewText)
+void DlgSongProperties::id3GenreEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagID3Changes[m_Song.get()].m_Genre = a_NewText;
+		mTagID3Changes[mSong.get()].mGenre = aNewText;
 		updateParsedId3();
 	}
 }
@@ -526,11 +526,11 @@ void DlgSongProperties::id3GenreEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::id3CommentEdited(const QString & a_NewText)
+void DlgSongProperties::id3CommentEdited(const QString & aNewText)
 {
-	if (!m_IsInternalChange)
+	if (!mIsInternalChange)
 	{
-		m_TagID3Changes[m_Song.get()].m_Comment = a_NewText;
+		mTagID3Changes[mSong.get()].mComment = aNewText;
 		updateParsedId3();
 	}
 }
@@ -539,30 +539,30 @@ void DlgSongProperties::id3CommentEdited(const QString & a_NewText)
 
 
 
-void DlgSongProperties::id3MeasuresPerMinuteEdited(const QString & a_NewText)
+void DlgSongProperties::id3MeasuresPerMinuteEdited(const QString & aNewText)
 {
-	if (m_IsInternalChange)
+	if (mIsInternalChange)
 	{
 		return;
 	}
-	if (a_NewText.isEmpty())
+	if (aNewText.isEmpty())
 	{
-		m_UI->leId3MeasuresPerMinute->setStyleSheet("");
-		m_TagID3Changes[m_Song.get()].m_MeasuresPerMinute.reset();
+		mUI->leId3MeasuresPerMinute->setStyleSheet("");
+		mTagID3Changes[mSong.get()].mMeasuresPerMinute.reset();
 		updateParsedId3();
 		return;
 	}
 	bool isOK;
-	auto mpm = QLocale::system().toDouble(a_NewText, &isOK);
+	auto mpm = QLocale::system().toDouble(aNewText, &isOK);
 	if (isOK)
 	{
-		m_UI->leId3MeasuresPerMinute->setStyleSheet("");
-		m_TagID3Changes[m_Song.get()].m_MeasuresPerMinute = mpm;
+		mUI->leId3MeasuresPerMinute->setStyleSheet("");
+		mTagID3Changes[mSong.get()].mMeasuresPerMinute = mpm;
 		updateParsedId3();
 	}
 	else
 	{
-		m_UI->leId3MeasuresPerMinute->setStyleSheet("background-color:#fcc");
+		mUI->leId3MeasuresPerMinute->setStyleSheet("background-color:#fcc");
 	}
 }
 
@@ -572,13 +572,13 @@ void DlgSongProperties::id3MeasuresPerMinuteEdited(const QString & a_NewText)
 
 void DlgSongProperties::removeFromLibrary()
 {
-	auto row = m_UI->lwDuplicates->currentRow();
-	if ((row < 0) || (row >= static_cast<int>(m_Duplicates.size())))
+	auto row = mUI->lwDuplicates->currentRow();
+	if ((row < 0) || (row >= static_cast<int>(mDuplicates.size())))
 	{
 		qWarning() << "Invalid row: " << row;
 		return;
 	}
-	auto song = m_Duplicates[static_cast<size_t>(row)]->shared_from_this();
+	auto song = mDuplicates[static_cast<size_t>(row)]->shared_from_this();
 	assert(song != nullptr);
 
 	// Ask for confirmation:
@@ -597,9 +597,9 @@ void DlgSongProperties::removeFromLibrary()
 	}
 
 	// Remove from the DB:
-	m_Components.get<Database>()->removeSong(*song, false);
-	m_Duplicates.erase(m_Duplicates.begin() + row);
-	delete m_UI->lwDuplicates->takeItem(row);
+	mComponents.get<Database>()->removeSong(*song, false);
+	mDuplicates.erase(mDuplicates.begin() + row);
+	delete mUI->lwDuplicates->takeItem(row);
 }
 
 
@@ -608,13 +608,13 @@ void DlgSongProperties::removeFromLibrary()
 
 void DlgSongProperties::deleteFromDisk()
 {
-	auto row = m_UI->lwDuplicates->currentRow();
-	if ((row < 0) || (row >= static_cast<int>(m_Duplicates.size())))
+	auto row = mUI->lwDuplicates->currentRow();
+	if ((row < 0) || (row >= static_cast<int>(mDuplicates.size())))
 	{
 		qWarning() << "Invalid row: " << row;
 		return;
 	}
-	auto song = m_Duplicates[static_cast<size_t>(row)]->shared_from_this();
+	auto song = mDuplicates[static_cast<size_t>(row)]->shared_from_this();
 	assert(song != nullptr);
 
 	// Ask for confirmation:
@@ -633,9 +633,9 @@ void DlgSongProperties::deleteFromDisk()
 	}
 
 	// Delete from the disk:
-	m_Components.get<Database>()->removeSong(*song, true);
-	m_Duplicates.erase(m_Duplicates.begin() + row);
-	delete m_UI->lwDuplicates->takeItem(row);
+	mComponents.get<Database>()->removeSong(*song, true);
+	mDuplicates.erase(mDuplicates.begin() + row);
+	delete mUI->lwDuplicates->takeItem(row);
 }
 
 
@@ -646,11 +646,11 @@ void DlgSongProperties::copyId3Tag()
 {
 	QGuiApplication::clipboard()->setText(
 		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", \"%4\", %5}")
-		.arg(m_UI->leId3Author->text())
-		.arg(m_UI->leId3Title->text())
-		.arg(m_UI->leId3Comment->text())
-		.arg(m_UI->leId3Genre->text())
-		.arg(bpmToCopy(m_UI->leId3MeasuresPerMinute->text()))
+		.arg(mUI->leId3Author->text())
+		.arg(mUI->leId3Title->text())
+		.arg(mUI->leId3Comment->text())
+		.arg(mUI->leId3Genre->text())
+		.arg(bpmToCopy(mUI->leId3MeasuresPerMinute->text()))
 	);
 }
 
@@ -662,10 +662,10 @@ void DlgSongProperties::copyPid3Tag()
 {
 	QGuiApplication::clipboard()->setText(
 		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", %4}")
-		.arg(m_UI->lePid3Author->text())
-		.arg(m_UI->lePid3Title->text())
-		.arg(m_UI->lePid3Genre->text())
-		.arg(bpmToCopy(m_UI->lePid3MeasuresPerMinute->text()))
+		.arg(mUI->lePid3Author->text())
+		.arg(mUI->lePid3Title->text())
+		.arg(mUI->lePid3Genre->text())
+		.arg(bpmToCopy(mUI->lePid3MeasuresPerMinute->text()))
 	);
 }
 
@@ -677,10 +677,10 @@ void DlgSongProperties::copyFilenameTag()
 {
 	QGuiApplication::clipboard()->setText(
 		QString::fromUtf8("{\"%1\", \"%2\", \"%3\", %4}")
-		.arg(m_UI->leFilenameAuthor->text())
-		.arg(m_UI->leFilenameTitle->text())
-		.arg(m_UI->leFilenameGenre->text())
-		.arg(bpmToCopy(m_UI->leFilenameMeasuresPerMinute->text()))
+		.arg(mUI->leFilenameAuthor->text())
+		.arg(mUI->leFilenameTitle->text())
+		.arg(mUI->leFilenameGenre->text())
+		.arg(bpmToCopy(mUI->leFilenameMeasuresPerMinute->text()))
 	);
 }
 
@@ -690,19 +690,19 @@ void DlgSongProperties::copyFilenameTag()
 
 void DlgSongProperties::showTapTempo()
 {
-	DlgTapTempo dlg(m_Components, m_Song, this);
+	DlgTapTempo dlg(mComponents, mSong, this);
 	if (dlg.exec() == QDialog::Rejected)
 	{
 		return;
 	}
-	m_TagManual.m_MeasuresPerMinute = m_Song->tagManual().m_MeasuresPerMinute;  // Reload from the saved value
-	if (m_TagManual.m_MeasuresPerMinute.isPresent())
+	mTagManual.mMeasuresPerMinute = mSong->tagManual().mMeasuresPerMinute;  // Reload from the saved value
+	if (mTagManual.mMeasuresPerMinute.isPresent())
 	{
-		m_UI->leManualMeasuresPerMinute->setText(QLocale::system().toString(m_TagManual.m_MeasuresPerMinute.value()));
+		mUI->leManualMeasuresPerMinute->setText(QLocale::system().toString(mTagManual.mMeasuresPerMinute.value()));
 	}
 	else
 	{
-		m_UI->leManualMeasuresPerMinute->clear();
+		mUI->leManualMeasuresPerMinute->clear();
 	}
 }
 
@@ -710,22 +710,22 @@ void DlgSongProperties::showTapTempo()
 
 
 
-void DlgSongProperties::songTempoDetected(Song::SharedDataPtr a_SongSD)
+void DlgSongProperties::songTempoDetected(Song::SharedDataPtr aSongSD)
 {
-	if (a_SongSD != m_Song->sharedData())
+	if (aSongSD != mSong->sharedData())
 	{
 		return;
 	}
 
 	QString detectedMpm;
-	if (m_Song->sharedData()->m_DetectedTempo.isPresent())
+	if (mSong->sharedData()->mDetectedTempo.isPresent())
 	{
 		const auto loc = QLocale::system();
-		detectedMpm = loc.toString(m_Song->sharedData()->m_DetectedTempo.value());
+		detectedMpm = loc.toString(mSong->sharedData()->mDetectedTempo.value());
 	}
 	else
 	{
 		detectedMpm = tr("unknown (detection failed)");
 	}
-	m_UI->leDetectedMeasuresPerMinute->setText(detectedMpm);
+	mUI->leDetectedMeasuresPerMinute->setText(detectedMpm);
 }

@@ -9,36 +9,36 @@
 
 
 
-DlgPickTemplate::DlgPickTemplate(ComponentCollection & a_Components, QWidget * a_Parent):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_UI(new Ui::DlgPickTemplate)
+DlgPickTemplate::DlgPickTemplate(ComponentCollection & aComponents, QWidget * aParent):
+	Super(aParent),
+	mComponents(aComponents),
+	mUI(new Ui::DlgPickTemplate)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgPickTemplate", *this);
 
 	// Connect the signals:
-	connect(m_UI->tblTemplates, &QTableWidget::cellDoubleClicked, this, &DlgPickTemplate::cellDblClicked);
+	connect(mUI->tblTemplates, &QTableWidget::cellDoubleClicked, this, &DlgPickTemplate::cellDblClicked);
 
 	// Fill in the templates:
-	m_UI->tblTemplates->setColumnCount(3);
-	m_UI->tblTemplates->setRowCount(static_cast<int>(m_Components.get<Database>()->templates().size()));
-	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Template"), tr("#"), tr("Notes")});
+	mUI->tblTemplates->setColumnCount(3);
+	mUI->tblTemplates->setRowCount(static_cast<int>(mComponents.get<Database>()->templates().size()));
+	mUI->tblTemplates->setHorizontalHeaderLabels({tr("Template"), tr("#"), tr("Notes")});
 	int idx = 0;
-	auto colCount = m_UI->tblTemplates->columnCount();
-	for (const auto & tmpl: m_Components.get<Database>()->templates())
+	auto colCount = mUI->tblTemplates->columnCount();
+	for (const auto & tmpl: mComponents.get<Database>()->templates())
 	{
-		m_UI->tblTemplates->setItem(idx, 0, new QTableWidgetItem(tmpl->displayName()));
-		m_UI->tblTemplates->setItem(idx, 1, new QTableWidgetItem(QString::number(tmpl->items().size())));
-		m_UI->tblTemplates->setItem(idx, 2, new QTableWidgetItem(tmpl->notes()));
+		mUI->tblTemplates->setItem(idx, 0, new QTableWidgetItem(tmpl->displayName()));
+		mUI->tblTemplates->setItem(idx, 1, new QTableWidgetItem(QString::number(tmpl->items().size())));
+		mUI->tblTemplates->setItem(idx, 2, new QTableWidgetItem(tmpl->notes()));
 		for (int col = 0; col < colCount; ++col)
 		{
-			m_UI->tblTemplates->item(idx, col)->setBackgroundColor(tmpl->bgColor());
+			mUI->tblTemplates->item(idx, col)->setBackgroundColor(tmpl->bgColor());
 		}
 		idx += 1;
 	}
-	Settings::loadHeaderView("DlgPickTemplate", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
-	m_UI->tblTemplates->setCurrentItem(m_UI->tblTemplates->item(0, 0));
+	Settings::loadHeaderView("DlgPickTemplate", "tblTemplates", *mUI->tblTemplates->horizontalHeader());
+	mUI->tblTemplates->setCurrentItem(mUI->tblTemplates->item(0, 0));
 }
 
 
@@ -47,7 +47,7 @@ DlgPickTemplate::DlgPickTemplate(ComponentCollection & a_Components, QWidget * a
 
 DlgPickTemplate::~DlgPickTemplate()
 {
-	Settings::saveHeaderView("DlgPickTemplate", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
+	Settings::saveHeaderView("DlgPickTemplate", "tblTemplates", *mUI->tblTemplates->horizontalHeader());
 	Settings::saveWindowPos("DlgPickTemplate", *this);
 }
 
@@ -55,40 +55,40 @@ DlgPickTemplate::~DlgPickTemplate()
 
 
 
-void DlgPickTemplate::keyPressEvent(QKeyEvent * a_Event)
+void DlgPickTemplate::keyPressEvent(QKeyEvent * aEvent)
 {
-	switch (a_Event->key())
+	switch (aEvent->key())
 	{
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 		{
-			auto curIdx = m_UI->tblTemplates->currentRow();
+			auto curIdx = mUI->tblTemplates->currentRow();
 			if (curIdx >= 0)
 			{
-				assert(curIdx < static_cast<int>(m_Components.get<Database>()->templates().size()));
-				m_SelectedTemplate = m_Components.get<Database>()->templates()[static_cast<size_t>(curIdx)];
+				assert(curIdx < static_cast<int>(mComponents.get<Database>()->templates().size()));
+				mSelectedTemplate = mComponents.get<Database>()->templates()[static_cast<size_t>(curIdx)];
 				accept();
 				return;
 			}
-			a_Event->ignore();
+			aEvent->ignore();
 			return;
 		}
 	}
-	Super::keyPressEvent(a_Event);
+	Super::keyPressEvent(aEvent);
 }
 
 
 
 
 
-void DlgPickTemplate::cellDblClicked(int a_Row, int a_Column)
+void DlgPickTemplate::cellDblClicked(int aRow, int aColumn)
 {
-	Q_UNUSED(a_Column);
+	Q_UNUSED(aColumn);
 
-	if (a_Row >= 0)
+	if (aRow >= 0)
 	{
-		assert(a_Row < static_cast<int>(m_Components.get<Database>()->templates().size()));
-		m_SelectedTemplate = m_Components.get<Database>()->templates()[static_cast<size_t>(a_Row)];
+		assert(aRow < static_cast<int>(mComponents.get<Database>()->templates().size()));
+		mSelectedTemplate = mComponents.get<Database>()->templates()[static_cast<size_t>(aRow)];
 		accept();
 	}
 }

@@ -29,10 +29,10 @@ class MidiPort:
 
 public:
 
-	explicit MidiPort(QObject * a_Parent = nullptr);
+	explicit MidiPort(QObject * aParent = nullptr);
 
-	unsigned portNumber() const { return m_PortNumber; }
-	const std::string & portName() const { return m_PortName; }
+	unsigned portNumber() const { return mPortNumber; }
+	const std::string & portName() const { return mPortName; }
 
 	/** Returns the number of MIDI OUT ports available to the system. */
 	static unsigned getNumOutPorts();
@@ -44,11 +44,11 @@ protected:
 
 	/** The port number (index) of the MIDI port.
 	Only valid when the port is open. */
-	unsigned m_PortNumber;
+	unsigned mPortNumber;
 
 	/** The name of the MIDI port.
 	Only valid when the port is open. */
-	std::string m_PortName;
+	std::string mPortName;
 
 
 signals:
@@ -82,34 +82,34 @@ public:
 	/** Opens the specified MIDI IN port.
 	Returns true on success, false on failure.
 	If the port is already open, closes it and reopens. */
-	bool open(unsigned a_PortNumber);
+	bool open(unsigned aPortNumber);
 
 	/** Returns true if the port is valid (open). */
-	bool isValid() const { return (m_MidiIn != nullptr); }
+	bool isValid() const { return (mMidiIn != nullptr); }
 
 
 signals:
 
 	/** Emitted when a message is received from the port */
-	void receivedMessage(double a_Timestamp, const QByteArray & a_Message);
+	void receivedMessage(double aTimestamp, const QByteArray & aMessage);
 
 
 protected:
 
 	/** The underlying MIDI IN port.
 	While the port is closed / invalid, is set to nullptr. */
-	std::unique_ptr<RtMidiIn> m_MidiIn;
+	std::unique_ptr<RtMidiIn> mMidiIn;
 
 
 	/** The callback set on the underlying MIDI IN port. */
 	static void midiPortCallback(
-		double a_Timestamp,
-		std::vector<unsigned char> * a_Message,
-		void * a_UserData
+		double aTimestamp,
+		std::vector<unsigned char> * aMessage,
+		void * aUserData
 	)
 	{
-		emit (static_cast<MidiPortIn *>(a_UserData))->receivedMessage(a_Timestamp, QByteArray(
-			reinterpret_cast<const char *>(a_Message->data()), static_cast<int>(a_Message->size())
+		emit (static_cast<MidiPortIn *>(aUserData))->receivedMessage(aTimestamp, QByteArray(
+			reinterpret_cast<const char *>(aMessage->data()), static_cast<int>(aMessage->size())
 		));
 	}
 };
@@ -137,19 +137,19 @@ public:
 	/** Opens the specified MIDI IN port.
 	Returns true on success, false on failure.
 	If the port is already open, closes it and reopens. */
-	bool open(unsigned a_PortNumber);
+	bool open(unsigned aPortNumber);
 
 	/** Returns true if the port is valid (open). */
-	bool isValid() const { return (m_MidiOut != nullptr); }
+	bool isValid() const { return (mMidiOut != nullptr); }
 
 	/** Sends the specified bytes as a MIDI OUT message through the port. */
-	void sendMessage(const std::vector<unsigned char> & a_Message);
+	void sendMessage(const std::vector<unsigned char> & aMessage);
 
 
 protected:
 
 	/** The underlying MIDI OUT port. */
-	std::unique_ptr<RtMidiOut> m_MidiOut;
+	std::unique_ptr<RtMidiOut> mMidiOut;
 };
 
 

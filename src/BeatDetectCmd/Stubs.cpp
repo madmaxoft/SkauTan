@@ -5,14 +5,14 @@
 
 
 void BackgroundTasks::enqueue(
-	const QString & a_Name,
-	std::function<void(void)> a_TaskFn,
-	bool a_Prioritize,
-	std::function<void(void)> a_AbortFn
+	const QString & aName,
+	std::function<void(void)> aTaskFn,
+	bool aPrioritize,
+	std::function<void(void)> aAbortFn
 )
 {
-	Q_UNUSED(a_Name);
-	Q_UNUSED(a_TaskFn);
-	Q_UNUSED(a_Prioritize);
-	Q_UNUSED(a_AbortFn);
+	Q_UNUSED(aName);
+	Q_UNUSED(aTaskFn);
+	Q_UNUSED(aPrioritize);
+	Q_UNUSED(aAbortFn);
 }

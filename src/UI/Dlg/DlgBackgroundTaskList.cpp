@@ -9,11 +9,11 @@
 
 
 
-DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
-	Super(a_Parent),
-	m_UI(new Ui::DlgBackgroundTaskList)
+DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * aParent) :
+	Super(aParent),
+	mUI(new Ui::DlgBackgroundTaskList)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgBackgroundTaskList", *this);
 	auto & backgroundTasks = BackgroundTasks::get();
 
@@ -21,8 +21,8 @@ DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
 	connect(&backgroundTasks, &BackgroundTasks::taskAdded,    this, &DlgBackgroundTaskList::addTask);
 	connect(&backgroundTasks, &BackgroundTasks::taskFinished, this, &DlgBackgroundTaskList::delTask);
 	connect(&backgroundTasks, &BackgroundTasks::taskAborted,  this, &DlgBackgroundTaskList::delTask);
-	connect(m_UI->btnClose,   &QPushButton::clicked,          this, &QDialog::close);
-	connect(&m_UpdateTimer,   &QTimer::timeout,               this, &DlgBackgroundTaskList::periodicUpdateUi);
+	connect(mUI->btnClose,   &QPushButton::clicked,          this, &QDialog::close);
+	connect(&mUpdateTimer,   &QTimer::timeout,               this, &DlgBackgroundTaskList::periodicUpdateUi);
 
 	// Insert the current tasks:
 	for (const auto & task: backgroundTasks.tasks())
@@ -32,7 +32,7 @@ DlgBackgroundTaskList::DlgBackgroundTaskList(QWidget * a_Parent) :
 	updateCountLabel();
 
 	// Start the UI updater, update UI every half second:
-	m_UpdateTimer.start(500);
+	mUpdateTimer.start(500);
 }
 
 
@@ -50,29 +50,29 @@ DlgBackgroundTaskList::~DlgBackgroundTaskList()
 
 void DlgBackgroundTaskList::updateCountLabel()
 {
-	m_UI->lblTasks->setText(tr("Background tasks: %1").arg(m_UI->lwTasks->count()));
+	mUI->lblTasks->setText(tr("Background tasks: %1").arg(mUI->lwTasks->count()));
 }
 
 
 
 
 
-void DlgBackgroundTaskList::addTask(BackgroundTasks::TaskPtr a_Task)
+void DlgBackgroundTaskList::addTask(BackgroundTasks::TaskPtr aTask)
 {
 	// Postpone action into the UI update
-	assert(a_Task != nullptr);
-	m_TasksToAdd.push_back(std::move(a_Task));
+	assert(aTask != nullptr);
+	mTasksToAdd.push_back(std::move(aTask));
 }
 
 
 
 
 
-void DlgBackgroundTaskList::delTask(BackgroundTasks::TaskPtr a_Task)
+void DlgBackgroundTaskList::delTask(BackgroundTasks::TaskPtr aTask)
 {
 	// Postpone action into the UI update
-	assert(a_Task != nullptr);
-	m_TasksToRemove.push_back(std::move(a_Task));
+	assert(aTask != nullptr);
+	mTasksToRemove.push_back(std::move(aTask));
 }
 
 
@@ -82,26 +82,26 @@ void DlgBackgroundTaskList::delTask(BackgroundTasks::TaskPtr a_Task)
 void DlgBackgroundTaskList::periodicUpdateUi()
 {
 	// Add new tasks:
-	for (const auto & task: m_TasksToAdd)
+	for (const auto & task: mTasksToAdd)
 	{
 		auto item = new QListWidgetItem(task->name());
-		m_TaskItemMap[task] = item;
-		m_UI->lwTasks->addItem(item);
+		mTaskItemMap[task] = item;
+		mUI->lwTasks->addItem(item);
 	}
-	m_TasksToAdd.clear();
+	mTasksToAdd.clear();
 
 	// Remove finished tasks:
-	for (const auto & task: m_TasksToRemove)
+	for (const auto & task: mTasksToRemove)
 	{
-		auto itr = m_TaskItemMap.find(task);
-		if (itr != m_TaskItemMap.end())
+		auto itr = mTaskItemMap.find(task);
+		if (itr != mTaskItemMap.end())
 		{
 			auto item = itr->second;
-			m_TaskItemMap.erase(itr);
+			mTaskItemMap.erase(itr);
 			delete item;  // Removes the item from the widget
 		}
 	}
-	m_TasksToRemove.clear();
+	mTasksToRemove.clear();
 
 	updateCountLabel();
 }

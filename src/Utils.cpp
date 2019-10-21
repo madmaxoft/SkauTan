@@ -16,13 +16,13 @@ namespace Utils
 
 
 
-double parseTime(const QString & a_TimeString, bool & isOK)
+double parseTime(const QString & aTimeString, bool & isOK)
 {
 	double res = 0, minutes = 0, hours = 0;
 	int numColons = 0;
 	bool isAfterDecimal = false;
 	double decimalValue = 0.1;
-	for (const auto & ch: a_TimeString.trimmed())
+	for (const auto & ch: aTimeString.trimmed())
 	{
 		if (ch.isDigit())
 		{
@@ -40,13 +40,13 @@ double parseTime(const QString & a_TimeString, bool & isOK)
 		{
 			if (numColons == 2)
 			{
-				qWarning() << "Too manu colons in the input string: " << a_TimeString;
+				qWarning() << "Too manu colons in the input string: " << aTimeString;
 				isOK = false;
 				return -1;
 			}
 			if (isAfterDecimal)
 			{
-				qWarning() << "Colon after decimal is invalid; input string: " << a_TimeString;
+				qWarning() << "Colon after decimal is invalid; input string: " << aTimeString;
 				isOK = false;
 				return -1;
 			}
@@ -59,7 +59,7 @@ double parseTime(const QString & a_TimeString, bool & isOK)
 		{
 			if (isAfterDecimal)
 			{
-				qWarning() << "A second decimal found in the input string: " << a_TimeString;
+				qWarning() << "A second decimal found in the input string: " << aTimeString;
 				isOK = false;
 				return -1;
 			}
@@ -67,7 +67,7 @@ double parseTime(const QString & a_TimeString, bool & isOK)
 		}
 		else
 		{
-			qWarning() << "Unexpected character in the input string: " << ch << " (" << a_TimeString << ")";
+			qWarning() << "Unexpected character in the input string: " << ch << " (" << aTimeString << ")";
 			isOK = false;
 			return -1;
 		}
@@ -80,9 +80,9 @@ double parseTime(const QString & a_TimeString, bool & isOK)
 
 
 
-QString formatTime(double a_Seconds)
+QString formatTime(double aSeconds)
 {
-	auto seconds = static_cast<int>(std::round(a_Seconds));
+	auto seconds = static_cast<int>(std::round(aSeconds));
 	auto minutes = seconds / 60;
 	return QString("%1:%2").arg(minutes).arg(QString::number(seconds % 60), 2, '0');
 }
@@ -91,13 +91,13 @@ QString formatTime(double a_Seconds)
 
 
 
-QString formatFractionalTime(double a_Seconds, int a_NumDecimals)
+QString formatFractionalTime(double aSeconds, int aNumDecimals)
 {
-	auto seconds = static_cast<int>(std::floor(a_Seconds));
+	auto seconds = static_cast<int>(std::floor(aSeconds));
 	auto minutes = seconds / 60;
 	QString fractionalSecondsStr;
-	auto fractionalSeconds = (a_Seconds - seconds) * 10;
-	for (int i = 0; i < a_NumDecimals; ++i)
+	auto fractionalSeconds = (aSeconds - seconds) * 10;
+	for (int i = 0; i < aNumDecimals; ++i)
 	{
 		fractionalSecondsStr.append(QChar('0' + static_cast<int>(fractionalSeconds)));
 		fractionalSeconds = (fractionalSeconds - static_cast<int>(fractionalSeconds)) * 10;
@@ -112,14 +112,14 @@ QString formatFractionalTime(double a_Seconds, int a_NumDecimals)
 
 
 
-bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data)
+bool selectItemWithData(QListWidget * aListWidget, const QVariant & aData)
 {
-	int numRows = a_ListWidget->count();
+	int numRows = aListWidget->count();
 	for (int row = 0; row < numRows; ++row)
 	{
-		if (a_ListWidget->item(row)->data(Qt::UserRole) == a_Data)
+		if (aListWidget->item(row)->data(Qt::UserRole) == aData)
 		{
-			a_ListWidget->setCurrentRow(row);
+			aListWidget->setCurrentRow(row);
 			return true;
 		}
 	}
@@ -130,15 +130,15 @@ bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data)
 
 
 
-QString toHex(const QByteArray & a_Data)
+QString toHex(const QByteArray & aData)
 {
 	QString res;
-	auto len = a_Data.size();
+	auto len = aData.size();
 	res.resize(len * 2);
 	static const char hexChar[] = "0123456789abcdef";
 	for (auto i = 0; i < len; ++i)
 	{
-		auto val = a_Data[i];
+		auto val = aData[i];
 		res[2 * i] = hexChar[(val >> 4) & 0x0f];
 		res[2 * i + 1] = hexChar[val & 0x0f];
 	}
@@ -149,20 +149,20 @@ QString toHex(const QByteArray & a_Data)
 
 
 
-QPainterSaver::QPainterSaver(QPainter & a_Painter):
-	m_Painter(&a_Painter)
+QPainterSaver::QPainterSaver(QPainter & aPainter):
+	mPainter(&aPainter)
 {
-	a_Painter.save();
+	aPainter.save();
 }
 
 
 
 
 
-QPainterSaver::QPainterSaver(QPainter * a_Painter):
-	m_Painter(a_Painter)
+QPainterSaver::QPainterSaver(QPainter * aPainter):
+	mPainter(aPainter)
 {
-	a_Painter->save();
+	aPainter->save();
 }
 
 
@@ -171,7 +171,7 @@ QPainterSaver::QPainterSaver(QPainter * a_Painter):
 
 QPainterSaver::~QPainterSaver()
 {
-	m_Painter->restore();
+	mPainter->restore();
 }
 
 

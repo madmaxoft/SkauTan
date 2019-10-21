@@ -19,9 +19,9 @@
 
 
 InstallConfiguration::InstallConfiguration():
-	m_DataPath(detectDataPath())
+	mDataPath(detectDataPath())
 {
-	qDebug() << "Using data path " << m_DataPath;
+	qDebug() << "Using data path " << mDataPath;
 }
 
 
@@ -55,13 +55,13 @@ QString InstallConfiguration::detectDataPath()
 
 
 
-bool InstallConfiguration::isDataPathSuitable(const QString & a_Folder)
+bool InstallConfiguration::isDataPathSuitable(const QString & aFolder)
 {
-	QFileInfo folder(a_Folder);
+	QFileInfo folder(aFolder);
 	if (!folder.exists())
 	{
 		QDir d;
-		if (!d.mkpath(a_Folder))
+		if (!d.mkpath(aFolder))
 		{
 			// Folder doesn't exist and cannot be created.
 			return false;

@@ -34,9 +34,9 @@ class DlgEditMultipleSongs:
 public:
 
 	explicit DlgEditMultipleSongs(
-		ComponentCollection & a_Components,
-		std::vector<std::shared_ptr<Song>> && a_Songs,
-		QWidget * a_Parent = nullptr
+		ComponentCollection & aComponents,
+		std::vector<std::shared_ptr<Song>> && aSongs,
+		QWidget * aParent = nullptr
 	);
 
 	virtual ~DlgEditMultipleSongs() override;
@@ -45,13 +45,13 @@ public:
 private:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The songs for which the edits are being done. */
-	std::vector<std::shared_ptr<Song>> m_Songs;
+	std::vector<std::shared_ptr<Song>> mSongs;
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgEditMultipleSongs> m_UI;
+	std::unique_ptr<Ui::DlgEditMultipleSongs> mUI;
 
 
 public slots:
@@ -61,7 +61,7 @@ public slots:
 
 	/** The MPM lineedit's text has been edited by the user.
 	If the text is an invalid number, colors the line edit with red background, otherwise clears the background. */
-	void mpmTextEdited(const QString & a_NewText);
+	void mpmTextEdited(const QString & aNewText);
 };
 
 

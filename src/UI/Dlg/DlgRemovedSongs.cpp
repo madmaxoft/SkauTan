@@ -9,43 +9,43 @@
 
 
 
-DlgRemovedSongs::DlgRemovedSongs(ComponentCollection & a_Components, QWidget * a_Parent):
-	Super(a_Parent),
-	m_UI(new Ui::DlgRemovedSongs),
-	m_Components(a_Components)
+DlgRemovedSongs::DlgRemovedSongs(ComponentCollection & aComponents, QWidget * aParent):
+	Super(aParent),
+	mUI(new Ui::DlgRemovedSongs),
+	mComponents(aComponents)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 
 	// Connect the signals:
-	connect(m_UI->btnClose,  &QPushButton::pressed, this, &QDialog::reject);
-	connect(m_UI->btnClear,  &QPushButton::pressed, this, &DlgRemovedSongs::clearDB);
-	connect(m_UI->btnExport, &QPushButton::pressed, this, &DlgRemovedSongs::exportList);
+	connect(mUI->btnClose,  &QPushButton::pressed, this, &QDialog::reject);
+	connect(mUI->btnClear,  &QPushButton::pressed, this, &DlgRemovedSongs::clearDB);
+	connect(mUI->btnExport, &QPushButton::pressed, this, &DlgRemovedSongs::exportList);
 
 	// Fill in the data:
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	const auto & removed = db->removedSongs();
-	m_UI->twRemoved->setRowCount(static_cast<int>(removed.size()));
+	mUI->twRemoved->setRowCount(static_cast<int>(removed.size()));
 	int row = 0;
 	for (const auto & r: removed)
 	{
-		m_UI->twRemoved->setItem(row, 0, new QTableWidgetItem(r->m_DateRemoved.toString(Qt::ISODate)));
-		m_UI->twRemoved->setItem(row, 1, new QTableWidgetItem(r->m_FileName));
+		mUI->twRemoved->setItem(row, 0, new QTableWidgetItem(r->mDateRemoved.toString(Qt::ISODate)));
+		mUI->twRemoved->setItem(row, 1, new QTableWidgetItem(r->mFileName));
 		auto item = new QTableWidgetItem();
 		item->setFlags(Qt::ItemIsUserCheckable);
-		item->setCheckState(r->m_WasDeleted ? Qt::Checked : Qt::Unchecked);
-		m_UI->twRemoved->setItem(row, 2, item);
-		m_UI->twRemoved->setItem(row, 3, new QTableWidgetItem(QString::number(r->m_NumDuplicates)));
-		auto sharedData = db->sharedDataFromHash(r->m_Hash);
+		item->setCheckState(r->mWasDeleted ? Qt::Checked : Qt::Unchecked);
+		mUI->twRemoved->setItem(row, 2, item);
+		mUI->twRemoved->setItem(row, 3, new QTableWidgetItem(QString::number(r->mNumDuplicates)));
+		auto sharedData = db->sharedDataFromHash(r->mHash);
 		if (sharedData != nullptr)
 		{
-			m_UI->twRemoved->setItem(row, 4, new QTableWidgetItem(QString::number(sharedData->duplicatesCount())));
+			mUI->twRemoved->setItem(row, 4, new QTableWidgetItem(QString::number(sharedData->duplicatesCount())));
 		}
 		row += 1;
 	}
-	m_UI->twRemoved->resizeColumnsToContents();
-	m_UI->twRemoved->resizeRowsToContents();
+	mUI->twRemoved->resizeColumnsToContents();
+	mUI->twRemoved->resizeRowsToContents();
 
-	Settings::loadHeaderView("DlgRemovedSongs", "twRemoved", *m_UI->twRemoved->horizontalHeader());
+	Settings::loadHeaderView("DlgRemovedSongs", "twRemoved", *mUI->twRemoved->horizontalHeader());
 	Settings::loadWindowPos("DlgRemovedSongs", *this);
 }
 
@@ -56,7 +56,7 @@ DlgRemovedSongs::DlgRemovedSongs(ComponentCollection & a_Components, QWidget * a
 DlgRemovedSongs::~DlgRemovedSongs()
 {
 	Settings::saveWindowPos("DlgRemovedSongs", *this);
-	Settings::saveHeaderView("DlgRemovedSongs", "twRemoved", *m_UI->twRemoved->horizontalHeader());
+	Settings::saveHeaderView("DlgRemovedSongs", "twRemoved", *mUI->twRemoved->horizontalHeader());
 }
 
 
@@ -74,8 +74,8 @@ void DlgRemovedSongs::clearDB()
 	{
 		return;
 	}
-	m_Components.get<Database>()->clearRemovedSongs();
-	m_UI->twRemoved->setRowCount(0);
+	mComponents.get<Database>()->clearRemovedSongs();
+	mUI->twRemoved->setRowCount(0);
 }
 
 
@@ -108,19 +108,19 @@ void DlgRemovedSongs::exportList()
 		return;
 	}
 	f.write("Date\tFilename\tWasDeleted\tDuplicatesThen\tDuplicatesNow\n");
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	const auto & removed = db->removedSongs();
 	for (const auto & r: removed)
 	{
-		f.write(r->m_DateRemoved.toString(Qt::ISODate).toUtf8());
+		f.write(r->mDateRemoved.toString(Qt::ISODate).toUtf8());
 		f.write("\t");
-		f.write(r->m_FileName.toUtf8());
+		f.write(r->mFileName.toUtf8());
 		f.write("\t");
-		f.write(r->m_WasDeleted ? "1" : "0");
+		f.write(r->mWasDeleted ? "1" : "0");
 		f.write("\t");
-		f.write(QString::number(r->m_NumDuplicates).toUtf8());
+		f.write(QString::number(r->mNumDuplicates).toUtf8());
 		f.write("\t");
-		auto sharedData = db->sharedDataFromHash(r->m_Hash);
+		auto sharedData = db->sharedDataFromHash(r->mHash);
 		if (sharedData != nullptr)
 		{
 			f.write(QString::number(sharedData->duplicatesCount()).toUtf8());

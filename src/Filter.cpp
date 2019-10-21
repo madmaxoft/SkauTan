@@ -18,15 +18,15 @@ static const double EPS = 0.000001;
 // Filter::Node:
 
 Filter::Node::Node(
-	Filter::Node::SongProperty a_SongProperty,
-	Filter::Node::Comparison a_Comparison,
-	QVariant a_Value
+	Filter::Node::SongProperty aSongProperty,
+	Filter::Node::Comparison aComparison,
+	QVariant aValue
 ):
-	m_Parent(nullptr),
-	m_Kind(nkComparison),
-	m_SongProperty(a_SongProperty),
-	m_Comparison(a_Comparison),
-	m_Value(a_Value)
+	mParent(nullptr),
+	mKind(nkComparison),
+	mSongProperty(aSongProperty),
+	mComparison(aComparison),
+	mValue(aValue)
 {
 }
 
@@ -35,12 +35,12 @@ Filter::Node::Node(
 
 
 Filter::Node::Node(
-	Filter::Node::Kind a_Combination,
-	const std::vector<Filter::NodePtr> a_SubFilters
+	Filter::Node::Kind aCombination,
+	const std::vector<Filter::NodePtr> aSubFilters
 ):
-	m_Parent(nullptr),
-	m_Kind(a_Combination),
-	m_Children(a_SubFilters)
+	mParent(nullptr),
+	mKind(aCombination),
+	mChildren(aSubFilters)
 {
 	assert(canHaveChildren());  // This constructor can only create children-able filters
 }
@@ -53,8 +53,8 @@ Filter::NodePtr Filter::Node::clone() const
 {
 	if (canHaveChildren())
 	{
-		auto res = std::make_shared<Filter::Node>(m_Kind, std::vector<Filter::NodePtr>());
-		for (const auto & ch: m_Children)
+		auto res = std::make_shared<Filter::Node>(mKind, std::vector<Filter::NodePtr>());
+		for (const auto & ch: mChildren)
 		{
 			res->addChild(ch->clone());
 		}
@@ -62,7 +62,7 @@ Filter::NodePtr Filter::Node::clone() const
 	}
 	else
 	{
-		return std::make_shared<Filter::Node>(m_SongProperty, m_Comparison, m_Value);
+		return std::make_shared<Filter::Node>(mSongProperty, mComparison, mValue);
 	}
 }
 
@@ -73,7 +73,7 @@ Filter::NodePtr Filter::Node::clone() const
 const std::vector<Filter::NodePtr> & Filter::Node::children() const
 {
 	assert(canHaveChildren());
-	return m_Children;
+	return mChildren;
 }
 
 
@@ -82,8 +82,8 @@ const std::vector<Filter::NodePtr> & Filter::Node::children() const
 
 Filter::Node::SongProperty Filter::Node::songProperty() const
 {
-	assert(m_Kind == nkComparison);
-	return m_SongProperty;
+	assert(mKind == nkComparison);
+	return mSongProperty;
 }
 
 
@@ -92,8 +92,8 @@ Filter::Node::SongProperty Filter::Node::songProperty() const
 
 Filter::Node::Comparison Filter::Node::comparison() const
 {
-	assert(m_Kind == nkComparison);
-	return m_Comparison;
+	assert(mKind == nkComparison);
+	return mComparison;
 }
 
 
@@ -102,24 +102,24 @@ Filter::Node::Comparison Filter::Node::comparison() const
 
 QVariant Filter::Node::value() const
 {
-	assert(m_Kind == nkComparison);
-	return m_Value;
+	assert(mKind == nkComparison);
+	return mValue;
 }
 
 
 
 
 
-void Filter::Node::setKind(Filter::Node::Kind a_Kind)
+void Filter::Node::setKind(Filter::Node::Kind aKind)
 {
-	if (m_Kind == a_Kind)
+	if (mKind == aKind)
 	{
 		return;
 	}
-	m_Kind = a_Kind;
+	mKind = aKind;
 	if (!canHaveChildren())
 	{
-		m_Children.clear();
+		mChildren.clear();
 	}
 }
 
@@ -127,45 +127,45 @@ void Filter::Node::setKind(Filter::Node::Kind a_Kind)
 
 
 
-void Filter::Node::setSongProperty(Filter::Node::SongProperty a_SongProperty)
+void Filter::Node::setSongProperty(Filter::Node::SongProperty aSongProperty)
 {
 	assert(!canHaveChildren());
-	m_SongProperty = a_SongProperty;
+	mSongProperty = aSongProperty;
 }
 
 
 
 
 
-void Filter::Node::setComparison(Filter::Node::Comparison a_Comparison)
+void Filter::Node::setComparison(Filter::Node::Comparison aComparison)
 {
 	assert(!canHaveChildren());
-	m_Comparison = a_Comparison;
+	mComparison = aComparison;
 }
 
 
 
 
 
-void Filter::Node::setValue(QVariant a_Value)
+void Filter::Node::setValue(QVariant aValue)
 {
 	assert(!canHaveChildren());
-	m_Value = a_Value;
+	mValue = aValue;
 }
 
 
 
 
 
-bool Filter::Node::isSatisfiedBy(const Song & a_Song) const
+bool Filter::Node::isSatisfiedBy(const Song & aSong) const
 {
-	switch (m_Kind)
+	switch (mKind)
 	{
 		case nkAnd:
 		{
-			for (const auto & ch: m_Children)
+			for (const auto & ch: mChildren)
 			{
-				if (!ch->isSatisfiedBy(a_Song))
+				if (!ch->isSatisfiedBy(aSong))
 				{
 					return false;
 				}
@@ -175,9 +175,9 @@ bool Filter::Node::isSatisfiedBy(const Song & a_Song) const
 
 		case nkOr:
 		{
-			for (const auto & ch: m_Children)
+			for (const auto & ch: mChildren)
 			{
-				if (ch->isSatisfiedBy(a_Song))
+				if (ch->isSatisfiedBy(aSong))
 				{
 					return true;
 				}
@@ -187,7 +187,7 @@ bool Filter::Node::isSatisfiedBy(const Song & a_Song) const
 
 		case nkComparison:
 		{
-			return isComparisonSatisfiedBy(a_Song);
+			return isComparisonSatisfiedBy(aSong);
 		}
 	}
 	assert(!"Unknown filter kind");
@@ -200,36 +200,36 @@ bool Filter::Node::isSatisfiedBy(const Song & a_Song) const
 
 bool Filter::Node::canHaveChildren() const
 {
-	return ((m_Kind == nkAnd) || (m_Kind == nkOr));
+	return ((mKind == nkAnd) || (mKind == nkOr));
 }
 
 
 
 
 
-void Filter::Node::addChild(Filter::NodePtr a_Child)
+void Filter::Node::addChild(Filter::NodePtr aChild)
 {
 	assert(canHaveChildren());
-	assert(a_Child != nullptr);
-	m_Children.push_back(a_Child);
-	a_Child->m_Parent = this;
+	assert(aChild != nullptr);
+	mChildren.push_back(aChild);
+	aChild->mParent = this;
 }
 
 
 
 
 
-void Filter::Node::replaceChild(Filter::Node * a_ExistingChild, Filter::NodePtr a_NewChild)
+void Filter::Node::replaceChild(Filter::Node * aExistingChild, Filter::NodePtr aNewChild)
 {
 	assert(canHaveChildren());
-	assert(a_NewChild != nullptr);
-	for (auto itr = m_Children.begin(), end = m_Children.end(); itr != end; ++itr)
+	assert(aNewChild != nullptr);
+	for (auto itr = mChildren.begin(), end = mChildren.end(); itr != end; ++itr)
 	{
-		if (itr->get() == a_ExistingChild)
+		if (itr->get() == aExistingChild)
 		{
-			a_ExistingChild->setParent(nullptr);
-			*itr = a_NewChild;
-			a_NewChild->setParent(this);
+			aExistingChild->setParent(nullptr);
+			*itr = aNewChild;
+			aNewChild->setParent(this);
 			return;
 		}
 	}
@@ -240,14 +240,14 @@ void Filter::Node::replaceChild(Filter::Node * a_ExistingChild, Filter::NodePtr 
 
 
 
-void Filter::Node::removeChild(const Filter::Node * a_ExistingChild)
+void Filter::Node::removeChild(const Filter::Node * aExistingChild)
 {
-	for (auto itr = m_Children.cbegin(), end = m_Children.cend(); itr != end; ++itr)
+	for (auto itr = mChildren.cbegin(), end = mChildren.cend(); itr != end; ++itr)
 	{
-		if (itr->get() == a_ExistingChild)
+		if (itr->get() == aExistingChild)
 		{
 			(*itr)->setParent(nullptr);
-			m_Children.erase(itr);
+			mChildren.erase(itr);
 			return;
 		}
 	}
@@ -277,21 +277,21 @@ void Filter::Node::checkConsistency() const
 
 QString Filter::Node::getCaption() const
 {
-	switch (m_Kind)
+	switch (mKind)
 	{
 		case nkAnd: return Filter::tr("And", "FilterCaption");
 		case nkOr:  return Filter::tr("Or",  "FilterCaption");
 		case nkComparison:
 		{
 			return QString("%1 %2 %3").arg(
-				songPropertyCaption(m_SongProperty),
-				comparisonCaption(m_Comparison),
-				m_Value.toString()
+				songPropertyCaption(mSongProperty),
+				comparisonCaption(mComparison),
+				mValue.toString()
 			);
 		}
 	}
 	assert(!"Unknown node kind");
-	return QString("<invalid node kind: %1>").arg(m_Kind);
+	return QString("<invalid node kind: %1>").arg(mKind);
 }
 
 
@@ -300,38 +300,38 @@ QString Filter::Node::getCaption() const
 
 QString Filter::Node::getDescription() const
 {
-	switch (m_Kind)
+	switch (mKind)
 	{
 		case nkAnd: return concatChildrenDescriptions(Filter::tr(" and ", "FilterConcatString"));
 		case nkOr:  return concatChildrenDescriptions(Filter::tr(" or ",  "FilterConcatString"));
 		case nkComparison: return QString("(%1)").arg(getCaption());
 	}
 	assert(!"Unknown node kind");
-	return QString("<invalid node kind: %1>").arg(m_Kind);
+	return QString("<invalid node kind: %1>").arg(mKind);
 }
 
 
 
 
 
-Filter::Node::Kind Filter::Node::intToKind(int a_Kind)
+Filter::Node::Kind Filter::Node::intToKind(int aKind)
 {
-	switch (a_Kind)
+	switch (aKind)
 	{
 		case nkComparison: return nkComparison;
 		case nkAnd:        return nkAnd;
 		case nkOr:         return nkOr;
 	}
-	throw std::runtime_error(QString("Unknown node Kind: %1").arg(a_Kind).toUtf8().constData());
+	throw std::runtime_error(QString("Unknown node Kind: %1").arg(aKind).toUtf8().constData());
 }
 
 
 
 
 
-Filter::Node::Comparison Filter::Node::intToComparison(int a_Comparison)
+Filter::Node::Comparison Filter::Node::intToComparison(int aComparison)
 {
-	switch (a_Comparison)
+	switch (aComparison)
 	{
 		case ncEqual:              return ncEqual;
 		case ncNotEqual:           return ncNotEqual;
@@ -342,16 +342,16 @@ Filter::Node::Comparison Filter::Node::intToComparison(int a_Comparison)
 		case ncLowerThan:          return ncLowerThan;
 		case ncLowerThanOrEqual:   return ncLowerThanOrEqual;
 	}
-	throw std::runtime_error(QString("Unknown node Comparison: %1").arg(a_Comparison).toUtf8().constData());
+	throw std::runtime_error(QString("Unknown node Comparison: %1").arg(aComparison).toUtf8().constData());
 }
 
 
 
 
 
-Filter::Node::SongProperty Filter::Node::intToSongProperty(int a_SongProperty)
+Filter::Node::SongProperty Filter::Node::intToSongProperty(int aSongProperty)
 {
-	switch (a_SongProperty)
+	switch (aSongProperty)
 	{
 		case nspAuthor:                    return nspAuthor;
 		case nspTitle:                     return nspTitle;
@@ -383,16 +383,16 @@ Filter::Node::SongProperty Filter::Node::intToSongProperty(int a_SongProperty)
 		case nspNotes:                     return nspNotes;
 		case nspDetectedTempo:             return nspDetectedTempo;
 	}
-	throw std::runtime_error(QString("Unknown node SongProperty: %1").arg(a_SongProperty).toUtf8().constData());
+	throw std::runtime_error(QString("Unknown node SongProperty: %1").arg(aSongProperty).toUtf8().constData());
 }
 
 
 
 
 
-QString Filter::Node::songPropertyCaption(Filter::Node::SongProperty a_Prop)
+QString Filter::Node::songPropertyCaption(Filter::Node::SongProperty aProp)
 {
-	switch (a_Prop)
+	switch (aProp)
 	{
 		case nspAuthor:                    return Filter::tr("Author [any]",            "SongPropertyCaption");
 		case nspTitle:                     return Filter::tr("Title [any]",             "SongPropertyCaption");
@@ -432,9 +432,9 @@ QString Filter::Node::songPropertyCaption(Filter::Node::SongProperty a_Prop)
 
 
 
-QString Filter::Node::comparisonCaption(Filter::Node::Comparison a_Comparison)
+QString Filter::Node::comparisonCaption(Filter::Node::Comparison aComparison)
 {
-	switch (a_Comparison)
+	switch (aComparison)
 	{
 		case ncEqual:              return Filter::tr("==",              "Comparison");
 		case ncNotEqual:           return Filter::tr("!=",              "Comparison");
@@ -453,22 +453,22 @@ QString Filter::Node::comparisonCaption(Filter::Node::Comparison a_Comparison)
 
 
 
-QString Filter::Node::concatChildrenDescriptions(const QString & a_Separator) const
+QString Filter::Node::concatChildrenDescriptions(const QString & aSeparator) const
 {
 	// Special case: single children get direct description without the parenthesis:
-	if (m_Children.size() == 1)
+	if (mChildren.size() == 1)
 	{
-		return m_Children[0]->getDescription();
+		return mChildren[0]->getDescription();
 	}
 
 	// Concat the children descriptions:
 	QString res("(");
 	bool isFirst = true;
-	for (const auto & ch: m_Children)
+	for (const auto & ch: mChildren)
 	{
 		if (!isFirst)
 		{
-			res.append(a_Separator);
+			res.append(aSeparator);
 		}
 		isFirst = false;
 		res.append(ch->getDescription());
@@ -481,77 +481,77 @@ QString Filter::Node::concatChildrenDescriptions(const QString & a_Separator) co
 
 
 
-bool Filter::Node::isComparisonSatisfiedBy(const Song & a_Song) const
+bool Filter::Node::isComparisonSatisfiedBy(const Song & aSong) const
 {
-	assert(m_Kind == nkComparison);
-	switch (m_SongProperty)
+	assert(mKind == nkComparison);
+	switch (mSongProperty)
 	{
 		case nspAuthor:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author)
+				isStringComparisonSatisfiedBy(aSong.tagManual().mAuthor) ||
+				isStringComparisonSatisfiedBy(aSong.tagFileName().mAuthor) ||
+				isStringComparisonSatisfiedBy(aSong.tagId3().mAuthor)
 			);
 		}
 		case nspTitle:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title)
+				isStringComparisonSatisfiedBy(aSong.tagManual().mTitle) ||
+				isStringComparisonSatisfiedBy(aSong.tagFileName().mTitle) ||
+				isStringComparisonSatisfiedBy(aSong.tagId3().mTitle)
 			);
 		}
 		case nspGenre:
 		{
 			return (
-				isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre) ||
-				isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre) ||
-				isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre)
+				isStringComparisonSatisfiedBy(aSong.tagManual().mGenre) ||
+				isStringComparisonSatisfiedBy(aSong.tagFileName().mGenre) ||
+				isStringComparisonSatisfiedBy(aSong.tagId3().mGenre)
 			);
 		}
 		case nspMeasuresPerMinute:
 		{
 			return (
-				isNumberComparisonSatisfiedBy(a_Song.tagManual().m_MeasuresPerMinute) ||
-				isNumberComparisonSatisfiedBy(a_Song.tagFileName().m_MeasuresPerMinute) ||
-				isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute) ||
-				isNumberComparisonSatisfiedBy(a_Song.detectedTempo())
+				isNumberComparisonSatisfiedBy(aSong.tagManual().mMeasuresPerMinute) ||
+				isNumberComparisonSatisfiedBy(aSong.tagFileName().mMeasuresPerMinute) ||
+				isNumberComparisonSatisfiedBy(aSong.tagId3().mMeasuresPerMinute) ||
+				isNumberComparisonSatisfiedBy(aSong.detectedTempo())
 			);
 		}
-		case nspManualAuthor:              return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Author);
-		case nspManualTitle:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Title);
-		case nspManualGenre:               return isStringComparisonSatisfiedBy(a_Song.tagManual().m_Genre);
-		case nspManualMeasuresPerMinute:   return isNumberComparisonSatisfiedBy(a_Song.tagManual().m_MeasuresPerMinute);
-		case nspFileNameAuthor:            return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Author);
-		case nspFileNameTitle:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Title);
-		case nspFileNameGenre:             return isStringComparisonSatisfiedBy(a_Song.tagFileName().m_Genre);
-		case nspFileNameMeasuresPerMinute: return isNumberComparisonSatisfiedBy(a_Song.tagFileName().m_MeasuresPerMinute);
-		case nspId3Author:                 return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Author);
-		case nspId3Title:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Title);
-		case nspId3Genre:                  return isStringComparisonSatisfiedBy(a_Song.tagId3().m_Genre);
-		case nspId3MeasuresPerMinute:      return isNumberComparisonSatisfiedBy(a_Song.tagId3().m_MeasuresPerMinute);
-		case nspLastPlayed:                return isDateComparisonSatisfiedBy(a_Song.lastPlayed().valueOrDefault());
-		case nspLength:                    return isNumberComparisonSatisfiedBy(a_Song.length());
-		case nspLocalRating:               return isNumberComparisonSatisfiedBy(a_Song.rating().m_Local);
-		case nspPrimaryAuthor:             return isStringComparisonSatisfiedBy(a_Song.primaryAuthor());
-		case nspPrimaryTitle:              return isStringComparisonSatisfiedBy(a_Song.primaryTitle());
-		case nspPrimaryGenre:              return isStringComparisonSatisfiedBy(a_Song.primaryGenre());
+		case nspManualAuthor:              return isStringComparisonSatisfiedBy(aSong.tagManual().mAuthor);
+		case nspManualTitle:               return isStringComparisonSatisfiedBy(aSong.tagManual().mTitle);
+		case nspManualGenre:               return isStringComparisonSatisfiedBy(aSong.tagManual().mGenre);
+		case nspManualMeasuresPerMinute:   return isNumberComparisonSatisfiedBy(aSong.tagManual().mMeasuresPerMinute);
+		case nspFileNameAuthor:            return isStringComparisonSatisfiedBy(aSong.tagFileName().mAuthor);
+		case nspFileNameTitle:             return isStringComparisonSatisfiedBy(aSong.tagFileName().mTitle);
+		case nspFileNameGenre:             return isStringComparisonSatisfiedBy(aSong.tagFileName().mGenre);
+		case nspFileNameMeasuresPerMinute: return isNumberComparisonSatisfiedBy(aSong.tagFileName().mMeasuresPerMinute);
+		case nspId3Author:                 return isStringComparisonSatisfiedBy(aSong.tagId3().mAuthor);
+		case nspId3Title:                  return isStringComparisonSatisfiedBy(aSong.tagId3().mTitle);
+		case nspId3Genre:                  return isStringComparisonSatisfiedBy(aSong.tagId3().mGenre);
+		case nspId3MeasuresPerMinute:      return isNumberComparisonSatisfiedBy(aSong.tagId3().mMeasuresPerMinute);
+		case nspLastPlayed:                return isDateComparisonSatisfiedBy(aSong.lastPlayed().valueOrDefault());
+		case nspLength:                    return isNumberComparisonSatisfiedBy(aSong.length());
+		case nspLocalRating:               return isNumberComparisonSatisfiedBy(aSong.rating().mLocal);
+		case nspPrimaryAuthor:             return isStringComparisonSatisfiedBy(aSong.primaryAuthor());
+		case nspPrimaryTitle:              return isStringComparisonSatisfiedBy(aSong.primaryTitle());
+		case nspPrimaryGenre:              return isStringComparisonSatisfiedBy(aSong.primaryGenre());
 		case nspPrimaryMeasuresPerMinute:
 		{
-			auto mpm = a_Song.primaryMeasuresPerMinute();
+			auto mpm = aSong.primaryMeasuresPerMinute();
 			if (!mpm.isPresent())
 			{
-				mpm = a_Song.detectedTempo();
+				mpm = aSong.detectedTempo();
 			}
 			return isNumberComparisonSatisfiedBy(mpm);
 		}
-		case nspWarningCount:              return isValidNumberComparisonSatisfiedBy(a_Song.getWarnings().count());
-		case nspRatingRhythmClarity:       return isNumberComparisonSatisfiedBy(a_Song.rating().m_RhythmClarity);
-		case nspRatingGenreTypicality:     return isNumberComparisonSatisfiedBy(a_Song.rating().m_GenreTypicality);
-		case nspRatingPopularity:          return isNumberComparisonSatisfiedBy(a_Song.rating().m_Popularity);
-		case nspNotes:                     return isStringComparisonSatisfiedBy(a_Song.notes());
-		case nspDetectedTempo:             return isNumberComparisonSatisfiedBy(a_Song.detectedTempo());
+		case nspWarningCount:              return isValidNumberComparisonSatisfiedBy(aSong.getWarnings().count());
+		case nspRatingRhythmClarity:       return isNumberComparisonSatisfiedBy(aSong.rating().mRhythmClarity);
+		case nspRatingGenreTypicality:     return isNumberComparisonSatisfiedBy(aSong.rating().mGenreTypicality);
+		case nspRatingPopularity:          return isNumberComparisonSatisfiedBy(aSong.rating().mPopularity);
+		case nspNotes:                     return isStringComparisonSatisfiedBy(aSong.notes());
+		case nspDetectedTempo:             return isNumberComparisonSatisfiedBy(aSong.detectedTempo());
 	}
 	assert(!"Unknown song property in comparison");
 	return false;
@@ -561,27 +561,27 @@ bool Filter::Node::isComparisonSatisfiedBy(const Song & a_Song) const
 
 
 
-bool Filter::Node::isStringComparisonSatisfiedBy(const DatedOptional<QString> & a_Value) const
+bool Filter::Node::isStringComparisonSatisfiedBy(const DatedOptional<QString> & aValue) const
 {
-	assert(m_Kind == nkComparison);
+	assert(mKind == nkComparison);
 
 	// Empty strings satisfy only the fcNotContains criterion:
-	if (a_Value.isEmpty())
+	if (aValue.isEmpty())
 	{
-		return (m_Comparison == ncNotContains);
+		return (mComparison == ncNotContains);
 	}
 
 	// String is valid, compare:
-	switch (m_Comparison)
+	switch (mComparison)
 	{
-		case ncContains:           return  a_Value.value().contains(m_Value.toString(), Qt::CaseInsensitive);
-		case ncNotContains:        return !a_Value.value().contains(m_Value.toString(), Qt::CaseInsensitive);
-		case ncEqual:              return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) == 0);
-		case ncNotEqual:           return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) != 0);
-		case ncGreaterThan:        return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) >  0);
-		case ncGreaterThanOrEqual: return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) >= 0);
-		case ncLowerThan:          return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) <  0);
-		case ncLowerThanOrEqual:   return  (a_Value.value().compare(m_Value.toString(), Qt::CaseInsensitive) <= 0);
+		case ncContains:           return  aValue.value().contains(mValue.toString(), Qt::CaseInsensitive);
+		case ncNotContains:        return !aValue.value().contains(mValue.toString(), Qt::CaseInsensitive);
+		case ncEqual:              return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) == 0);
+		case ncNotEqual:           return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) != 0);
+		case ncGreaterThan:        return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) >  0);
+		case ncGreaterThanOrEqual: return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) >= 0);
+		case ncLowerThan:          return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) <  0);
+		case ncLowerThanOrEqual:   return  (aValue.value().compare(mValue.toString(), Qt::CaseInsensitive) <= 0);
 	}
 	assert(!"Unknown comparison");
 	return false;
@@ -591,18 +591,18 @@ bool Filter::Node::isStringComparisonSatisfiedBy(const DatedOptional<QString> & 
 
 
 
-bool Filter::Node::isNumberComparisonSatisfiedBy(const DatedOptional<double> & a_Value) const
+bool Filter::Node::isNumberComparisonSatisfiedBy(const DatedOptional<double> & aValue) const
 {
-	assert(m_Kind == nkComparison);
+	assert(mKind == nkComparison);
 
 	// Check if the passed value is a valid number:
-	if (!a_Value.isPresent())
+	if (!aValue.isPresent())
 	{
 		return false;
 	}
 
 	// Check with the regular valid number logic:
-	auto value = a_Value.value();
+	auto value = aValue.value();
 	return isValidNumberComparisonSatisfiedBy(value);
 }
 
@@ -610,13 +610,13 @@ bool Filter::Node::isNumberComparisonSatisfiedBy(const DatedOptional<double> & a
 
 
 
-bool Filter::Node::isNumberComparisonSatisfiedBy(const QVariant & a_Value) const
+bool Filter::Node::isNumberComparisonSatisfiedBy(const QVariant & aValue) const
 {
-	assert(m_Kind == nkComparison);
+	assert(mKind == nkComparison);
 
 	// Check if the passed value is a valid number:
 	bool isOK;
-	auto value = a_Value.toDouble(&isOK);
+	auto value = aValue.toDouble(&isOK);
 	if (!isOK)
 	{
 		return false;
@@ -629,33 +629,33 @@ bool Filter::Node::isNumberComparisonSatisfiedBy(const QVariant & a_Value) const
 
 
 
-bool Filter::Node::isValidNumberComparisonSatisfiedBy(double a_Value) const
+bool Filter::Node::isValidNumberComparisonSatisfiedBy(double aValue) const
 {
-	assert(m_Kind == nkComparison);
+	assert(mKind == nkComparison);
 
 	// For string-based comparison, use the filter value as a string:
-	switch (m_Comparison)
+	switch (mComparison)
 	{
-		case ncContains:           return  QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
-		case ncNotContains:        return !QString::number(a_Value).contains(m_Value.toString(), Qt::CaseInsensitive);
+		case ncContains:           return  QString::number(aValue).contains(mValue.toString(), Qt::CaseInsensitive);
+		case ncNotContains:        return !QString::number(aValue).contains(mValue.toString(), Qt::CaseInsensitive);
 		default: break;
 	}
 
 	// For number-based comparisons, compare to a number; fail if NaN:
 	bool isOk;
-	auto cmpVal = m_Value.toDouble(&isOk);
+	auto cmpVal = mValue.toDouble(&isOk);
 	if (!isOk)
 	{
 		return false;
 	}
-	switch (m_Comparison)
+	switch (mComparison)
 	{
-		case ncEqual:              return (std::abs(a_Value - cmpVal) < EPS);
-		case ncNotEqual:           return (std::abs(a_Value - cmpVal) >= EPS);
-		case ncGreaterThan:        return (a_Value >  cmpVal);
-		case ncGreaterThanOrEqual: return (a_Value >= cmpVal);
-		case ncLowerThan:          return (a_Value <  cmpVal);
-		case ncLowerThanOrEqual:   return (a_Value <= cmpVal);
+		case ncEqual:              return (std::abs(aValue - cmpVal) < EPS);
+		case ncNotEqual:           return (std::abs(aValue - cmpVal) >= EPS);
+		case ncGreaterThan:        return (aValue >  cmpVal);
+		case ncGreaterThanOrEqual: return (aValue >= cmpVal);
+		case ncLowerThan:          return (aValue <  cmpVal);
+		case ncLowerThanOrEqual:   return (aValue <= cmpVal);
 		default: break;
 	}
 	assert(!"Unknown comparison");
@@ -666,19 +666,19 @@ bool Filter::Node::isValidNumberComparisonSatisfiedBy(double a_Value) const
 
 
 
-bool Filter::Node::isDateComparisonSatisfiedBy(QDateTime a_Value) const
+bool Filter::Node::isDateComparisonSatisfiedBy(QDateTime aValue) const
 {
-	assert(m_Kind == nkComparison);
-	switch (m_Comparison)
+	assert(mKind == nkComparison);
+	switch (mComparison)
 	{
-		case ncContains:           return  a_Value.toString(QLocale().dateTimeFormat()).contains(m_Value.toString(), Qt::CaseInsensitive);
-		case ncNotContains:        return !a_Value.toString(QLocale().dateTimeFormat()).contains(m_Value.toString(), Qt::CaseInsensitive);
-		case ncEqual:              return (a_Value == m_Value.toDateTime());
-		case ncNotEqual:           return (a_Value != m_Value.toDateTime());
-		case ncGreaterThan:        return (a_Value >  m_Value.toDateTime());
-		case ncGreaterThanOrEqual: return (a_Value >= m_Value.toDateTime());
-		case ncLowerThan:          return (a_Value <  m_Value.toDateTime());
-		case ncLowerThanOrEqual:   return (a_Value <= m_Value.toDateTime());
+		case ncContains:           return  aValue.toString(QLocale().dateTimeFormat()).contains(mValue.toString(), Qt::CaseInsensitive);
+		case ncNotContains:        return !aValue.toString(QLocale().dateTimeFormat()).contains(mValue.toString(), Qt::CaseInsensitive);
+		case ncEqual:              return (aValue == mValue.toDateTime());
+		case ncNotEqual:           return (aValue != mValue.toDateTime());
+		case ncGreaterThan:        return (aValue >  mValue.toDateTime());
+		case ncGreaterThanOrEqual: return (aValue >= mValue.toDateTime());
+		case ncLowerThan:          return (aValue <  mValue.toDateTime());
+		case ncLowerThanOrEqual:   return (aValue <= mValue.toDateTime());
 	}
 	assert(!"Unknown comparison");
 	return false;
@@ -691,20 +691,20 @@ bool Filter::Node::isDateComparisonSatisfiedBy(QDateTime a_Value) const
 QByteArray Filter::Node::hash() const
 {
 	QCryptographicHash h(QCryptographicHash::Sha1);
-	h.addData(reinterpret_cast<const char *>(&m_Kind), sizeof(m_Kind));
-	switch (m_Kind)
+	h.addData(reinterpret_cast<const char *>(&mKind), sizeof(mKind));
+	switch (mKind)
 	{
 		case nkComparison:
 		{
-			h.addData(reinterpret_cast<const char *>(&m_SongProperty), sizeof(m_SongProperty));
-			h.addData(reinterpret_cast<const char *>(&m_Comparison), sizeof(m_Comparison));
-			h.addData(m_Value.toString().toUtf8());
+			h.addData(reinterpret_cast<const char *>(&mSongProperty), sizeof(mSongProperty));
+			h.addData(reinterpret_cast<const char *>(&mComparison), sizeof(mComparison));
+			h.addData(mValue.toString().toUtf8());
 			break;
 		}
 		case nkAnd:
 		case nkOr:
 		{
-			for (const auto & ch: m_Children)
+			for (const auto & ch: mChildren)
 			{
 				h.addData(ch->hash());
 			}
@@ -722,9 +722,9 @@ QByteArray Filter::Node::hash() const
 // Filter:
 
 Filter::Filter():
-	m_DbRowId(-1),
-	m_IsFavorite(false),
-	m_BgColor(255, 255, 255)
+	mDbRowId(-1),
+	mIsFavorite(false),
+	mBgColor(255, 255, 255)
 {
 	setNoopFilter();
 }
@@ -734,19 +734,19 @@ Filter::Filter():
 
 
 Filter::Filter(
-	qlonglong a_DbRowId,
-	const QString & a_DisplayName,
-	const QString & a_Notes,
-	bool a_IsFavorite,
-	QColor a_BgColor,
-	const DatedOptional<double> & a_DurationLimit
+	qlonglong aDbRowId,
+	const QString & aDisplayName,
+	const QString & aNotes,
+	bool aIsFavorite,
+	QColor aBgColor,
+	const DatedOptional<double> & aDurationLimit
 ):
-	m_DbRowId(a_DbRowId),
-	m_DisplayName(a_DisplayName),
-	m_Notes(a_Notes),
-	m_IsFavorite(a_IsFavorite),
-	m_BgColor(a_BgColor),
-	m_DurationLimit(a_DurationLimit)
+	mDbRowId(aDbRowId),
+	mDisplayName(aDisplayName),
+	mNotes(aNotes),
+	mIsFavorite(aIsFavorite),
+	mBgColor(aBgColor),
+	mDurationLimit(aDurationLimit)
 {
 	setNoopFilter();
 }
@@ -756,16 +756,16 @@ Filter::Filter(
 
 
 
-Filter::Filter(const Filter & a_CopyFrom):
+Filter::Filter(const Filter & aCopyFrom):
 	QObject(),
 	std::enable_shared_from_this<Filter>(),
-	m_DbRowId(-1),
-	m_DisplayName(a_CopyFrom.m_DisplayName),
-	m_Notes(a_CopyFrom.m_Notes),
-	m_IsFavorite(a_CopyFrom.m_IsFavorite),
-	m_RootNode(a_CopyFrom.m_RootNode->clone()),
-	m_BgColor(a_CopyFrom.m_BgColor),
-	m_DurationLimit(a_CopyFrom.m_DurationLimit)
+	mDbRowId(-1),
+	mDisplayName(aCopyFrom.mDisplayName),
+	mNotes(aCopyFrom.mNotes),
+	mIsFavorite(aCopyFrom.mIsFavorite),
+	mRootNode(aCopyFrom.mRootNode->clone()),
+	mBgColor(aCopyFrom.mBgColor),
+	mDurationLimit(aCopyFrom.mDurationLimit)
 {
 }
 
@@ -775,7 +775,7 @@ Filter::Filter(const Filter & a_CopyFrom):
 
 void Filter::setNoopFilter()
 {
-	m_RootNode.reset(new Node(
+	mRootNode.reset(new Node(
 		Filter::Node::nspLength,
 		Filter::Node::ncGreaterThanOrEqual,
 		0
@@ -788,12 +788,12 @@ void Filter::setNoopFilter()
 
 void Filter::checkNodeConsistency() const
 {
-	if (m_RootNode == nullptr)
+	if (mRootNode == nullptr)
 	{
 		return;
 	}
-	assert(m_RootNode->parent() == nullptr);
-	m_RootNode->checkConsistency();
+	assert(mRootNode->parent() == nullptr);
+	mRootNode->checkConsistency();
 }
 
 
@@ -803,15 +803,15 @@ void Filter::checkNodeConsistency() const
 QByteArray Filter::hash() const
 {
 	QCryptographicHash h(QCryptographicHash::Sha1);
-	h.addData(m_DisplayName.toUtf8());
-	h.addData(m_Notes.toUtf8());
-	h.addData(m_IsFavorite ? "F" : "N", 1);
-	h.addData(m_RootNode->hash());
-	h.addData(m_BgColor.name().toUtf8());
-	h.addData(m_DurationLimit.isPresent() ? "L" : "N", 1);
-	if (m_DurationLimit.isPresent())
+	h.addData(mDisplayName.toUtf8());
+	h.addData(mNotes.toUtf8());
+	h.addData(mIsFavorite ? "F" : "N", 1);
+	h.addData(mRootNode->hash());
+	h.addData(mBgColor.name().toUtf8());
+	h.addData(mDurationLimit.isPresent() ? "L" : "N", 1);
+	if (mDurationLimit.isPresent())
 	{
-		auto lim = m_DurationLimit.value();
+		auto lim = mDurationLimit.value();
 		h.addData(reinterpret_cast<const char *>(&lim), sizeof(lim));
 	}
 	return h.result();
@@ -821,10 +821,10 @@ QByteArray Filter::hash() const
 
 
 
-void Filter::setDbRowId(qlonglong a_DbRowId)
+void Filter::setDbRowId(qlonglong aDbRowId)
 {
-	assert(m_DbRowId == -1);
-	m_DbRowId = a_DbRowId;
+	assert(mDbRowId == -1);
+	mDbRowId = aDbRowId;
 }
 
 

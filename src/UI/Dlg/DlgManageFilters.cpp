@@ -31,36 +31,36 @@ enum
 
 
 DlgManageFilters::DlgManageFilters(
-	ComponentCollection & a_Components,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	QWidget * aParent
 ):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_UI(new Ui::DlgManageFilters),
-	m_IsInternalChange(false)
+	Super(aParent),
+	mComponents(aComponents),
+	mUI(new Ui::DlgManageFilters),
+	mIsInternalChange(false)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgManageFilters", *this);
-	Settings::loadHeaderView("DlgManageFilters", "tblFilters", *m_UI->tblFilters->horizontalHeader());
+	Settings::loadHeaderView("DlgManageFilters", "tblFilters", *mUI->tblFilters->horizontalHeader());
 	auto delegate = new ColorDelegate(tr("SkauTan: Choose filter color"));
-	m_UI->tblFilters->setItemDelegateForColumn(3, delegate);
-	m_UI->btnReplace->setMenu(&m_ReplaceMenu);
+	mUI->tblFilters->setItemDelegateForColumn(3, delegate);
+	mUI->btnReplace->setMenu(&mReplaceMenu);
 
 	// Connect the signals:
-	connect(m_UI->btnAdd,       &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
-	connect(m_UI->btnEdit,      &QPushButton::pressed,               this, &DlgManageFilters::editFilter);
-	connect(m_UI->btnRemove,    &QPushButton::pressed,               this, &DlgManageFilters::removeFilter);
-	connect(m_UI->btnMoveUp,    &QPushButton::pressed,               this, &DlgManageFilters::moveFilterUp);
-	connect(m_UI->btnMoveDown,  &QPushButton::pressed,               this, &DlgManageFilters::moveFilterDown);
-	connect(m_UI->btnDuplicate, &QPushButton::pressed,               this, &DlgManageFilters::duplicateFilter);
-	connect(m_UI->btnClose,     &QPushButton::pressed,               this, &QDialog::close);
-	connect(m_UI->tblFilters,   &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
-	connect(m_UI->tblFilters,   &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
-	connect(m_UI->tblFilters,   &QTableWidget::cellDoubleClicked,    this, &DlgManageFilters::filterDoubleClicked);
+	connect(mUI->btnAdd,       &QPushButton::pressed,               this, &DlgManageFilters::addFilter);
+	connect(mUI->btnEdit,      &QPushButton::pressed,               this, &DlgManageFilters::editFilter);
+	connect(mUI->btnRemove,    &QPushButton::pressed,               this, &DlgManageFilters::removeFilter);
+	connect(mUI->btnMoveUp,    &QPushButton::pressed,               this, &DlgManageFilters::moveFilterUp);
+	connect(mUI->btnMoveDown,  &QPushButton::pressed,               this, &DlgManageFilters::moveFilterDown);
+	connect(mUI->btnDuplicate, &QPushButton::pressed,               this, &DlgManageFilters::duplicateFilter);
+	connect(mUI->btnClose,     &QPushButton::pressed,               this, &QDialog::close);
+	connect(mUI->tblFilters,   &QTableWidget::itemSelectionChanged, this, &DlgManageFilters::filterSelectionChanged);
+	connect(mUI->tblFilters,   &QTableWidget::itemChanged,          this, &DlgManageFilters::filterChanged);
+	connect(mUI->tblFilters,   &QTableWidget::cellDoubleClicked,    this, &DlgManageFilters::filterDoubleClicked);
 
 	// Fill in the existing filters:
-	auto tbl = m_UI->tblFilters;
-	const auto & filters = m_Components.get<Database>()->filters();
+	auto tbl = mUI->tblFilters;
+	const auto & filters = mComponents.get<Database>()->filters();
 	auto numFilters = static_cast<int>(filters.size());
 	tbl->setRowCount(numFilters);
 	for (int i = 0; i < numFilters; ++i)
@@ -78,96 +78,96 @@ DlgManageFilters::DlgManageFilters(
 DlgManageFilters::~DlgManageFilters()
 {
 	Settings::saveWindowPos("DlgManageFilters", *this);
-	Settings::saveHeaderView("DlgManageFilters", "tblFilters", *m_UI->tblFilters->horizontalHeader());
+	Settings::saveHeaderView("DlgManageFilters", "tblFilters", *mUI->tblFilters->horizontalHeader());
 }
 
 
 
 
 
-void DlgManageFilters::updateFilterRow(int a_Row, const Filter & a_Filter)
+void DlgManageFilters::updateFilterRow(int aRow, const Filter & aFilter)
 {
-	assert(a_Row >= 0);
-	assert(a_Row < static_cast<int>(m_Components.get<Database>()->filters().size()));
+	assert(aRow >= 0);
+	assert(aRow < static_cast<int>(mComponents.get<Database>()->filters().size()));
 
-	m_IsInternalChange = true;
+	mIsInternalChange = true;
 
-	auto tbl = m_UI->tblFilters;
-	auto item = new QTableWidgetItem(a_Filter.displayName());
-	item->setBackgroundColor(a_Filter.bgColor());
+	auto tbl = mUI->tblFilters;
+	auto item = new QTableWidgetItem(aFilter.displayName());
+	item->setBackgroundColor(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colDisplayName, item);
+	tbl->setItem(aRow, colDisplayName, item);
 
-	item = new QTableWidgetItem(a_Filter.notes());
-	item->setBackground(a_Filter.bgColor());
+	item = new QTableWidgetItem(aFilter.notes());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colNotes, item);
+	tbl->setItem(aRow, colNotes, item);
 
 	item = new QTableWidgetItem();
-	item->setBackground(a_Filter.bgColor());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable | Qt::ItemIsUserCheckable);
-	item->setCheckState(a_Filter.isFavorite() ? Qt::Checked : Qt::Unchecked);
-	tbl->setItem(a_Row, colIsFavorite, item);
+	item->setCheckState(aFilter.isFavorite() ? Qt::Checked : Qt::Unchecked);
+	tbl->setItem(aRow, colIsFavorite, item);
 
-	item = new QTableWidgetItem(a_Filter.bgColor().name());
-	item->setBackground(a_Filter.bgColor());
+	item = new QTableWidgetItem(aFilter.bgColor().name());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colBgColor, item);
+	tbl->setItem(aRow, colBgColor, item);
 
-	auto durationLimit = a_Filter.durationLimit();
+	auto durationLimit = aFilter.durationLimit();
 	item = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
-	item->setBackground(a_Filter.bgColor());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colDurationLimit, item);
+	tbl->setItem(aRow, colDurationLimit, item);
 
-	auto db = m_Components.get<Database>();
-	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(a_Filter)));
-	item->setBackground(a_Filter.bgColor());
+	auto db = mComponents.get<Database>();
+	item = new QTableWidgetItem(QString("%1").arg(db->numSongsMatchingFilter(aFilter)));
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colNumSongs, item);
+	tbl->setItem(aRow, colNumSongs, item);
 
-	item = new QTableWidgetItem(QString("%1").arg(db->numTemplatesContaining(a_Filter)));
-	item->setBackground(a_Filter.bgColor());
+	item = new QTableWidgetItem(QString("%1").arg(db->numTemplatesContaining(aFilter)));
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colNumTemplates, item);
+	tbl->setItem(aRow, colNumTemplates, item);
 
-	item = new QTableWidgetItem(a_Filter.getFilterDescription());
-	item->setBackground(a_Filter.bgColor());
+	item = new QTableWidgetItem(aFilter.getFilterDescription());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	tbl->setItem(a_Row, colDescription, item);
+	tbl->setItem(aRow, colDescription, item);
 
-	m_IsInternalChange = false;
+	mIsInternalChange = false;
 }
 
 
 
 
 
-void DlgManageFilters::editFilterOnRow(int a_Row)
+void DlgManageFilters::editFilterOnRow(int aRow)
 {
-	const auto & filters = m_Components.get<Database>()->filters();
-	if ((a_Row < 0) || (a_Row >= static_cast<int>(filters.size())))
+	const auto & filters = mComponents.get<Database>()->filters();
+	if ((aRow < 0) || (aRow >= static_cast<int>(filters.size())))
 	{
 		return;
 	}
-	auto filter = filters[static_cast<size_t>(a_Row)];
-	DlgEditFilter dlg(m_Components, *filter, this);
+	auto filter = filters[static_cast<size_t>(aRow)];
+	DlgEditFilter dlg(mComponents, *filter, this);
 	dlg.exec();
-	m_Components.get<Database>()->saveFilter(*filter);
-	updateFilterRow(a_Row, *filter);
+	mComponents.get<Database>()->saveFilter(*filter);
+	updateFilterRow(aRow, *filter);
 }
 
 
 
 
-void DlgManageFilters::swapFiltersAndSelectSecond(int a_Row1, int a_Row2)
+void DlgManageFilters::swapFiltersAndSelectSecond(int aRow1, int aRow2)
 {
-	auto db = m_Components.get<Database>();
-	db->swapFiltersByIdx(static_cast<size_t>(a_Row1), static_cast<size_t>(a_Row2));
+	auto db = mComponents.get<Database>();
+	db->swapFiltersByIdx(static_cast<size_t>(aRow1), static_cast<size_t>(aRow2));
 	const auto & filters = db->filters();
-	updateFilterRow(a_Row1, *filters[static_cast<size_t>(a_Row1)]);
-	updateFilterRow(a_Row2, *filters[static_cast<size_t>(a_Row2)]);
-	m_UI->tblFilters->selectRow(a_Row2);
+	updateFilterRow(aRow1, *filters[static_cast<size_t>(aRow1)]);
+	updateFilterRow(aRow2, *filters[static_cast<size_t>(aRow2)]);
+	mUI->tblFilters->selectRow(aRow2);
 }
 
 
@@ -177,14 +177,14 @@ void DlgManageFilters::swapFiltersAndSelectSecond(int a_Row1, int a_Row2)
 void DlgManageFilters::updateReplaceMenu()
 {
 	// Clear the current contents of the menu:
-	m_ReplaceMenu.clear();
+	mReplaceMenu.clear();
 
 	// Add all unselected filters into the menu, together with the handlers:
-	const auto & selModel = m_UI->tblFilters->selectionModel();
-	const auto & filters = m_Components.get<Database>()->filters();
+	const auto & selModel = mUI->tblFilters->selectionModel();
+	const auto & filters = mComponents.get<Database>()->filters();
 	auto numFilters = static_cast<int>(filters.size());
 	QModelIndex rootIndex;
-	auto size = m_ReplaceMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
+	auto size = mReplaceMenu.style()->pixelMetric(QStyle::PM_SmallIconSize);
 	for (int row = 0; row < numFilters; ++row)
 	{
 		if (selModel->isRowSelected(row, rootIndex))
@@ -196,7 +196,7 @@ void DlgManageFilters::updateReplaceMenu()
 		QPixmap pixmap(size, size);
 		pixmap.fill(filter->bgColor());
 		action->setIcon(QIcon(pixmap));
-		m_ReplaceMenu.addAction(action);
+		mReplaceMenu.addAction(action);
 		connect(action, &QAction::triggered, [this, filter]() { this->replaceWithFilter(filter); });
 	}
 }
@@ -205,11 +205,11 @@ void DlgManageFilters::updateReplaceMenu()
 
 
 
-void DlgManageFilters::replaceWithFilter(FilterPtr a_Filter)
+void DlgManageFilters::replaceWithFilter(FilterPtr aFilter)
 {
 	// Replace the filters:
-	const auto & selModel = m_UI->tblFilters->selectionModel();
-	auto db = m_Components.get<Database>();
+	const auto & selModel = mUI->tblFilters->selectionModel();
+	auto db = mComponents.get<Database>();
 	const auto & filters = db->filters();
 	auto & templates = db->templates();
 	auto numFilters = static_cast<int>(filters.size());
@@ -221,10 +221,10 @@ void DlgManageFilters::replaceWithFilter(FilterPtr a_Filter)
 			continue;
 		}
 		const auto & filter = filters[static_cast<size_t>(row)];
-		assert(a_Filter != filter);
+		assert(aFilter != filter);
 		for (auto & tmpl: templates)
 		{
-			tmpl->replaceFilter(*filter, *a_Filter);
+			tmpl->replaceFilter(*filter, *aFilter);
 		}
 	}
 	db->saveAllTemplates();
@@ -244,15 +244,15 @@ void DlgManageFilters::replaceWithFilter(FilterPtr a_Filter)
 void DlgManageFilters::addFilter()
 {
 	// Add the filter and edit it:
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	auto filter = db->createFilter();
-	DlgEditFilter dlg(m_Components, *filter, this);
+	DlgEditFilter dlg(mComponents, *filter, this);
 	dlg.exec();
-	m_Components.get<Database>()->saveFilter(*filter);
+	mComponents.get<Database>()->saveFilter(*filter);
 
 	// Update the UI:
 	auto numFilters = static_cast<int>(db->filters().size());
-	m_UI->tblFilters->setRowCount(numFilters);
+	mUI->tblFilters->setRowCount(numFilters);
 	updateFilterRow(numFilters - 1, *filter);
 }
 
@@ -262,7 +262,7 @@ void DlgManageFilters::addFilter()
 
 void DlgManageFilters::editFilter()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	if (selection.size() != 1)
 	{
 		return;
@@ -276,7 +276,7 @@ void DlgManageFilters::editFilter()
 
 void DlgManageFilters::removeFilter()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	if (selection.isEmpty())
 	{
 		return;
@@ -298,11 +298,11 @@ void DlgManageFilters::removeFilter()
 		rows.push_back(row.row());
 	}
 	std::sort(rows.begin(), rows.end(), std::greater<int>());
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	for (const auto row: rows)
 	{
 		db->delFilter(static_cast<size_t>(row));
-		m_UI->tblFilters->removeRow(row);
+		mUI->tblFilters->removeRow(row);
 	}
 }
 
@@ -311,7 +311,7 @@ void DlgManageFilters::removeFilter()
 
 void DlgManageFilters::moveFilterUp()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	if (selection.size() != 1)
 	{
 		return;
@@ -330,13 +330,13 @@ void DlgManageFilters::moveFilterUp()
 
 void DlgManageFilters::moveFilterDown()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	if (selection.size() != 1)
 	{
 		return;
 	}
 	auto row = selection[0].row();
-	if (row + 1 >= m_UI->tblFilters->rowCount())
+	if (row + 1 >= mUI->tblFilters->rowCount())
 	{
 		return;
 	}
@@ -349,24 +349,24 @@ void DlgManageFilters::moveFilterDown()
 
 void DlgManageFilters::duplicateFilter()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	if (selection.size() != 1)
 	{
 		return;
 	}
 	auto row = selection[0].row();
-	if (row + 1 >= m_UI->tblFilters->rowCount())
+	if (row + 1 >= mUI->tblFilters->rowCount())
 	{
 		return;
 	}
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	auto filter = db->filters()[static_cast<size_t>(row)];
 	auto clone = std::make_shared<Filter>(*filter);  // Clone the entire filter
 	db->addFilter(clone);
-	auto newRow = m_UI->tblFilters->rowCount();
-	m_UI->tblFilters->setRowCount(newRow + 1);
+	auto newRow = mUI->tblFilters->rowCount();
+	mUI->tblFilters->setRowCount(newRow + 1);
 	updateFilterRow(newRow, *clone);
-	m_UI->tblFilters->selectRow(newRow);
+	mUI->tblFilters->selectRow(newRow);
 }
 
 
@@ -375,14 +375,14 @@ void DlgManageFilters::duplicateFilter()
 
 void DlgManageFilters::filterSelectionChanged()
 {
-	const auto & selection = m_UI->tblFilters->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblFilters->selectionModel()->selectedRows();
 	auto selSize = selection.size();
-	m_UI->btnEdit->setEnabled(selSize == 1);
-	m_UI->btnRemove->setEnabled(selSize > 0);
-	bool canReplace = (selSize > 0) && (selSize < m_UI->tblFilters->rowCount());
-	m_UI->btnReplace->setEnabled(canReplace);
-	m_UI->btnMoveUp->setEnabled((selSize == 1) && (selection[0].row() > 0));
-	m_UI->btnMoveDown->setEnabled((selSize == 1) && (selection[0].row() + 1 < m_UI->tblFilters->rowCount()));
+	mUI->btnEdit->setEnabled(selSize == 1);
+	mUI->btnRemove->setEnabled(selSize > 0);
+	bool canReplace = (selSize > 0) && (selSize < mUI->tblFilters->rowCount());
+	mUI->btnReplace->setEnabled(canReplace);
+	mUI->btnMoveUp->setEnabled((selSize == 1) && (selection[0].row() > 0));
+	mUI->btnMoveDown->setEnabled((selSize == 1) && (selection[0].row() + 1 < mUI->tblFilters->rowCount()));
 	if (canReplace)
 	{
 		updateReplaceMenu();
@@ -393,25 +393,25 @@ void DlgManageFilters::filterSelectionChanged()
 
 
 
-void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
+void DlgManageFilters::filterChanged(QTableWidgetItem * aItem)
 {
-	assert(a_Item != nullptr);
-	if (m_IsInternalChange)
+	assert(aItem != nullptr);
+	if (mIsInternalChange)
 	{
 		return;
 	}
-	auto db = m_Components.get<Database>();
-	auto row = a_Item->row();
+	auto db = mComponents.get<Database>();
+	auto row = aItem->row();
 	auto filter = db->filters()[static_cast<size_t>(row)];
-	switch (a_Item->column())
+	switch (aItem->column())
 	{
-		case colDisplayName: filter->setDisplayName(a_Item->text()); break;
-		case colNotes: filter->setNotes(a_Item->text()); break;
-		case colIsFavorite: filter->setIsFavorite(a_Item->checkState() == Qt::Checked); break;
+		case colDisplayName: filter->setDisplayName(aItem->text()); break;
+		case colNotes: filter->setNotes(aItem->text()); break;
+		case colIsFavorite: filter->setIsFavorite(aItem->checkState() == Qt::Checked); break;
 		case colDurationLimit:
 		{
 			bool isOK;
-			auto limit = Utils::parseTime(a_Item->text(), isOK);
+			auto limit = Utils::parseTime(aItem->text(), isOK);
 			if (isOK)
 			{
 				filter->setDurationLimit(limit);
@@ -424,7 +424,7 @@ void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
 		}
 		case colBgColor:
 		{
-			QColor c(a_Item->text());
+			QColor c(aItem->text());
 			if (c.isValid())
 			{
 				filter->setBgColor(c);
@@ -445,8 +445,8 @@ void DlgManageFilters::filterChanged(QTableWidgetItem * a_Item)
 
 
 
-void DlgManageFilters::filterDoubleClicked(int a_Row, int a_Column)
+void DlgManageFilters::filterDoubleClicked(int aRow, int aColumn)
 {
-	Q_UNUSED(a_Column);
-	editFilterOnRow(a_Row);
+	Q_UNUSED(aColumn);
+	editFilterOnRow(aRow);
 }

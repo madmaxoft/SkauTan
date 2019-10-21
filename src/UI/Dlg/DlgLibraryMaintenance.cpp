@@ -12,19 +12,19 @@
 
 
 
-DlgLibraryMaintenance::DlgLibraryMaintenance(ComponentCollection & a_Components, QWidget *a_Parent) :
-	QDialog(a_Parent),
-	m_Components(a_Components),
-	m_UI(new Ui::DlgLibraryMaintenance)
+DlgLibraryMaintenance::DlgLibraryMaintenance(ComponentCollection & aComponents, QWidget *aParent) :
+	QDialog(aParent),
+	mComponents(aComponents),
+	mUI(new Ui::DlgLibraryMaintenance)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgLibraryMaintenance", *this);
 
 	// Connect the signals:
-	connect(m_UI->btnClose,                   &QPushButton::pressed, this, &QDialog::close);
-	connect(m_UI->btnRemoveInaccessibleSongs, &QPushButton::pressed, this, &DlgLibraryMaintenance::removeInaccessibleSongs);
-	connect(m_UI->btnExportAllTags,           &QPushButton::pressed, this, &DlgLibraryMaintenance::exportAllTags);
-	connect(m_UI->btnImportTags,              &QPushButton::pressed, this, &DlgLibraryMaintenance::importTags);
+	connect(mUI->btnClose,                   &QPushButton::pressed, this, &QDialog::close);
+	connect(mUI->btnRemoveInaccessibleSongs, &QPushButton::pressed, this, &DlgLibraryMaintenance::removeInaccessibleSongs);
+	connect(mUI->btnExportAllTags,           &QPushButton::pressed, this, &DlgLibraryMaintenance::exportAllTags);
+	connect(mUI->btnImportTags,              &QPushButton::pressed, this, &DlgLibraryMaintenance::importTags);
 }
 
 
@@ -40,12 +40,12 @@ DlgLibraryMaintenance::~DlgLibraryMaintenance()
 
 
 
-void DlgLibraryMaintenance::inaccessibleSongsRemoved(quint32 a_NumRemoved)
+void DlgLibraryMaintenance::inaccessibleSongsRemoved(quint32 aNumRemoved)
 {
 	QMessageBox::information(
 		this,
 		tr("SkauTan: Inaccessible songs removed"),
-		tr("Number of songs removed: %1").arg(a_NumRemoved)
+		tr("Number of songs removed: %1").arg(aNumRemoved)
 	);
 }
 
@@ -53,12 +53,12 @@ void DlgLibraryMaintenance::inaccessibleSongsRemoved(quint32 a_NumRemoved)
 
 
 
-void DlgLibraryMaintenance::tagExportError(const QString & a_FileName, const QString & a_Error)
+void DlgLibraryMaintenance::tagExportError(const QString & aFileName, const QString & aError)
 {
 	QMessageBox::warning(
 		this,
 		tr("SkauTan: Cannot export tags"),
-		tr("SkauTan cannot export tags to file %1:\n\n%2").arg(a_FileName).arg(a_Error)
+		tr("SkauTan cannot export tags to file %1:\n\n%2").arg(aFileName).arg(aError)
 	);
 }
 
@@ -66,12 +66,12 @@ void DlgLibraryMaintenance::tagExportError(const QString & a_FileName, const QSt
 
 
 
-void DlgLibraryMaintenance::tagExportFinished(const QString & a_FileName)
+void DlgLibraryMaintenance::tagExportFinished(const QString & aFileName)
 {
 	QMessageBox::information(
 		this,
 		tr("SkauTan: Tags exported"),
-		tr("SkauTan has successfully exported all tags into file %1.").arg(a_FileName)
+		tr("SkauTan has successfully exported all tags into file %1.").arg(aFileName)
 	);
 }
 
@@ -79,12 +79,12 @@ void DlgLibraryMaintenance::tagExportFinished(const QString & a_FileName)
 
 
 
-void DlgLibraryMaintenance::tagImportError(const QString & a_FileName, const QString & a_Error)
+void DlgLibraryMaintenance::tagImportError(const QString & aFileName, const QString & aError)
 {
 	QMessageBox::warning(
 		this,
 		tr("SkauTan: Cannot import tags"),
-		tr("SkauTan cannot import tags from file %1:\n\n%2").arg(a_FileName).arg(a_Error)
+		tr("SkauTan cannot import tags from file %1:\n\n%2").arg(aFileName).arg(aError)
 	);
 }
 
@@ -92,12 +92,12 @@ void DlgLibraryMaintenance::tagImportError(const QString & a_FileName, const QSt
 
 
 
-void DlgLibraryMaintenance::tagImportFinished(const QString & a_FileName)
+void DlgLibraryMaintenance::tagImportFinished(const QString & aFileName)
 {
 	QMessageBox::information(
 		this,
 		tr("SkauTan: Tags imported"),
-		tr("SkauTan has successfully imported tags from file %1.").arg(a_FileName)
+		tr("SkauTan has successfully imported tags from file %1.").arg(aFileName)
 	);
 }
 
@@ -107,7 +107,7 @@ void DlgLibraryMaintenance::tagImportFinished(const QString & a_FileName)
 
 void DlgLibraryMaintenance::removeInaccessibleSongs()
 {
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	BackgroundTasks::enqueue(tr("Remove inaccessible songs"),
 		[db, this]()
 		{
@@ -133,7 +133,7 @@ void DlgLibraryMaintenance::exportAllTags()
 	{
 		return;
 	}
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	BackgroundTasks::enqueue(tr("Export all tags"),
 		[this, db, fileName]()
 		{
@@ -167,7 +167,7 @@ void DlgLibraryMaintenance::importTags()
 	{
 		return;
 	}
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	BackgroundTasks::enqueue(tr("Import tags"),
 		[this, db, fileName]()
 		{

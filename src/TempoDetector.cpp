@@ -7,17 +7,17 @@
 
 
 /** Returns the value, clamped to the range provided. */
-template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
+template <typename T> T clamp(T aValue, T aMin, T aMax)
 {
-	if (a_Value < a_Min)
+	if (aValue < aMin)
 	{
-		return a_Min;
+		return aMin;
 	}
-	if (a_Value > a_Max)
+	if (aValue > aMax)
 	{
-		return a_Max;
+		return aMax;
 	}
-	return a_Value;
+	return aValue;
 }
 
 
@@ -25,9 +25,9 @@ template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
 
 
 /** Performs floor and static_cast at the same time. */
-template <typename T> T floor(double a_Value)
+template <typename T> T floor(double aValue)
 {
-	return static_cast<T>(std::floor(a_Value));
+	return static_cast<T>(std::floor(aValue));
 }
 
 
@@ -35,9 +35,9 @@ template <typename T> T floor(double a_Value)
 
 
 /** Performs ceil and static_cast at the same time. */
-template <typename T> T ceil(double a_Value)
+template <typename T> T ceil(double aValue)
 {
-	return static_cast<T>(std::ceil(a_Value));
+	return static_cast<T>(std::ceil(aValue));
 }
 
 

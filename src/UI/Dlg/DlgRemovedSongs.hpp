@@ -33,17 +33,17 @@ class DlgRemovedSongs:
 
 public:
 
-	explicit DlgRemovedSongs(ComponentCollection & a_Components, QWidget * a_Parent);
+	explicit DlgRemovedSongs(ComponentCollection & aComponents, QWidget * aParent);
 	~DlgRemovedSongs();
 
 
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgRemovedSongs> m_UI;
+	std::unique_ptr<Ui::DlgRemovedSongs> mUI;
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 
 protected slots:

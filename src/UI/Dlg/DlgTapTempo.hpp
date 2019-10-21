@@ -37,9 +37,9 @@ class DlgTapTempo:
 public:
 
 	explicit DlgTapTempo(
-		ComponentCollection & a_Components,
-		SongPtr a_Song,
-		QWidget * a_Parent = nullptr
+		ComponentCollection & aComponents,
+		SongPtr aSong,
+		QWidget * aParent = nullptr
 	);
 
 	DlgTapTempo(const DlgTapTempo &) = delete;
@@ -51,22 +51,22 @@ public:
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgTapTempo> m_UI;
+	std::unique_ptr<Ui::DlgTapTempo> mUI;
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The song to process. */
-	SongPtr m_Song;
+	SongPtr mSong;
 
 	/** The timer used for measuring delays between taps. */
-	QElapsedTimer m_Timer;
+	QElapsedTimer mTimer;
 
 	/** The player through which the song is being played. */
-	std::unique_ptr<Player> m_Player;
+	std::unique_ptr<Player> mPlayer;
 
 	/** The intervals between user's taps. */
-	std::vector<qint64> m_TimePoints;
+	std::vector<qint64> mTimePoints;
 
 
 	/** Clears the history of the user's taps.
@@ -76,9 +76,9 @@ private:
 
 	/** Adds the timepoint as the next tap value.
 	Updates the UI with history and current detection results. */
-	void addTimePoint(qint64 a_MSecElapsed);
+	void addTimePoint(qint64 aMSecElapsed);
 
-	/** Returns the MPM as calculated from m_TimePoints. */
+	/** Returns the MPM as calculated from mTimePoints. */
 	double detectMPM();
 
 private slots:

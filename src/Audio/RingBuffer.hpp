@@ -17,22 +17,22 @@
 class RingBuffer
 {
 public:
-	RingBuffer(size_t a_Size);
+	RingBuffer(size_t aSize);
 	~RingBuffer();
 	RingBuffer(const RingBuffer &) = delete;
 	RingBuffer(RingBuffer &&) = delete;
 
-	/** Reads a_MaxLen bytes from the buffer.
-	Blocks until a_MaxLen bytes have been read from the buffer, or the buffer is abort()-ed.
-	a_MaxLen may be larger than the buffer size.
+	/** Reads aMaxLen bytes from the buffer.
+	Blocks until aMaxLen bytes have been read from the buffer, or the buffer is abort()-ed.
+	aMaxLen may be larger than the buffer size.
 	Returns the number of bytes read. */
-	size_t readData(void * a_Dest, size_t a_MaxLen);
+	size_t readData(void * aDest, size_t aMaxLen);
 
 	/** Writes the specified data into the buffer.
 	Blocks until all the data is written, or the buffer is abort()-ed.
-	a_Len may be larger than the buffer size.
+	aLen may be larger than the buffer size.
 	Returns the number of bytes written. */
-	size_t writeData(const char * a_Data, size_t a_Len);
+	size_t writeData(const char * aData, size_t aLen);
 
 	/** Sets a flag that no more data will be written into the buffer.
 	Subsequent reads will return existing data and then report EOF. */
@@ -43,7 +43,7 @@ public:
 	void abort();
 
 	/** Returns true iff the decoder should terminate (abort has been called). */
-	bool shouldAbort() const { return m_ShouldAbort.load(); }
+	bool shouldAbort() const { return mShouldAbort.load(); }
 
 	/** Waits until data is available for reading.
 	Returns true if data has arrived, false if aborted. */
@@ -52,62 +52,62 @@ public:
 	void clear();
 
 	/** Returns the number of bytes that can be written currently.
-	Assumes m_Mtx is unlocked. */
+	Assumes mMtx is unlocked. */
 	size_t numAvailWrite();
 
 	/** Returns the number of bytes that can be read currently.
-	Assumes m_Mtx is unlocked. */
+	Assumes mMtx is unlocked. */
 	size_t numAvailRead();
 
 
 protected:
 
 	/** Mutex used to prevent multithreaded access to the internal buffer description. */
-	QMutex m_Mtx;
+	QMutex mMtx;
 
-	/** The wait condition used together with m_Mtx for signalling incoming decoded data. */
-	QWaitCondition m_CVHasData;
+	/** The wait condition used together with mMtx for signalling incoming decoded data. */
+	QWaitCondition mCVHasData;
 
-	/** The wait condition used together with m_Mtx for signalling newly freed buffer space. */
-	QWaitCondition m_CVHasFreeSpace;
+	/** The wait condition used together with mMtx for signalling newly freed buffer space. */
+	QWaitCondition mCVHasFreeSpace;
 
 	/** The internal buffer.
-	The part from m_CurrentReadPos until m_CurrentWritePos - 1 is valid data available for reading.
-	The part from m_CurrentWritePos until m_CurrentReadPos - 1 is free space for writing.
-	If m_CurrentReadPos == m_CurrentReadPos, then the buffer is empty.
-	Protected against multithreaded access by m_Mtx. */
-	char * m_Buffer;
+	The part from mCurrentReadPos until mCurrentWritePos - 1 is valid data available for reading.
+	The part from mCurrentWritePos until mCurrentReadPos - 1 is free space for writing.
+	If mCurrentReadPos == mCurrentReadPos, then the buffer is empty.
+	Protected against multithreaded access by mMtx. */
+	char * mBuffer;
 
-	/** Size of m_Buffer, in bytes. */
-	const size_t m_BufferSize;
+	/** Size of mBuffer, in bytes. */
+	const size_t mBufferSize;
 
-	/** Position in m_Buffer where the next read operation will take place.
-	Protected against multithreaded access by m_Mtx. */
-	size_t m_CurrentReadPos;
+	/** Position in mBuffer where the next read operation will take place.
+	Protected against multithreaded access by mMtx. */
+	size_t mCurrentReadPos;
 
-	/** Position in m_Buffer where the next write operation will take place.
-	Protected against multithreaded access by m_Mtx. */
-	size_t m_CurrentWritePos;
+	/** Position in mBuffer where the next write operation will take place.
+	Protected against multithreaded access by mMtx. */
+	size_t mCurrentWritePos;
 
 	/** If set to true, operations on this instance abort without waiting. */
-	std::atomic<bool> m_ShouldAbort;
+	std::atomic<bool> mShouldAbort;
 
 	/** If true, there's no more incoming data
 	Subsequent reads should only return any remaining data in the buffer and then report EOF. */
-	std::atomic<bool> m_IsEOF;
+	std::atomic<bool> mIsEOF;
 
 
 	/** Writes a single block of data that is guaranteed to fit into the current free space.
-	Assumes m_Mtx is locked and there is enough free space for the write operation.
+	Assumes mMtx is locked and there is enough free space for the write operation.
 	Wraps the write around the ringbuffer end. */
-	void singleWrite(const void * a_Data, size_t a_Len);
+	void singleWrite(const void * aData, size_t aLen);
 
 	/** Returns the number of bytes that can be written currently.
-	Assumes m_Mtx is locked. */
+	Assumes mMtx is locked. */
 	size_t lockedAvailWrite();
 
 	/** Returns the number of bytes that can be read currently.
-	Assumes m_Mtx is locked. */
+	Assumes mMtx is locked. */
 	size_t lockedAvailRead();
 };
 

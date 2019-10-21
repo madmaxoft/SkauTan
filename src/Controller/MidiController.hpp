@@ -23,10 +23,10 @@ class MidiController:
 public:
 
 	/** Special type of controller, has no OUT port. */
-	MidiController(MidiPortInPtr a_PortIn);
+	MidiController(MidiPortInPtr aPortIn);
 
 	/** Regular controller, has both an OUT and an IN port. */
-	MidiController(MidiPortInPtr a_PortIn, MidiPortOutPtr a_PortOut);
+	MidiController(MidiPortInPtr aPortIn, MidiPortOutPtr aPortOut);
 
 
 	// AbstractController overrides:
@@ -35,11 +35,11 @@ public:
 protected:
 
 	/** The IN port used by the controller. */
-	MidiPortInPtr m_PortIn;
+	MidiPortInPtr mPortIn;
 
 	/** The OUT port used by the controller.
 	May be nullptr if the controller has no OUT port. */
-	MidiPortOutPtr m_PortOut;
+	MidiPortOutPtr mPortOut;
 
 
 private slots:
@@ -79,33 +79,33 @@ public:
 
 	/** Constructs a controller that uses the specified maps for its operation. */
 	SimpleMidiController(
-		MidiPortInPtr a_MidiPortIn,
-		MidiPortOutPtr a_MidiPortOut,  // optional, nullptr if unused
-		const KeyMap & a_KeyMap,
-		const LedMap & a_LedMap,
-		const SliderMap & a_SliderMap,
-		const WheelMap & a_WheelMap,
-		const QString & a_ControllerName
+		MidiPortInPtr aMidiPortIn,
+		MidiPortOutPtr aMidiPortOut,  // optional, nullptr if unused
+		const KeyMap & aKeyMap,
+		const LedMap & aLedMap,
+		const SliderMap & aSliderMap,
+		const WheelMap & aWheelMap,
+		const QString & aControllerName
 	);
 
 
 	// AbstractController overrides:
-	virtual void setLed(int a_Led, bool a_On) override;
-	virtual QString name() const override { return m_ControllerName; }
+	virtual void setLed(int aLed, bool aOn) override;
+	virtual QString name() const override { return mControllerName; }
 
 protected:
 
-	KeyMap m_KeyMap;
-	LedMap m_LedMap;
-	SliderMap m_SliderMap;
-	WheelMap m_WheelMap;
-	const QString m_ControllerName;
+	KeyMap mKeyMap;
+	LedMap mLedMap;
+	SliderMap mSliderMap;
+	WheelMap mWheelMap;
+	const QString mControllerName;
 
 
 protected slots:
 
 	/** A message has been received from MIDI IN, process it through the maps into a logical event. */
-	void processMidiInMessage(double a_TimeStamp, const QByteArray & a_Message);
+	void processMidiInMessage(double aTimeStamp, const QByteArray & aMessage);
 };
 
 

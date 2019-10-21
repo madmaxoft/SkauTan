@@ -35,15 +35,15 @@ protected:
 
 	/** Unregisters the specified key handler.
 	For internal use, clients of this class will call this automatically via KeyHandlerReg's destructor. */
-	void unregisterKeyHandler(quint64 a_RegID);
+	void unregisterKeyHandler(quint64 aRegID);
 
 	/** Unregisters the specified slider handler.
 	For internal use, clients of this class will call this automatically via SliderHandlerReg's destructor. */
-	void unregisterSliderHandler(quint64 a_RegID);
+	void unregisterSliderHandler(quint64 aRegID);
 
 	/** Unregisters the specified wheel handler.
 	For internal use, clients of this class will call this automatically via WheelHandlerReg's destructor. */
-	void unregisterWheelHandler(quint64 a_RegID);
+	void unregisterWheelHandler(quint64 aRegID);
 
 
 public:
@@ -51,12 +51,12 @@ public:
 	/** Wrapper for the handler function name and the object on which it should be invoked. */
 	struct Handler
 	{
-		QObject * m_DestinationObject;
-		std::string m_FunctionName;
+		QObject * mDestinationObject;
+		std::string mFunctionName;
 
-		Handler(QObject * a_DestinationObject, const char * a_FunctionName):
-			m_DestinationObject(a_DestinationObject),
-			m_FunctionName(a_FunctionName)
+		Handler(QObject * aDestinationObject, const char * aFunctionName):
+			mDestinationObject(aDestinationObject),
+			mFunctionName(aFunctionName)
 		{
 		}
 	};
@@ -69,26 +69,26 @@ public:
 	public:
 
 		/** Creates a new RAII wrapper tied to the specified registration ID. */
-		HandlerReg(DJControllers & a_Parent, quint64 a_RegID):
-			m_Parent(a_Parent),
-			m_RegID(a_RegID)
+		HandlerReg(DJControllers & aParent, quint64 aRegID):
+			mParent(aParent),
+			mRegID(aRegID)
 		{
 		}
 
 		/** Unregisters the wrapped handler. */
 		~HandlerReg()
 		{
-			(m_Parent.*UnregFn)(m_RegID);
+			(mParent.*UnregFn)(mRegID);
 		}
 
 
 	protected:
 
 		/** The DJControllers instance where the handler is registered. */
-		DJControllers & m_Parent;
+		DJControllers & mParent;
 
-		/** The registration ID in m_Parent to remove upon destruction. */
-		quint64 m_RegID;
+		/** The registration ID in mParent to remove upon destruction. */
+		quint64 mRegID;
 	};
 
 	// Typedefs for easier usage:
@@ -105,59 +105,59 @@ public:
 
 
 	/** Creates a new empty instance. */
-	explicit DJControllers(QObject * a_Parent = nullptr);
+	explicit DJControllers(QObject * aParent = nullptr);
 
 	virtual ~DJControllers() override;
 
 	/** Registers a handler for key events in the specified context.
 	Returns a registration object that unregisters the callback when destroyed. */
 	KeyHandlerRegPtr registerContextKeyHandler(
-		const QString & a_Context,
-		QObject * a_Destination,
-		const char * a_CallbackName
+		const QString & aContext,
+		QObject * aDestination,
+		const char * aCallbackName
 	);
 
 	/** Registers a handler for slider events in the specified context. */
 	SliderHandlerRegPtr registerContextSliderHandler(
-		const QString & a_Context,
-		QObject * a_Destination,
-		const char * a_CallbackName
+		const QString & aContext,
+		QObject * aDestination,
+		const char * aCallbackName
 	);
 
 	/** Registers a handler for wheel events in the specified context. */
 	WheelHandlerRegPtr registerContextWheelHandler(
-		const QString & a_Context,
-		QObject * a_Destination,
-		const char * a_CallbackName
+		const QString & aContext,
+		QObject * aDestination,
+		const char * aCallbackName
 	);
 
 
 private:
 
 	/** The timer used for periodically updating the port list and opening any new ports. */
-	QTimer m_TimerUpdate;
+	QTimer mTimerUpdate;
 
 	/** Enumerator of the MIDI-based controllers. */
-	std::unique_ptr<MidiEnumerator> m_MidiEnumerator;
+	std::unique_ptr<MidiEnumerator> mMidiEnumerator;
 
 	/** Controllers currently connected and detected. */
-	std::vector<std::shared_ptr<AbstractController>> m_Controllers;
+	std::vector<std::shared_ptr<AbstractController>> mControllers;
 
 	/** The RegID of the next key / slider / wheel registration. */
-	std::atomic<quint64> m_NextRegID;
+	std::atomic<quint64> mNextRegID;
 
 	/** The registered key handlers. */
-	std::vector<std::tuple<quint64, QString, Handler>> m_KeyHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> mKeyHandlers;
 
 	/** The registered slider handlers. */
-	std::vector<std::tuple<quint64, QString, Handler>> m_SliderHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> mSliderHandlers;
 
 	/** The registered wheel handlers. */
-	std::vector<std::tuple<quint64, QString, Handler>> m_WheelHandlers;
+	std::vector<std::tuple<quint64, QString, Handler>> mWheelHandlers;
 
 
 	/** Sends a message to turn the specified LED on or off. */
-	void setLed(int a_Led, bool a_LightUp);
+	void setLed(int aLed, bool aLightUp);
 
 	/** Returns the current context, based on the app's focused window and its parents. */
 	QString findCurrentContext();
@@ -170,7 +170,7 @@ private:
 signals:
 
 	/** The user connected a controller that was successfully detected. */
-	void controllerConnected(const QString & a_Name);
+	void controllerConnected(const QString & aName);
 
 	/** The user disconnected the controller. */
 	void controllerRemoved();
@@ -183,34 +183,34 @@ private slots:
 	void periodicUpdate();
 
 	/** Called by the enumerators whenever a new controller is detected. */
-	void newControllerDetected(std::shared_ptr<AbstractController> a_Controller);
+	void newControllerDetected(std::shared_ptr<AbstractController> aController);
 
 	/** Called by the enumerators whenever a controller is disconnected. */
-	void controllerDisconnected(std::shared_ptr<AbstractController> a_Controller);
+	void controllerDisconnected(std::shared_ptr<AbstractController> aController);
 
 	/** Called when the user presses a key on a controller. */
-	void controllerKeyPressed(int a_Key);
+	void controllerKeyPressed(int aKey);
 
 	/** Called when the user moves a slider on a controller. */
-	void controllerSliderSet(int a_Slider, qreal a_Value);
+	void controllerSliderSet(int aSlider, qreal aValue);
 
 	/** Called when the user moves a wheel on a controller. */
-	void controllerWheelMoved(int a_Wheel, int a_NumSteps);
+	void controllerWheelMoved(int aWheel, int aNumSteps);
 
 
 public slots:
 
 	/** Sets the state of the Play / Pause button's LED. */
-	void setLedPlay(bool a_LightUp);
+	void setLedPlay(bool aLightUp);
 
 	/** Sets the state of the Cure button's LED. */
-	void setLedCue(bool a_LightUp);
+	void setLedCue(bool aLightUp);
 
 	/** Sets the state of the Sync button's LED. */
-	void setLedSync(bool a_LightUp);
+	void setLedSync(bool aLightUp);
 
 	/** Sets the state of the Headphone button's LED. */
-	void setLedPfl(bool a_LightUp);
+	void setLedPfl(bool aLightUp);
 };
 
 

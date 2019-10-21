@@ -36,88 +36,88 @@ static const int TICKS_UNTIL_SET_SEARCH_TEXT = 3;
 // DlgSongs:
 
 DlgSongs::DlgSongs(
-	ComponentCollection & a_Components,
-	std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
-	bool a_ShowManipulators,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	std::unique_ptr<QSortFilterProxyModel> && aFilterModel,
+	bool aShowManipulators,
+	QWidget * aParent
 ):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_UI(new Ui::DlgSongs),
-	m_FilterModel(std::move(a_FilterModel)),
-	m_SongModel(*a_Components.get<Database>()),
-	m_SongModelFilter(m_SongModel),
-	m_IsLibraryRescanShown(true),
-	m_LastLibraryRescanTotal(0),
-	m_LastLibraryRescanQueue(-1),
-	m_TicksUntilSetSearchText(0)
+	Super(aParent),
+	mComponents(aComponents),
+	mUI(new Ui::DlgSongs),
+	mFilterModel(std::move(aFilterModel)),
+	mSongModel(*aComponents.get<Database>()),
+	mSongModelFilter(mSongModel),
+	mIsLibraryRescanShown(true),
+	mLastLibraryRescanTotal(0),
+	mLastLibraryRescanQueue(-1),
+	mTicksUntilSetSearchText(0)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgSongs", *this);
-	if (m_FilterModel == nullptr)
+	if (mFilterModel == nullptr)
 	{
-		m_FilterModel.reset(new QSortFilterProxyModel);
+		mFilterModel.reset(new QSortFilterProxyModel);
 	}
-	if (!a_ShowManipulators)
+	if (!aShowManipulators)
 	{
-		m_UI->btnAddFolder->hide();
-		m_UI->btnRemove->hide();
-		m_UI->btnAddToPlaylist->hide();
+		mUI->btnAddFolder->hide();
+		mUI->btnRemove->hide();
+		mUI->btnAddToPlaylist->hide();
 	}
-	m_FilterModel->setSourceModel(&m_SongModelFilter);
-	m_UI->tblSongs->setModel(m_FilterModel.get());
-	m_UI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
+	mFilterModel->setSourceModel(&mSongModelFilter);
+	mUI->tblSongs->setModel(mFilterModel.get());
+	mUI->tblSongs->setItemDelegate(new SongModelEditorDelegate(this));
 
 	// Add the context-menu actions to their respective controls, so that their shortcuts work:
-	m_UI->tblSongs->addActions({
-		m_UI->actAddToPlaylist,
-		m_UI->actInsertIntoPlaylist,
-		m_UI->actDeleteFromDisk,
-		m_UI->actManualToId3,
-		m_UI->actFileNameToId3,
-		m_UI->actProperties,
-		m_UI->actRate,
-		m_UI->actRemoveFromLibrary,
-		m_UI->actTempoDetector,
-		m_UI->actTapTempo,
+	mUI->tblSongs->addActions({
+		mUI->actAddToPlaylist,
+		mUI->actInsertIntoPlaylist,
+		mUI->actDeleteFromDisk,
+		mUI->actManualToId3,
+		mUI->actFileNameToId3,
+		mUI->actProperties,
+		mUI->actRate,
+		mUI->actRemoveFromLibrary,
+		mUI->actTempoDetector,
+		mUI->actTapTempo,
 	});
 
 	// Connect the signals:
-	auto db = m_Components.get<Database>();
-	connect(m_UI->btnAddFile,            &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
-	connect(m_UI->btnAddFolder,          &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
-	connect(m_UI->btnRemove,             &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
-	connect(m_UI->btnClose,              &QPushButton::clicked,                   this, &DlgSongs::close);
-	connect(m_UI->btnAddToPlaylist,      &QPushButton::clicked,                   this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->btnRescanMetadata,     &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
-	connect(&m_SongModel,                &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
-	connect(&m_SongModel,                &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
+	auto db = mComponents.get<Database>();
+	connect(mUI->btnAddFile,            &QPushButton::clicked,                   this, &DlgSongs::chooseAddFile);
+	connect(mUI->btnAddFolder,          &QPushButton::clicked,                   this, &DlgSongs::chooseAddFolder);
+	connect(mUI->btnRemove,             &QPushButton::clicked,                   this, &DlgSongs::removeSelected);
+	connect(mUI->btnClose,              &QPushButton::clicked,                   this, &DlgSongs::close);
+	connect(mUI->btnAddToPlaylist,      &QPushButton::clicked,                   this, &DlgSongs::addSelectedToPlaylist);
+	connect(mUI->btnRescanMetadata,     &QPushButton::clicked,                   this, &DlgSongs::rescanMetadata);
+	connect(&mSongModel,                &SongModel::songEdited,                  this, &DlgSongs::modelSongEdited);
+	connect(&mSongModel,                &SongModel::rowsInserted,                this, &DlgSongs::updateSongStats);
 	connect(db.get(),                    &Database::songFileAdded,                this, &DlgSongs::updateSongStats);
 	connect(db.get(),                    &Database::songRemoved,                  this, &DlgSongs::updateSongStats);
-	connect(&m_PeriodicUiUpdate,         &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
-	connect(m_UI->tblSongs,              &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
-	connect(m_UI->actAddToPlaylist,      &QAction::triggered,                     this, &DlgSongs::addSelectedToPlaylist);
-	connect(m_UI->actInsertIntoPlaylist, &QAction::triggered,                     this, &DlgSongs::insertSelectedToPlaylist);
-	connect(m_UI->actDeleteFromDisk,     &QAction::triggered,                     this, &DlgSongs::deleteFromDisk);
-	connect(m_UI->actProperties,         &QAction::triggered,                     this, &DlgSongs::showProperties);
-	connect(m_UI->actRate,               &QAction::triggered,                     this, &DlgSongs::rateSelected);
-	connect(m_UI->actRemoveFromLibrary,  &QAction::triggered,                     this, &DlgSongs::removeSelected);
-	connect(m_UI->actTempoDetector,      &QAction::triggered,                     this, &DlgSongs::showTempoDetector);
-	connect(m_UI->actTapTempo,           &QAction::triggered,                     this, &DlgSongs::showTapTempo);
-	connect(m_UI->actManualToId3,        &QAction::triggered,                     this, &DlgSongs::moveManualToId3);
-	connect(m_UI->actFileNameToId3,      &QAction::triggered,                     this, &DlgSongs::copyFileNameToId3);
+	connect(&mPeriodicUiUpdate,         &QTimer::timeout,                        this, &DlgSongs::periodicUiUpdate);
+	connect(mUI->tblSongs,              &QTableView::customContextMenuRequested, this, &DlgSongs::showSongsContextMenu);
+	connect(mUI->actAddToPlaylist,      &QAction::triggered,                     this, &DlgSongs::addSelectedToPlaylist);
+	connect(mUI->actInsertIntoPlaylist, &QAction::triggered,                     this, &DlgSongs::insertSelectedToPlaylist);
+	connect(mUI->actDeleteFromDisk,     &QAction::triggered,                     this, &DlgSongs::deleteFromDisk);
+	connect(mUI->actProperties,         &QAction::triggered,                     this, &DlgSongs::showProperties);
+	connect(mUI->actRate,               &QAction::triggered,                     this, &DlgSongs::rateSelected);
+	connect(mUI->actRemoveFromLibrary,  &QAction::triggered,                     this, &DlgSongs::removeSelected);
+	connect(mUI->actTempoDetector,      &QAction::triggered,                     this, &DlgSongs::showTempoDetector);
+	connect(mUI->actTapTempo,           &QAction::triggered,                     this, &DlgSongs::showTapTempo);
+	connect(mUI->actManualToId3,        &QAction::triggered,                     this, &DlgSongs::moveManualToId3);
+	connect(mUI->actFileNameToId3,      &QAction::triggered,                     this, &DlgSongs::copyFileNameToId3);
 
 	initFilterSearch();
 	createContextMenu();
 
-	Settings::loadHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
+	Settings::loadHeaderView("DlgSongs", "tblSongs", *mUI->tblSongs->horizontalHeader());
 
 	// Make the dialog have Maximize button on Windows:
 	setWindowFlags(Qt::Window);
 
 	updateSongStats();
 
-	m_PeriodicUiUpdate.start(100);
+	mPeriodicUiUpdate.start(100);
 }
 
 
@@ -126,7 +126,7 @@ DlgSongs::DlgSongs(
 
 DlgSongs::~DlgSongs()
 {
-	Settings::saveHeaderView("DlgSongs", "tblSongs", *m_UI->tblSongs->horizontalHeader());
+	Settings::saveHeaderView("DlgSongs", "tblSongs", *mUI->tblSongs->horizontalHeader());
 	Settings::saveWindowPos("DlgSongs", *this);
 }
 
@@ -134,11 +134,11 @@ DlgSongs::~DlgSongs()
 
 
 
-void DlgSongs::addFiles(const QStringList & a_FileNames)
+void DlgSongs::addFiles(const QStringList & aFileNames)
 {
-	// Duplicates are skippen inside m_DB, no need to handle them here
+	// Duplicates are skippen inside mDB, no need to handle them here
 	QStringList songs;
-	for (const auto & fnam: a_FileNames)
+	for (const auto & fnam: aFileNames)
 	{
 		QFileInfo fi(fnam);
 		if (!fi.exists())
@@ -152,16 +152,16 @@ void DlgSongs::addFiles(const QStringList & a_FileNames)
 		return;
 	}
 	qDebug() << "Adding " << songs.size() << " song files";
-	m_Components.get<Database>()->addSongFiles(songs);
+	mComponents.get<Database>()->addSongFiles(songs);
 }
 
 
 
 
 
-void DlgSongs::addFolderRecursive(const QString & a_Path)
+void DlgSongs::addFolderRecursive(const QString & aPath)
 {
-	QDir dir(a_Path + "/");
+	QDir dir(aPath + "/");
 	QStringList songs;
 	for (const auto & item: dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot))
 	{
@@ -180,8 +180,8 @@ void DlgSongs::addFolderRecursive(const QString & a_Path)
 	{
 		return;
 	}
-	qDebug() << "Adding " << songs.size() << " songs from folder " << a_Path;
-	m_Components.get<Database>()->addSongFiles(songs);
+	qDebug() << "Adding " << songs.size() << " songs from folder " << aPath;
+	mComponents.get<Database>()->addSongFiles(songs);
 }
 
 
@@ -190,15 +190,15 @@ void DlgSongs::addFolderRecursive(const QString & a_Path)
 
 void DlgSongs::updateSongStats()
 {
-	auto numFiltered = static_cast<size_t>(m_FilterModel->rowCount());
-	auto numTotal = m_Components.get<Database>()->songs().size();
+	auto numFiltered = static_cast<size_t>(mFilterModel->rowCount());
+	auto numTotal = mComponents.get<Database>()->songs().size();
 	if (numFiltered == numTotal)
 	{
-		m_UI->lblStats->setText(tr("Total songs: %1").arg(numTotal));
+		mUI->lblStats->setText(tr("Total songs: %1").arg(numTotal));
 	}
 	else
 	{
-		m_UI->lblStats->setText(tr("Total songs: %1 (filtered out of %2)").arg(numFiltered).arg(numTotal));
+		mUI->lblStats->setText(tr("Total songs: %1 (filtered out of %2)").arg(numFiltered).arg(numTotal));
 	}
 }
 
@@ -208,22 +208,22 @@ void DlgSongs::updateSongStats()
 
 void DlgSongs::initFilterSearch()
 {
-	m_UI->cbFilter->addItem(tr("All songs"),                          SongModelFilter::fltNone);
-	m_UI->cbFilter->addItem(tr("Songs without ID3 tag"),              SongModelFilter::fltNoId3);
-	m_UI->cbFilter->addItem(tr("Songs with no genre"),                SongModelFilter::fltNoGenre);
-	m_UI->cbFilter->addItem(tr("Songs with no tempo"),                SongModelFilter::fltNoMeasuresPerMinute);
-	m_UI->cbFilter->addItem(tr("Songs with warnings"),                SongModelFilter::fltWarnings);
-	m_UI->cbFilter->addItem(tr("Songs not matching any filters"),     SongModelFilter::fltNoFilterMatch);
-	m_UI->cbFilter->addItem(tr("Songs with duplicates"),              SongModelFilter::fltDuplicates);
-	m_UI->cbFilter->addItem(tr("Songs with skip-start"),              SongModelFilter::fltSkipStart);
-	m_UI->cbFilter->addItem(tr("Songs where tempo detection failed"), SongModelFilter::fltFailedTempoDetect);
+	mUI->cbFilter->addItem(tr("All songs"),                          SongModelFilter::fltNone);
+	mUI->cbFilter->addItem(tr("Songs without ID3 tag"),              SongModelFilter::fltNoId3);
+	mUI->cbFilter->addItem(tr("Songs with no genre"),                SongModelFilter::fltNoGenre);
+	mUI->cbFilter->addItem(tr("Songs with no tempo"),                SongModelFilter::fltNoMeasuresPerMinute);
+	mUI->cbFilter->addItem(tr("Songs with warnings"),                SongModelFilter::fltWarnings);
+	mUI->cbFilter->addItem(tr("Songs not matching any filters"),     SongModelFilter::fltNoFilterMatch);
+	mUI->cbFilter->addItem(tr("Songs with duplicates"),              SongModelFilter::fltDuplicates);
+	mUI->cbFilter->addItem(tr("Songs with skip-start"),              SongModelFilter::fltSkipStart);
+	mUI->cbFilter->addItem(tr("Songs where tempo detection failed"), SongModelFilter::fltFailedTempoDetect);
 
 	// Bind signals / slots:
 	// Cannot bind overloaded signal via fn ptr in older Qt, need to use SIGNAL() / SLOT()
-	connect(m_UI->cbFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChosen(int)));
-	connect(m_UI->leSearch, &QLineEdit::textEdited,           this, &DlgSongs::searchTextEdited);
+	connect(mUI->cbFilter, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChosen(int)));
+	connect(mUI->leSearch, &QLineEdit::textEdited,           this, &DlgSongs::searchTextEdited);
 
-	m_SongModelFilter.setFavoriteFilters(m_Components.get<Database>()->getFavoriteFilters());
+	mSongModelFilter.setFavoriteFilters(mComponents.get<Database>()->getFavoriteFilters());
 }
 
 
@@ -233,38 +233,38 @@ void DlgSongs::initFilterSearch()
 void DlgSongs::createContextMenu()
 {
 	// Create the context menu:
-	m_ContextMenu.reset(new QMenu());
-	m_ContextMenu->addAction(m_UI->actAddToPlaylist);
-	m_ContextMenu->addAction(m_UI->actInsertIntoPlaylist);
-	m_ContextMenu->addSeparator();
-	m_ContextMenu->addAction(m_UI->actRemoveFromLibrary);
-	m_ContextMenu->addAction(m_UI->actDeleteFromDisk);
-	m_ContextMenu->addSeparator();
-	m_ContextMenu->addAction(m_UI->actManualToId3);
-	m_ContextMenu->addAction(m_UI->actFileNameToId3);
-	m_ContextMenu->addSeparator();
-	m_ContextMenu->addAction(m_UI->actRate);
-	connect(m_ContextMenu->addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
-	connect(m_ContextMenu->addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
-	connect(m_ContextMenu->addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
-	connect(m_ContextMenu->addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
-	connect(m_ContextMenu->addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
-	m_ContextMenu->addSeparator();
-	m_ContextMenu->addAction(m_UI->actTapTempo);
-	m_ContextMenu->addAction(m_UI->actTempoDetector);
-	m_ContextMenu->addSeparator();
-	m_ContextMenu->addAction(m_UI->actProperties);
+	mContextMenu.reset(new QMenu());
+	mContextMenu->addAction(mUI->actAddToPlaylist);
+	mContextMenu->addAction(mUI->actInsertIntoPlaylist);
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actRemoveFromLibrary);
+	mContextMenu->addAction(mUI->actDeleteFromDisk);
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actManualToId3);
+	mContextMenu->addAction(mUI->actFileNameToId3);
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actRate);
+	connect(mContextMenu->addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateSelectedSongs(5); });
+	connect(mContextMenu->addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateSelectedSongs(4); });
+	connect(mContextMenu->addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateSelectedSongs(3); });
+	connect(mContextMenu->addAction(QString("    * *")),       &QAction::triggered, [this](){ rateSelectedSongs(2); });
+	connect(mContextMenu->addAction(QString("    *")),         &QAction::triggered, [this](){ rateSelectedSongs(1); });
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actTapTempo);
+	mContextMenu->addAction(mUI->actTempoDetector);
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actProperties);
 }
 
 
 
 
 
-SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
+SongPtr DlgSongs::songFromIndex(const QModelIndex & aIndex)
 {
-	return m_SongModel.songFromIndex(
-		m_SongModelFilter.mapToSource(
-			m_FilterModel->mapToSource(a_Index)
+	return mSongModel.songFromIndex(
+		mSongModelFilter.mapToSource(
+			mFilterModel->mapToSource(aIndex)
 		)
 	);
 }
@@ -273,10 +273,10 @@ SongPtr DlgSongs::songFromIndex(const QModelIndex & a_Index)
 
 
 
-void DlgSongs::rateSelectedSongs(double a_Rating)
+void DlgSongs::rateSelectedSongs(double aRating)
 {
-	auto db = m_Components.get<Database>();
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	auto db = mComponents.get<Database>();
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
 		if (song == nullptr)
@@ -284,8 +284,8 @@ void DlgSongs::rateSelectedSongs(double a_Rating)
 			qWarning() << "Got a nullptr song from index " << idx;
 			continue;
 		}
-		song->setLocalRating(a_Rating);
-		emit m_SongModel.songEdited(song);
+		song->setLocalRating(aRating);
+		emit mSongModel.songEdited(song);
 		db->saveSong(song);
 	}
 }
@@ -334,7 +334,7 @@ void DlgSongs::removeSelected()
 {
 	// Collect the songs to remove:
 	std::vector<SongPtr> songs;
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		songs.push_back(songFromIndex(idx));
 	}
@@ -359,7 +359,7 @@ void DlgSongs::removeSelected()
 	}
 
 	// Remove from the DB:
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	for (const auto & song: songs)
 	{
 		db->removeSong(*song, false);
@@ -374,7 +374,7 @@ void DlgSongs::deleteFromDisk()
 {
 	// Collect the songs to remove:
 	std::vector<SongPtr> songs;
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		songs.push_back(songFromIndex(idx));
 	}
@@ -399,7 +399,7 @@ void DlgSongs::deleteFromDisk()
 	}
 
 	// Remove from the DB and delete files from disk:
-	auto db = m_Components.get<Database>();
+	auto db = mComponents.get<Database>();
 	for (const auto & song: songs)
 	{
 		db->removeSong(*song, true);
@@ -412,7 +412,7 @@ void DlgSongs::deleteFromDisk()
 
 void DlgSongs::addSelectedToPlaylist()
 {
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
 		emit addSongToPlaylist(song);
@@ -426,7 +426,7 @@ void DlgSongs::addSelectedToPlaylist()
 void DlgSongs::insertSelectedToPlaylist()
 {
 	std::vector<SongPtr> songs;
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		songs.push_back(songFromIndex(idx));
 	}
@@ -442,8 +442,8 @@ void DlgSongs::insertSelectedToPlaylist()
 
 void DlgSongs::rescanMetadata()
 {
-	auto scanner = m_Components.get<MetadataScanner>();
-	foreach(const auto & idx, m_UI->tblSongs->selectionModel()->selectedRows())
+	auto scanner = mComponents.get<MetadataScanner>();
+	foreach(const auto & idx, mUI->tblSongs->selectionModel()->selectedRows())
 	{
 		auto song = songFromIndex(idx);
 		scanner->queueScanSong(song);
@@ -454,9 +454,9 @@ void DlgSongs::rescanMetadata()
 
 
 
-void DlgSongs::modelSongEdited(SongPtr a_Song)
+void DlgSongs::modelSongEdited(SongPtr aSong)
 {
-	m_Components.get<Database>()->saveSong(a_Song);
+	mComponents.get<Database>()->saveSong(aSong);
 }
 
 
@@ -468,43 +468,43 @@ void DlgSongs::periodicUiUpdate()
 	// Update the LibraryRescan UI:
 	// Hash calc is calculated twice for the queue length, because after calculating the hash,
 	// songs will go to metadata updater anyway.
-	auto queueLength = m_Components.get<LengthHashCalculator>()->queueLength() * 2 + m_Components.get<MetadataScanner>()->queueLength();
-	if (m_LastLibraryRescanQueue != queueLength)
+	auto queueLength = mComponents.get<LengthHashCalculator>()->queueLength() * 2 + mComponents.get<MetadataScanner>()->queueLength();
+	if (mLastLibraryRescanQueue != queueLength)
 	{
-		m_LastLibraryRescanQueue = queueLength;
+		mLastLibraryRescanQueue = queueLength;
 		if (queueLength == 0)
 		{
-			if (m_IsLibraryRescanShown)
+			if (mIsLibraryRescanShown)
 			{
-				m_UI->wLibraryRescan->hide();
-				m_IsLibraryRescanShown = false;
+				mUI->wLibraryRescan->hide();
+				mIsLibraryRescanShown = false;
 			}
 		}
 		else
 		{
-			auto numSongs = static_cast<int>(m_Components.get<Database>()->songs().size() * 2);
-			if (numSongs != m_LastLibraryRescanTotal)
+			auto numSongs = static_cast<int>(mComponents.get<Database>()->songs().size() * 2);
+			if (numSongs != mLastLibraryRescanTotal)
 			{
-				m_UI->pbLibraryRescan->setMaximum(numSongs);
-				m_LastLibraryRescanTotal = numSongs;
+				mUI->pbLibraryRescan->setMaximum(numSongs);
+				mLastLibraryRescanTotal = numSongs;
 			}
-			m_UI->pbLibraryRescan->setValue(std::max(numSongs - queueLength, 0));
-			m_UI->pbLibraryRescan->update();  // For some reason setting the value is not enough to redraw
-			if (!m_IsLibraryRescanShown)
+			mUI->pbLibraryRescan->setValue(std::max(numSongs - queueLength, 0));
+			mUI->pbLibraryRescan->update();  // For some reason setting the value is not enough to redraw
+			if (!mIsLibraryRescanShown)
 			{
-				m_UI->wLibraryRescan->show();
-				m_IsLibraryRescanShown = true;
+				mUI->wLibraryRescan->show();
+				mIsLibraryRescanShown = true;
 			}
 		}
 	}
 
 	// Update the search filter, if appropriate:
-	if (m_TicksUntilSetSearchText > 0)
+	if (mTicksUntilSetSearchText > 0)
 	{
-		m_TicksUntilSetSearchText -= 1;
-		if (m_TicksUntilSetSearchText == 0)
+		mTicksUntilSetSearchText -= 1;
+		if (mTicksUntilSetSearchText == 0)
 		{
-			m_SongModelFilter.setSearchString(m_NewSearchText);
+			mSongModelFilter.setSearchString(mNewSearchText);
 			updateSongStats();
 		}
 	}
@@ -514,10 +514,10 @@ void DlgSongs::periodicUiUpdate()
 
 
 
-void DlgSongs::filterChosen(int a_Index)
+void DlgSongs::filterChosen(int aIndex)
 {
-	auto filter = static_cast<SongModelFilter::EFilter>(m_UI->cbFilter->itemData(a_Index).toInt());
-	m_SongModelFilter.setFilter(filter);
+	auto filter = static_cast<SongModelFilter::EFilter>(mUI->cbFilter->itemData(aIndex).toInt());
+	mSongModelFilter.setFilter(filter);
 	updateSongStats();
 }
 
@@ -525,32 +525,32 @@ void DlgSongs::filterChosen(int a_Index)
 
 
 
-void DlgSongs::searchTextEdited(const QString & a_NewText)
+void DlgSongs::searchTextEdited(const QString & aNewText)
 {
-	m_NewSearchText = a_NewText;
-	m_TicksUntilSetSearchText = TICKS_UNTIL_SET_SEARCH_TEXT;
+	mNewSearchText = aNewText;
+	mTicksUntilSetSearchText = TICKS_UNTIL_SET_SEARCH_TEXT;
 }
 
 
 
 
 
-void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
+void DlgSongs::showSongsContextMenu(const QPoint & aPos)
 {
 	// Update the actions based on the selection:
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
-	m_UI->actAddToPlaylist->setEnabled(!sel.isEmpty());
-	m_UI->actInsertIntoPlaylist->setEnabled(!sel.isEmpty());
-	m_UI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
-	m_UI->actProperties->setEnabled(!sel.isEmpty());
-	m_UI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
-	m_UI->actRate->setEnabled(!sel.isEmpty());
-	m_UI->actTempoDetector->setEnabled(sel.count() == 1);
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
+	mUI->actAddToPlaylist->setEnabled(!sel.isEmpty());
+	mUI->actInsertIntoPlaylist->setEnabled(!sel.isEmpty());
+	mUI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
+	mUI->actProperties->setEnabled(!sel.isEmpty());
+	mUI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
+	mUI->actRate->setEnabled(!sel.isEmpty());
+	mUI->actTempoDetector->setEnabled(sel.count() == 1);
 
 	// Show the context menu:
 	auto widget = dynamic_cast<QWidget *>(sender());
-	auto pos = (widget == nullptr) ? a_Pos : widget->mapToGlobal(a_Pos);
-	m_ContextMenu->exec(pos, nullptr);
+	auto pos = (widget == nullptr) ? aPos : widget->mapToGlobal(aPos);
+	mContextMenu->exec(pos, nullptr);
 }
 
 
@@ -559,7 +559,7 @@ void DlgSongs::showSongsContextMenu(const QPoint & a_Pos)
 
 void DlgSongs::showProperties()
 {
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
 	if (sel.isEmpty())
 	{
 		return;
@@ -567,7 +567,7 @@ void DlgSongs::showProperties()
 	if (sel.size() == 1)
 	{
 		auto song = songFromIndex(sel[0]);
-		DlgSongProperties dlg(m_Components, song, this);
+		DlgSongProperties dlg(mComponents, song, this);
 		dlg.exec();
 	}
 	else
@@ -577,7 +577,7 @@ void DlgSongs::showProperties()
 		{
 			songs.push_back(songFromIndex(s));
 		}
-		DlgEditMultipleSongs dlg(m_Components, std::move(songs), this);
+		DlgEditMultipleSongs dlg(mComponents, std::move(songs), this);
 		dlg.exec();
 	}
 }
@@ -602,8 +602,8 @@ void DlgSongs::rateSelected()
 	}
 
 	// Apply the rating:
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
-	auto db = m_Components.get<Database>();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
+	auto db = mComponents.get<Database>();
 	for (const auto & idx: sel)
 	{
 		auto song = songFromIndex(idx);
@@ -613,7 +613,7 @@ void DlgSongs::rateSelected()
 			continue;
 		}
 		song->setLocalRating(rating);
-		emit m_SongModel.songEdited(song);
+		emit mSongModel.songEdited(song);
 		db->saveSong(song);
 	}
 }
@@ -624,14 +624,14 @@ void DlgSongs::rateSelected()
 
 void DlgSongs::showTempoDetector()
 {
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
 	if (sel.isEmpty())
 	{
 		return;
 	}
 	auto song = songFromIndex(sel[0]);
 	assert(song != nullptr);
-	DlgTempoDetect dlg(m_Components, song, this);
+	DlgTempoDetect dlg(mComponents, song, this);
 	dlg.exec();
 }
 
@@ -641,14 +641,14 @@ void DlgSongs::showTempoDetector()
 
 void DlgSongs::showTapTempo()
 {
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
 	if (sel.isEmpty())
 	{
 		return;
 	}
 	auto song = songFromIndex(sel[0]);
 	assert(song != nullptr);
-	DlgTapTempo dlg(m_Components, song, this);
+	DlgTapTempo dlg(mComponents, song, this);
 	dlg.exec();
 }
 
@@ -658,8 +658,8 @@ void DlgSongs::showTapTempo()
 
 void DlgSongs::moveManualToId3()
 {
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
-	auto db = m_Components.get<Database>();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
+	auto db = mComponents.get<Database>();
 	for (const auto & row: sel)
 	{
 		auto song = songFromIndex(row);
@@ -671,21 +671,21 @@ void DlgSongs::moveManualToId3()
 			continue;
 		}
 		auto & tagManual = song->tagManual();
-		if (!tagManual.m_Author.isEmpty())
+		if (!tagManual.mAuthor.isEmpty())
 		{
-			tagFile.second.m_Author = tagManual.m_Author.value();
+			tagFile.second.mAuthor = tagManual.mAuthor.value();
 		}
-		if (!tagManual.m_Title.isEmpty())
+		if (!tagManual.mTitle.isEmpty())
 		{
-			tagFile.second.m_Title = tagManual.m_Title.value();
+			tagFile.second.mTitle = tagManual.mTitle.value();
 		}
-		if (!tagManual.m_Genre.isEmpty())
+		if (!tagManual.mGenre.isEmpty())
 		{
-			tagFile.second.m_Genre = tagManual.m_Genre.value();
+			tagFile.second.mGenre = tagManual.mGenre.value();
 		}
-		if (tagManual.m_MeasuresPerMinute.isPresent())
+		if (tagManual.mMeasuresPerMinute.isPresent())
 		{
-			tagFile.second.m_MeasuresPerMinute = tagManual.m_MeasuresPerMinute.value();
+			tagFile.second.mMeasuresPerMinute = tagManual.mMeasuresPerMinute.value();
 		}
 		MetadataScanner::writeTagToSong(song, tagFile.second);
 		song->clearManualTag();
@@ -699,8 +699,8 @@ void DlgSongs::moveManualToId3()
 
 void DlgSongs::copyFileNameToId3()
 {
-	const auto & sel = m_UI->tblSongs->selectionModel()->selectedRows();
-	auto db = m_Components.get<Database>();
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
+	auto db = mComponents.get<Database>();
 	for (const auto & row: sel)
 	{
 		auto song = songFromIndex(row);
@@ -712,21 +712,21 @@ void DlgSongs::copyFileNameToId3()
 			continue;
 		}
 		auto & tagFileName = song->tagFileName();
-		if (!tagFileName.m_Author.isEmpty())
+		if (!tagFileName.mAuthor.isEmpty())
 		{
-			tagFile.second.m_Author = tagFileName.m_Author.value();
+			tagFile.second.mAuthor = tagFileName.mAuthor.value();
 		}
-		if (!tagFileName.m_Title.isEmpty())
+		if (!tagFileName.mTitle.isEmpty())
 		{
-			tagFile.second.m_Title = tagFileName.m_Title.value();
+			tagFile.second.mTitle = tagFileName.mTitle.value();
 		}
-		if (!tagFileName.m_Genre.isEmpty())
+		if (!tagFileName.mGenre.isEmpty())
 		{
-			tagFile.second.m_Genre = tagFileName.m_Genre.value();
+			tagFile.second.mGenre = tagFileName.mGenre.value();
 		}
-		if (tagFileName.m_MeasuresPerMinute.isPresent())
+		if (tagFileName.mMeasuresPerMinute.isPresent())
 		{
-			tagFile.second.m_MeasuresPerMinute = tagFileName.m_MeasuresPerMinute.value();
+			tagFile.second.mMeasuresPerMinute = tagFileName.mMeasuresPerMinute.value();
 		}
 		MetadataScanner::writeTagToSong(song, tagFile.second);
 		db->saveSong(song);

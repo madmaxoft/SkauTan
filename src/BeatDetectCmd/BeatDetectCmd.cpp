@@ -24,13 +24,13 @@ static bool g_ShouldIncludeID3 = false;
 
 
 /** Returns the input string, escaped so that it can be embedded in Lua code in a doublequote. */
-static std::string luaEscapeString(const QString & a_Input)
+static std::string luaEscapeString(const QString & aInput)
 {
 	static QLatin1String singleBackslash("\\");
 	static QLatin1String doubleBackslash("\\\\");
 	static QLatin1String doubleQuote("\"");
 	static QLatin1String escapedDoubleQuote("\\\"");
-	return QString(a_Input)
+	return QString(aInput)
 		.replace(singleBackslash, doubleBackslash)
 		.replace(doubleQuote, escapedDoubleQuote)
 		.replace("\r\n", "\n")
@@ -45,9 +45,9 @@ static std::string luaEscapeString(const QString & a_Input)
 /** Reads the tag from the specified file and outputs it to stdout.
 Outputs nothing if the tag cannot be read.
 Outputs both the raw tag read from file, and the parsed tag. */
-static void outputId3Tag(const QString & a_FileName)
+static void outputId3Tag(const QString & aFileName)
 {
-	const auto & tag = MetadataScanner::readTagFromFile(a_FileName);
+	const auto & tag = MetadataScanner::readTagFromFile(aFileName);
 	if (!tag.first)
 	{
 		// No tag could be read from the file, bail out
@@ -56,45 +56,45 @@ static void outputId3Tag(const QString & a_FileName)
 	const auto & parsedTag = MetadataScanner::parseId3Tag(tag.second);
 	cout << "\trawID3Tag =" << endl;
 	cout << "\t{" << endl;
-	if (tag.second.m_Author.isPresent())
+	if (tag.second.mAuthor.isPresent())
 	{
-		cout << "\t\tauthor  = \"" << luaEscapeString(tag.second.m_Author.value()) << "\"," << endl;
+		cout << "\t\tauthor  = \"" << luaEscapeString(tag.second.mAuthor.value()) << "\"," << endl;
 	}
-	if (tag.second.m_Title.isPresent())
+	if (tag.second.mTitle.isPresent())
 	{
-		cout << "\t\ttitle   = \"" << luaEscapeString(tag.second.m_Title.value()) << "\"," << endl;
+		cout << "\t\ttitle   = \"" << luaEscapeString(tag.second.mTitle.value()) << "\"," << endl;
 	}
-	if (tag.second.m_Genre.isPresent())
+	if (tag.second.mGenre.isPresent())
 	{
-		cout << "\t\tgenre   = \"" << luaEscapeString(tag.second.m_Genre.value()) << "\"," << endl;
+		cout << "\t\tgenre   = \"" << luaEscapeString(tag.second.mGenre.value()) << "\"," << endl;
 	}
-	if (tag.second.m_MeasuresPerMinute.isPresent())
+	if (tag.second.mMeasuresPerMinute.isPresent())
 	{
-		cout << "\t\tmpm     = " << tag.second.m_MeasuresPerMinute.value() << "," << endl;
+		cout << "\t\tmpm     = " << tag.second.mMeasuresPerMinute.value() << "," << endl;
 	}
-	if (tag.second.m_Comment.isPresent())
+	if (tag.second.mComment.isPresent())
 	{
-		cout << "\t\tcomment = \"" << luaEscapeString(tag.second.m_Comment.value()) << "\"," << endl;
+		cout << "\t\tcomment = \"" << luaEscapeString(tag.second.mComment.value()) << "\"," << endl;
 	}
 	cout << "\t}," << endl;
 
 	cout << "\tparsedID3Tag =" << endl;
 	cout << "\t{" << endl;
-	if (parsedTag.m_Author.isPresent())
+	if (parsedTag.mAuthor.isPresent())
 	{
-		cout << "\t\tauthor = \"" << luaEscapeString(parsedTag.m_Author.value()) << "\"," << endl;
+		cout << "\t\tauthor = \"" << luaEscapeString(parsedTag.mAuthor.value()) << "\"," << endl;
 	}
-	if (parsedTag.m_Title.isPresent())
+	if (parsedTag.mTitle.isPresent())
 	{
-		cout << "\t\ttitle = \"" << luaEscapeString(parsedTag.m_Title.value()) << "\"," << endl;
+		cout << "\t\ttitle = \"" << luaEscapeString(parsedTag.mTitle.value()) << "\"," << endl;
 	}
-	if (parsedTag.m_Genre.isPresent())
+	if (parsedTag.mGenre.isPresent())
 	{
-		cout << "\t\tgenre = \"" << luaEscapeString(parsedTag.m_Genre.value()) << "\"," << endl;
+		cout << "\t\tgenre = \"" << luaEscapeString(parsedTag.mGenre.value()) << "\"," << endl;
 	}
-	if (parsedTag.m_MeasuresPerMinute.isPresent())
+	if (parsedTag.mMeasuresPerMinute.isPresent())
 	{
-		cout << "\t\tmpm = " << parsedTag.m_MeasuresPerMinute.value() << "," << endl;
+		cout << "\t\tmpm = " << parsedTag.mMeasuresPerMinute.value() << "," << endl;
 	}
 	cout << "\t}," << endl;
 }
@@ -103,30 +103,30 @@ static void outputId3Tag(const QString & a_FileName)
 
 
 
-void processFile(const QString & a_FileName, const SongTempoDetector::Options & a_Options)
+void processFile(const QString & aFileName, const SongTempoDetector::Options & aOptions)
 {
-	if (!QFile::exists(a_FileName))
+	if (!QFile::exists(aFileName))
 	{
-		cerr << "File doesn't exist: " << a_FileName.toStdString() << endl;
+		cerr << "File doesn't exist: " << aFileName.toStdString() << endl;
 		return;
 	}
 
 	// Detect:
 	cerr << "Detecting..." << endl;
 	auto sd = std::make_shared<Song::SharedData>(QByteArray(), 0);  // Dummy SharedData
-	SongPtr song = std::make_shared<Song>(a_FileName, sd);
+	SongPtr song = std::make_shared<Song>(aFileName, sd);
 	SongTempoDetector td;
-	auto res = td.scanSong(song, {a_Options});
+	auto res = td.scanSong(song, {aOptions});
 
 	cerr << "-----------------------------------------------" << endl;;
-	cerr << "Detected data for " << a_FileName.toStdString() << ":" << endl;
+	cerr << "Detected data for " << aFileName.toStdString() << ":" << endl;
 	cerr << "Total number of beats: " << res->mBeats.size() << endl;
 	cerr << "Detected tempo: " << res->mTempo << endl;
 	cerr << "Confidence: " << res->mConfidence << endl;
 
 	// Output the results to stdout as a Lua source, so that it can be consumed by a script:
 	cout << "return" << endl << "{" << endl;
-	cout << "\tfileName = \"" << luaEscapeString(a_FileName) << "\"," << endl;
+	cout << "\tfileName = \"" << luaEscapeString(aFileName) << "\"," << endl;
 	cout << "\tbeats =" << endl;
 	cout << "\t{" << endl;
 	const auto & levels = res->mLevels;
@@ -189,18 +189,18 @@ void printUsage()
 #define  NEED_ARG(N) \
 	if (i + N >= argc) \
 	{ \
-		cerr << "Bad argument " << i << " (" << a_Args[i] << "): needs " << N << " parameters" << endl; \
+		cerr << "Bad argument " << i << " (" << aArgs[i] << "): needs " << N << " parameters" << endl; \
 		return 1; \
 	} \
 
-int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Options)
+int processArgs(const vector<string> & aArgs, SongTempoDetector::Options & aOptions)
 {
-	size_t argc = a_Args.size();
+	size_t argc = aArgs.size();
 	for (size_t i = 0; i < argc; ++i)
 	{
-		if (a_Args[i][0] == '-')
+		if (aArgs[i][0] == '-')
 		{
-			switch (a_Args[i][1])
+			switch (aArgs[i][1])
 			{
 				case '?':
 				case 'h':
@@ -213,7 +213,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'A':
 				{
 					NEED_ARG(1);
-					a_Options.mLevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(stoi(a_Args[i + 1]));
+					aOptions.mLevelAlgorithm = static_cast<TempoDetector::ELevelAlgorithm>(stoi(aArgs[i + 1]));
 					i += 1;
 					break;
 				}
@@ -221,7 +221,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'B':
 				{
 					NEED_ARG(1);
-					a_Options.mDebugAudioBeatsFileName = QString::fromStdString(a_Args[i + 1].c_str());
+					aOptions.mDebugAudioBeatsFileName = QString::fromStdString(aArgs[i + 1].c_str());
 					i += 1;
 					break;
 				}
@@ -229,7 +229,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'D':
 				{
 					NEED_ARG(1);
-					a_Options.mDebugAudioLevelsFileName = QString::fromStdString(a_Args[i + 1]);
+					aOptions.mDebugAudioLevelsFileName = QString::fromStdString(aArgs[i + 1]);
 					i += 1;
 					break;
 				}
@@ -243,7 +243,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'N':
 				{
 					NEED_ARG(1);
-					a_Options.mNormalizeLevelsWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
+					aOptions.mNormalizeLevelsWindowSize = static_cast<size_t>(stoll(aArgs[i + 1]));
 					i += 1;
 					break;
 				}
@@ -251,7 +251,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'P':
 				{
 					NEED_ARG(1);
-					a_Options.mLocalMaxDistance = static_cast<size_t>(stoll(a_Args[i + 1]));
+					aOptions.mLocalMaxDistance = static_cast<size_t>(stoll(aArgs[i + 1]));
 					i += 1;
 					break;
 				}
@@ -259,7 +259,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'R':
 				{
 					NEED_ARG(1);
-					a_Options.mSampleRate = stoi(a_Args[i + 1]);
+					aOptions.mSampleRate = stoi(aArgs[i + 1]);
 					i += 1;
 					break;
 				}
@@ -267,7 +267,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'S':
 				{
 					NEED_ARG(1);
-					a_Options.mStride = static_cast<size_t>(stoll(a_Args[i + 1]));
+					aOptions.mStride = static_cast<size_t>(stoll(aArgs[i + 1]));
 					i += 1;
 					break;
 				}
@@ -275,7 +275,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 				case 'W':
 				{
 					NEED_ARG(1);
-					a_Options.mWindowSize = static_cast<size_t>(stoll(a_Args[i + 1]));
+					aOptions.mWindowSize = static_cast<size_t>(stoll(aArgs[i + 1]));
 					i += 1;
 					break;
 				}
@@ -283,7 +283,7 @@ int processArgs(const vector<string> & a_Args, SongTempoDetector::Options & a_Op
 			continue;
 		}  // if ('-')
 
-		processFile(QString::fromStdString(a_Args[i]), a_Options);
+		processFile(QString::fromStdString(aArgs[i]), aOptions);
 	}
 
 	cerr << "Done." << std::endl;

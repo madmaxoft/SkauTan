@@ -11,9 +11,9 @@
 
 
 /** Returns the MPM formatted for user output. */
-static QString formatMPM(double a_MPM)
+static QString formatMPM(double aMPM)
 {
-	return QString::number(a_MPM, 'f', 1);
+	return QString::number(aMPM, 'f', 1);
 }
 
 
@@ -21,27 +21,27 @@ static QString formatMPM(double a_MPM)
 
 
 DlgTapTempo::DlgTapTempo(
-	ComponentCollection & a_Components,
-	SongPtr a_Song,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	SongPtr aSong,
+	QWidget * aParent
 ):
-	Super(a_Parent),
-	m_UI(new Ui::DlgTapTempo),
-	m_Components(a_Components),
-	m_Song(a_Song)
+	Super(aParent),
+	mUI(new Ui::DlgTapTempo),
+	mComponents(aComponents),
+	mSong(aSong)
 {
-	m_UI->setupUi(this);
-	Settings::loadHeaderView("DlgTapTempo", "twMeasures", *m_UI->twMeasures->horizontalHeader());
+	mUI->setupUi(this);
+	Settings::loadHeaderView("DlgTapTempo", "twMeasures", *mUI->twMeasures->horizontalHeader());
 
 	// Connect the signals:
-	connect(m_UI->btnNow,    &QPushButton::pressed, this, &DlgTapTempo::buttonPressed);
-	connect(m_UI->btnCancel, &QPushButton::pressed, this, &DlgTapTempo::reject);
-	connect(m_UI->btnSave,   &QPushButton::pressed, this, &DlgTapTempo::saveAndClose);
+	connect(mUI->btnNow,    &QPushButton::pressed, this, &DlgTapTempo::buttonPressed);
+	connect(mUI->btnCancel, &QPushButton::pressed, this, &DlgTapTempo::reject);
+	connect(mUI->btnSave,   &QPushButton::pressed, this, &DlgTapTempo::saveAndClose);
 
 	// Start the playback:
-	m_Player.reset(new Player);
-	m_Player->playlist().addItem(std::make_shared<PlaylistItemSong>(m_Song, nullptr));
-	m_Player->startPlayback();
+	mPlayer.reset(new Player);
+	mPlayer->playlist().addItem(std::make_shared<PlaylistItemSong>(mSong, nullptr));
+	mPlayer->startPlayback();
 }
 
 
@@ -50,7 +50,7 @@ DlgTapTempo::DlgTapTempo(
 
 DlgTapTempo::~DlgTapTempo()
 {
-	Settings::saveHeaderView("DlgTapTempo", "twMeasures", *m_UI->twMeasures->horizontalHeader());
+	Settings::saveHeaderView("DlgTapTempo", "twMeasures", *mUI->twMeasures->horizontalHeader());
 }
 
 
@@ -59,29 +59,29 @@ DlgTapTempo::~DlgTapTempo()
 
 void DlgTapTempo::clearTimePoints()
 {
-	m_TimePoints.clear();
-	m_UI->twMeasures->setRowCount(0);
-	m_UI->lblDetectionResults->setText(tr("Detected MPM: --"));
-	m_UI->btnSave->setEnabled(false);
+	mTimePoints.clear();
+	mUI->twMeasures->setRowCount(0);
+	mUI->lblDetectionResults->setText(tr("Detected MPM: --"));
+	mUI->btnSave->setEnabled(false);
 }
 
 
 
 
 
-void DlgTapTempo::addTimePoint(qint64 a_MSecElapsed)
+void DlgTapTempo::addTimePoint(qint64 aMSecElapsed)
 {
-	m_TimePoints.push_back(a_MSecElapsed);
-	auto row = m_UI->twMeasures->rowCount();
-	auto tempo = 60000.0 / a_MSecElapsed;
-	m_UI->twMeasures->setRowCount(row + 1);
-	m_UI->twMeasures->setItem(row, 0, new QTableWidgetItem(QString::number(a_MSecElapsed)));
-	m_UI->twMeasures->setItem(row, 1, new QTableWidgetItem(formatMPM(tempo)));
-	m_UI->twMeasures->setItem(row, 2, new QTableWidgetItem(formatMPM(Song::adjustMpm(tempo, m_Song->primaryGenre().valueOrDefault()))));
-	m_UI->twMeasures->resizeRowToContents(row);
+	mTimePoints.push_back(aMSecElapsed);
+	auto row = mUI->twMeasures->rowCount();
+	auto tempo = 60000.0 / aMSecElapsed;
+	mUI->twMeasures->setRowCount(row + 1);
+	mUI->twMeasures->setItem(row, 0, new QTableWidgetItem(QString::number(aMSecElapsed)));
+	mUI->twMeasures->setItem(row, 1, new QTableWidgetItem(formatMPM(tempo)));
+	mUI->twMeasures->setItem(row, 2, new QTableWidgetItem(formatMPM(Song::adjustMpm(tempo, mSong->primaryGenre().valueOrDefault()))));
+	mUI->twMeasures->resizeRowToContents(row);
 	auto overallMPM = detectMPM();
-	m_UI->lblDetectionResults->setText(tr("Detected average MPM: %1").arg(formatMPM(overallMPM)));
-	m_UI->btnSave->setEnabled(true);
+	mUI->lblDetectionResults->setText(tr("Detected average MPM: %1").arg(formatMPM(overallMPM)));
+	mUI->btnSave->setEnabled(true);
 }
 
 
@@ -91,12 +91,12 @@ void DlgTapTempo::addTimePoint(qint64 a_MSecElapsed)
 double DlgTapTempo::detectMPM()
 {
 	double sum = 0;
-	for (const auto & tp: m_TimePoints)
+	for (const auto & tp: mTimePoints)
 	{
 		sum += tp;
 	}
-	auto tempo = (static_cast<double>(m_TimePoints.size()) * 60000) / sum;
-	return Song::adjustMpm(tempo, m_Song->primaryGenre().valueOrDefault());
+	auto tempo = (static_cast<double>(mTimePoints.size()) * 60000) / sum;
+	return Song::adjustMpm(tempo, mSong->primaryGenre().valueOrDefault());
 }
 
 
@@ -105,13 +105,13 @@ double DlgTapTempo::detectMPM()
 
 void DlgTapTempo::buttonPressed()
 {
-	if (!m_Timer.isValid())
+	if (!mTimer.isValid())
 	{
 		// This is the first press of the button, start the timer
-		m_Timer.start();
+		mTimer.start();
 		return;
 	}
-	auto elapsed = m_Timer.restart();
+	auto elapsed = mTimer.restart();
 	if (elapsed > 4000)
 	{
 		// Longer than 4 seconds - we assume the user has abandoned the previous attempt and is re-starting
@@ -127,10 +127,10 @@ void DlgTapTempo::buttonPressed()
 
 void DlgTapTempo::saveAndClose()
 {
-	if (!m_TimePoints.empty())
+	if (!mTimePoints.empty())
 	{
-		m_Song->setManualMeasuresPerMinute(static_cast<int>(detectMPM() * 10) / 10.0);
-		m_Components.get<Database>()->saveSong(m_Song);
+		mSong->setManualMeasuresPerMinute(static_cast<int>(detectMPM() * 10) / 10.0);
+		mComponents.get<Database>()->saveSong(mSong);
 	}
 	accept();
 }

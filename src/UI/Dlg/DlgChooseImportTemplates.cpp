@@ -6,38 +6,38 @@
 
 
 
-DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && a_Templates, QWidget * a_Parent):
-	Super(a_Parent),
-	m_Templates(std::move(a_Templates)),
-	m_UI(new Ui::DlgChooseImportTemplates)
+DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && aTemplates, QWidget * aParent):
+	Super(aParent),
+	mTemplates(std::move(aTemplates)),
+	mUI(new Ui::DlgChooseImportTemplates)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgChooseImportTemplates", *this);
 
 	// Connect the signals:
-	connect(m_UI->btnCancel,    &QPushButton::clicked,               this, &QDialog::reject);
-	connect(m_UI->btnImport,    &QPushButton::clicked,               this, &DlgChooseImportTemplates::import);
-	connect(m_UI->tblTemplates, &QTableWidget::itemSelectionChanged, this, &DlgChooseImportTemplates::templateSelectionChanged);
-	connect(m_UI->tblTemplates, &QTableWidget::cellChanged,          this, &DlgChooseImportTemplates::templateCellChanged);
+	connect(mUI->btnCancel,    &QPushButton::clicked,               this, &QDialog::reject);
+	connect(mUI->btnImport,    &QPushButton::clicked,               this, &DlgChooseImportTemplates::import);
+	connect(mUI->tblTemplates, &QTableWidget::itemSelectionChanged, this, &DlgChooseImportTemplates::templateSelectionChanged);
+	connect(mUI->tblTemplates, &QTableWidget::cellChanged,          this, &DlgChooseImportTemplates::templateCellChanged);
 
 	// Update the UI state:
-	m_UI->tblTemplates->setRowCount(static_cast<int>(m_Templates.size()));
-	m_UI->tblTemplates->setColumnCount(3);
-	m_UI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
-	m_UI->tblItems->setRowCount(0);
-	m_UI->tblItems->setColumnCount(4);
-	m_UI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
+	mUI->tblTemplates->setRowCount(static_cast<int>(mTemplates.size()));
+	mUI->tblTemplates->setColumnCount(3);
+	mUI->tblTemplates->setHorizontalHeaderLabels({tr("Name"), tr("#"), tr("Notes")});
+	mUI->tblItems->setRowCount(0);
+	mUI->tblItems->setColumnCount(4);
+	mUI->tblItems->setHorizontalHeaderLabels({tr("Name"), tr("Notes"), tr("Fav"), tr("Filter")});
 	templateSelectionChanged();
 
 	// Insert all the templates into the table view:
-	for (size_t i = 0; i < m_Templates.size(); ++i)
+	for (size_t i = 0; i < mTemplates.size(); ++i)
 	{
-		const auto & tmpl = m_Templates[i];
+		const auto & tmpl = mTemplates[i];
 		updateTemplateRow(static_cast<int>(i), *tmpl);
 	}
 
-	Settings::loadHeaderView("DlgChooseImportTemplates", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
-	Settings::loadHeaderView("DlgChooseImportTemplates", "tblItems",     *m_UI->tblItems->horizontalHeader());
+	Settings::loadHeaderView("DlgChooseImportTemplates", "tblTemplates", *mUI->tblTemplates->horizontalHeader());
+	Settings::loadHeaderView("DlgChooseImportTemplates", "tblItems",     *mUI->tblItems->horizontalHeader());
 }
 
 
@@ -46,8 +46,8 @@ DlgChooseImportTemplates::DlgChooseImportTemplates(std::vector<TemplatePtr> && a
 
 DlgChooseImportTemplates::~DlgChooseImportTemplates()
 {
-	Settings::saveHeaderView("DlgChooseImportTemplates", "tblTemplates", *m_UI->tblTemplates->horizontalHeader());
-	Settings::saveHeaderView("DlgChooseImportTemplates", "tblItems",     *m_UI->tblItems->horizontalHeader());
+	Settings::saveHeaderView("DlgChooseImportTemplates", "tblTemplates", *mUI->tblTemplates->horizontalHeader());
+	Settings::saveHeaderView("DlgChooseImportTemplates", "tblItems",     *mUI->tblItems->horizontalHeader());
 	Settings::saveWindowPos("DlgChooseImportTemplates", *this);
 }
 
@@ -55,18 +55,18 @@ DlgChooseImportTemplates::~DlgChooseImportTemplates()
 
 
 
-void DlgChooseImportTemplates::updateTemplateRow(int a_Row, const Template & a_Template)
+void DlgChooseImportTemplates::updateTemplateRow(int aRow, const Template & aTemplate)
 {
-	auto item = new QTableWidgetItem(a_Template.displayName());
+	auto item = new QTableWidgetItem(aTemplate.displayName());
 	item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 	item->setCheckState(Qt::Checked);
-	m_UI->tblTemplates->setItem(a_Row, 0, item);
-	m_UI->tblTemplates->setItem(a_Row, 1, new QTableWidgetItem(QString::number(a_Template.items().size())));
-	m_UI->tblTemplates->setItem(a_Row, 2, new QTableWidgetItem(a_Template.notes()));
-	auto colCount = m_UI->tblTemplates->columnCount();
+	mUI->tblTemplates->setItem(aRow, 0, item);
+	mUI->tblTemplates->setItem(aRow, 1, new QTableWidgetItem(QString::number(aTemplate.items().size())));
+	mUI->tblTemplates->setItem(aRow, 2, new QTableWidgetItem(aTemplate.notes()));
+	auto colCount = mUI->tblTemplates->columnCount();
 	for (int col = 0; col < colCount; ++col)
 	{
-		m_UI->tblTemplates->item(a_Row, col)->setBackgroundColor(a_Template.bgColor());
+		mUI->tblTemplates->item(aRow, col)->setBackgroundColor(aTemplate.bgColor());
 	}
 }
 
@@ -77,13 +77,13 @@ void DlgChooseImportTemplates::updateTemplateRow(int a_Row, const Template & a_T
 void DlgChooseImportTemplates::import()
 {
 	// Process the check state on templates:
-	m_ChosenTemplates.clear();
-	int numRows = m_UI->tblTemplates->rowCount();
+	mChosenTemplates.clear();
+	int numRows = mUI->tblTemplates->rowCount();
 	for (int row = 0; row < numRows; ++row)
 	{
-		if (m_UI->tblTemplates->item(row, 0)->checkState() == Qt::Checked)
+		if (mUI->tblTemplates->item(row, 0)->checkState() == Qt::Checked)
 		{
-			m_ChosenTemplates.push_back(m_Templates[static_cast<size_t>(row)]);
+			mChosenTemplates.push_back(mTemplates[static_cast<size_t>(row)]);
 		}
 	}
 
@@ -96,33 +96,33 @@ void DlgChooseImportTemplates::import()
 
 void DlgChooseImportTemplates::templateSelectionChanged()
 {
-	const auto & selection = m_UI->tblTemplates->selectionModel()->selectedRows();
+	const auto & selection = mUI->tblTemplates->selectionModel()->selectedRows();
 
 	// Update the list of items in a template:
 	if (selection.size() == 1)
 	{
-		const auto & tmpl = m_Templates[static_cast<size_t>(selection[0].row())];
-		m_UI->tblItems->setRowCount(static_cast<int>(tmpl->items().size()));
+		const auto & tmpl = mTemplates[static_cast<size_t>(selection[0].row())];
+		mUI->tblItems->setRowCount(static_cast<int>(tmpl->items().size()));
 		int idx = 0;
-		auto colCount = m_UI->tblItems->columnCount();
+		auto colCount = mUI->tblItems->columnCount();
 		for (const auto & item: tmpl->items())
 		{
 			auto favDesc = item->isFavorite() ? tr("Y", "IsFavorite") : QString();
 			auto filterDesc = item->rootNode()->getDescription();
-			m_UI->tblItems->setItem(idx, 0, new QTableWidgetItem(item->displayName()));
-			m_UI->tblItems->setItem(idx, 1, new QTableWidgetItem(item->notes()));
-			m_UI->tblItems->setItem(idx, 2, new QTableWidgetItem(favDesc));
-			m_UI->tblItems->setItem(idx, 3, new QTableWidgetItem(filterDesc));
+			mUI->tblItems->setItem(idx, 0, new QTableWidgetItem(item->displayName()));
+			mUI->tblItems->setItem(idx, 1, new QTableWidgetItem(item->notes()));
+			mUI->tblItems->setItem(idx, 2, new QTableWidgetItem(favDesc));
+			mUI->tblItems->setItem(idx, 3, new QTableWidgetItem(filterDesc));
 			for (int col = 0; col < colCount; ++col)
 			{
-				m_UI->tblItems->item(idx, col)->setBackgroundColor(item->bgColor());
+				mUI->tblItems->item(idx, col)->setBackgroundColor(item->bgColor());
 			}
 			idx += 1;
 		}
 	}
 	else
 	{
-		m_UI->tblItems->setRowCount(0);
+		mUI->tblItems->setRowCount(0);
 	}
 }
 
@@ -130,19 +130,19 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 
 
 
-void DlgChooseImportTemplates::templateCellChanged(int a_Row, int a_Column)
+void DlgChooseImportTemplates::templateCellChanged(int aRow, int aColumn)
 {
-	Q_UNUSED(a_Row);
-	Q_UNUSED(a_Column);
+	Q_UNUSED(aRow);
+	Q_UNUSED(aColumn);
 
-	int numRows = m_UI->tblTemplates->rowCount();
+	int numRows = mUI->tblTemplates->rowCount();
 	for (int i = 0; i < numRows; ++i)
 	{
-		if (m_UI->tblTemplates->item(i, 0)->checkState() == Qt::Checked)
+		if (mUI->tblTemplates->item(i, 0)->checkState() == Qt::Checked)
 		{
-			m_UI->btnImport->setEnabled(true);
+			mUI->btnImport->setEnabled(true);
 			return;
 		}
 	}
-	m_UI->btnImport->setEnabled(false);
+	mUI->btnImport->setEnabled(false);
 }

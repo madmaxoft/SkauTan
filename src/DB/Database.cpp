@@ -28,13 +28,13 @@
 /** Returns the SQL field's value, taking its "isNull" into account.
 For some reason Qt + Sqlite return an empty string variant if the field is null,
 this function returns a null variant in such a case. */
-static QVariant fieldValue(const QSqlField & a_Field)
+static QVariant fieldValue(const QSqlField & aField)
 {
-	if (a_Field.isNull())
+	if (aField.isNull())
 	{
 		return QVariant();
 	}
-	return a_Field.value();
+	return aField.value();
 }
 
 
@@ -43,14 +43,14 @@ static QVariant fieldValue(const QSqlField & a_Field)
 
 /** Constructs a DatedOptional from the two DB fields given the record to read and the field indices. */
 template <typename T> static DatedOptional<T> datedOptionalFromFields(
-	const QSqlRecord & a_Record,
-	int a_IdxValue,
-	int a_IdxLastModification
+	const QSqlRecord & aRecord,
+	int aIdxValue,
+	int aIdxLastModification
 )
 {
 	return DatedOptional<T>(
-		fieldValue(a_Record.field(a_IdxValue)),
-		a_Record.value(a_IdxLastModification).toDateTime()
+		fieldValue(aRecord.field(aIdxValue)),
+		aRecord.value(aIdxLastModification).toDateTime()
 	);
 }
 
@@ -66,27 +66,27 @@ Index 2: genre column
 Index 3: MPM column
 If any index is negative, the value in the resulting tag is an uninitialized variant. */
 static Song::Tag tagFromFields(
-	const QSqlRecord & a_Record,
-	const std::array<int, 4> & a_Indices,
-	const std::array<int, 4> & a_IndicesLM
+	const QSqlRecord & aRecord,
+	const std::array<int, 4> & aIndices,
+	const std::array<int, 4> & aIndicesLM
 )
 {
 	Song::Tag res;
-	if (a_Indices[0] >= 0)
+	if (aIndices[0] >= 0)
 	{
-		res.m_Author = datedOptionalFromFields<QString>(a_Record, a_Indices[0], a_IndicesLM[0]);
+		res.mAuthor = datedOptionalFromFields<QString>(aRecord, aIndices[0], aIndicesLM[0]);
 	}
-	if (a_Indices[1] >= 0)
+	if (aIndices[1] >= 0)
 	{
-		res.m_Title = datedOptionalFromFields<QString>(a_Record, a_Indices[1], a_IndicesLM[1]);
+		res.mTitle = datedOptionalFromFields<QString>(aRecord, aIndices[1], aIndicesLM[1]);
 	}
-	if (a_Indices[2] >= 0)
+	if (aIndices[2] >= 0)
 	{
-		res.m_Genre = datedOptionalFromFields<QString>(a_Record, a_Indices[2], a_IndicesLM[2]);
+		res.mGenre = datedOptionalFromFields<QString>(aRecord, aIndices[2], aIndicesLM[2]);
 	}
-	if (a_Indices[3] >= 0)
+	if (aIndices[3] >= 0)
 	{
-		res.m_MeasuresPerMinute = datedOptionalFromFields<double>(a_Record, a_Indices[3], a_IndicesLM[3]);
+		res.mMeasuresPerMinute = datedOptionalFromFields<double>(aRecord, aIndices[3], aIndicesLM[3]);
 	}
 	return res;
 }
@@ -96,17 +96,17 @@ static Song::Tag tagFromFields(
 
 
 /** Applies the specified rating, if present, to the song weight. */
-static qint64 applyRating(qint64 a_CurrentWeight, const DatedOptional<double> & a_Rating)
+static qint64 applyRating(qint64 aCurrentWeight, const DatedOptional<double> & aRating)
 {
-	if (a_Rating.isPresent())
+	if (aRating.isPresent())
 	{
 		// Even zero-rating songs need *some* chance, so we add 1 to all ratings
-		return static_cast<qint64>(a_CurrentWeight * (a_Rating.value() + 1) / 5);
+		return static_cast<qint64>(aCurrentWeight * (aRating.value() + 1) / 5);
 	}
 	else
 	{
 		// Default to 2.5-star rating:
-		return static_cast<qint64>(a_CurrentWeight * 3.5 / 5);
+		return static_cast<qint64>(aCurrentWeight * 3.5 / 5);
 	}
 }
 
@@ -122,13 +122,13 @@ public:
 
 	/** Starts a transaction.
 	If a transaction cannot be started, logs and throws a RuntimeError. */
-	SqlTransaction(QSqlDatabase & a_DB):
-		m_DB(a_DB),
-		m_IsActive(a_DB.transaction())
+	SqlTransaction(QSqlDatabase & aDB):
+		mDB(aDB),
+		mIsActive(aDB.transaction())
 	{
-		if (!m_IsActive)
+		if (!mIsActive)
 		{
-			throw RuntimeError("DB doesn't support transactions: %1", m_DB.lastError());
+			throw RuntimeError("DB doesn't support transactions: %1", mDB.lastError());
 		}
 	}
 
@@ -137,11 +137,11 @@ public:
 	If the transaction fails to roll back, an error is logged (but nothing thrown). */
 	~SqlTransaction()
 	{
-		if (m_IsActive)
+		if (mIsActive)
 		{
-			if (!m_DB.rollback())
+			if (!mDB.rollback())
 			{
-				qWarning() << "DB transaction rollback failed: " << m_DB.lastError();
+				qWarning() << "DB transaction rollback failed: " << mDB.lastError();
 				return;
 			}
 		}
@@ -153,22 +153,22 @@ public:
 	If the transaction fails to commit, throws a RuntimeError. */
 	void commit()
 	{
-		if (!m_IsActive)
+		if (!mIsActive)
 		{
 			throw RuntimeError("DB transaction not started");
 		}
-		if (!m_DB.commit())
+		if (!mDB.commit())
 		{
-			throw LogicError("DB transaction commit failed: %1", m_DB.lastError());
+			throw LogicError("DB transaction commit failed: %1", mDB.lastError());
 		}
-		m_IsActive = false;
+		mIsActive = false;
 	}
 
 
 protected:
 
-	QSqlDatabase & m_DB;
-	bool m_IsActive;
+	QSqlDatabase & mDB;
+	bool mIsActive;
 };
 
 
@@ -178,8 +178,8 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // Database:
 
-Database::Database(ComponentCollection & a_Components):
-	m_Components(a_Components)
+Database::Database(ComponentCollection & aComponents):
+	mComponents(aComponents)
 {
 }
 
@@ -187,22 +187,22 @@ Database::Database(ComponentCollection & a_Components):
 
 
 
-void Database::open(const QString & a_DBFileName)
+void Database::open(const QString & aDBFileName)
 {
-	assert(!m_Database.isOpen());  // Opening another DB is not allowed
+	assert(!mDatabase.isOpen());  // Opening another DB is not allowed
 
 	static std::atomic<int> counter(0);
 	auto connName = QString::fromUtf8("DB%1").arg(counter.fetch_add(1));
-	m_Database = QSqlDatabase::addDatabase("QSQLITE", connName);
-	m_Database.setDatabaseName(a_DBFileName);
-	if (!m_Database.open())
+	mDatabase = QSqlDatabase::addDatabase("QSQLITE", connName);
+	mDatabase.setDatabaseName(aDBFileName);
+	if (!mDatabase.open())
 	{
-		throw RuntimeError(tr("Cannot open the DB file: %1"), m_Database.lastError());
+		throw RuntimeError(tr("Cannot open the DB file: %1"), mDatabase.lastError());
 	}
 
 	// Check DB version, if upgradeable, make a backup first:
 	{
-		auto query = std::make_unique<QSqlQuery>("SELECT MAX(Version) AS Version FROM Version", m_Database);
+		auto query = std::make_unique<QSqlQuery>("SELECT MAX(Version) AS Version FROM Version", mDatabase);
 		if (query->first())
 		{
 			auto version = query->record().value("Version").toULongLong();
@@ -217,26 +217,26 @@ void Database::open(const QString & a_DBFileName)
 			if (version < maxVersion)
 			{
 				// Close the DB:
-				m_Database.close();
+				mDatabase.close();
 				QSqlDatabase::removeDatabase(connName);
 
 				// Backup:
-				auto backupFolder = m_Components.get<InstallConfiguration>()->dbBackupsFolder();
-				DatabaseBackup::backupBeforeUpgrade(a_DBFileName, version, backupFolder);
+				auto backupFolder = mComponents.get<InstallConfiguration>()->dbBackupsFolder();
+				DatabaseBackup::backupBeforeUpgrade(aDBFileName, version, backupFolder);
 
 				// Reopen the DB:
-				m_Database = QSqlDatabase::addDatabase("QSQLITE", connName);
-				m_Database.setDatabaseName(a_DBFileName);
-				if (!m_Database.open())
+				mDatabase = QSqlDatabase::addDatabase("QSQLITE", connName);
+				mDatabase.setDatabaseName(aDBFileName);
+				if (!mDatabase.open())
 				{
-					throw RuntimeError(tr("Cannot open the DB file: %1"), m_Database.lastError());
+					throw RuntimeError(tr("Cannot open the DB file: %1"), mDatabase.lastError());
 				}
 			}
 		}
 	}
 
 	// Turn off synchronous queries (they slow up DB inserts by orders of magnitude):
-	auto query = m_Database.exec("PRAGMA synchronous = off");
+	auto query = mDatabase.exec("PRAGMA synchronous = off");
 	if (query.lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << "Turning off synchronous failed: " << query.lastError();
@@ -244,7 +244,7 @@ void Database::open(const QString & a_DBFileName)
 	}
 
 	// Turn on foreign keys:
-	query = m_Database.exec("PRAGMA foreign_keys = on");
+	query = mDatabase.exec("PRAGMA foreign_keys = on");
 	if (query.lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << "Turning on foreign keys failed: " << query.lastError();
@@ -263,9 +263,9 @@ void Database::open(const QString & a_DBFileName)
 
 
 
-void Database::addSongFiles(const QStringList & a_Files)
+void Database::addSongFiles(const QStringList & aFiles)
 {
-	for (const auto & f: a_Files)
+	for (const auto & f: aFiles)
 	{
 		addSongFile(f);
 	}
@@ -275,27 +275,27 @@ void Database::addSongFiles(const QStringList & a_Files)
 
 
 
-void Database::addSongFile(const QString & a_FileName)
+void Database::addSongFile(const QString & aFileName)
 {
 	// Check for duplicates:
-	for (const auto & song: m_Songs)
+	for (const auto & song: mSongs)
 	{
-		if (song->fileName() == a_FileName)
+		if (song->fileName() == aFileName)
 		{
-			qDebug() << "Skipping duplicate " << a_FileName;
+			qDebug() << "Skipping duplicate " << aFileName;
 			return;
 		}
 	}
 
 	// Insert into DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO NewFiles (FileName) VALUES(?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_FileName);
+	query.bindValue(0, aFileName);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -305,37 +305,37 @@ void Database::addSongFile(const QString & a_FileName)
 
 	// Enqueue it in the Hash calculator:
 	// (After the hash is calculated, only then a Song instance is created for the song, in songHashCalculated())
-	emit needFileHash(a_FileName);
+	emit needFileHash(aFileName);
 }
 
 
 
 
 
-void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
+void Database::removeSong(const Song & aSong, bool aDeleteDiskFile)
 {
 	size_t idx = 0;
-	for (auto itr = m_Songs.cbegin(), end = m_Songs.cend(); itr != end; ++itr, ++idx)
+	for (auto itr = mSongs.cbegin(), end = mSongs.cend(); itr != end; ++itr, ++idx)
 	{
-		if (itr->get() != &a_Song)
+		if (itr->get() != &aSong)
 		{
 			continue;
 		}
 		auto song = *itr;
 		emit songRemoving(song, idx);
-		m_Songs.erase(itr);
-		song->sharedData()->delDuplicate(&a_Song);
+		mSongs.erase(itr);
+		song->sharedData()->delDuplicate(&aSong);
 
 		// Remove from the DB:
 		{
-			QSqlQuery query(m_Database);
+			QSqlQuery query(mDatabase);
 			if (!query.prepare("DELETE FROM SongFiles WHERE FileName = ?"))
 			{
 				qWarning() << "Cannot prepare statement: " << query.lastError();
 				assert(!"DB error");
 				return;
 			}
-			query.addBindValue(a_Song.fileName());
+			query.addBindValue(aSong.fileName());
 			if (!query.exec())
 			{
 				qWarning() << "Cannot exec statement: " << query.lastError();
@@ -346,7 +346,7 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 
 		// Add a log entry:
 		{
-			QSqlQuery query(m_Database);
+			QSqlQuery query(mDatabase);
 			if (!query.prepare(
 				"INSERT INTO RemovedSongs "
 				"(FileName, Hash, DateRemoved, WasFileDeleted, NumDuplicates) "
@@ -358,11 +358,11 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 			}
 			else
 			{
-				query.addBindValue(a_Song.fileName());
-				query.addBindValue(a_Song.hash());
+				query.addBindValue(aSong.fileName());
+				query.addBindValue(aSong.hash());
 				query.addBindValue(QDateTime::currentDateTimeUtc());
-				query.addBindValue(a_DeleteDiskFile);
-				query.addBindValue(static_cast<qulonglong>(a_Song.sharedData()->duplicatesCount()));
+				query.addBindValue(aDeleteDiskFile);
+				query.addBindValue(static_cast<qulonglong>(aSong.sharedData()->duplicatesCount()));
 				if (!query.exec())
 				{
 					qWarning() << "Cannot exec statement: " << query.lastError();
@@ -372,11 +372,11 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 		}
 
 		// Delete the disk file, if requested:
-		if (a_DeleteDiskFile)
+		if (aDeleteDiskFile)
 		{
-			if (!QFile::remove(a_Song.fileName()))
+			if (!QFile::remove(aSong.fileName()))
 			{
-				qWarning() << "Cannot delete disk file " << a_Song.fileName();
+				qWarning() << "Cannot delete disk file " << aSong.fileName();
 			}
 		}
 
@@ -390,10 +390,10 @@ void Database::removeSong(const Song & a_Song, bool a_DeleteDiskFile)
 
 
 
-SongPtr Database::songFromHash(const QByteArray & a_SongHash)
+SongPtr Database::songFromHash(const QByteArray & aSongHash)
 {
-	auto sd = m_SongSharedData.find(a_SongHash);
-	if (sd == m_SongSharedData.end())
+	auto sd = mSongSharedData.find(aSongHash);
+	if (sd == mSongSharedData.end())
 	{
 		return nullptr;
 	}
@@ -409,11 +409,11 @@ SongPtr Database::songFromHash(const QByteArray & a_SongHash)
 
 
 
-SongPtr Database::songFromFileName(const QString a_SongFileName)
+SongPtr Database::songFromFileName(const QString aSongFileName)
 {
-	for (const auto & song: m_Songs)
+	for (const auto & song: mSongs)
 	{
-		if (song->fileName() == a_SongFileName)
+		if (song->fileName() == aSongFileName)
 		{
 			return song;
 		}
@@ -436,20 +436,20 @@ TemplatePtr Database::createTemplate()
 
 
 
-void Database::addTemplate(TemplatePtr a_Template)
+void Database::addTemplate(TemplatePtr aTemplate)
 {
-	assert(a_Template->dbRowId() == -1);  // No RowID assigned yet
+	assert(aTemplate->dbRowId() == -1);  // No RowID assigned yet
 
 	// Insert into DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO Templates (DisplayName, Notes) VALUES(?, ?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Template->displayName());
-	query.bindValue(1, a_Template->notes());
+	query.bindValue(0, aTemplate->displayName());
+	query.bindValue(1, aTemplate->notes());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -458,12 +458,12 @@ void Database::addTemplate(TemplatePtr a_Template)
 	}
 
 	// Insert into memory:
-	a_Template->setDbRowId(query.lastInsertId().toLongLong());
-	m_Templates.push_back(a_Template);
+	aTemplate->setDbRowId(query.lastInsertId().toLongLong());
+	mTemplates.push_back(aTemplate);
 
 	// Insert any items that are not yet stored in the DB:
-	a_Template->replaceSameFilters(m_Filters);
-	for (const auto & item: a_Template->items())
+	aTemplate->replaceSameFilters(mFilters);
+	for (const auto & item: aTemplate->items())
 	{
 		if (item->dbRowId() == -1)
 		{
@@ -477,38 +477,38 @@ void Database::addTemplate(TemplatePtr a_Template)
 
 
 
-void Database::swapTemplatesByIdx(size_t a_Idx1, size_t a_Idx2)
+void Database::swapTemplatesByIdx(size_t aIdx1, size_t aIdx2)
 {
-	assert(a_Idx1 < m_Templates.size());
-	assert(a_Idx2 < m_Templates.size());
+	assert(aIdx1 < mTemplates.size());
+	assert(aIdx2 < mTemplates.size());
 
-	if (a_Idx1 == a_Idx2)
+	if (aIdx1 == aIdx2)
 	{
 		assert(!"Attempting to swap a template with itself.");  // Most likely indicates an error in the caller
 		return;
 	}
 
 	// Swap in memory:
-	std::swap(m_Templates[a_Idx1], m_Templates[a_Idx2]);
+	std::swap(mTemplates[aIdx1], mTemplates[aIdx2]);
 
 	// Swap in the DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE Templates SET Position = ? WHERE RowID = ?"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, static_cast<qulonglong>(a_Idx1));
-	query.bindValue(1, m_Templates[a_Idx1]->dbRowId());
+	query.bindValue(0, static_cast<qulonglong>(aIdx1));
+	query.bindValue(1, mTemplates[aIdx1]->dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, static_cast<qulonglong>(a_Idx2));
-	query.bindValue(1, m_Templates[a_Idx2]->dbRowId());
+	query.bindValue(0, static_cast<qulonglong>(aIdx2));
+	query.bindValue(1, mTemplates[aIdx2]->dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -521,23 +521,23 @@ void Database::swapTemplatesByIdx(size_t a_Idx1, size_t a_Idx2)
 
 
 
-void Database::delTemplate(const Template * a_Template)
+void Database::delTemplate(const Template * aTemplate)
 {
-	for (auto itr = m_Templates.cbegin(), end = m_Templates.cend(); itr != end; ++itr)
+	for (auto itr = mTemplates.cbegin(), end = mTemplates.cend(); itr != end; ++itr)
 	{
-		if (itr->get() != a_Template)
+		if (itr->get() != aTemplate)
 		{
 			continue;
 		}
 		// Erase from the DB:
-		QSqlQuery query(m_Database);
+		QSqlQuery query(mDatabase);
 		if (!query.prepare("DELETE FROM TemplateItems WHERE TemplateID = ?"))
 		{
 			qWarning() << "Cannot prep DELETE(TemplateItems) statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_Template->dbRowId());
+		query.addBindValue(aTemplate->dbRowId());
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec DELETE(TemplateItems) statement: " << query.lastError();
@@ -550,7 +550,7 @@ void Database::delTemplate(const Template * a_Template)
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_Template->dbRowId());
+		query.addBindValue(aTemplate->dbRowId());
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec DELETE(Templates) statement: " << query.lastError();
@@ -559,10 +559,10 @@ void Database::delTemplate(const Template * a_Template)
 		}
 
 		// Remove from the internal list:
-		m_Templates.erase(itr);
+		mTemplates.erase(itr);
 		return;
 	}
-	qWarning() << "Attempting to remove a template not in the list: " << a_Template->displayName();
+	qWarning() << "Attempting to remove a template not in the list: " << aTemplate->displayName();
 	assert(!"Template not in list");
 }
 
@@ -570,22 +570,22 @@ void Database::delTemplate(const Template * a_Template)
 
 
 
-void Database::saveTemplate(const Template & a_Template)
+void Database::saveTemplate(const Template & aTemplate)
 {
 	// Find the template position:
-	size_t position = m_Templates.size();
-	for (size_t i = m_Templates.size(); i > 0;--i)
+	size_t position = mTemplates.size();
+	for (size_t i = mTemplates.size(); i > 0;--i)
 	{
-		if (m_Templates[i - 1].get() == &a_Template)
+		if (mTemplates[i - 1].get() == &aTemplate)
 		{
 			position = i - 1;
 			break;
 		}
 	}
-	assert(position < m_Templates.size());  // Template not found?
+	assert(position < mTemplates.size());  // Template not found?
 
 	// Update the template direct values:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE Templates SET "
 		"DisplayName = ?, Notes = ?, BgColor = ?, Position = ? "
 		"WHERE RowID = ?")
@@ -595,11 +595,11 @@ void Database::saveTemplate(const Template & a_Template)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Template.displayName());
-	query.addBindValue(a_Template.notes());
-	query.addBindValue(a_Template.bgColor().name());
+	query.addBindValue(aTemplate.displayName());
+	query.addBindValue(aTemplate.notes());
+	query.addBindValue(aTemplate.bgColor().name());
 	query.addBindValue(static_cast<qulonglong>(position));
-	query.addBindValue(a_Template.dbRowId());
+	query.addBindValue(aTemplate.dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec UPDATE statement: " << query.lastError();
@@ -610,7 +610,7 @@ void Database::saveTemplate(const Template & a_Template)
 	// Remove all template's items from the DB:
 	if (query.prepare("DELETE FROM TemplateItems WHERE TemplateID = ?"))
 	{
-		query.addBindValue(a_Template.dbRowId());
+		query.addBindValue(aTemplate.dbRowId());
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec DELETE statement: " << query.lastError();
@@ -633,14 +633,14 @@ void Database::saveTemplate(const Template & a_Template)
 		return;
 	}
 	int idx = 0;
-	for (const auto & filter: a_Template.items())
+	for (const auto & filter: aTemplate.items())
 	{
-		query.addBindValue(a_Template.dbRowId());
+		query.addBindValue(aTemplate.dbRowId());
 		query.addBindValue(idx);
 		query.addBindValue(filter->dbRowId());
 		if (!query.exec())
 		{
-			qWarning() << "Failed to save template " << a_Template.displayName() << " item " << filter->displayName();
+			qWarning() << "Failed to save template " << aTemplate.displayName() << " item " << filter->displayName();
 			assert(!"DB error");
 			// Continue saving
 		}
@@ -655,7 +655,7 @@ void Database::saveTemplate(const Template & a_Template)
 void Database::saveAllTemplates()
 {
 	// TODO: This could be optimized - no need to calc position for each template, and wrap in a transaction
-	for (const auto & tmpl: m_Templates)
+	for (const auto & tmpl: mTemplates)
 	{
 		saveTemplate(*tmpl);
 	}
@@ -676,20 +676,20 @@ FilterPtr Database::createFilter()
 
 
 
-void Database::addFilter(FilterPtr a_Filter)
+void Database::addFilter(FilterPtr aFilter)
 {
-	assert(a_Filter->dbRowId() == -1);  // No RowID assigned yet
+	assert(aFilter->dbRowId() == -1);  // No RowID assigned yet
 
 	// Insert into DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO Filters (DisplayName, Notes) VALUES(?, ?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Filter->displayName());
-	query.bindValue(1, a_Filter->notes());
+	query.bindValue(0, aFilter->displayName());
+	query.bindValue(1, aFilter->notes());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -698,46 +698,46 @@ void Database::addFilter(FilterPtr a_Filter)
 	}
 
 	// Insert into memory:
-	a_Filter->setDbRowId(query.lastInsertId().toLongLong());
-	m_Filters.push_back(a_Filter);
+	aFilter->setDbRowId(query.lastInsertId().toLongLong());
+	mFilters.push_back(aFilter);
 }
 
 
 
 
 
-void Database::swapFiltersByIdx(size_t a_Idx1, size_t a_Idx2)
+void Database::swapFiltersByIdx(size_t aIdx1, size_t aIdx2)
 {
-	assert(a_Idx1 < m_Filters.size());
-	assert(a_Idx2 < m_Filters.size());
+	assert(aIdx1 < mFilters.size());
+	assert(aIdx2 < mFilters.size());
 
-	if (a_Idx1 == a_Idx2)
+	if (aIdx1 == aIdx2)
 	{
 		assert(!"Attempting to swap a filter with itself.");  // Most likely indicates an error in the caller
 		return;
 	}
 
 	// Swap in memory:
-	std::swap(m_Filters[a_Idx1], m_Filters[a_Idx2]);
+	std::swap(mFilters[aIdx1], mFilters[aIdx2]);
 
 	// Swap in the DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE Filters SET Position = ? WHERE RowID = ?"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, static_cast<qulonglong>(a_Idx1));
-	query.bindValue(1, m_Filters[a_Idx1]->dbRowId());
+	query.bindValue(0, static_cast<qulonglong>(aIdx1));
+	query.bindValue(1, mFilters[aIdx1]->dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, static_cast<qulonglong>(a_Idx2));
-	query.bindValue(1, m_Filters[a_Idx2]->dbRowId());
+	query.bindValue(0, static_cast<qulonglong>(aIdx2));
+	query.bindValue(1, mFilters[aIdx2]->dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -750,19 +750,19 @@ void Database::swapFiltersByIdx(size_t a_Idx1, size_t a_Idx2)
 
 
 
-void Database::delFilter(size_t a_Index)
+void Database::delFilter(size_t aIndex)
 {
-	if (a_Index >= m_Filters.size())
+	if (aIndex >= mFilters.size())
 	{
 		return;
 	}
-	auto filter = m_Filters[a_Index];
+	auto filter = mFilters[aIndex];
 	using diffType = std::vector<FilterPtr>::difference_type;
-	m_Filters.erase(m_Filters.begin() + static_cast<diffType>(a_Index));
+	mFilters.erase(mFilters.begin() + static_cast<diffType>(aIndex));
 
 	// Delete the filter from any templates using it:
-	SqlTransaction trans(m_Database);
-	for (auto & tmpl: m_Templates)
+	SqlTransaction trans(mDatabase);
+	for (auto & tmpl: mTemplates)
 	{
 		if (tmpl->removeAllFilterRefs(filter))
 		{
@@ -771,7 +771,7 @@ void Database::delFilter(size_t a_Index)
 	}
 
 	// Delete the filter nodes from the DB:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("DELETE FROM FilterNodes WHERE FilterID = ?"))
 	{
 		qWarning() << "Cannot prep DELETE(FilterNodes) statement: " << query.lastError();
@@ -816,22 +816,22 @@ void Database::delFilter(size_t a_Index)
 
 
 
-void Database::saveFilter(const Filter & a_Filter)
+void Database::saveFilter(const Filter & aFilter)
 {
 	// Find the filter's position:
-	size_t position = m_Filters.size();
-	for (size_t i = m_Filters.size(); i > 0;--i)
+	size_t position = mFilters.size();
+	for (size_t i = mFilters.size(); i > 0;--i)
 	{
-		if (m_Filters[i - 1].get() == &a_Filter)
+		if (mFilters[i - 1].get() == &aFilter)
 		{
 			position = i - 1;
 			break;
 		}
 	}
-	assert(position < m_Filters.size());  // Filter not found?
+	assert(position < mFilters.size());  // Filter not found?
 
 	// Update the filter's direct values:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE Filters SET "
 		"DisplayName = ?, Notes = ?, BgColor = ?, IsFavorite = ?, DurationLimit = ?, Position = ? "
 		"WHERE RowID = ?")
@@ -841,13 +841,13 @@ void Database::saveFilter(const Filter & a_Filter)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Filter.displayName());
-	query.addBindValue(a_Filter.notes());
-	query.addBindValue(a_Filter.bgColor().name());
-	query.addBindValue(a_Filter.isFavorite());
-	query.addBindValue(a_Filter.durationLimit().toVariant());
+	query.addBindValue(aFilter.displayName());
+	query.addBindValue(aFilter.notes());
+	query.addBindValue(aFilter.bgColor().name());
+	query.addBindValue(aFilter.isFavorite());
+	query.addBindValue(aFilter.durationLimit().toVariant());
 	query.addBindValue(static_cast<qulonglong>(position));
-	query.addBindValue(a_Filter.dbRowId());
+	query.addBindValue(aFilter.dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec UPDATE statement: " << query.lastError();
@@ -858,7 +858,7 @@ void Database::saveFilter(const Filter & a_Filter)
 	// Remove all filter's nodes from the DB:
 	if (query.prepare("DELETE FROM FilterNodes WHERE FilterID = ?"))
 	{
-		query.addBindValue(a_Filter.dbRowId());
+		query.addBindValue(aFilter.dbRowId());
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec DELETE statement: " << query.lastError();
@@ -874,18 +874,18 @@ void Database::saveFilter(const Filter & a_Filter)
 	}
 
 	// Re-add all filter's nodes into the DB:
-	saveFilterNodes(a_Filter.dbRowId(), *a_Filter.rootNode(), -1);
+	saveFilterNodes(aFilter.dbRowId(), *aFilter.rootNode(), -1);
 }
 
 
 
 
 
-FilterPtr Database::filterFromHash(const QByteArray & a_FilterHash)
+FilterPtr Database::filterFromHash(const QByteArray & aFilterHash)
 {
-	for (const auto & filter: m_Filters)
+	for (const auto & filter: mFilters)
 	{
-		if (filter->hash() == a_FilterHash)
+		if (filter->hash() == aFilterHash)
 		{
 			return filter;
 		}
@@ -900,7 +900,7 @@ FilterPtr Database::filterFromHash(const QByteArray & a_FilterHash)
 std::vector<FilterPtr> Database::getFavoriteFilters() const
 {
 	std::vector<FilterPtr> res;
-	for (const auto & filter: m_Filters)
+	for (const auto & filter: mFilters)
 	{
 		if (filter->isFavorite())
 		{
@@ -914,12 +914,12 @@ std::vector<FilterPtr> Database::getFavoriteFilters() const
 
 
 
-int Database::numSongsMatchingFilter(const Filter & a_Filter) const
+int Database::numSongsMatchingFilter(const Filter & aFilter) const
 {
 	int res = 0;
-	for (const auto & s: m_Songs)
+	for (const auto & s: mSongs)
 	{
-		if (a_Filter.rootNode()->isSatisfiedBy(*s))
+		if (aFilter.rootNode()->isSatisfiedBy(*s))
 		{
 			res += 1;
 		}
@@ -931,14 +931,14 @@ int Database::numSongsMatchingFilter(const Filter & a_Filter) const
 
 
 
-int Database::numTemplatesContaining(const Filter & a_Filter) const
+int Database::numTemplatesContaining(const Filter & aFilter) const
 {
 	int res = 0;
-	for (const auto & tmpl: m_Templates)
+	for (const auto & tmpl: mTemplates)
 	{
 		for (const auto & item: tmpl->items())
 		{
-			if (item.get() == &a_Filter)
+			if (item.get() == &aFilter)
 			{
 				res += 1;
 				break;
@@ -952,14 +952,14 @@ int Database::numTemplatesContaining(const Filter & a_Filter) const
 
 
 
-SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) const
+SongPtr Database::pickSongForFilter(const Filter & aFilter, SongPtr aAvoid) const
 {
 	std::vector<std::pair<SongPtr, int>> songs;  // Pairs of SongPtr and their weight
 	std::set<Song::SharedDataPtr> sharedDatas;  // SharedDatas of songs added to "songs", to avoid dupes
 	int totalWeight = 0;
-	for (const auto & song: m_Songs)
+	for (const auto & song: mSongs)
 	{
-		if (song == a_Avoid)
+		if (song == aAvoid)
 		{
 			continue;
 		}
@@ -968,7 +968,7 @@ SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) co
 			// Already present, through another Song, with the same hash
 			continue;
 		}
-		if (a_Filter.rootNode()->isSatisfiedBy(*song))
+		if (aFilter.rootNode()->isSatisfiedBy(*song))
 		{
 			auto weight = getSongWeight(*song);
 			songs.push_back(std::make_pair(song, weight));
@@ -979,11 +979,11 @@ SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) co
 
 	if (songs.empty())
 	{
-		if ((a_Avoid != nullptr) && (a_Filter.rootNode()->isSatisfiedBy(*a_Avoid)))
+		if ((aAvoid != nullptr) && (aFilter.rootNode()->isSatisfiedBy(*aAvoid)))
 		{
-			return a_Avoid;
+			return aAvoid;
 		}
-		qDebug() << "No song matches item " << a_Filter.displayName();
+		qDebug() << "No song matches item " << aFilter.displayName();
 		return nullptr;
 	}
 
@@ -1001,7 +1001,7 @@ SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) co
 			static int counter = 0;
 			auto fnam = QString("debug_template_%1.log").arg(QString::number(counter++), 3, '0');
 			std::ofstream f(fnam.toStdString().c_str());
-			f << "Choices for template item " << a_Item->displayName().toStdString() << std::endl;
+			f << "Choices for template item " << aItem->displayName().toStdString() << std::endl;
 			f << "------" << std::endl << std::endl;
 			f << "Candidates:" << std::endl;
 			for (const auto & s: songs)
@@ -1026,10 +1026,10 @@ SongPtr Database::pickSongForFilter(const Filter & a_Filter, SongPtr a_Avoid) co
 
 
 
-std::vector<std::pair<SongPtr, FilterPtr>> Database::pickSongsForTemplate(const Template & a_Template)
+std::vector<std::pair<SongPtr, FilterPtr>> Database::pickSongsForTemplate(const Template & aTemplate)
 {
 	std::vector<std::pair<SongPtr, FilterPtr>> res;
-	for (const auto & filter: a_Template.items())
+	for (const auto & filter: aTemplate.items())
 	{
 		auto song = pickSongForFilter(*filter);
 		if (song != nullptr)
@@ -1048,7 +1048,7 @@ std::vector<Database::RemovedSongPtr> Database::removedSongs() const
 {
 	std::vector<RemovedSongPtr> res;
 
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("SELECT * FROM RemovedSongs"))
 	{
 		qWarning() << "Cannot prepare query: " << query.lastError();
@@ -1071,11 +1071,11 @@ std::vector<Database::RemovedSongPtr> Database::removedSongs() const
 	while (query.next())
 	{
 		auto rsp = std::make_shared<RemovedSong>();
-		rsp->m_FileName      = query.value(fiFileName).toString();
-		rsp->m_DateRemoved   = query.value(fiDateRemoved).toDateTime();
-		rsp->m_Hash          = query.value(fiHash).toByteArray();
-		rsp->m_WasDeleted    = query.value(fiWasDeleted).toBool();
-		rsp->m_NumDuplicates = query.value(fiNumDuplicates).toInt();
+		rsp->mFileName      = query.value(fiFileName).toString();
+		rsp->mDateRemoved   = query.value(fiDateRemoved).toDateTime();
+		rsp->mHash          = query.value(fiHash).toByteArray();
+		rsp->mWasDeleted    = query.value(fiWasDeleted).toBool();
+		rsp->mNumDuplicates = query.value(fiNumDuplicates).toInt();
 		res.push_back(rsp);
 	}
 	return res;
@@ -1087,7 +1087,7 @@ std::vector<Database::RemovedSongPtr> Database::removedSongs() const
 
 void Database::clearRemovedSongs()
 {
-	auto query = m_Database.exec("DELETE FROM RemovedSongs");
+	auto query = mDatabase.exec("DELETE FROM RemovedSongs");
 	if (query.lastError().type() != QSqlError::NoError)
 	{
 		qWarning() << "SQL query failed: " << query.lastError();
@@ -1099,10 +1099,10 @@ void Database::clearRemovedSongs()
 
 
 
-Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & a_Hash) const
+Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & aHash) const
 {
-	auto itr = m_SongSharedData.find(a_Hash);
-	if (itr == m_SongSharedData.end())
+	auto itr = mSongSharedData.find(aHash);
+	if (itr == mSongSharedData.end())
 	{
 		return nullptr;
 	}
@@ -1115,7 +1115,7 @@ Song::SharedDataPtr Database::sharedDataFromHash(const QByteArray & a_Hash) cons
 
 void Database::saveAllSongSharedData()
 {
-	for (const auto & sd: m_SongSharedData)
+	for (const auto & sd: mSongSharedData)
 	{
 		saveSongSharedData(sd.second);
 	}
@@ -1129,7 +1129,7 @@ std::vector<Database::HistoryItem> Database::playbackHistory() const
 {
 	std::vector<Database::HistoryItem> res;
 
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.exec("SELECT * FROM PlaybackHistory"))
 	{
 		qWarning() << "Cannot query playback history: " << query.lastError();
@@ -1154,9 +1154,9 @@ std::vector<Database::HistoryItem> Database::playbackHistory() const
 
 
 
-void Database::addPlaybackHistory(const std::vector<Database::HistoryItem> & a_History)
+void Database::addPlaybackHistory(const std::vector<Database::HistoryItem> & aHistory)
 {
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO PlaybackHistory (Timestamp, SongHash) VALUES(?, ?)"))
 	{
 		qWarning() << "Cannot prepare query: " << query.lastError();
@@ -1164,15 +1164,15 @@ void Database::addPlaybackHistory(const std::vector<Database::HistoryItem> & a_H
 		assert(!"DB error");
 		return;
 	}
-	for (const auto & item: a_History)
+	for (const auto & item: aHistory)
 	{
-		query.addBindValue(item.m_Timestamp);
-		query.addBindValue(item.m_Hash);
+		query.addBindValue(item.mTimestamp);
+		query.addBindValue(item.mHash);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot store playback history item "
-				<< item.m_Timestamp << ", "
-				<< item.m_Hash << ": "
+				<< item.mTimestamp << ", "
+				<< item.mHash << ": "
 				<< query.lastError();
 			assert(!"DB error");
 		}
@@ -1183,9 +1183,9 @@ void Database::addPlaybackHistory(const std::vector<Database::HistoryItem> & a_H
 
 
 
-void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr> & a_History)
+void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr> & aHistory)
 {
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO RemovedSongs "
 		"(Filename, Hash, DateRemoved, WasFileDeleted, NumDuplicates) VALUES "
 		"(?, ?, ?, ?, ?)"))
@@ -1195,19 +1195,19 @@ void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr>
 		assert(!"DB error");
 		return;
 	}
-	for (const auto & item: a_History)
+	for (const auto & item: aHistory)
 	{
-		query.addBindValue(item->m_FileName);
-		query.addBindValue(item->m_Hash);
-		query.addBindValue(item->m_DateRemoved);
-		query.addBindValue(item->m_WasDeleted);
-		query.addBindValue(item->m_NumDuplicates);
+		query.addBindValue(item->mFileName);
+		query.addBindValue(item->mHash);
+		query.addBindValue(item->mDateRemoved);
+		query.addBindValue(item->mWasDeleted);
+		query.addBindValue(item->mNumDuplicates);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot store removal history item "
-				<< item->m_FileName << ", "
-				<< item->m_Hash << ", "
-				<< item->m_DateRemoved << ": "
+				<< item->mFileName << ", "
+				<< item->mHash << ", "
+				<< item->mDateRemoved << ": "
 				<< query.lastError();
 			assert(!"DB error");
 		}
@@ -1218,12 +1218,12 @@ void Database::addSongRemovalHistory(const std::vector<Database::RemovedSongPtr>
 
 
 
-std::vector<Database::Vote> Database::loadVotes(const QString & a_TableName) const
+std::vector<Database::Vote> Database::loadVotes(const QString & aTableName) const
 {
 	std::vector<Database::Vote> res;
 
-	QSqlQuery query(m_Database);
-	if (!query.exec("SELECT * FROM " + a_TableName + " ORDER BY DateAdded"))
+	QSqlQuery query(mDatabase);
+	if (!query.exec("SELECT * FROM " + aTableName + " ORDER BY DateAdded"))
 	{
 		qWarning() << "Cannot query vote history: " << query.lastError();
 		qDebug() << query.lastQuery();
@@ -1249,21 +1249,21 @@ std::vector<Database::Vote> Database::loadVotes(const QString & a_TableName) con
 
 
 
-void Database::addVotes(const QString & a_TableName, const std::vector<Database::Vote> & a_Votes)
+void Database::addVotes(const QString & aTableName, const std::vector<Database::Vote> & aVotes)
 {
-	QSqlQuery query(m_Database);
-	if (!query.prepare("INSERT INTO " + a_TableName + " (SongHash, DateAdded, VoteValue) VALUES(?, ?, ?)"))
+	QSqlQuery query(mDatabase);
+	if (!query.prepare("INSERT INTO " + aTableName + " (SongHash, DateAdded, VoteValue) VALUES(?, ?, ?)"))
 	{
 		qWarning() << "Cannot prepare query: " << query.lastError();
 		qDebug() << query.lastQuery();
 		assert(!"DB error");
 		return;
 	}
-	for (const auto & item: a_Votes)
+	for (const auto & item: aVotes)
 	{
-		query.addBindValue(item.m_SongHash);
-		query.addBindValue(item.m_DateAdded);
-		query.addBindValue(item.m_VoteValue);
+		query.addBindValue(item.mSongHash);
+		query.addBindValue(item.mDateAdded);
+		query.addBindValue(item.mVoteValue);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot store vote item: " << query.lastError();
@@ -1280,7 +1280,7 @@ quint32 Database::removeInaccessibleSongs()
 {
 	// NOTE: This function is called from a BackgroundTasks thread, needs to synchronize DB access
 	unsigned res = 0;
-	auto songs = m_Songs;  // Make a copy, we're running in a background thread
+	auto songs = mSongs;  // Make a copy, we're running in a background thread
 	for (const auto & song: songs)
 	{
 		if (!QFile::exists(song->fileName()))
@@ -1297,20 +1297,20 @@ quint32 Database::removeInaccessibleSongs()
 
 
 
-void Database::addToSharedDataManualTags(const std::map<QByteArray, Song::Tag> & a_Tags)
+void Database::addToSharedDataManualTags(const std::map<QByteArray, Song::Tag> & aTags)
 {
-	for (const auto & sdt: a_Tags)
+	for (const auto & sdt: aTags)
 	{
-		auto itr = m_SongSharedData.find(sdt.first);
-		if (itr == m_SongSharedData.end())
+		auto itr = mSongSharedData.find(sdt.first);
+		if (itr == mSongSharedData.end())
 		{
 			continue;
 		}
 		const auto & tag = sdt.second;
-		itr->second->m_TagManual.m_Author.updateIfNewer(tag.m_Author);
-		itr->second->m_TagManual.m_Title.updateIfNewer(tag.m_Title);
-		itr->second->m_TagManual.m_Genre.updateIfNewer(tag.m_Genre);
-		itr->second->m_TagManual.m_MeasuresPerMinute.updateIfNewer(tag.m_MeasuresPerMinute);
+		itr->second->mTagManual.mAuthor.updateIfNewer(tag.mAuthor);
+		itr->second->mTagManual.mTitle.updateIfNewer(tag.mTitle);
+		itr->second->mTagManual.mGenre.updateIfNewer(tag.mGenre);
+		itr->second->mTagManual.mMeasuresPerMinute.updateIfNewer(tag.mMeasuresPerMinute);
 	}
 	saveAllSongSharedData();
 }
@@ -1328,10 +1328,10 @@ void Database::loadSongs()
 
 	// Enqueue songs with unknown length for length calc (#141):
 	int numForRescan = 0;
-	for (const auto & sd: m_SongSharedData)
+	for (const auto & sd: mSongSharedData)
 	{
 		if (
-			!sd.second->m_Length.isPresent() &&  // Unknown length
+			!sd.second->mLength.isPresent() &&  // Unknown length
 			!sd.second->duplicates().empty()     // There is at least one file for the hash
 		)
 		{
@@ -1345,7 +1345,7 @@ void Database::loadSongs()
 	if (numForRescan > 0)
 	{
 		qWarning() << "Number of songs without length that were queued for rescan: "
-			<< numForRescan << " out of " << m_SongSharedData.size();
+			<< numForRescan << " out of " << mSongSharedData.size();
 	}
 }
 
@@ -1358,7 +1358,7 @@ void Database::loadSongFiles()
 	STOPWATCH("Loading songs from the DB");
 
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT * FROM SongFiles"))
 	{
@@ -1400,8 +1400,8 @@ void Database::loadSongFiles()
 			continue;
 		}
 		auto fileName = query.value(fiFileName).toString();
-		auto sharedData = m_SongSharedData.find(hash.toByteArray());
-		if (sharedData == m_SongSharedData.end())
+		auto sharedData = mSongSharedData.find(hash.toByteArray());
+		if (sharedData == mSongSharedData.end())
 		{
 			qWarning() << "Song " << fileName << " has a hash not present in SongSharedData; skipping song.";
 			continue;
@@ -1414,7 +1414,7 @@ void Database::loadSongFiles()
 			fieldValue(rec.field(fiLastTagRescanned)),
 			fieldValue(rec.field(fiNumTagRescanAttempts))
 		);
-		m_Songs.push_back(song);
+		mSongs.push_back(song);
 		if (song->needsTagRescan())
 		{
 			emit needSongTagRescan(song);
@@ -1431,7 +1431,7 @@ void Database::loadSongSharedData()
 	STOPWATCH("Loading song shared data from the DB");
 
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT * FROM SongSharedData"))
 	{
@@ -1495,7 +1495,7 @@ void Database::loadSongSharedData()
 			datedOptionalFromFields<QColor> (rec, fiBgColor, fiBgColorLM),
 			datedOptionalFromFields<double> (rec, fiDetectedTempo, fiDetectedTempoLM)
 		);
-		m_SongSharedData[hash] = data;
+		mSongSharedData[hash] = data;
 	}
 }
 
@@ -1508,7 +1508,7 @@ void Database::loadNewFiles()
 	STOPWATCH("Loading new files from the DB");
 
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT * FROM NewFiles"))
 	{
@@ -1533,7 +1533,7 @@ void Database::loadNewFiles()
 void Database::loadFilters()
 {
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT RowID, * FROM Filters ORDER BY Position ASC"))
 	{
@@ -1572,7 +1572,7 @@ void Database::loadFilters()
 			c,
 			DatedOptional<double>(query.value(fiDurationLimit), QDateTime())
 		);
-		m_Filters.push_back(filter);
+		mFilters.push_back(filter);
 		loadFilterNodes(*filter);
 	}
 }
@@ -1581,24 +1581,24 @@ void Database::loadFilters()
 
 
 
-void Database::loadFilterNodes(Filter & a_Filter)
+void Database::loadFilterNodes(Filter & aFilter)
 {
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.prepare("SELECT RowID, * FROM FilterNodes WHERE FilterID = ?"))
 	{
 		qWarning() << "Cannot query filter nodes from the DB, "
-			<< "filter " << a_Filter.displayName()
+			<< "filter " << aFilter.displayName()
 			<< ", prep error: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Filter.dbRowId());
+	query.addBindValue(aFilter.dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot query filter nodes from the DB, "
-			<< "filter " << a_Filter.displayName()
+			<< "filter " << aFilter.displayName()
 			<< ", exec error: " << query.lastError();
 		assert(!"DB error");
 		return;
@@ -1643,7 +1643,7 @@ void Database::loadFilterNodes(Filter & a_Filter)
 		catch (const RuntimeError & exc)
 		{
 			qWarning() << "Failed to load Kind for filter node for "
-				<< " filter " << a_Filter.displayName()
+				<< " filter " << aFilter.displayName()
 				<< ", RowID = " << rowId
 				<< ", err: " << exc.what();
 			continue;
@@ -1663,7 +1663,7 @@ void Database::loadFilterNodes(Filter & a_Filter)
 				catch (const RuntimeError & exc)
 				{
 					qWarning() << "Failed to load Comparison for filter node for "
-						<< " filter " << a_Filter.displayName()
+						<< " filter " << aFilter.displayName()
 						<< ", RowID = " << rowId
 						<< ", err: " << exc.what();
 					continue;
@@ -1675,7 +1675,7 @@ void Database::loadFilterNodes(Filter & a_Filter)
 				catch (const RuntimeError & exc)
 				{
 					qWarning() << "Failed to load SongProperty for filter node for "
-						<< " filter " << a_Filter.displayName()
+						<< " filter " << aFilter.displayName()
 						<< ", RowID = " << rowId
 						<< ", err: " << exc.what();
 					continue;
@@ -1707,7 +1707,7 @@ void Database::loadFilterNodes(Filter & a_Filter)
 				qWarning() << "Multiple root filters detected, ignoring RowID " << f.first << ".";
 				continue;
 			}
-			a_Filter.setRootNode(node);
+			aFilter.setRootNode(node);
 			hasSetRoot = true;
 		}
 		else
@@ -1733,16 +1733,16 @@ void Database::loadFilterNodes(Filter & a_Filter)
 
 
 
-FilterPtr Database::filterFromRowId(qlonglong a_RowId)
+FilterPtr Database::filterFromRowId(qlonglong aRowId)
 {
-	for (const auto & filter: m_Filters)
+	for (const auto & filter: mFilters)
 	{
-		if (filter->dbRowId() == a_RowId)
+		if (filter->dbRowId() == aRowId)
 		{
 			return filter;
 		}
 	}
-	qDebug() << "Filter " << a_RowId << " not found";
+	qDebug() << "Filter " << aRowId << " not found";
 	return nullptr;
 }
 
@@ -1753,7 +1753,7 @@ FilterPtr Database::filterFromRowId(qlonglong a_RowId)
 void Database::loadTemplates()
 {
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.exec("SELECT RowID, * FROM Templates ORDER BY Position ASC"))
 	{
@@ -1791,7 +1791,7 @@ void Database::loadTemplates()
 		{
 			tmpl->setBgColor(c);
 		}
-		m_Templates.push_back(tmpl);
+		mTemplates.push_back(tmpl);
 		loadTemplateItems(*tmpl);
 	}
 }
@@ -1800,24 +1800,24 @@ void Database::loadTemplates()
 
 
 
-void Database::loadTemplateItems(Template & a_Template)
+void Database::loadTemplateItems(Template & aTemplate)
 {
 	// Initialize the query:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	query.setForwardOnly(true);
 	if (!query.prepare("SELECT * FROM TemplateItems WHERE TemplateID = ? ORDER BY IndexInTemplate ASC"))
 	{
 		qWarning() << "Cannot query template items from the DB, template "
-			<< a_Template.displayName()
+			<< aTemplate.displayName()
 			<< ", prep error: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Template.dbRowId());
+	query.addBindValue(aTemplate.dbRowId());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot query template items from the DB, template "
-			<< a_Template.displayName()
+			<< aTemplate.displayName()
 			<< ", exec error: " << query.lastError();
 		assert(!"DB error");
 		return;
@@ -1843,11 +1843,11 @@ void Database::loadTemplateItems(Template & a_Template)
 		auto filter = filterFromRowId(filterId);
 		if (filter == nullptr)
 		{
-			qWarning() << "Template " << a_Template.displayName() << " references non-existent filter "
+			qWarning() << "Template " << aTemplate.displayName() << " references non-existent filter "
 				<< filterId << ", skipping.";
 			continue;
 		}
-		a_Template.appendItem(filter);
+		aTemplate.appendItem(filter);
 	}
 }
 
@@ -1856,13 +1856,13 @@ void Database::loadTemplateItems(Template & a_Template)
 
 
 void Database::saveFilterNodes(
-	qlonglong a_FilterRowId,
-	const Filter::Node & a_Node,
-	qlonglong a_ParentNodeRowId
+	qlonglong aFilterRowId,
+	const Filter::Node & aNode,
+	qlonglong aParentNodeRowId
 )
 {
-	QSqlQuery query(m_Database);
-	if (a_Node.canHaveChildren())
+	QSqlQuery query(mDatabase);
+	if (aNode.canHaveChildren())
 	{
 		if (!query.prepare(
 			"INSERT INTO FilterNodes (FilterID, ParentID, Kind) "
@@ -1874,9 +1874,9 @@ void Database::saveFilterNodes(
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_FilterRowId);
-		query.addBindValue(a_ParentNodeRowId);
-		query.addBindValue(static_cast<int>(a_Node.kind()));
+		query.addBindValue(aFilterRowId);
+		query.addBindValue(aParentNodeRowId);
+		query.addBindValue(static_cast<int>(aNode.kind()));
 	}
 	else
 	{
@@ -1890,12 +1890,12 @@ void Database::saveFilterNodes(
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_FilterRowId);
-		query.addBindValue(a_ParentNodeRowId);
+		query.addBindValue(aFilterRowId);
+		query.addBindValue(aParentNodeRowId);
 		query.addBindValue(static_cast<int>(Filter::Node::nkComparison));
-		query.addBindValue(static_cast<int>(a_Node.songProperty()));
-		query.addBindValue(static_cast<int>(a_Node.comparison()));
-		query.addBindValue(a_Node.value());
+		query.addBindValue(static_cast<int>(aNode.songProperty()));
+		query.addBindValue(static_cast<int>(aNode.comparison()));
+		query.addBindValue(aNode.value());
 	}
 	if (!query.exec())
 	{
@@ -1907,11 +1907,11 @@ void Database::saveFilterNodes(
 	auto rowId = query.lastInsertId().toLongLong();
 
 	// Recurse over the children:
-	if (a_Node.canHaveChildren())
+	if (aNode.canHaveChildren())
 	{
-		for (const auto & ch: a_Node.children())
+		for (const auto & ch: aNode.children())
 		{
-			saveFilterNodes(a_FilterRowId, *ch, rowId);
+			saveFilterNodes(aFilterRowId, *ch, rowId);
 		}
 	}
 }
@@ -1920,12 +1920,12 @@ void Database::saveFilterNodes(
 
 
 
-int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) const
+int Database::getSongWeight(const Song & aSong, const Playlist * aPlaylist) const
 {
 	qint64 res = 10000;  // Base weight
 
 	// Penalize the last played date:
-	auto lastPlayed = a_Song.lastPlayed();
+	auto lastPlayed = aSong.lastPlayed();
 	if (lastPlayed.isPresent())
 	{
 		auto numDays = lastPlayed.value().daysTo(QDateTime::currentDateTime());
@@ -1933,18 +1933,18 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 	}
 
 	// Penalize presence in the list:
-	if (a_Playlist != nullptr)
+	if (aPlaylist != nullptr)
 	{
 		int idx = 0;
-		for (const auto & itm: a_Playlist->items())
+		for (const auto & itm: aPlaylist->items())
 		{
 			auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(itm);
 			if (spi != nullptr)
 			{
-				if (spi->song().get() == &a_Song)
+				if (spi->song().get() == &aSong)
 				{
 					// This song is already present, penalize depending on distance from the end (where presumably it is to be added):
-					auto numInBetween = static_cast<int>(a_Playlist->items().size()) - idx;
+					auto numInBetween = static_cast<int>(aPlaylist->items().size()) - idx;
 					res = res * (numInBetween + 100) / (numInBetween + 200);
 					// Do not stop processing - if present multiple times, penalize multiple times
 				}
@@ -1954,10 +1954,10 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 	}
 
 	// Penalize by rating:
-	const auto & rating = a_Song.rating();
-	res = applyRating(res, rating.m_GenreTypicality);
-	res = applyRating(res, rating.m_Popularity);
-	res = applyRating(res, rating.m_RhythmClarity);
+	const auto & rating = aSong.rating();
+	res = applyRating(res, rating.mGenreTypicality);
+	res = applyRating(res, rating.mPopularity);
+	res = applyRating(res, rating.mRhythmClarity);
 
 	if (res > std::numeric_limits<int>::max())
 	{
@@ -1971,25 +1971,25 @@ int Database::getSongWeight(const Song & a_Song, const Playlist * a_Playlist) co
 
 
 void Database::addVote(
-	const QByteArray & a_SongHash,
-	int a_VoteValue,
-	const QString & a_TableName,
-	DatedOptional<double> Song::Rating::* a_DstRating
+	const QByteArray & aSongHash,
+	int aVoteValue,
+	const QString & aTableName,
+	DatedOptional<double> Song::Rating::* aDstRating
 )
 {
-	qDebug() << "Adding community vote " << a_VoteValue << " for " << a_TableName << " to song " << a_SongHash;
+	qDebug() << "Adding community vote " << aVoteValue << " for " << aTableName << " to song " << aSongHash;
 
 	// Store the vote in the DB:
 	{
-		QSqlQuery query(m_Database);
-		if (!query.prepare("INSERT INTO " + a_TableName + " (SongHash, VoteValue, DateAdded) VALUES(?, ?, ?)"))
+		QSqlQuery query(mDatabase);
+		if (!query.prepare("INSERT INTO " + aTableName + " (SongHash, VoteValue, DateAdded) VALUES(?, ?, ?)"))
 		{
 			qWarning() << "Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_SongHash);
-		query.addBindValue(a_VoteValue);
+		query.addBindValue(aSongHash);
+		query.addBindValue(aVoteValue);
 		query.addBindValue(QDateTime::currentDateTimeUtc());
 		if (!query.exec())
 		{
@@ -2000,17 +2000,17 @@ void Database::addVote(
 	}
 
 	// Update the song rating:
-	auto sharedData = m_SongSharedData.find(a_SongHash);
-	if (sharedData != m_SongSharedData.end())
+	auto sharedData = mSongSharedData.find(aSongHash);
+	if (sharedData != mSongSharedData.end())
 	{
-		QSqlQuery query(m_Database);
-		if (!query.prepare("SELECT AVG(VoteValue) FROM " + a_TableName + " WHERE SongHash = ?"))
+		QSqlQuery query(mDatabase);
+		if (!query.prepare("SELECT AVG(VoteValue) FROM " + aTableName + " WHERE SongHash = ?"))
 		{
 			qWarning() << "Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_SongHash);
+		query.addBindValue(aSongHash);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2024,7 +2024,7 @@ void Database::addVote(
 			return;
 		}
 		auto avg = query.value(0).toDouble();
-		sharedData->second->m_Rating.*a_DstRating = avg;
+		sharedData->second->mRating.*aDstRating = avg;
 		saveSongSharedData(sharedData->second);
 	}
 }
@@ -2033,37 +2033,37 @@ void Database::addVote(
 
 
 
-void Database::songPlaybackStarted(SongPtr a_Song)
+void Database::songPlaybackStarted(SongPtr aSong)
 {
 	auto now = QDateTime::currentDateTimeUtc();
-	auto shared = a_Song->sharedData();
+	auto shared = aSong->sharedData();
 	if (shared != nullptr)
 	{
-		shared->m_LastPlayed = now;
+		shared->mLastPlayed = now;
 		QMetaObject::invokeMethod(this, "saveSongSharedData", Q_ARG(Song::SharedDataPtr, shared));
 	}
-	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, a_Song), Q_ARG(QDateTime, now));
+	QMetaObject::invokeMethod(this, "addPlaybackHistory", Q_ARG(SongPtr, aSong), Q_ARG(QDateTime, now));
 }
 
 
 
 
 
-void Database::songHashCalculated(const QString & a_FileName, const QByteArray & a_Hash, double a_Length)
+void Database::songHashCalculated(const QString & aFileName, const QByteArray & aHash, double aLength)
 {
-	assert(!a_FileName.isEmpty());
-	assert(!a_Hash.isEmpty());
+	assert(!aFileName.isEmpty());
+	assert(!aHash.isEmpty());
 
 	// Insert the SharedData record, now that we know the song hash:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT OR IGNORE INTO SongSharedData (Hash, Length) VALUES (?, ?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Hash);
-	query.bindValue(1, a_Length);
+	query.bindValue(0, aHash);
+	query.bindValue(1, aLength);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2072,13 +2072,13 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 	}
 
 	// Create the SharedData, if not already created:
-	auto itr = m_SongSharedData.find(a_Hash);
+	auto itr = mSongSharedData.find(aHash);
 	Song::SharedDataPtr sharedData;
-	if (itr == m_SongSharedData.end())
+	if (itr == mSongSharedData.end())
 	{
 		// Create new SharedData:
-		sharedData = std::make_shared<Song::SharedData>(a_Hash, a_Length);
-		m_SongSharedData[a_Hash] = sharedData;
+		sharedData = std::make_shared<Song::SharedData>(aHash, aLength);
+		mSongSharedData[aHash] = sharedData;
 		saveSongSharedData(sharedData);  // Hash has been inserted above, so now can be updated
 	}
 	else
@@ -2088,15 +2088,15 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 
 	// Save into the DB:
 	{
-		SqlTransaction transaction(m_Database);
-		QSqlQuery query(m_Database);
+		SqlTransaction transaction(mDatabase);
+		QSqlQuery query(mDatabase);
 		if (!query.prepare("DELETE FROM NewFiles WHERE FileName = ?"))
 		{
 			qWarning() << "Cannot prepare statement: " << query.lastError();
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_FileName);
+		query.addBindValue(aFileName);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2112,8 +2112,8 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 			assert(!"DB error");
 			return;
 		}
-		query.addBindValue(a_FileName);
-		query.addBindValue(a_Hash);
+		query.addBindValue(aFileName);
+		query.addBindValue(aHash);
 		if (!query.exec())
 		{
 			qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2124,8 +2124,8 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 	}
 
 	// Create the Song object:
-	auto song = std::make_shared<Song>(a_FileName, sharedData);
-	m_Songs.push_back(song);
+	auto song = std::make_shared<Song>(aFileName, sharedData);
+	mSongs.push_back(song);
 	emit songFileAdded(song);
 
 	// We finally have the hash, we can scan for tags and other metadata:
@@ -2136,16 +2136,16 @@ void Database::songHashCalculated(const QString & a_FileName, const QByteArray &
 
 
 
-void Database::songHashFailed(const QString & a_FileName)
+void Database::songHashFailed(const QString & aFileName)
 {
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("DELETE FROM NewFiles WHERE FileName = ?"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_FileName);
+	query.addBindValue(aFileName);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2158,36 +2158,36 @@ void Database::songHashFailed(const QString & a_FileName)
 
 
 
-void Database::songLengthCalculated(Song::SharedDataPtr a_SharedData, double a_LengthSec)
+void Database::songLengthCalculated(Song::SharedDataPtr aSharedData, double aLengthSec)
 {
-	a_SharedData->m_Length = a_LengthSec;
-	saveSongSharedData(a_SharedData);
+	aSharedData->mLength = aLengthSec;
+	saveSongSharedData(aSharedData);
 }
 
 
 
 
 
-void Database::saveSong(SongPtr a_Song)
+void Database::saveSong(SongPtr aSong)
 {
-	assert(a_Song != nullptr);
+	assert(aSong != nullptr);
 	assert(QThread::currentThread() == QApplication::instance()->thread());
 
-	saveSongFileData(a_Song);
-	if (a_Song->sharedData())
+	saveSongFileData(aSong);
+	if (aSong->sharedData())
 	{
-		saveSongSharedData(a_Song->sharedData());
+		saveSongSharedData(aSong->sharedData());
 	}
-	emit songSaved(a_Song);
+	emit songSaved(aSong);
 }
 
 
 
 
 
-void Database::saveSongFileData(SongPtr a_Song)
+void Database::saveSongFileData(SongPtr aSong)
 {
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE SongFiles SET "
 		"Hash = ?, "
 		"FileNameAuthor = ?, FileNameTitle = ?, FileNameGenre = ?, FileNameMeasuresPerMinute = ?,"
@@ -2201,18 +2201,18 @@ void Database::saveSongFileData(SongPtr a_Song)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_Song->hash());
-	query.addBindValue(a_Song->tagFileName().m_Author.toVariant());
-	query.addBindValue(a_Song->tagFileName().m_Title.toVariant());
-	query.addBindValue(a_Song->tagFileName().m_Genre.toVariant());
-	query.addBindValue(a_Song->tagFileName().m_MeasuresPerMinute.toVariant());
-	query.addBindValue(a_Song->tagId3().m_Author.toVariant());
-	query.addBindValue(a_Song->tagId3().m_Title.toVariant());
-	query.addBindValue(a_Song->tagId3().m_Genre.toVariant());
-	query.addBindValue(a_Song->tagId3().m_MeasuresPerMinute.toVariant());
-	query.addBindValue(a_Song->lastTagRescanned());
-	query.addBindValue(a_Song->numTagRescanAttempts());
-	query.addBindValue(a_Song->fileName());
+	query.addBindValue(aSong->hash());
+	query.addBindValue(aSong->tagFileName().mAuthor.toVariant());
+	query.addBindValue(aSong->tagFileName().mTitle.toVariant());
+	query.addBindValue(aSong->tagFileName().mGenre.toVariant());
+	query.addBindValue(aSong->tagFileName().mMeasuresPerMinute.toVariant());
+	query.addBindValue(aSong->tagId3().mAuthor.toVariant());
+	query.addBindValue(aSong->tagId3().mTitle.toVariant());
+	query.addBindValue(aSong->tagId3().mGenre.toVariant());
+	query.addBindValue(aSong->tagId3().mMeasuresPerMinute.toVariant());
+	query.addBindValue(aSong->lastTagRescanned());
+	query.addBindValue(aSong->numTagRescanAttempts());
+	query.addBindValue(aSong->fileName());
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2225,9 +2225,9 @@ void Database::saveSongFileData(SongPtr a_Song)
 
 
 
-void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
+void Database::saveSongSharedData(Song::SharedDataPtr aSharedData)
 {
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("UPDATE SongSharedData SET "
 		"Length = ?, LastPlayed = ?, LastPlayedLM = ?, "
 		"LocalRating = ?, LocalRatingLM = ?,"
@@ -2249,34 +2249,34 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 		assert(!"DB error");
 		return;
 	}
-	query.addBindValue(a_SharedData->m_Length.toVariant());
-	query.addBindValue(a_SharedData->m_LastPlayed.toVariant());
-	query.addBindValue(a_SharedData->m_LastPlayed.lastModification());
-	query.addBindValue(a_SharedData->m_Rating.m_Local.toVariant());
-	query.addBindValue(a_SharedData->m_Rating.m_Local.lastModification());
-	query.addBindValue(a_SharedData->m_Rating.m_RhythmClarity.toVariant());
-	query.addBindValue(a_SharedData->m_Rating.m_RhythmClarity.lastModification());
-	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.toVariant());
-	query.addBindValue(a_SharedData->m_Rating.m_GenreTypicality.lastModification());
-	query.addBindValue(a_SharedData->m_Rating.m_Popularity.toVariant());
-	query.addBindValue(a_SharedData->m_Rating.m_Popularity.lastModification());
-	query.addBindValue(a_SharedData->m_TagManual.m_Author.toVariant());
-	query.addBindValue(a_SharedData->m_TagManual.m_Author.lastModification());
-	query.addBindValue(a_SharedData->m_TagManual.m_Title.toVariant());
-	query.addBindValue(a_SharedData->m_TagManual.m_Title.lastModification());
-	query.addBindValue(a_SharedData->m_TagManual.m_Genre.toVariant());
-	query.addBindValue(a_SharedData->m_TagManual.m_Genre.lastModification());
-	query.addBindValue(a_SharedData->m_TagManual.m_MeasuresPerMinute.toVariant());
-	query.addBindValue(a_SharedData->m_TagManual.m_MeasuresPerMinute.lastModification());
-	query.addBindValue(a_SharedData->m_SkipStart.toVariant());
-	query.addBindValue(a_SharedData->m_SkipStart.lastModification());
-	query.addBindValue(a_SharedData->m_Notes.toVariant());
-	query.addBindValue(a_SharedData->m_Notes.lastModification());
-	query.addBindValue(a_SharedData->m_BgColor.toVariant());
-	query.addBindValue(a_SharedData->m_BgColor.lastModification());
-	query.addBindValue(a_SharedData->m_DetectedTempo.toVariant());
-	query.addBindValue(a_SharedData->m_DetectedTempo.lastModification());
-	query.addBindValue(a_SharedData->m_Hash);
+	query.addBindValue(aSharedData->mLength.toVariant());
+	query.addBindValue(aSharedData->mLastPlayed.toVariant());
+	query.addBindValue(aSharedData->mLastPlayed.lastModification());
+	query.addBindValue(aSharedData->mRating.mLocal.toVariant());
+	query.addBindValue(aSharedData->mRating.mLocal.lastModification());
+	query.addBindValue(aSharedData->mRating.mRhythmClarity.toVariant());
+	query.addBindValue(aSharedData->mRating.mRhythmClarity.lastModification());
+	query.addBindValue(aSharedData->mRating.mGenreTypicality.toVariant());
+	query.addBindValue(aSharedData->mRating.mGenreTypicality.lastModification());
+	query.addBindValue(aSharedData->mRating.mPopularity.toVariant());
+	query.addBindValue(aSharedData->mRating.mPopularity.lastModification());
+	query.addBindValue(aSharedData->mTagManual.mAuthor.toVariant());
+	query.addBindValue(aSharedData->mTagManual.mAuthor.lastModification());
+	query.addBindValue(aSharedData->mTagManual.mTitle.toVariant());
+	query.addBindValue(aSharedData->mTagManual.mTitle.lastModification());
+	query.addBindValue(aSharedData->mTagManual.mGenre.toVariant());
+	query.addBindValue(aSharedData->mTagManual.mGenre.lastModification());
+	query.addBindValue(aSharedData->mTagManual.mMeasuresPerMinute.toVariant());
+	query.addBindValue(aSharedData->mTagManual.mMeasuresPerMinute.lastModification());
+	query.addBindValue(aSharedData->mSkipStart.toVariant());
+	query.addBindValue(aSharedData->mSkipStart.lastModification());
+	query.addBindValue(aSharedData->mNotes.toVariant());
+	query.addBindValue(aSharedData->mNotes.lastModification());
+	query.addBindValue(aSharedData->mBgColor.toVariant());
+	query.addBindValue(aSharedData->mBgColor.lastModification());
+	query.addBindValue(aSharedData->mDetectedTempo.toVariant());
+	query.addBindValue(aSharedData->mDetectedTempo.lastModification());
+	query.addBindValue(aSharedData->mHash);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();
@@ -2295,55 +2295,55 @@ void Database::saveSongSharedData(Song::SharedDataPtr a_SharedData)
 
 
 
-void Database::songScanned(SongPtr a_Song)
+void Database::songScanned(SongPtr aSong)
 {
-	a_Song->setLastTagRescanned(QDateTime::currentDateTimeUtc());
-	saveSongFileData(a_Song);
+	aSong->setLastTagRescanned(QDateTime::currentDateTimeUtc());
+	saveSongFileData(aSong);
 }
 
 
 
 
 
-void Database::addVoteRhythmClarity(QByteArray a_SongHash, int a_VoteValue)
+void Database::addVoteRhythmClarity(QByteArray aSongHash, int aVoteValue)
 {
-	addVote(a_SongHash, a_VoteValue, "VotesRhythmClarity", &Song::Rating::m_RhythmClarity);
+	addVote(aSongHash, aVoteValue, "VotesRhythmClarity", &Song::Rating::mRhythmClarity);
 }
 
 
 
 
 
-void Database::addVoteGenreTypicality(QByteArray a_SongHash, int a_VoteValue)
+void Database::addVoteGenreTypicality(QByteArray aSongHash, int aVoteValue)
 {
-	addVote(a_SongHash, a_VoteValue, "VotesGenreTypicality", &Song::Rating::m_GenreTypicality);
+	addVote(aSongHash, aVoteValue, "VotesGenreTypicality", &Song::Rating::mGenreTypicality);
 }
 
 
 
 
 
-void Database::addVotePopularity(QByteArray a_SongHash, int a_VoteValue)
+void Database::addVotePopularity(QByteArray aSongHash, int aVoteValue)
 {
-	addVote(a_SongHash, a_VoteValue, "VotesPopularity", &Song::Rating::m_Popularity);
+	addVote(aSongHash, aVoteValue, "VotesPopularity", &Song::Rating::mPopularity);
 }
 
 
 
 
 
-void Database::addPlaybackHistory(SongPtr a_Song, const QDateTime & a_Timestamp)
+void Database::addPlaybackHistory(SongPtr aSong, const QDateTime & aTimestamp)
 {
 	// Add a history playlist record:
-	QSqlQuery query(m_Database);
+	QSqlQuery query(mDatabase);
 	if (!query.prepare("INSERT INTO PlaybackHistory (SongHash, Timestamp) VALUES (?, ?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
 		return;
 	}
-	query.bindValue(0, a_Song->hash());
-	query.bindValue(1, a_Timestamp);
+	query.bindValue(0, aSong->hash());
+	query.bindValue(1, aTimestamp);
 	if (!query.exec())
 	{
 		qWarning() << "Cannot exec statement: " << query.lastError();

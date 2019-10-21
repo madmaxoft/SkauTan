@@ -9,13 +9,13 @@
 
 
 /** If the value is present, sets the element's attribute to its value. */
-static void setAttribOptional(QDomElement & a_Element, const QString & a_Name, const DatedOptional<QString> & a_Value)
+static void setAttribOptional(QDomElement & aElement, const QString & aName, const DatedOptional<QString> & aValue)
 {
-	if (a_Value.isEmpty())
+	if (aValue.isEmpty())
 	{
 		return;
 	}
-	a_Element.setAttribute(a_Name, a_Value.value());
+	aElement.setAttribute(aName, aValue.value());
 }
 
 
@@ -23,13 +23,13 @@ static void setAttribOptional(QDomElement & a_Element, const QString & a_Name, c
 
 
 /** If the value is present, sets the element's attribute to its value. */
-static void setAttribOptional(QDomElement & a_Element, const QString & a_Name, const DatedOptional<double> & a_Value)
+static void setAttribOptional(QDomElement & aElement, const QString & aName, const DatedOptional<double> & aValue)
 {
-	if (a_Value.isEmpty())
+	if (aValue.isEmpty())
 	{
 		return;
 	}
-	a_Element.setAttribute(a_Name, QString::number(a_Value.value(), 'g', 2));
+	aElement.setAttribute(aName, QString::number(aValue.value(), 'g', 2));
 }
 
 
@@ -38,20 +38,20 @@ static void setAttribOptional(QDomElement & a_Element, const QString & a_Name, c
 
 /** Converts from an attribute value into a specified kind of DatedOptional. */
 template <typename T>
-static DatedOptional<T> attribToOptional(const QString & a_AttribValue);
+static DatedOptional<T> attribToOptional(const QString & aAttribValue);
 
 
 
 
 /** Converts from an attribute value into the QString DatedOptional. */
 template <>
-DatedOptional<QString> attribToOptional<QString>(const QString & a_AttribValue)
+DatedOptional<QString> attribToOptional<QString>(const QString & aAttribValue)
 {
-	if (a_AttribValue.isEmpty())
+	if (aAttribValue.isEmpty())
 	{
 		return DatedOptional<QString>();
 	}
-	return DatedOptional<QString>(a_AttribValue, QDateTime::currentDateTimeUtc());
+	return DatedOptional<QString>(aAttribValue, QDateTime::currentDateTimeUtc());
 }
 
 
@@ -60,14 +60,14 @@ DatedOptional<QString> attribToOptional<QString>(const QString & a_AttribValue)
 
 /** Converts from an attribute value into the double DatedOptional. */
 template <>
-DatedOptional<double> attribToOptional<double>(const QString & a_AttribValue)
+DatedOptional<double> attribToOptional<double>(const QString & aAttribValue)
 {
-	if (a_AttribValue.isEmpty())
+	if (aAttribValue.isEmpty())
 	{
 		return DatedOptional<double>();
 	}
 	bool isOK;
-	double value = a_AttribValue.toDouble(&isOK);
+	double value = aAttribValue.toDouble(&isOK);
 	if (!isOK)
 	{
 		return DatedOptional<double>();
@@ -82,20 +82,20 @@ DatedOptional<double> attribToOptional<double>(const QString & a_AttribValue)
 ////////////////////////////////////////////////////////////////////////////////
 // TagImportExport:
 
-void TagImportExport::doExport(const Database & a_DB, const QString & a_FileName)
+void TagImportExport::doExport(const Database & aDB, const QString & aFileName)
 {
 	// Open the output file:
-	QFile f(a_FileName);
+	QFile f(aFileName);
 	if (!f.open(QIODevice::WriteOnly))
 	{
-		throw Exception(tr("Cannot open file %1"), a_FileName);
+		throw Exception(tr("Cannot open file %1"), aFileName);
 	}
 
 	QDomDocument doc;
 	doc.appendChild(doc.createComment("These are tags exported from SkauTan. https://github.com/madmaxoft/SkauTan"));
 	auto root = doc.createElement("SkauTanTags");
 	doc.appendChild(root);
-	auto & sdm = a_DB.songSharedDataMap();
+	auto & sdm = aDB.songSharedDataMap();
 	for (const auto & sd: sdm)
 	{
 		if (sd.second->duplicatesCount() == 0)
@@ -115,7 +115,7 @@ void TagImportExport::doExport(const Database & a_DB, const QString & a_FileName
 	auto numWritten = f.write(baDoc);
 	if (numWritten != baDoc.size())
 	{
-		throw Exception("Cannot write entire file %1.", a_FileName);
+		throw Exception("Cannot write entire file %1.", aFileName);
 	}
 	f.close();
 }
@@ -124,10 +124,10 @@ void TagImportExport::doExport(const Database & a_DB, const QString & a_FileName
 
 
 
-void TagImportExport::doImport(Database & a_DB, const QString & a_FileName)
+void TagImportExport::doImport(Database & aDB, const QString & aFileName)
 {
 	// Find the expected hash length:
-	auto & sdm = a_DB.songSharedDataMap();
+	auto & sdm = aDB.songSharedDataMap();
 	if (sdm.empty())
 	{
 		// No songs in the DB -> no import needed
@@ -136,10 +136,10 @@ void TagImportExport::doImport(Database & a_DB, const QString & a_FileName)
 	auto expectedHashLength = sdm.begin()->first.length();
 
 	// Open the input file:
-	QFile f(a_FileName);
+	QFile f(aFileName);
 	if (!f.open(QIODevice::ReadOnly))
 	{
-		throw Exception("Cannot open file %1", a_FileName);
+		throw Exception("Cannot open file %1", aFileName);
 	}
 	auto xml = f.readAll();
 	f.close();
@@ -177,12 +177,12 @@ void TagImportExport::doImport(Database & a_DB, const QString & a_FileName)
 			continue;
 		}
 		auto & tag = tags[hash];
-		tag.m_Author            = attribToOptional<QString>(se.attribute("author"));
-		tag.m_Title             = attribToOptional<QString>(se.attribute("title"));
-		tag.m_Genre             = attribToOptional<QString>(se.attribute("genre"));
-		tag.m_MeasuresPerMinute = attribToOptional<double> (se.attribute("mpm"));
+		tag.mAuthor            = attribToOptional<QString>(se.attribute("author"));
+		tag.mTitle             = attribToOptional<QString>(se.attribute("title"));
+		tag.mGenre             = attribToOptional<QString>(se.attribute("genre"));
+		tag.mMeasuresPerMinute = attribToOptional<double> (se.attribute("mpm"));
 	}
 
 	// Fill in the data:
-	a_DB.addToSharedDataManualTags(tags);
+	aDB.addToSharedDataManualTags(tags);
 }

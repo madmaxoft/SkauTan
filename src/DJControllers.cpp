@@ -19,16 +19,16 @@ const char * DJControllers::CONTEXT_PROPERTY_NAME = "SkauTan_DJControllers_Conte
 
 
 
-DJControllers::DJControllers(QObject * a_Parent):
-	Super(a_Parent),
-	m_NextRegID(0)
+DJControllers::DJControllers(QObject * aParent):
+	Super(aParent),
+	mNextRegID(0)
 {
 	QThread::setObjectName("DJControllers");
 	moveToThread(this);
 	QThread::start();
 
-	connect(&m_TimerUpdate, &QTimer::timeout, this, &DJControllers::periodicUpdate);
-	m_TimerUpdate.start(1000);
+	connect(&mTimerUpdate, &QTimer::timeout, this, &DJControllers::periodicUpdate);
+	mTimerUpdate.start(1000);
 }
 
 
@@ -48,13 +48,13 @@ DJControllers::~DJControllers()
 
 
 
-void DJControllers::unregisterKeyHandler(quint64 a_RegID)
+void DJControllers::unregisterKeyHandler(quint64 aRegID)
 {
-	for (auto itr = m_KeyHandlers.begin(), end = m_KeyHandlers.end(); itr != end; ++itr)
+	for (auto itr = mKeyHandlers.begin(), end = mKeyHandlers.end(); itr != end; ++itr)
 	{
-		if (std::get<0>(*itr) == a_RegID)
+		if (std::get<0>(*itr) == aRegID)
 		{
-			m_KeyHandlers.erase(itr);
+			mKeyHandlers.erase(itr);
 			return;
 		}
 	}
@@ -64,13 +64,13 @@ void DJControllers::unregisterKeyHandler(quint64 a_RegID)
 
 
 
-void DJControllers::unregisterSliderHandler(quint64 a_RegID)
+void DJControllers::unregisterSliderHandler(quint64 aRegID)
 {
-	for (auto itr = m_SliderHandlers.begin(), end = m_SliderHandlers.end(); itr != end; ++itr)
+	for (auto itr = mSliderHandlers.begin(), end = mSliderHandlers.end(); itr != end; ++itr)
 	{
-		if (std::get<0>(*itr) == a_RegID)
+		if (std::get<0>(*itr) == aRegID)
 		{
-			m_SliderHandlers.erase(itr);
+			mSliderHandlers.erase(itr);
 			return;
 		}
 	}
@@ -80,13 +80,13 @@ void DJControllers::unregisterSliderHandler(quint64 a_RegID)
 
 
 
-void DJControllers::unregisterWheelHandler(quint64 a_RegID)
+void DJControllers::unregisterWheelHandler(quint64 aRegID)
 {
-	for (auto itr = m_WheelHandlers.begin(), end = m_WheelHandlers.end(); itr != end; ++itr)
+	for (auto itr = mWheelHandlers.begin(), end = mWheelHandlers.end(); itr != end; ++itr)
 	{
-		if (std::get<0>(*itr) == a_RegID)
+		if (std::get<0>(*itr) == aRegID)
 		{
-			m_WheelHandlers.erase(itr);
+			mWheelHandlers.erase(itr);
 			return;
 		}
 	}
@@ -97,16 +97,16 @@ void DJControllers::unregisterWheelHandler(quint64 a_RegID)
 
 
 DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(
-	const QString & a_Context,
-	QObject * a_DestinationObject,
-	const char * a_CallbackName
+	const QString & aContext,
+	QObject * aDestinationObject,
+	const char * aCallbackName
 )
 {
-	auto regID = m_NextRegID++;
-	m_KeyHandlers.push_back(
+	auto regID = mNextRegID++;
+	mKeyHandlers.push_back(
 		std::make_tuple(
-			regID, a_Context,
-			Handler(a_DestinationObject, a_CallbackName)
+			regID, aContext,
+			Handler(aDestinationObject, aCallbackName)
 		)
 	);
 	return std::make_shared<KeyHandlerReg>(*this, regID);
@@ -117,16 +117,16 @@ DJControllers::KeyHandlerRegPtr DJControllers::registerContextKeyHandler(
 
 
 DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(
-	const QString & a_Context,
-	QObject * a_DestinationObject,
-	const char * a_CallbackName
+	const QString & aContext,
+	QObject * aDestinationObject,
+	const char * aCallbackName
 )
 {
-	auto regID = m_NextRegID++;
-	m_SliderHandlers.push_back(
+	auto regID = mNextRegID++;
+	mSliderHandlers.push_back(
 		std::make_tuple(
-			regID, a_Context,
-			Handler(a_DestinationObject, a_CallbackName)
+			regID, aContext,
+			Handler(aDestinationObject, aCallbackName)
 		)
 	);
 	return std::make_shared<SliderHandlerReg>(*this, regID);
@@ -137,16 +137,16 @@ DJControllers::SliderHandlerRegPtr DJControllers::registerContextSliderHandler(
 
 
 DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(
-	const QString & a_Context,
-	QObject * a_DestinationObject,
-	const char * a_CallbackName
+	const QString & aContext,
+	QObject * aDestinationObject,
+	const char * aCallbackName
 )
 {
-	auto regID = m_NextRegID++;
-	m_WheelHandlers.push_back(
+	auto regID = mNextRegID++;
+	mWheelHandlers.push_back(
 		std::make_tuple(
-			regID, a_Context,
-			Handler(a_DestinationObject, a_CallbackName)
+			regID, aContext,
+			Handler(aDestinationObject, aCallbackName)
 		)
 	);
 	return std::make_shared<WheelHandlerReg>(*this, regID);
@@ -156,11 +156,11 @@ DJControllers::WheelHandlerRegPtr DJControllers::registerContextWheelHandler(
 
 
 
-void DJControllers::setLed(int a_Led, bool a_LightUp)
+void DJControllers::setLed(int aLed, bool aLightUp)
 {
-	for (auto & c: m_Controllers)
+	for (auto & c: mControllers)
 	{
-		c->setLed(a_Led, a_LightUp);
+		c->setLed(aLed, aLightUp);
 	}
 }
 
@@ -204,19 +204,19 @@ QString DJControllers::findCurrentContext()
 void DJControllers::run()
 {
 	// Initialize the enumerators:
-	m_MidiEnumerator.reset(new MidiEnumerator(this));
-	connect(m_MidiEnumerator.get(), &MidiEnumerator::newControllerDetected,  this, &DJControllers::newControllerDetected);
-	connect(m_MidiEnumerator.get(), &MidiEnumerator::controllerDisconnected, this, &DJControllers::controllerDisconnected);
+	mMidiEnumerator.reset(new MidiEnumerator(this));
+	connect(mMidiEnumerator.get(), &MidiEnumerator::newControllerDetected,  this, &DJControllers::newControllerDetected);
+	connect(mMidiEnumerator.get(), &MidiEnumerator::controllerDisconnected, this, &DJControllers::controllerDisconnected);
 
 	// Scan for controllers:
-	m_MidiEnumerator->rescanPorts();
-	// QUEUED: QMetaObject::invokeMethod(m_MidiEnumerator.get(), "rescanPorts", Qt::QueuedConnection);
+	mMidiEnumerator->rescanPorts();
+	// QUEUED: QMetaObject::invokeMethod(mMidiEnumerator.get(), "rescanPorts", Qt::QueuedConnection);
 
 	// Run the event loop:
 	exec();
 
 	// Delete the enumerators:
-	m_MidiEnumerator.reset();
+	mMidiEnumerator.reset();
 }
 
 
@@ -225,57 +225,57 @@ void DJControllers::run()
 
 void DJControllers::periodicUpdate()
 {
-	m_MidiEnumerator->periodicUpdate();
+	mMidiEnumerator->periodicUpdate();
 }
 
 
 
 
 
-void DJControllers::newControllerDetected(std::shared_ptr<AbstractController> a_Controller)
+void DJControllers::newControllerDetected(std::shared_ptr<AbstractController> aController)
 {
-	qDebug() << "New controller detected: " << a_Controller->name();
-	m_Controllers.push_back(a_Controller);
-	connect(a_Controller.get(), &AbstractController::keyPressed, this, &DJControllers::controllerKeyPressed);
-	connect(a_Controller.get(), &AbstractController::sliderSet,  this, &DJControllers::controllerSliderSet);
-	connect(a_Controller.get(), &AbstractController::wheelMoved, this, &DJControllers::controllerWheelMoved);
-	emit controllerConnected(a_Controller->name());
+	qDebug() << "New controller detected: " << aController->name();
+	mControllers.push_back(aController);
+	connect(aController.get(), &AbstractController::keyPressed, this, &DJControllers::controllerKeyPressed);
+	connect(aController.get(), &AbstractController::sliderSet,  this, &DJControllers::controllerSliderSet);
+	connect(aController.get(), &AbstractController::wheelMoved, this, &DJControllers::controllerWheelMoved);
+	emit controllerConnected(aController->name());
 }
 
 
 
 
 
-void DJControllers::controllerDisconnected(std::shared_ptr<AbstractController> a_Controller)
+void DJControllers::controllerDisconnected(std::shared_ptr<AbstractController> aController)
 {
-	qDebug() << "Controller was disconnected: " << a_Controller->name();
-	m_Controllers.erase(std::remove_if(m_Controllers.begin(), m_Controllers.end(),
-		[&a_Controller](std::shared_ptr<AbstractController> a_ContainedController)
+	qDebug() << "Controller was disconnected: " << aController->name();
+	mControllers.erase(std::remove_if(mControllers.begin(), mControllers.end(),
+		[&aController](std::shared_ptr<AbstractController> aContainedController)
 		{
-			return (a_ContainedController == a_Controller);
+			return (aContainedController == aController);
 		}
 	));
-	a_Controller->disconnect(this);
+	aController->disconnect(this);
 }
 
 
 
 
 
-void DJControllers::controllerKeyPressed(int a_Key)
+void DJControllers::controllerKeyPressed(int aKey)
 {
 	// Notify all handlers whose context matches the current one:
 	auto context = findCurrentContext();
-	for (const auto & handler: m_KeyHandlers)
+	for (const auto & handler: mKeyHandlers)
 	{
 		if (std::get<1>(handler) == context)
 		{
 			auto & reg = std::get<2>(handler);
 			QMetaObject::invokeMethod(
-				reg.m_DestinationObject,
-				reg.m_FunctionName.c_str(),
+				reg.mDestinationObject,
+				reg.mFunctionName.c_str(),
 				Qt::QueuedConnection,
-				Q_ARG(int, a_Key)
+				Q_ARG(int, aKey)
 			);
 		}
 	}
@@ -285,21 +285,21 @@ void DJControllers::controllerKeyPressed(int a_Key)
 
 
 
-void DJControllers::controllerSliderSet(int a_Slider, qreal a_Value)
+void DJControllers::controllerSliderSet(int aSlider, qreal aValue)
 {
 	// Notify all handlers whose context matches the current one:
 	auto context = findCurrentContext();
-	for (const auto & handler: m_SliderHandlers)
+	for (const auto & handler: mSliderHandlers)
 	{
 		if (std::get<1>(handler) == context)
 		{
 			auto & reg = std::get<2>(handler);
 			QMetaObject::invokeMethod(
-				reg.m_DestinationObject,
-				reg.m_FunctionName.c_str(),
+				reg.mDestinationObject,
+				reg.mFunctionName.c_str(),
 				Qt::QueuedConnection,
-				Q_ARG(int, a_Slider),
-				Q_ARG(qreal, a_Value)
+				Q_ARG(int, aSlider),
+				Q_ARG(qreal, aValue)
 			);
 		}
 	}
@@ -309,21 +309,21 @@ void DJControllers::controllerSliderSet(int a_Slider, qreal a_Value)
 
 
 
-void DJControllers::controllerWheelMoved(int a_Wheel, int a_NumSteps)
+void DJControllers::controllerWheelMoved(int aWheel, int aNumSteps)
 {
 	// Notify all handlers whose context matches the current one:
 	auto context = findCurrentContext();
-	for (const auto & handler: m_WheelHandlers)
+	for (const auto & handler: mWheelHandlers)
 	{
 		if (std::get<1>(handler) == context)
 		{
 			auto & reg = std::get<2>(handler);
 			QMetaObject::invokeMethod(
-				reg.m_DestinationObject,
-				reg.m_FunctionName.c_str(),
+				reg.mDestinationObject,
+				reg.mFunctionName.c_str(),
 				Qt::QueuedConnection,
-				Q_ARG(int, a_Wheel),
-				Q_ARG(int, a_NumSteps)
+				Q_ARG(int, aWheel),
+				Q_ARG(int, aNumSteps)
 			);
 		}
 	}
@@ -333,34 +333,34 @@ void DJControllers::controllerWheelMoved(int a_Wheel, int a_NumSteps)
 
 
 
-void DJControllers::setLedPlay(bool a_LightUp)
+void DJControllers::setLedPlay(bool aLightUp)
 {
-	setLed(AbstractController::slKeyPlayPause1, a_LightUp);
+	setLed(AbstractController::slKeyPlayPause1, aLightUp);
 }
 
 
 
 
 
-void DJControllers::setLedCue(bool a_LightUp)
+void DJControllers::setLedCue(bool aLightUp)
 {
-	setLed(AbstractController::slKeyCue1, a_LightUp);
+	setLed(AbstractController::slKeyCue1, aLightUp);
 }
 
 
 
 
 
-void DJControllers::setLedSync(bool a_LightUp)
+void DJControllers::setLedSync(bool aLightUp)
 {
-	setLed(AbstractController::slKeySync1, a_LightUp);
+	setLed(AbstractController::slKeySync1, aLightUp);
 }
 
 
 
 
 
-void DJControllers::setLedPfl(bool a_LightUp)
+void DJControllers::setLedPfl(bool aLightUp)
 {
-	setLed(AbstractController::slKeyPfl1, a_LightUp);
+	setLed(AbstractController::slKeyPfl1, aLightUp);
 }

@@ -21,17 +21,17 @@ static bool g_HasFailed = false;
 
 
 /** Outputs the specified optional value to the stream, saying "(none)" if the value is not present. */
-static std::ostream & operator <<(std::ostream & a_Stream, const DatedOptional<QString> & a_Value)
+static std::ostream & operator <<(std::ostream & aStream, const DatedOptional<QString> & aValue)
 {
-	if (!a_Value.isPresent())
+	if (!aValue.isPresent())
 	{
-		a_Stream << "(none)";
+		aStream << "(none)";
 	}
 	else
 	{
-		a_Stream << "\"" << a_Value.value().toStdString() << "\"";
+		aStream << "\"" << aValue.value().toStdString() << "\"";
 	}
-	return a_Stream;
+	return aStream;
 }
 
 
@@ -39,17 +39,17 @@ static std::ostream & operator <<(std::ostream & a_Stream, const DatedOptional<Q
 
 
 /** Outputs the specified optional value to the stream, saying "(none)" if the value is not present. */
-static std::ostream & operator <<(std::ostream & a_Stream, const DatedOptional<double> & a_Value)
+static std::ostream & operator <<(std::ostream & aStream, const DatedOptional<double> & aValue)
 {
-	if (!a_Value.isPresent())
+	if (!aValue.isPresent())
 	{
-		a_Stream << "(none)";
+		aStream << "(none)";
 	}
 	else
 	{
-		a_Stream << a_Value.value();
+		aStream << aValue.value();
 	}
-	return a_Stream;
+	return aStream;
 }
 
 
@@ -58,13 +58,13 @@ static std::ostream & operator <<(std::ostream & a_Stream, const DatedOptional<d
 
 /** Returns true if the two optional strings are equal.
 Note that equality is rather loose here - an empty DatedOptional matches an empty string. */
-static bool areEqual(const DatedOptional<QString> & a_Value1, const DatedOptional<QString> & a_Value2)
+static bool areEqual(const DatedOptional<QString> & aValue1, const DatedOptional<QString> & aValue2)
 {
-	if (a_Value1.isEmpty() && a_Value2.isEmpty())
+	if (aValue1.isEmpty() && aValue2.isEmpty())
 	{
 		return true;
 	}
-	return (a_Value1.valueOrDefault() == a_Value2.valueOrDefault());
+	return (aValue1.valueOrDefault() == aValue2.valueOrDefault());
 }
 
 
@@ -73,9 +73,9 @@ static bool areEqual(const DatedOptional<QString> & a_Value1, const DatedOptiona
 
 /** Returns true if the two tags are equal.
 Note that equality is specific here - an empty DatedOptional matches -1, to simplify writing test values. */
-static bool areEqual(const DatedOptional<double> & a_Value1, const DatedOptional<double> & a_Value2)
+static bool areEqual(const DatedOptional<double> & aValue1, const DatedOptional<double> & aValue2)
 {
-	return (std::abs(a_Value1.valueOr(-1) - a_Value2.valueOr(-1)) < 0.000001);
+	return (std::abs(aValue1.valueOr(-1) - aValue2.valueOr(-1)) < 0.000001);
 }
 
 
@@ -84,13 +84,13 @@ static bool areEqual(const DatedOptional<double> & a_Value1, const DatedOptional
 
 /** Returns true if the two tags are equal.
 Note that equality is rather loose here - an empty DatedOptional matches an empty string, etc. */
-static bool areEqual(const Song::Tag & a_Tag1, const Song::Tag & a_Tag2)
+static bool areEqual(const Song::Tag & aTag1, const Song::Tag & aTag2)
 {
 	return (
-		areEqual(a_Tag1.m_Author,            a_Tag2.m_Author) &&
-		areEqual(a_Tag1.m_Title,             a_Tag2.m_Title) &&
-		areEqual(a_Tag1.m_Genre,             a_Tag2.m_Genre) &&
-		areEqual(a_Tag1.m_MeasuresPerMinute, a_Tag2.m_MeasuresPerMinute)
+		areEqual(aTag1.mAuthor,            aTag2.mAuthor) &&
+		areEqual(aTag1.mTitle,             aTag2.mTitle) &&
+		areEqual(aTag1.mGenre,             aTag2.mGenre) &&
+		areEqual(aTag1.mMeasuresPerMinute, aTag2.mMeasuresPerMinute)
 	);
 }
 
@@ -102,20 +102,20 @@ static bool areEqual(const Song::Tag & a_Tag1, const Song::Tag & a_Tag2)
 a_DataName is the user-visible name of the data being compared (such as "author", "title" etc.) */
 template <typename T>
 static void printComparison(
-	const char * a_DataName,
-	const DatedOptional<T> & a_ParsedValue,
-	const DatedOptional<T> & a_ExpectedValue
+	const char * aDataName,
+	const DatedOptional<T> & aParsedValue,
+	const DatedOptional<T> & aExpectedValue
 )
 {
-	if (areEqual(a_ParsedValue, a_ExpectedValue))
+	if (areEqual(aParsedValue, aExpectedValue))
 	{
-		std::cerr << "  Matched " << a_DataName << ": " << a_ParsedValue << std::endl;
+		std::cerr << "  Matched " << aDataName << ": " << aParsedValue << std::endl;
 	}
 	else
 	{
-		std::cerr << "  FAILED " << a_DataName << std::endl;
-		std::cerr << "    Expected: " << a_ExpectedValue << std::endl;
-		std::cerr << "    Parsed:   " << a_ParsedValue   << std::endl;
+		std::cerr << "  FAILED " << aDataName << std::endl;
+		std::cerr << "    Expected: " << aExpectedValue << std::endl;
+		std::cerr << "    Parsed:   " << aParsedValue   << std::endl;
 	}
 }
 
@@ -123,54 +123,54 @@ static void printComparison(
 
 
 
-static void testTagParsing(const MetadataScanner::Tag & a_InputTag, const Song::Tag & a_ExpectedOutput)
+static void testTagParsing(const MetadataScanner::Tag & aInputTag, const Song::Tag & aExpectedOutput)
 {
-	auto parsed = MetadataScanner::parseId3Tag(a_InputTag);
-	if (areEqual(parsed, a_ExpectedOutput))
+	auto parsed = MetadataScanner::parseId3Tag(aInputTag);
+	if (areEqual(parsed, aExpectedOutput))
 	{
 		return;
 	}
 
 	// Output the comparison:
 	std::cerr << "Tag parsing failed:" << std::endl;
-	std::cerr << "  Input author:  " << a_InputTag.m_Author << std::endl;
-	std::cerr << "  Input title:   " << a_InputTag.m_Title << std::endl;
-	std::cerr << "  Input comment: " << a_InputTag.m_Comment<< std::endl;
-	std::cerr << "  Input genre:   " << a_InputTag.m_Genre << std::endl;
-	std::cerr << "  Input BPM:     " << a_InputTag.m_MeasuresPerMinute << "\"" << std::endl;
-	printComparison("author", parsed.m_Author,            a_ExpectedOutput.m_Author);
-	printComparison("title ", parsed.m_Title,             a_ExpectedOutput.m_Title);
-	printComparison("genre ", parsed.m_Genre,             a_ExpectedOutput.m_Genre);
-	printComparison("MPM   ", parsed.m_MeasuresPerMinute, a_ExpectedOutput.m_MeasuresPerMinute);
+	std::cerr << "  Input author:  " << aInputTag.mAuthor << std::endl;
+	std::cerr << "  Input title:   " << aInputTag.mTitle << std::endl;
+	std::cerr << "  Input comment: " << aInputTag.mComment<< std::endl;
+	std::cerr << "  Input genre:   " << aInputTag.mGenre << std::endl;
+	std::cerr << "  Input BPM:     " << aInputTag.mMeasuresPerMinute << "\"" << std::endl;
+	printComparison("author", parsed.mAuthor,            aExpectedOutput.mAuthor);
+	printComparison("title ", parsed.mTitle,             aExpectedOutput.mTitle);
+	printComparison("genre ", parsed.mGenre,             aExpectedOutput.mGenre);
+	printComparison("MPM   ", parsed.mMeasuresPerMinute, aExpectedOutput.mMeasuresPerMinute);
 	g_HasFailed = true;
 
 	// Re-parse (so that a debugger breakpoint can be put here to observe while stepping through):
-	MetadataScanner::parseId3Tag(a_InputTag);
+	MetadataScanner::parseId3Tag(aInputTag);
 }
 
 
 
 
 
-static void testFileNameParsing(const QString & a_FileName, const Song::Tag & a_ExpectedOutput)
+static void testFileNameParsing(const QString & aFileName, const Song::Tag & aExpectedOutput)
 {
-	auto parsed = MetadataScanner::parseFileNameIntoMetadata(a_FileName);
-	if (parsed == a_ExpectedOutput)
+	auto parsed = MetadataScanner::parseFileNameIntoMetadata(aFileName);
+	if (parsed == aExpectedOutput)
 	{
 		return;
 	}
 
 	// Output the comparison:
 	std::cerr << "FileName parsing failed:" << std::endl;
-	std::cerr << "  Input FileName:  \"" << a_FileName.toStdString() << "\"" << std::endl;
-	printComparison("author", parsed.m_Author,            a_ExpectedOutput.m_Author);
-	printComparison("title ", parsed.m_Title,             a_ExpectedOutput.m_Title);
-	printComparison("genre ", parsed.m_Genre,             a_ExpectedOutput.m_Genre);
-	printComparison("MPM   ", parsed.m_MeasuresPerMinute, a_ExpectedOutput.m_MeasuresPerMinute);
+	std::cerr << "  Input FileName:  \"" << aFileName.toStdString() << "\"" << std::endl;
+	printComparison("author", parsed.mAuthor,            aExpectedOutput.mAuthor);
+	printComparison("title ", parsed.mTitle,             aExpectedOutput.mTitle);
+	printComparison("genre ", parsed.mGenre,             aExpectedOutput.mGenre);
+	printComparison("MPM   ", parsed.mMeasuresPerMinute, aExpectedOutput.mMeasuresPerMinute);
 	g_HasFailed = true;
 
 	// Re-parse (so that a debugger breakpoint can be put here to observe while stepping through):
-	MetadataScanner::parseFileNameIntoMetadata(a_FileName);
+	MetadataScanner::parseFileNameIntoMetadata(aFileName);
 }
 
 

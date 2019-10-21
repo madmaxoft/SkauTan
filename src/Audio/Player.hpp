@@ -37,12 +37,12 @@ class Player:
 
 public:
 
-	explicit Player(QObject * a_Parent = nullptr);
+	explicit Player(QObject * aParent = nullptr);
 
 	~Player();
 
 	/** Returns the playlist that this player follows. */
-	Playlist & playlist() { return *m_Playlist; }
+	Playlist & playlist() { return *mPlaylist; }
 
 	/** Returns the current playback position in the current track, in seconds.
 	Returns 0 if not playing back anything. */
@@ -58,14 +58,14 @@ public:
 	double totalTime() const;
 
 	/** Sets the volume for playback. */
-	void setVolume(qreal a_NewVolume);
+	void setVolume(qreal aNewVolume);
 
 	/** Sets the tempo for playback. */
-	void setTempo(qreal a_NewTempo);
+	void setTempo(qreal aNewTempo);
 
 	/** Seeks to the specified timestamp.
 	Ignored if not playing. */
-	void seekTo(double a_Time);
+	void seekTo(double aTime);
 
 	/** Returns the track that is currently being played.
 	Returns nullptr if no track. */
@@ -73,7 +73,7 @@ public:
 
 	/** Returns the buffer for the audio data decoded from the source track, before effect processing.
 	Mainly used for visualisation. */
-	PlaybackBufferPtr playbackBuffer() const { return m_PlaybackBuffer; }
+	PlaybackBufferPtr playbackBuffer() const { return mPlaybackBuffer; }
 
 	/** Returns true iff the player is currently playing back a track (or psStartingPlayback).
 	If the player is paused, returns false. */
@@ -90,7 +90,7 @@ protected:
 	{
 		psStopped,           ///< The player is not playing anything
 		psPlaying,           ///< The player is playing a track
-		psFadeOutToTrack,    ///< The player is fading out a track and will start playing m_Playlist's CurrentTrack once done.
+		psFadeOutToTrack,    ///< The player is fading out a track and will start playing mPlaylist's CurrentTrack once done.
 		psFadeOutToStop,     ///< The player is fading out a track and will stop playing once done.
 		psPaused,            ///< Playback has started and then been paused, can continue
 		psStartingPlayback,  ///< The player has been asked to play a song, but it's not playing yet (preparing the song in a background thread)
@@ -102,49 +102,49 @@ protected:
 
 
 	/** The playlist on which this instance is operating. */
-	std::shared_ptr<Playlist> m_Playlist;
+	std::shared_ptr<Playlist> mPlaylist;
 
 	/** The current internal state of the player. */
-	State m_State;
+	State mState;
 
 	/** The progress of the current fadeout.
 	0 = fadeout just started. */
-	int m_FadeoutProgress;
+	int mFadeoutProgress;
 
 	/** The thread that does the audio output processing. */
-	std::unique_ptr<OutputThread> m_OutputThread;
+	std::unique_ptr<OutputThread> mOutputThread;
 
 	/** The audio data decoded from the source file, before effect processing.
 	Used mainly for visualisation. */
-	std::shared_ptr<PlaybackBuffer> m_PlaybackBuffer;
+	std::shared_ptr<PlaybackBuffer> mPlaybackBuffer;
 
 	/** The source of the audio data, adapted into QIODevice interface. */
-	std::shared_ptr<AudioDataSourceIO> m_AudioDataSource;
+	std::shared_ptr<AudioDataSourceIO> mAudioDataSource;
 
 	/** The format used by the audio output. */
-	QAudioFormat m_Format;
+	QAudioFormat mFormat;
 
 	/** The tempo to be used for playback. */
-	qreal m_Tempo;
+	qreal mTempo;
 
 	/** Measures the time since the playback for the current item was started. */
-	QElapsedTimer m_Elapsed;
+	QElapsedTimer mElapsed;
 
 	/** The track that is currently playing. */
-	IPlaylistItemPtr m_CurrentTrack;
+	IPlaylistItemPtr mCurrentTrack;
 
-	/** If true, the tempo in m_Tempo is set for all tracks played.
+	/** If true, the tempo in mTempo is set for all tracks played.
 	If false, the tempo is reset to each track's default tempo on playback start. */
-	std::atomic<bool> m_ShouldKeepTempo;
+	std::atomic<bool> mShouldKeepTempo;
 
-	/** If true, the tempo in m_Volume is set for all tracks played.
+	/** If true, the tempo in mVolume is set for all tracks played.
 	If false, the volume is reset to each track's default volume on playback start. */
-	std::atomic<bool> m_ShouldKeepVolume;
+	std::atomic<bool> mShouldKeepVolume;
 
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
 	Must not be fading out already. */
-	void fadeOut(State a_FadeOutState);
+	void fadeOut(State aFadeOutState);
 
 	/** Invoked by the internal playback thread if the current track cannot start playing due to invalid data.
 	Emits the invalidTrack() signal. */
@@ -155,15 +155,15 @@ signals:
 
 	/** Emitted before starting to play the specified item.
 	The item is not yet set in the player, so values such as currentPosition() still give old values. */
-	void startingPlayback(IPlaylistItemPtr a_Item);
+	void startingPlayback(IPlaylistItemPtr aItem);
 
 	/** Emitted just after starting to play the specified item.
 	The item is already set in the player, values such as currentPosition() give valid values. */
-	void startedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer);
+	void startedPlayback(IPlaylistItemPtr aItem, PlaybackBufferPtr aPlaybackBuffer);
 
 	/** Emitted just after an item has finished playing.
-	a_Source is the AudioDataSource chain that was playing. Used for proper termination (#118). */
-	void finishedPlayback(AudioDataSourcePtr a_Source);
+	aSource is the AudioDataSource chain that was playing. Used for proper termination (#118). */
+	void finishedPlayback(AudioDataSourcePtr aSource);
 
 	/** Emitted after playback has completely stopped, either running out of playlist, or after psFadeOutToStop.
 	Note that this is different from finishedPlayback(), which is called after each track finishes playing. */
@@ -171,15 +171,15 @@ signals:
 
 	/** Emitted when unable to start playing the specified track.
 	The receiver should mark the track as invalid in the UI. */
-	void invalidTrack(IPlaylistItemPtr a_Item);
+	void invalidTrack(IPlaylistItemPtr aItem);
 
 	/** Emitted when the current tempo is changed from within the player,
 	such as loading a new track with pre-set default tempo and KeepTempo turned off. */
-	void tempoCoeffChanged(qreal a_TempoCoeff);
+	void tempoCoeffChanged(qreal aTempoCoeff);
 
 	/** Emitted when the current volume is changed from within the player,
 	such as loading a new track with pre-set default volume and KeepVolume turned off. */
-	void volumeChanged(qreal a_NewVolume);
+	void volumeChanged(qreal aNewVolume);
 
 
 public slots:
@@ -196,11 +196,11 @@ public slots:
 	Ignored if the player is not playing anything. */
 	void prevTrack();
 
-	/** Starts playing the current track (in m_Playlist), if currently stopped / paused.
+	/** Starts playing the current track (in mPlaylist), if currently stopped / paused.
 	Pause playing (with no fadeout) if the player is already playing something. */
 	void startPausePlayback();
 
-	/** Starts playing the current track (in m_Playlist), if currently stopped / paused.
+	/** Starts playing the current track (in mPlaylist), if currently stopped / paused.
 	Ignored if the player is already playing something. */
 	void startPlayback();
 
@@ -217,10 +217,10 @@ public slots:
 	/** Starts playing back the playlist item at the specified index.
 	Fades the current track first, if playing.
 	Ignored if the index is invalid. */
-	void jumpTo(int a_ItemIdx);
+	void jumpTo(int aItemIdx);
 
 	/** If the specified track is currently playing, stops playback. */
-	void deletePlaylistItem(IPlaylistItem * a_Track);
+	void deletePlaylistItem(IPlaylistItem * aTrack);
 
 	/** Updates the current playlist item's PlaybackEnded time based on the remaining time,
 	and all subsequent tracks' PlaybackStarted and PlaybackEnded times.
@@ -228,17 +228,17 @@ public slots:
 	void updateTrackTimesFromCurrent();
 
 	/** Sets the KeepTempo feature on or off. */
-	void setKeepTempo(bool a_KeepTempo);
+	void setKeepTempo(bool aKeepTempo);
 
 	/** Sets the KeepVolume feature on or off. */
-	void setKeepVolume(bool a_KeepVolume);
+	void setKeepVolume(bool aKeepVolume);
 
 
 protected slots:
 
-	/** Emitted by m_Output when its state changes.
+	/** Emitted by mOutput when its state changes.
 	Used to detect end-of-track and end-of-fade. */
-	void outputStateChanged(QAudio::State a_NewState);
+	void outputStateChanged(QAudio::State aNewState);
 };
 
 

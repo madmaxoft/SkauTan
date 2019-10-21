@@ -43,7 +43,7 @@ class PlayerWindow:
 
 public:
 
-	explicit PlayerWindow(ComponentCollection & a_Components);
+	explicit PlayerWindow(ComponentCollection & aComponents);
 
 	~PlayerWindow();
 
@@ -54,46 +54,46 @@ public:
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::PlayerWindow> m_UI;
+	std::unique_ptr<Ui::PlayerWindow> mUI;
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The model used to display the playlist. */
-	std::unique_ptr<PlaylistItemModel> m_PlaylistModel;
+	std::unique_ptr<PlaylistItemModel> mPlaylistModel;
 
 	/** The delegate used for drawing individual playlist items. */
-	std::unique_ptr<PlaylistItemDelegate> m_PlaylistDelegate;
+	std::unique_ptr<PlaylistItemDelegate> mPlaylistDelegate;
 
 	/** The timer used for periodic UI updates. */
-	QTimer m_UpdateTimer;
+	QTimer mUpdateTimer;
 
 	/** Stores whether the LibraryRescan progress is shown or not; updated periodically. */
-	bool m_IsLibraryRescanShown;
+	bool mIsLibraryRescanShown;
 
 	/** The total number of songs that were in the LibraryRescan UI on the last update.
 	Used for detecting whether to change the UI. */
-	int m_LastLibraryRescanTotal;
+	int mLastLibraryRescanTotal;
 
 	/** The queue length in the LibraryRescan UI on the last update.
 	Used for detecting whether to change the UI. */
-	int m_LastLibraryRescanQueue;
+	int mLastLibraryRescanQueue;
 
 	/** Set to true while updating the UI as a reaction to an internal event.
 	If true, the changes in the UI shouldn't be propagated further. */
-	bool m_IsInternalChange;
+	bool mIsInternalChange;
 
 	/** The window that is shown when asked to switch to the Classroom mode. */
-	QWidget * m_ClassroomWindow;
+	QWidget * mClassroomWindow;
 
 	// The DJControllers registrations:
-	DJControllers::KeyHandlerRegPtr    m_DjKeyHandler;
-	DJControllers::SliderHandlerRegPtr m_DjSliderHandler;
-	DJControllers::WheelHandlerRegPtr  m_DjWheelHandler;
+	DJControllers::KeyHandlerRegPtr    mDjKeyHandler;
+	DJControllers::SliderHandlerRegPtr mDjSliderHandler;
+	DJControllers::WheelHandlerRegPtr  mDjWheelHandler;
 
 
 	/** Sets the local rating for the selected songs. */
-	void rateSelectedSongs(double a_LocalRating);
+	void rateSelectedSongs(double aLocalRating);
 
 	/** Returns all songs that are selected in the playlist, in the playlist's order. */
 	std::vector<SongPtr> selectedPlaylistSongs() const;
@@ -104,8 +104,8 @@ private:
 	/** Refreshes the items in cbAppendUponCompletion to match the favorite templates in the DB. */
 	void refreshAppendUponCompletion();
 
-	/** Sets the specified duration limit for all playlist items selected in m_tblPlaylist. */
-	void setSelectedItemsDurationLimit(double a_NewDurationLimit);
+	/** Sets the specified duration limit for all playlist items selected in mtblPlaylist. */
+	void setSelectedItemsDurationLimit(double aNewDurationLimit);
 
 	/** Returns the template or template item that the user has chosen to append upon playlist completion.
 	Returns a valid template / item even if the checkbox is unchecked (so that it can be used for preserving
@@ -119,13 +119,13 @@ private:
 public slots:
 
 	/** Handler for keypresses on the DJ controller. */
-	void handleDjControllerKey(int a_Key);
+	void handleDjControllerKey(int aKey);
 
 	/** Handler for slider changes on the DJ controller. */
-	void handleDjControllerSlider(int a_Slider, qreal a_Value);
+	void handleDjControllerSlider(int aSlider, qreal aValue);
 
 	/** Handler for wheel moves on the DJ controller. */
-	void handleDjControllerWheel(int a_Wheel, int a_NumSteps);
+	void handleDjControllerWheel(int aWheel, int aNumSteps);
 
 
 private slots:
@@ -140,24 +140,24 @@ private slots:
 	void showHistory();
 
 	/** Adds the specified song to the playlist.
-	The song is assumed to be present in m_DB (but not checked). */
-	void addSongToPlaylist(SongPtr a_Song);
+	The song is assumed to be present in mDB (but not checked). */
+	void addSongToPlaylist(SongPtr aSong);
 
 	/** Inserts the specified song to the playlist after the current selection.
-	The song is assumed to be present in m_DB (but not checked). */
-	void insertSongToPlaylist(SongPtr a_Song);
+	The song is assumed to be present in mDB (but not checked). */
+	void insertSongToPlaylist(SongPtr aSong);
 
 	/** Adds the specified item to the playlist. */
-	void addPlaylistItem(std::shared_ptr<IPlaylistItem> a_Item);
+	void addPlaylistItem(std::shared_ptr<IPlaylistItem> aItem);
 
 	/** Deletes the selected items from the playlist. */
 	void deleteSelectedPlaylistItems();
 
 	/** Emitted by tblPlaylist when the user dblclicks a track. */
-	void trackDoubleClicked(const QModelIndex & a_Track);
+	void trackDoubleClicked(const QModelIndex & aTrack);
 
 	/** Emitted by the global volume control slider; updates the player volume. */
-	void volumeSliderMoved(int a_NewValue);
+	void volumeSliderMoved(int aNewValue);
 
 	/** Shows the list of templates, after choosing one, adds songs using that template to playlist. */
 	void addFromTemplate();
@@ -166,7 +166,7 @@ private slots:
 	void switchToClassroomMode();
 
 	/** Emitted by the global tempo slider; updates the playback tempo. */
-	void tempoValueChanged(int a_NewValue);
+	void tempoValueChanged(int aNewValue);
 
 	/** The user clicker the Reset tempo button, resets tempo to 100 %. */
 	void resetTempo();
@@ -180,7 +180,7 @@ private slots:
 
 	/** Emitted by Qt when the user r-clicks in tblPlaylist.
 	Shows the playlist context menu. */
-	void showPlaylistContextMenu(const QPoint & a_Pos);
+	void showPlaylistContextMenu(const QPoint & aPos);
 
 	/** The user wants to see the properties of the selected playlist item. */
 	void showSongProperties();
@@ -197,7 +197,7 @@ private slots:
 	void jumpToAndPlay();
 
 	/** The user has clicked a QuickPlayer item, insert it into the playlist and maybe start playing. */
-	void quickPlayItemClicked(QListWidgetItem * a_Item);
+	void quickPlayItemClicked(QListWidgetItem * aItem);
 
 	/** Asks the user for the new duration limit, then applies it to all selected playlist items. */
 	void setDurationLimit();
@@ -207,7 +207,7 @@ private slots:
 
 	/** Replaces the song at the specified index with another song matching the template.
 	If the playlist item doesn't have a template item attached, does nothing. */
-	void replaceSong(const QModelIndex & a_Index);
+	void replaceSong(const QModelIndex & aIndex);
 
 	/** Shows the DlgRemovedSongs. */
 	void showRemovedSongs();
@@ -219,16 +219,16 @@ private slots:
 	/** Emitted by Player after changing the tempo from within the player,
 	such as loading a new track with pre-set default tempo and KeepTempo turned off.
 	Updates the Tempo UI. */
-	void tempoCoeffChanged(qreal a_TempoCoeff);
+	void tempoCoeffChanged(qreal aTempoCoeff);
 
 	/** Emitted by Player after changing the volume from within the player,
 	such as loading a new track with pre-set default volume and KeepVolume turned off.
 	Updates the Volume UI. */
-	void playerVolumeChanged(qreal a_Volume);
+	void playerVolumeChanged(qreal aVolume);
 
 	/** Emitted by the player when it attempts to play a track and cannot do so (bad file, bad format, ...)
 	Marks the item as unplayable in the UI. */
-	void invalidTrack(IPlaylistItemPtr a_Item);
+	void invalidTrack(IPlaylistItemPtr aItem);
 
 	/** Shows DlgImportDB, then imports the data from the DB. */
 	void importDB();
@@ -248,7 +248,7 @@ private slots:
 	void toggleLvs();
 
 	/** The user has connected a recognized DJ controller. */
-	void djControllerConnected(const QString & a_Name);
+	void djControllerConnected(const QString & aName);
 
 	/** A DJ controller was disconnected. */
 	void djControllerRemoved();

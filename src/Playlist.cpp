@@ -14,8 +14,8 @@
 // Playlist:
 
 Playlist::Playlist():
-	m_CurrentItemIdx(0),
-	m_IsPlaying(false)
+	mCurrentItemIdx(0),
+	mIsPlaying(false)
 {
 
 }
@@ -24,10 +24,10 @@ Playlist::Playlist():
 
 
 
-void Playlist::addItem(IPlaylistItemPtr a_Item)
+void Playlist::addItem(IPlaylistItemPtr aItem)
 {
-	m_Items.push_back(a_Item);
-	emit itemAdded(a_Item.get());
+	mItems.push_back(aItem);
+	emit itemAdded(aItem.get());
 	updateItemTimesFromCurrent();
 }
 
@@ -35,77 +35,77 @@ void Playlist::addItem(IPlaylistItemPtr a_Item)
 
 
 
-void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
+void Playlist::moveItem(int aFromIdx, int aToIdx)
 {
-	assert(a_FromIdx < static_cast<int>(m_Items.size()));
+	assert(aFromIdx < static_cast<int>(mItems.size()));
 	assert(
-		(a_ToIdx < static_cast<int>(m_Items.size())) ||
+		(aToIdx < static_cast<int>(mItems.size())) ||
 		(
-			(a_ToIdx == static_cast<int>(m_Items.size())) &&
-			(a_FromIdx < a_ToIdx)
+			(aToIdx == static_cast<int>(mItems.size())) &&
+			(aFromIdx < aToIdx)
 		)
 	);
 
-	if (a_FromIdx == a_ToIdx)
+	if (aFromIdx == aToIdx)
 	{
 		// No action needed
 		return;
 	}
-	auto stash = m_Items[static_cast<size_t>(a_FromIdx)];
-	if (a_FromIdx > a_ToIdx)
+	auto stash = mItems[static_cast<size_t>(aFromIdx)];
+	if (aFromIdx > aToIdx)
 	{
 		// Item moving up the list
-		for (int i = a_FromIdx; i > a_ToIdx; --i)
+		for (int i = aFromIdx; i > aToIdx; --i)
 		{
-			m_Items[static_cast<size_t>(i)] = m_Items[static_cast<size_t>(i - 1)];
+			mItems[static_cast<size_t>(i)] = mItems[static_cast<size_t>(i - 1)];
 		}
 	}
 	else
 	{
 		// Item moving down the list:
-		a_ToIdx -= 1;
-		for (int i = a_FromIdx; i < a_ToIdx; ++i)
+		aToIdx -= 1;
+		for (int i = aFromIdx; i < aToIdx; ++i)
 		{
-			m_Items[static_cast<size_t>(i)] = m_Items[static_cast<size_t>(i + 1)];
+			mItems[static_cast<size_t>(i)] = mItems[static_cast<size_t>(i + 1)];
 		}
 	}
-	m_Items[static_cast<size_t>(a_ToIdx)] = stash;
+	mItems[static_cast<size_t>(aToIdx)] = stash;
 
-	// If crossing the m_CurrentIdx, adjust it for the change:
-	if (m_CurrentItemIdx >= 0)
+	// If crossing the mCurrentIdx, adjust it for the change:
+	if (mCurrentItemIdx >= 0)
 	{
-		auto oldIdx = m_CurrentItemIdx;
-		if (m_CurrentItemIdx == a_FromIdx)
+		auto oldIdx = mCurrentItemIdx;
+		if (mCurrentItemIdx == aFromIdx)
 		{
 			// Moving the current item
-			m_CurrentItemIdx = a_ToIdx;
+			mCurrentItemIdx = aToIdx;
 		}
-		else if ((m_CurrentItemIdx > a_FromIdx) && (m_CurrentItemIdx < a_ToIdx))
+		else if ((mCurrentItemIdx > aFromIdx) && (mCurrentItemIdx < aToIdx))
 		{
-			m_CurrentItemIdx -= 1;
+			mCurrentItemIdx -= 1;
 		}
-		else if ((m_CurrentItemIdx < a_FromIdx) && (m_CurrentItemIdx >= a_ToIdx))
+		else if ((mCurrentItemIdx < aFromIdx) && (mCurrentItemIdx >= aToIdx))
 		{
-			m_CurrentItemIdx += 1;
+			mCurrentItemIdx += 1;
 		}
-		if (oldIdx != m_CurrentItemIdx)
+		if (oldIdx != mCurrentItemIdx)
 		{
-			emit currentItemChanged(m_CurrentItemIdx);
+			emit currentItemChanged(mCurrentItemIdx);
 		}
 	}
 
 	// If the item was moved above the currently-playing one, remove the item's playback times:
-	if (a_ToIdx < m_CurrentItemIdx)
+	if (aToIdx < mCurrentItemIdx)
 	{
-		stash->m_PlaybackStarted = QDateTime();
-		stash->m_PlaybackEnded = QDateTime();
-		emit itemTimesChanged(a_ToIdx, stash.get());
+		stash->mPlaybackStarted = QDateTime();
+		stash->mPlaybackEnded = QDateTime();
+		emit itemTimesChanged(aToIdx, stash.get());
 	}
 
 	// Sanity check: no item is in the playlist twice:
 	#ifdef _DEBUG
 		std::set<IPlaylistItemPtr> items;
-		for (const auto & item: m_Items)
+		for (const auto & item: mItems)
 		{
 			assert(items.find(item) == items.cend());
 			items.insert(item);
@@ -117,14 +117,14 @@ void Playlist::moveItem(int a_FromIdx, int a_ToIdx)
 
 
 
-void Playlist::deleteItem(int a_Index)
+void Playlist::deleteItem(int aIndex)
 {
-	emit itemDeleting(m_Items[static_cast<size_t>(a_Index)].get(), a_Index);
-	m_Items.erase(m_Items.begin() + a_Index);
-	if (m_CurrentItemIdx > a_Index)
+	emit itemDeleting(mItems[static_cast<size_t>(aIndex)].get(), aIndex);
+	mItems.erase(mItems.begin() + aIndex);
+	if (mCurrentItemIdx > aIndex)
 	{
-		m_CurrentItemIdx -= 1;
-		emit currentItemChanged(m_CurrentItemIdx);
+		mCurrentItemIdx -= 1;
+		emit currentItemChanged(mCurrentItemIdx);
 	}
 }
 
@@ -132,9 +132,9 @@ void Playlist::deleteItem(int a_Index)
 
 
 
-void Playlist::deleteItems(std::vector<int> && a_Indices)
+void Playlist::deleteItems(std::vector<int> && aIndices)
 {
-	std::vector<int> sortedIndices(std::move(a_Indices));
+	std::vector<int> sortedIndices(std::move(aIndices));
 	std::sort(sortedIndices.begin(), sortedIndices.end(), std::greater<int>());
 	for (const auto idx: sortedIndices)
 	{
@@ -148,12 +148,12 @@ void Playlist::deleteItems(std::vector<int> && a_Indices)
 
 IPlaylistItemPtr Playlist::currentItem() const
 {
-	if ((m_CurrentItemIdx < 0) || m_Items.empty())
+	if ((mCurrentItemIdx < 0) || mItems.empty())
 	{
 		return nullptr;
 	}
-	assert(static_cast<size_t>(m_CurrentItemIdx) < m_Items.size());
-	return m_Items[static_cast<size_t>(m_CurrentItemIdx)];
+	assert(static_cast<size_t>(mCurrentItemIdx) < mItems.size());
+	return mItems[static_cast<size_t>(mCurrentItemIdx)];
 }
 
 
@@ -162,12 +162,12 @@ IPlaylistItemPtr Playlist::currentItem() const
 
 bool Playlist::nextItem()
 {
-	if (static_cast<size_t>(m_CurrentItemIdx + 1) >= m_Items.size())
+	if (static_cast<size_t>(mCurrentItemIdx + 1) >= mItems.size())
 	{
 		return false;
 	}
-	m_CurrentItemIdx += 1;
-	emit currentItemChanged(m_CurrentItemIdx);
+	mCurrentItemIdx += 1;
+	emit currentItemChanged(mCurrentItemIdx);
 	return true;
 }
 
@@ -177,12 +177,12 @@ bool Playlist::nextItem()
 
 bool Playlist::prevItem()
 {
-	if (m_CurrentItemIdx <= 0)
+	if (mCurrentItemIdx <= 0)
 	{
 		return false;
 	}
-	m_CurrentItemIdx -= 1;
-	emit currentItemChanged(m_CurrentItemIdx);
+	mCurrentItemIdx -= 1;
+	emit currentItemChanged(mCurrentItemIdx);
 	return true;
 }
 
@@ -190,17 +190,17 @@ bool Playlist::prevItem()
 
 
 
-bool Playlist::setCurrentItem(int a_Index)
+bool Playlist::setCurrentItem(int aIndex)
 {
 	if (
-		(a_Index < 0) ||
-		(static_cast<size_t>(a_Index) >= m_Items.size())
+		(aIndex < 0) ||
+		(static_cast<size_t>(aIndex) >= mItems.size())
 	)
 	{
 		return false;
 	}
-	m_CurrentItemIdx = a_Index;
-	emit currentItemChanged(m_CurrentItemIdx);
+	mCurrentItemIdx = aIndex;
+	emit currentItemChanged(mCurrentItemIdx);
 	return true;
 }
 
@@ -208,15 +208,15 @@ bool Playlist::setCurrentItem(int a_Index)
 
 
 
-bool Playlist::setCurrentItem(const IPlaylistItem * a_Item)
+bool Playlist::setCurrentItem(const IPlaylistItem * aItem)
 {
 	int idx = 0;
-	for (const auto & item: m_Items)
+	for (const auto & item: mItems)
 	{
-		if (item.get() == a_Item)
+		if (item.get() == aItem)
 		{
-			m_CurrentItemIdx = idx;
-			emit currentItemChanged(m_CurrentItemIdx);
+			mCurrentItemIdx = idx;
+			emit currentItemChanged(mCurrentItemIdx);
 			return true;
 		}
 		idx += 1;
@@ -228,11 +228,11 @@ bool Playlist::setCurrentItem(const IPlaylistItem * a_Item)
 
 
 
-void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Template)
+void Playlist::addFromTemplate(const Database & aDB, const Template & aTemplate)
 {
-	for (const auto & item: a_Template.items())
+	for (const auto & item: aTemplate.items())
 	{
-		addFromFilter(a_DB, *item);
+		addFromFilter(aDB, *item);
 	}
 }
 
@@ -240,14 +240,14 @@ void Playlist::addFromTemplate(const Database & a_DB, const Template & a_Templat
 
 
 
-bool Playlist::addFromFilter(const Database & a_DB, Filter & a_Filter)
+bool Playlist::addFromFilter(const Database & aDB, Filter & aFilter)
 {
-	auto song = a_DB.pickSongForFilter(a_Filter);
+	auto song = aDB.pickSongForFilter(aFilter);
 	if (song == nullptr)
 	{
 		return false;
 	}
-	addItem(std::make_shared<PlaylistItemSong>(song, a_Filter.shared_from_this()));
+	addItem(std::make_shared<PlaylistItemSong>(song, aFilter.shared_from_this()));
 	return true;
 }
 
@@ -255,15 +255,15 @@ bool Playlist::addFromFilter(const Database & a_DB, Filter & a_Filter)
 
 
 
-void Playlist::replaceItem(int a_Index, IPlaylistItemPtr a_Item)
+void Playlist::replaceItem(int aIndex, IPlaylistItemPtr aItem)
 {
-	if (!isValidIndex(a_Index))
+	if (!isValidIndex(aIndex))
 	{
 		return;
 	}
-	m_Items[static_cast<size_t>(a_Index)] = a_Item;
-	emit itemReplaced(static_cast<int>(a_Index), a_Item.get());
-	if (a_Index > m_CurrentItemIdx)
+	mItems[static_cast<size_t>(aIndex)] = aItem;
+	emit itemReplaced(static_cast<int>(aIndex), aItem.get());
+	if (aIndex > mCurrentItemIdx)
 	{
 		updateItemTimesFromCurrent();
 	}
@@ -273,25 +273,25 @@ void Playlist::replaceItem(int a_Index, IPlaylistItemPtr a_Item)
 
 
 
-void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
+void Playlist::insertItem(int aIndex, IPlaylistItemPtr aItem)
 {
-	if (a_Index > static_cast<int>(m_Items.size()))
+	if (aIndex > static_cast<int>(mItems.size()))
 	{
-		a_Index = static_cast<int>(m_Items.size());
+		aIndex = static_cast<int>(mItems.size());
 	}
-	m_Items.insert(m_Items.begin() + a_Index, a_Item);
-	if (a_Index <= m_CurrentItemIdx)
+	mItems.insert(mItems.begin() + aIndex, aItem);
+	if (aIndex <= mCurrentItemIdx)
 	{
-		m_CurrentItemIdx += 1;
+		mCurrentItemIdx += 1;
 	}
-	emit itemInserted(a_Index, a_Item.get());
-	if (a_Index > m_CurrentItemIdx)
+	emit itemInserted(aIndex, aItem.get());
+	if (aIndex > mCurrentItemIdx)
 	{
 		updateItemTimesFromCurrent();
 	}
 	else
 	{
-		emit currentItemChanged(m_CurrentItemIdx);
+		emit currentItemChanged(mCurrentItemIdx);
 	}
 }
 
@@ -299,12 +299,12 @@ void Playlist::insertItem(int a_Index, IPlaylistItemPtr a_Item)
 
 
 
-void Playlist::insertItems(int a_Index, const std::vector<IPlaylistItemPtr> & a_Items)
+void Playlist::insertItems(int aIndex, const std::vector<IPlaylistItemPtr> & aItems)
 {
-	for (const auto & item: a_Items)
+	for (const auto & item: aItems)
 	{
-		insertItem(a_Index, item);
-		a_Index += 1;
+		insertItem(aIndex, item);
+		aIndex += 1;
 	}
 }
 
@@ -314,28 +314,28 @@ void Playlist::insertItems(int a_Index, const std::vector<IPlaylistItemPtr> & a_
 
 bool Playlist::isAtEnd() const
 {
-	return (m_CurrentItemIdx == static_cast<int>(m_Items.size()) - 1);
+	return (mCurrentItemIdx == static_cast<int>(mItems.size()) - 1);
 }
 
 
 
 
 
-bool Playlist::isValidIndex(int a_Index) const
+bool Playlist::isValidIndex(int aIndex) const
 {
-	return (a_Index >= 0) && (a_Index < static_cast<int>(m_Items.size()));
+	return (aIndex >= 0) && (aIndex < static_cast<int>(mItems.size()));
 }
 
 
 
 
 
-int Playlist::indexFromItem(const IPlaylistItem & a_Item)
+int Playlist::indexFromItem(const IPlaylistItem & aItem)
 {
-	auto s = m_Items.size();
+	auto s = mItems.size();
 	for (size_t i = 0; i < s; ++i)
 	{
-		if (m_Items[i].get() == &a_Item)
+		if (mItems[i].get() == &aItem)
 		{
 			return static_cast<int>(i);
 		}
@@ -348,25 +348,25 @@ int Playlist::indexFromItem(const IPlaylistItem & a_Item)
 
 
 
-void Playlist::updateItemsStartEndTimes(int a_StartIdx)
+void Playlist::updateItemsStartEndTimes(int aStartIdx)
 {
-	assert(isValidIndex(a_StartIdx));
-	assert(a_StartIdx > m_CurrentItemIdx);  // Can only update track start times after the currently-playing track
+	assert(isValidIndex(aStartIdx));
+	assert(aStartIdx > mCurrentItemIdx);  // Can only update track start times after the currently-playing track
 
-	auto started = (a_StartIdx > 0) ?
-		m_Items[static_cast<size_t>(a_StartIdx) - 1]->m_PlaybackEnded :
+	auto started = (aStartIdx > 0) ?
+		mItems[static_cast<size_t>(aStartIdx) - 1]->mPlaybackEnded :
 		QDateTime::currentDateTimeUtc();
-	auto idx = a_StartIdx;
-	for (auto itr = m_Items.begin() + a_StartIdx, end = m_Items.end(); itr != end; ++itr, ++idx)
+	auto idx = aStartIdx;
+	for (auto itr = mItems.begin() + aStartIdx, end = mItems.end(); itr != end; ++itr, ++idx)
 	{
 		auto item = *itr;
 		auto dur = static_cast<int>(std::round(item->totalPlaybackDuration() * 1000));
 		auto ended = started.addMSecs(dur);
-		if ((started != item->m_PlaybackStarted) || (ended != item->m_PlaybackEnded))
+		if ((started != item->mPlaybackStarted) || (ended != item->mPlaybackEnded))
 		{
 			// There's a change in this item, save it and emit it:
-			item->m_PlaybackStarted = started;
-			item->m_PlaybackEnded = ended;
+			item->mPlaybackStarted = started;
+			item->mPlaybackEnded = ended;
 			emit itemTimesChanged(idx, item.get());
 		}
 		started = ended;
@@ -377,10 +377,10 @@ void Playlist::updateItemsStartEndTimes(int a_StartIdx)
 
 
 
-void Playlist::removeSong(SongPtr a_Song)
+void Playlist::removeSong(SongPtr aSong)
 {
 	int idx = 0;
-	for (auto itr = m_Items.begin(); itr != m_Items.end();)
+	for (auto itr = mItems.begin(); itr != mItems.end();)
 	{
 		auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(*itr);
 		if (plis == nullptr)
@@ -389,14 +389,14 @@ void Playlist::removeSong(SongPtr a_Song)
 			++idx;
 			continue;
 		}
-		if (plis->song() != a_Song)
+		if (plis->song() != aSong)
 		{
 			++itr;
 			++idx;
 			continue;
 		}
 		emit itemDeleting(itr->get(), idx);
-		itr = m_Items.erase(itr);
+		itr = mItems.erase(itr);
 	}
 }
 
@@ -406,13 +406,13 @@ void Playlist::removeSong(SongPtr a_Song)
 
 void Playlist::updateItemTimesFromCurrent()
 {
-	auto idx = m_CurrentItemIdx;
+	auto idx = mCurrentItemIdx;
 	if (!isValidIndex(idx))
 	{
 		// Happens when deleting all items form the playlist
 		return;
 	}
-	auto item = m_Items[static_cast<size_t>(idx)];
+	auto item = mItems[static_cast<size_t>(idx)];
 	assert(item != nullptr);
 	// The current item's times have already been set in the Player, just emit the update signal now:
 	emit itemTimesChanged(idx, item.get());
@@ -428,16 +428,16 @@ void Playlist::updateItemTimesFromCurrent()
 
 void Playlist::eraseItemTimesAfterCurrent()
 {
-	if (!isValidIndex(m_CurrentItemIdx))
+	if (!isValidIndex(mCurrentItemIdx))
 	{
 		return;
 	}
-	auto idx = m_CurrentItemIdx + 1;
-	for (auto itr = m_Items.begin() + idx, end = m_Items.end(); itr != end; ++itr, ++idx)
+	auto idx = mCurrentItemIdx + 1;
+	for (auto itr = mItems.begin() + idx, end = mItems.end(); itr != end; ++itr, ++idx)
 	{
 		auto item = *itr;
-		item->m_PlaybackStarted = QDateTime();
-		item->m_PlaybackEnded = QDateTime();
+		item->mPlaybackStarted = QDateTime();
+		item->mPlaybackEnded = QDateTime();
 		emit itemTimesChanged(idx, item.get());
 	}
 }

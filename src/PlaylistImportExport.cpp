@@ -9,15 +9,15 @@
 
 
 
-void PlaylistImportExport::doExport(const Playlist & a_Playlist, const QString & a_FileName)
+void PlaylistImportExport::doExport(const Playlist & aPlaylist, const QString & aFileName)
 {
-	QFile f(a_FileName);
+	QFile f(aFileName);
 	if (!f.open(QFile::ReadWrite))
 	{
 		throw RuntimeError(tr("Cannot write to file"));
 	}
 	f.write("#EXTM3U\n");
-	for (const auto & i: a_Playlist.items())
+	for (const auto & i: aPlaylist.items())
 	{
 		auto si = std::dynamic_pointer_cast<PlaylistItemSong>(i);
 		if (si == nullptr)
@@ -44,13 +44,13 @@ void PlaylistImportExport::doExport(const Playlist & a_Playlist, const QString &
 
 
 int PlaylistImportExport::doImport(
-	Playlist & a_Playlist,
-	Database & a_DB,
-	int a_AfterPos,
-	const QString & a_FileName
+	Playlist & aPlaylist,
+	Database & aDB,
+	int aAfterPos,
+	const QString & aFileName
 )
 {
-	QFile f(a_FileName);
+	QFile f(aFileName);
 	if (!f.open(QFile::ReadOnly | QFile::Text))
 	{
 		throw RuntimeError(tr("Cannot read from file"));
@@ -92,18 +92,18 @@ int PlaylistImportExport::doImport(
 		else
 		{
 			// A file entry, add to playlist with all the flags gathered so far:
-			auto song = a_DB.songFromHash(songHash);
+			auto song = aDB.songFromHash(songHash);
 			if (song == nullptr)
 			{
 				auto songFileName = QString::fromUtf8(line, static_cast<int>(numBytes));
-				song = a_DB.songFromFileName(songFileName);
+				song = aDB.songFromFileName(songFileName);
 				if (song == nullptr)
 				{
 					qDebug() << "Song not found: hash " << songHash << ", filename " << songFileName;
 					continue;
 				}
 			}
-			auto filter = a_DB.filterFromHash(filterHash);
+			auto filter = aDB.filterFromHash(filterHash);
 			tmp.addItem(std::make_shared<PlaylistItemSong>(song, filter));
 			filterHash.clear();
 			songHash.clear();
@@ -120,6 +120,6 @@ int PlaylistImportExport::doImport(
 	}
 
 	// Insert the items into the playlist:
-	a_Playlist.insertItems(a_AfterPos + 1, tmp.items());
+	aPlaylist.insertItems(aAfterPos + 1, tmp.items());
 	return static_cast<int>(tmp.items().size());
 }

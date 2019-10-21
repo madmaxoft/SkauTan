@@ -31,17 +31,17 @@ public:
 
 	/** Exports the entire playlist to the specified file.
 	Throws an Exception on failure. */
-	static void doExport(const Playlist & a_Playlist, const QString & a_FileName);
+	static void doExport(const Playlist & aPlaylist, const QString & aFileName);
 
 	/** Imports the specified file to the specified playlist, after the specified position.
-	Songs are picked from a_DB; if a song is not found, it is silently dropped.
+	Songs are picked from aDB; if a song is not found, it is silently dropped.
 	Returns the number of songs inserted into the playlist.
 	Throws an Exception on failure. */
 	static int doImport(
-		Playlist & a_Playlist,
-		Database & a_DB,
-		int a_AfterPos,
-		const QString & a_FileName
+		Playlist & aPlaylist,
+		Database & aDB,
+		int aAfterPos,
+		const QString & aFileName
 	);
 };
 

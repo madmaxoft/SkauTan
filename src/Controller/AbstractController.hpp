@@ -137,8 +137,8 @@ public:
 	virtual bool ping() = 0;
 
 	/** Sets the specified LED light to the specified state.
-	a_Led may be a StandardLed constant, or a controller-specific LED number. */
-	virtual void setLed(int a_Led, bool a_On) = 0;
+	aLed may be a StandardLed constant, or a controller-specific LED number. */
+	virtual void setLed(int aLed, bool aOn) = 0;
 
 	/** Returns the user-visible controller name. */
 	virtual QString name() const = 0;
@@ -147,18 +147,18 @@ public:
 signals:
 
 	/** The user pressed a key on the controller.
-	a_Key specifies the controller key, either a StandardKey value or a controller-specific key number. */
-	void keyPressed(int a_Key);
+	aKey specifies the controller key, either a StandardKey value or a controller-specific key number. */
+	void keyPressed(int aKey);
 
 	/** The user moved a slider to the specified value.
-	a_Slider identifies the slider, either a StandardSlider value or a controller-specific slider number.
-	a_Value is normalized into the range 0 .. 1 */
-	void sliderSet(int a_Slider, qreal a_Value);
+	aSlider identifies the slider, either a StandardSlider value or a controller-specific slider number.
+	aValue is normalized into the range 0 .. 1 */
+	void sliderSet(int aSlider, qreal aValue);
 
 	/** The user moved a (jog)wheel the specified number of steps.
-	a_Wheel identifies the wheel, either a StandardWheel value or a controller-specific wheel number
-	a_NumSteps indicates the number of steps (controller chooses direction to be positive, the other negative). */
-	void wheelMoved(int a_Wheel, int a_NumSteps);
+	aWheel identifies the wheel, either a StandardWheel value or a controller-specific wheel number
+	aNumSteps indicates the number of steps (controller chooses direction to be positive, the other negative). */
+	void wheelMoved(int aWheel, int aNumSteps);
 
 	/** The controller has been unplugged from the system. */
 	void unplugged();

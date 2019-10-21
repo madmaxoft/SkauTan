@@ -23,33 +23,33 @@ class ColorDelegate:
 public:
 
 	/** Creates a new delegate.
-	a_ColorDialogCaption specifies the caption to use for the color picker dialog, once the user clicks the button. */
-	ColorDelegate(const QString & a_ColorDialogCaption, QObject * a_Parent = nullptr);
+	aColorDialogCaption specifies the caption to use for the color picker dialog, once the user clicks the button. */
+	ColorDelegate(const QString & aColorDialogCaption, QObject * aParent = nullptr);
 
 
 	// QItemDelegate overrides:
 	virtual void paint(
-		QPainter * a_Painter,
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		QPainter * aPainter,
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) const override;
 
 	virtual bool editorEvent(
-		QEvent * a_Event,
-		QAbstractItemModel * a_Model,
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		QEvent * aEvent,
+		QAbstractItemModel * aModel,
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) override;
 
 
 protected:
 
 	/** The caption to be used for the color picker dialog. */
-	QString m_ColorDialogCaption;
+	QString mColorDialogCaption;
 
 
 	/** Returns the rectangle for the button in the specified item's bounding rectangle. */
-	QRect buttonRectFromItemRect(const QRect & a_ItemRect) const;
+	QRect buttonRectFromItemRect(const QRect & aItemRect) const;
 };
 
 

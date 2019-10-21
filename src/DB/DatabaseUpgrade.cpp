@@ -12,21 +12,21 @@
 class VersionScript
 {
 public:
-	VersionScript(std::vector<std::string> && a_Commands):
-		m_Commands(std::move(a_Commands))
+	VersionScript(std::vector<std::string> && aCommands):
+		mCommands(std::move(aCommands))
 	{}
 
-	std::vector<std::string> m_Commands;
+	std::vector<std::string> mCommands;
 
 
-	/** Applies this upgrade script to the specified DB, and updates its version to a_Version. */
-	void apply(QSqlDatabase & a_DB, size_t a_Version) const
+	/** Applies this upgrade script to the specified DB, and updates its version to aVersion. */
+	void apply(QSqlDatabase & aDB, size_t aVersion) const
 	{
-		qDebug() << "Executing DB upgrade script to version " << a_Version;
+		qDebug() << "Executing DB upgrade script to version " << aVersion;
 
 		// Temporarily disable FKs:
 		{
-			auto query = a_DB.exec("pragma foreign_keys = off");
+			auto query = aDB.exec("pragma foreign_keys = off");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL query failed: " << query.lastError();
@@ -36,7 +36,7 @@ public:
 
 		// Begin transaction:
 		{
-			auto query = a_DB.exec("begin");
+			auto query = aDB.exec("begin");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL query failed: " << query.lastError();
@@ -45,9 +45,9 @@ public:
 		}
 
 		// Execute the individual commands:
-		for (const auto & cmd: m_Commands)
+		for (const auto & cmd: mCommands)
 		{
-			auto query = a_DB.exec(QString::fromStdString(cmd));
+			auto query = aDB.exec(QString::fromStdString(cmd));
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL upgrade command failed: " << query.lastError();
@@ -58,7 +58,7 @@ public:
 
 		// Set the new version:
 		{
-			auto query = a_DB.exec(QString("UPDATE Version SET Version = %1").arg(a_Version));
+			auto query = aDB.exec(QString("UPDATE Version SET Version = %1").arg(aVersion));
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL transaction commit failed: " << query.lastError();
@@ -68,7 +68,7 @@ public:
 
 		// Check the FK constraints:
 		{
-			auto query = a_DB.exec("pragma check_foreign_keys");
+			auto query = aDB.exec("pragma check_foreign_keys");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL transaction commit failed: " << query.lastError();
@@ -78,7 +78,7 @@ public:
 
 		// Commit the transaction:
 		{
-			auto query = a_DB.exec("commit");
+			auto query = aDB.exec("commit");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL transaction commit failed: " << query.lastError();
@@ -88,7 +88,7 @@ public:
 
 		// Re-enable FKs:
 		{
-			auto query = a_DB.exec("pragma foreign_keys = on");
+			auto query = aDB.exec("pragma foreign_keys = on");
 			if (query.lastError().type() != QSqlError::NoError)
 			{
 				qWarning() << "SQL query failed: " << query.lastError();
@@ -793,8 +793,8 @@ static const std::vector<VersionScript> g_VersionScripts =
 ////////////////////////////////////////////////////////////////////////////////
 // DatabaseUpgrade:
 
-DatabaseUpgrade::DatabaseUpgrade(Database & a_DB):
-	m_DB(a_DB.database())
+DatabaseUpgrade::DatabaseUpgrade(Database & aDB):
+	mDB(aDB.database())
 {
 }
 
@@ -802,9 +802,9 @@ DatabaseUpgrade::DatabaseUpgrade(Database & a_DB):
 
 
 
-void DatabaseUpgrade::upgrade(Database & a_DB)
+void DatabaseUpgrade::upgrade(Database & aDB)
 {
-	DatabaseUpgrade upg(a_DB);
+	DatabaseUpgrade upg(aDB);
 	return upg.execute();
 }
 
@@ -829,14 +829,14 @@ void DatabaseUpgrade::execute()
 	for (auto i = version; i < g_VersionScripts.size(); ++i)
 	{
 		qWarning() << "Upgrading DB to version" << i + 1;
-		g_VersionScripts[i].apply(m_DB, i + 1);
+		g_VersionScripts[i].apply(mDB, i + 1);
 		hasUpgraded = true;
 	}
 
 	// After upgrading, vacuum the leftover space:
 	if (hasUpgraded)
 	{
-		auto query = m_DB.exec("VACUUM");
+		auto query = mDB.exec("VACUUM");
 		if (query.lastError().type() != QSqlError::NoError)
 		{
 			throw SqlError(query.lastError(), "VACUUM");
@@ -850,7 +850,7 @@ void DatabaseUpgrade::execute()
 
 size_t DatabaseUpgrade::getVersion()
 {
-	auto query = m_DB.exec("SELECT MAX(Version) AS Version FROM Version");
+	auto query = mDB.exec("SELECT MAX(Version) AS Version FROM Version");
 	if (!query.first())
 	{
 		return 0;
@@ -865,7 +865,7 @@ size_t DatabaseUpgrade::getVersion()
 ////////////////////////////////////////////////////////////////////////////////
 // DatabaseUpgrade::SqlError:
 
-DatabaseUpgrade::SqlError::SqlError(const QSqlError & a_SqlError, const std::string & a_SqlCommand):
-	Super("Failed to upgrade database: %1 (command \"%2\")", a_SqlError, a_SqlCommand)
+DatabaseUpgrade::SqlError::SqlError(const QSqlError & aSqlError, const std::string & aSqlCommand):
+	Super("Failed to upgrade database: %1 (command \"%2\")", aSqlError, aSqlCommand)
 {
 }

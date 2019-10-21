@@ -110,16 +110,16 @@ public:
 		Node();
 
 		/** Creates a "comparison" node, with the specified comparison pre-set. */
-		Node(SongProperty a_SongProperty, Comparison a_Comparison, QVariant a_Value);
+		Node(SongProperty aSongProperty, Comparison aComparison, QVariant aValue);
 
 		/** Create a "combination" node over the specified sub-nodes. */
-		Node(Kind a_Combination, const std::vector<NodePtr> a_SubFilters = {});
+		Node(Kind aCombination, const std::vector<NodePtr> aSubFilters = {});
 
 		/** Returns a clone of this node, including a clone of its subtree. */
 		NodePtr clone() const;
 
-		Node * parent() const { return m_Parent; }
-		Kind kind() const { return m_Kind; }
+		Node * parent() const { return mParent; }
+		Kind kind() const { return mKind; }
 
 		/** Returns all direct sub-nodes of this node.
 		Only valid with nkAnd or nkOr nodes. */
@@ -139,33 +139,33 @@ public:
 
 		/** Updates the node kind.
 		If moving from a combinator to a comparator, clears the children. */
-		void setKind(Kind a_Kind);
+		void setKind(Kind aKind);
 
 		// Setters for the comparators; assert when not a comparator:
-		void setSongProperty(SongProperty a_SongProperty);
-		void setComparison(Comparison a_Comparison);
-		void setValue(QVariant a_Value);
+		void setSongProperty(SongProperty aSongProperty);
+		void setComparison(Comparison aComparison);
+		void setValue(QVariant aValue);
 
 		/** Returns true if the specified song satisfies this filter. */
-		bool isSatisfiedBy(const Song & a_Song) const;
+		bool isSatisfiedBy(const Song & aSong) const;
 
-		/** Returns true if this filter can have children (based on its m_Kind). */
+		/** Returns true if this filter can have children (based on its mKind). */
 		bool canHaveChildren() const;
 
-		/** Adds the specified sub-filter to m_Children.
+		/** Adds the specified sub-filter to mChildren.
 		Only valid with nkAnd and nkOr nodes. */
-		void addChild(NodePtr a_Child);
+		void addChild(NodePtr aChild);
 
 		/** Replaces the specified existing child with the specified new child.
 		The old child first gets its parent reset to nullptr, then its SharedPtr is dropped.
 		The new child's parent is set to this.
 		Only valid with nkOr and nkAnd nodes. */
-		void replaceChild(Node * a_ExistingChild, NodePtr a_NewChild);
+		void replaceChild(Node * aExistingChild, NodePtr aNewChild);
 
 		/** Removes the specified child.
 		The child first gets its parent reset to nullptr, then its SharedPtr is dropped.
 		Only valid with nkOr and nkAnd nodes. */
-		void removeChild(const Node * a_ExistingChild);
+		void removeChild(const Node * aExistingChild);
 
 		/** Checks that this node's children have their parent set to this, and recurses into them. */
 		void checkConsistency() const;
@@ -179,21 +179,21 @@ public:
 
 		/** Returns the Kind that matches the specified integer value.
 		A std::runtime_error is thrown for unrecognized values. */
-		static Kind intToKind(int a_Kind);
+		static Kind intToKind(int aKind);
 
 		/** Returns the Comparison that matches the specified integer value.
 		A std::runtime_error is thrown for unrecognized values. */
-		static Comparison intToComparison(int a_Comparison);
+		static Comparison intToComparison(int aComparison);
 
 		/** Returns the Comparison that matches the specified integer value.
 		A std::runtime_error is thrown for unrecognized values. */
-		static SongProperty intToSongProperty(int a_SongProperty);
+		static SongProperty intToSongProperty(int aSongProperty);
 
 		/** Returns the user-visible string representation of the specified SongProperty. */
-		static QString songPropertyCaption(SongProperty a_Prop);
+		static QString songPropertyCaption(SongProperty aProp);
 
 		/** Returns the user-visible string representation of the specified Comparison. */
-		static QString comparisonCaption(Comparison a_Comparison);
+		static QString comparisonCaption(Comparison aComparison);
 
 
 	protected:
@@ -202,35 +202,35 @@ public:
 
 		/** Sets the parent of this filter.
 		Only accessible to the Filter parent class. */
-		void setParent(Node * a_Parent) { m_Parent = a_Parent; }
+		void setParent(Node * aParent) { mParent = aParent; }
 
 		/** Returns the concatenated descriptions of the children, using the specified separator.
 		Assumes that the filter is nkAnd or nkOr. */
-		QString concatChildrenDescriptions(const QString & a_Separator) const;
+		QString concatChildrenDescriptions(const QString & aSeparator) const;
 
 		/** Returns true if the comparison in this node is satisfied by the song.
 		Asserts if this node is not a nkComparison. */
-		bool isComparisonSatisfiedBy(const Song & a_Song) const;
+		bool isComparisonSatisfiedBy(const Song & aSong) const;
 
 		/** Returns true if the comparison in this node is satisfied by the specified value.
 		Asserts if this node is not a nkComparison. */
-		bool isStringComparisonSatisfiedBy(const DatedOptional<QString> & a_Value) const;
+		bool isStringComparisonSatisfiedBy(const DatedOptional<QString> & aValue) const;
 
 		/** Returns true if the comparison in this node is satisfied by the specified value.
 		Asserts if this node is not a nkComparison. */
-		bool isNumberComparisonSatisfiedBy(const DatedOptional<double> & a_Value) const;
+		bool isNumberComparisonSatisfiedBy(const DatedOptional<double> & aValue) const;
 
 		/** Returns true if the comparison in this node is satisfied by the specified value.
 		Asserts if this node is not a nkComparison. */
-		bool isNumberComparisonSatisfiedBy(const QVariant & a_Value) const;
+		bool isNumberComparisonSatisfiedBy(const QVariant & aValue) const;
 
 		/** Returns true if the comparison in this node is satistied by the specified number.
 		Asserts is this node is not a nkComparison. */
-		bool isValidNumberComparisonSatisfiedBy(double a_Value) const;
+		bool isValidNumberComparisonSatisfiedBy(double aValue) const;
 
 		/** Returns true if the comparison in this node is satisfied by the specified value.
 		Asserts if this node is not a nkComparison. */
-		bool isDateComparisonSatisfiedBy(QDateTime a_Value) const;
+		bool isDateComparisonSatisfiedBy(QDateTime aValue) const;
 
 		/** Returns the hash of the node (including children),
 		trying to identify the node uniquely (-enough). */
@@ -240,17 +240,17 @@ public:
 	private:
 
 		/** The parent of this node. */
-		Node * m_Parent;
+		Node * mParent;
 
-		Kind m_Kind;
+		Kind mKind;
 
 		// For combination of sub-nodes (nkAnd, nkOr):
-		std::vector<NodePtr> m_Children;
+		std::vector<NodePtr> mChildren;
 
 		// For direct comparison (nkComparison):
-		SongProperty m_SongProperty;
-		Comparison m_Comparison;
-		QVariant m_Value;
+		SongProperty mSongProperty;
+		Comparison mComparison;
+		QVariant mValue;
 	};
 
 
@@ -260,38 +260,38 @@ public:
 
 	/** Creates a filter with all the fields set up and a Noop node tree. */
 	Filter(
-		qlonglong a_DbRowId,
-		const QString & a_DisplayName,
-		const QString & a_Notes,
-		bool a_IsFavorite,
-		QColor a_BgColor,
-		const DatedOptional<double> & a_DurationLimit
+		qlonglong aDbRowId,
+		const QString & aDisplayName,
+		const QString & aNotes,
+		bool aIsFavorite,
+		QColor aBgColor,
+		const DatedOptional<double> & aDurationLimit
 	);
 
 	/** Creates a new filter as a copy of the specified filter, with a clone of the node tree.
 	Doesn't copy the DB RowID, -1 is assigned instead. */
-	Filter(const Filter & a_CopyFrom);
+	Filter(const Filter & aCopyFrom);
 
-	qlonglong dbRowId() const { return m_DbRowId; }
-	const QString & displayName() const { return m_DisplayName; }
-	const QString & notes() const { return m_Notes; }
-	bool isFavorite() const { return m_IsFavorite; }
-	NodePtr rootNode() const { return m_RootNode; }
-	const QColor & bgColor() const { return m_BgColor; }
-	const DatedOptional<double> durationLimit() const { return m_DurationLimit; }
+	qlonglong dbRowId() const { return mDbRowId; }
+	const QString & displayName() const { return mDisplayName; }
+	const QString & notes() const { return mNotes; }
+	bool isFavorite() const { return mIsFavorite; }
+	NodePtr rootNode() const { return mRootNode; }
+	const QColor & bgColor() const { return mBgColor; }
+	const DatedOptional<double> durationLimit() const { return mDurationLimit; }
 
 	/** Returns the user-visible description of the entire filter. */
-	QString getFilterDescription() const { return m_RootNode->getDescription(); }
+	QString getFilterDescription() const { return mRootNode->getDescription(); }
 
-	void setDisplayName(const QString & a_DisplayName) { m_DisplayName = a_DisplayName; }
-	void setNotes(const QString & a_Notes) { m_Notes = a_Notes; }
-	void setIsFavorite(bool a_IsFavorite) { m_IsFavorite = a_IsFavorite; }
-	void setRootNode(NodePtr a_RootNode) { m_RootNode = a_RootNode; m_RootNode->setParent(nullptr); }
-	void setBgColor(const QColor & a_BgColor) { m_BgColor = a_BgColor; }
-	void setDurationLimit(double a_Seconds) { m_DurationLimit = a_Seconds; }
+	void setDisplayName(const QString & aDisplayName) { mDisplayName = aDisplayName; }
+	void setNotes(const QString & aNotes) { mNotes = aNotes; }
+	void setIsFavorite(bool aIsFavorite) { mIsFavorite = aIsFavorite; }
+	void setRootNode(NodePtr aRootNode) { mRootNode = aRootNode; mRootNode->setParent(nullptr); }
+	void setBgColor(const QColor & aBgColor) { mBgColor = aBgColor; }
+	void setDurationLimit(double aSeconds) { mDurationLimit = aSeconds; }
 
 	/** Remove the duration limit. */
-	void resetDurationLimit() { m_DurationLimit.reset(); }
+	void resetDurationLimit() { mDurationLimit.reset(); }
 
 	/** Sets the filter to a noop root Node.
 	Used when loader detects invalid filter. */
@@ -311,32 +311,32 @@ protected:
 
 
 	/** The DB RowId where this filter is stored. */
-	qlonglong m_DbRowId;
+	qlonglong mDbRowId;
 
 	/** The display name assigned to this filter. */
-	QString m_DisplayName;
+	QString mDisplayName;
 
 	/** User notes for the filter. */
-	QString m_Notes;
+	QString mNotes;
 
 	/** Items that are marked as Favorite are added to the quick-add list. */
-	bool m_IsFavorite;
+	bool mIsFavorite;
 
 	/** The root Node on which this filter operates. */
-	NodePtr m_RootNode;
+	NodePtr mRootNode;
 
 	/** The color to use for background when displaying this filter. */
-	QColor m_BgColor;
+	QColor mBgColor;
 
 	/** An optional limit for duration.
 	If set, the playlist item created from this will inherit the limit. */
-	DatedOptional<double> m_DurationLimit;
+	DatedOptional<double> mDurationLimit;
 
 
 	/** Sets the DB RowID.
 	Asserts that the RowID hasn't been set before (can only be called once).
 	Only to be called from within Database. */
-	void setDbRowId(qlonglong a_DbRowId);
+	void setDbRowId(qlonglong aDbRowId);
 };
 
 Q_DECLARE_METATYPE(FilterPtr);

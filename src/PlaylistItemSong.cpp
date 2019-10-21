@@ -6,10 +6,10 @@
 
 
 
-PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, FilterPtr a_Filter):
-	m_Song(a_Song),
-	m_Filter(a_Filter),
-	m_DurationLimit((a_Filter == nullptr) ? -1 : a_Filter->durationLimit().valueOr(-1))
+PlaylistItemSong::PlaylistItemSong(SongPtr aSong, FilterPtr aFilter):
+	mSong(aSong),
+	mFilter(aFilter),
+	mDurationLimit((aFilter == nullptr) ? -1 : aFilter->durationLimit().valueOr(-1))
 {
 }
 
@@ -20,7 +20,7 @@ PlaylistItemSong::PlaylistItemSong(SongPtr a_Song, FilterPtr a_Filter):
 QString PlaylistItemSong::displayName() const
 {
 	// TODO: Decide whether to show full filename, or just partial
-	return m_Song->fileName();
+	return mSong->fileName();
 }
 
 
@@ -29,7 +29,7 @@ QString PlaylistItemSong::displayName() const
 
 QString PlaylistItemSong::displayAuthor() const
 {
-	return m_Song->primaryAuthor().valueOrDefault();
+	return mSong->primaryAuthor().valueOrDefault();
 }
 
 
@@ -38,7 +38,7 @@ QString PlaylistItemSong::displayAuthor() const
 
 QString PlaylistItemSong::displayTitle() const
 {
-	return m_Song->primaryTitle().valueOrDefault();
+	return mSong->primaryTitle().valueOrDefault();
 }
 
 
@@ -47,7 +47,7 @@ QString PlaylistItemSong::displayTitle() const
 
 double PlaylistItemSong::displayLength() const
 {
-	return m_Song->length().valueOr(-1);
+	return mSong->length().valueOr(-1);
 }
 
 
@@ -56,9 +56,9 @@ double PlaylistItemSong::displayLength() const
 
 QString PlaylistItemSong::displayGenre() const
 {
-	if (!m_Song->primaryGenre().isEmpty())
+	if (!mSong->primaryGenre().isEmpty())
 	{
-		return m_Song->primaryGenre().value();
+		return mSong->primaryGenre().value();
 	}
 	return QString();
 }
@@ -69,9 +69,9 @@ QString PlaylistItemSong::displayGenre() const
 
 double PlaylistItemSong::displayTempo() const
 {
-	if (m_Song->primaryMeasuresPerMinute().isPresent())
+	if (mSong->primaryMeasuresPerMinute().isPresent())
 	{
-		return m_Song->primaryMeasuresPerMinute().value();
+		return mSong->primaryMeasuresPerMinute().value();
 	}
 	return -1;
 }
@@ -80,18 +80,18 @@ double PlaylistItemSong::displayTempo() const
 
 
 
-void PlaylistItemSong::setDurationLimit(double a_Seconds)
+void PlaylistItemSong::setDurationLimit(double aSeconds)
 {
-	m_DurationLimit = a_Seconds;
+	mDurationLimit = aSeconds;
 }
 
 
 
 
 
-PlaybackBuffer * PlaylistItemSong::startDecoding(const QAudioFormat & a_Format)
+PlaybackBuffer * PlaylistItemSong::startDecoding(const QAudioFormat & aFormat)
 {
-	Q_UNUSED(a_Format);
+	Q_UNUSED(aFormat);
 
-	return new SongDecoder(a_Format, m_Song);
+	return new SongDecoder(aFormat, mSong);
 }

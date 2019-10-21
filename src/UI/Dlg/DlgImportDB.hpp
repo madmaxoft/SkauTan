@@ -31,25 +31,25 @@ class DlgImportDB:
 public:
 
 	/** The filename of the DB to import. */
-	QString m_FileName;
+	QString mFileName;
 
 	/** The import options, as set by the user. */
-	DatabaseImport::Options m_Options;
+	DatabaseImport::Options mOptions;
 
 
-	explicit DlgImportDB(QWidget * a_Parent = nullptr);
+	explicit DlgImportDB(QWidget * aParent = nullptr);
 	~DlgImportDB();
 
 
 private:
 
-	std::unique_ptr<Ui::DlgImportDB> m_UI;
+	std::unique_ptr<Ui::DlgImportDB> mUI;
 
 
 private slots:
 
-	/** Saves the options from the UI into m_Options. */
-	void onFinished(int a_Result);
+	/** Saves the options from the UI into mOptions. */
+	void onFinished(int aResult);
 
 	/** The Browse button has been clicked, ask the user for the DB file. */
 	void browseForDB();

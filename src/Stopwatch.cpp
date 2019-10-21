@@ -25,7 +25,7 @@ public:
 
 TimeSinceStart::TimeSinceStart()
 {
-	m_Timer.start();
+	mTimer.start();
 }
 
 
@@ -44,7 +44,7 @@ TimeSinceStart &TimeSinceStart::get()
 
 qint64 TimeSinceStart::nsecElapsed()
 {
-	return get().m_Timer.nsecsElapsed();
+	return get().mTimer.nsecsElapsed();
 }
 
 
@@ -53,7 +53,7 @@ qint64 TimeSinceStart::nsecElapsed()
 
 qint64 TimeSinceStart::msecElapsed()
 {
-	return get().m_Timer.elapsed();
+	return get().mTimer.elapsed();
 }
 
 
@@ -63,12 +63,12 @@ qint64 TimeSinceStart::msecElapsed()
 ////////////////////////////////////////////////////////////////////////////////
 // Stopwatch:
 
-Stopwatch::Stopwatch(const char * a_SrcFile, int a_SrcLine, const char * a_Action):
-	m_SrcFile(a_SrcFile),
-	m_SrcLine(a_SrcLine),
-	m_Action(a_Action)
+Stopwatch::Stopwatch(const char * aSrcFile, int aSrcLine, const char * aAction):
+	mSrcFile(aSrcFile),
+	mSrcLine(aSrcLine),
+	mAction(aAction)
 {
-	m_Timer.start();
+	mTimer.start();
 }
 
 
@@ -77,7 +77,7 @@ Stopwatch::Stopwatch(const char * a_SrcFile, int a_SrcLine, const char * a_Actio
 
 Stopwatch::~Stopwatch()
 {
-	qDebug() << m_Action.c_str() << " took " << m_Timer.elapsed() << "msec.";
+	qDebug() << mAction.c_str() << " took " << mTimer.elapsed() << "msec.";
 }
 
 

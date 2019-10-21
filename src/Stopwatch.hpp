@@ -34,7 +34,7 @@ protected:
 	static TimeSinceStart & get();
 
 
-	QElapsedTimer m_Timer;
+	QElapsedTimer mTimer;
 };
 
 
@@ -46,17 +46,17 @@ elapsed time to the log. */
 class Stopwatch
 {
 public:
-	Stopwatch(const char * a_SrcFile, int a_SrcLine, const char * a_Action);
+	Stopwatch(const char * aSrcFile, int aSrcLine, const char * aAction);
 
 	~Stopwatch();
 
 
 protected:
 
-	const std::string m_SrcFile;
-	const int m_SrcLine;
-	const std::string m_Action;
-	QElapsedTimer m_Timer;
+	const std::string mSrcFile;
+	const int mSrcLine;
+	const std::string mAction;
+	QElapsedTimer mTimer;
 };
 
 #define STOPWATCH(X) Stopwatch sw(__FILE__, __LINE__, X);

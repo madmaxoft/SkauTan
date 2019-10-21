@@ -20,7 +20,7 @@ class SongDecoder:
 	using Super = PlaybackBuffer;
 
 public:
-	SongDecoder(const QAudioFormat & a_OutputFormat, SongPtr a_Song);
+	SongDecoder(const QAudioFormat & aOutputFormat, SongPtr aSong);
 
 	virtual ~SongDecoder() override;
 
@@ -28,14 +28,14 @@ public:
 protected:
 
 	/** The song that should be decoded. */
-	SongPtr m_Song;
+	SongPtr mSong;
 
 	/** Semaphore used to coordinate termination.
 	The asynchronous decoder signals this semaphore when it finishes. */
-	QSemaphore m_Termination;
+	QSemaphore mTermination;
 
 	/** The LibAV handle to the decoder. */
-	AVPP::FormatPtr m_FmtCtx;
+	AVPP::FormatPtr mFmtCtx;
 
 
 	/** Decodes the song data asynchronously. */

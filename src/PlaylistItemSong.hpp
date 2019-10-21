@@ -21,7 +21,7 @@ class PlaylistItemSong:
 
 
 public:
-	PlaylistItemSong(SongPtr a_Song, FilterPtr a_TemplateItem);
+	PlaylistItemSong(SongPtr aSong, FilterPtr aTemplateItem);
 
 
 	// IPlaylistItem overrides, playlist-related functions:
@@ -31,28 +31,28 @@ public:
 	virtual double displayLength() const override;
 	virtual QString displayGenre() const override;
 	virtual double displayTempo() const override;
-	virtual double durationLimit() const override { return m_DurationLimit; }
-	virtual void setDurationLimit(double a_Seconds) override;
+	virtual double durationLimit() const override { return mDurationLimit; }
+	virtual void setDurationLimit(double aSeconds) override;
 
 	// IPlaylistItem overrides, playback-related functions:
-	virtual PlaybackBuffer * startDecoding(const QAudioFormat & a_Format) override;
+	virtual PlaybackBuffer * startDecoding(const QAudioFormat & aFormat) override;
 
-	SongPtr song() const { return m_Song; }
-	FilterPtr filter() const { return m_Filter; }
+	SongPtr song() const { return mSong; }
+	FilterPtr filter() const { return mFilter; }
 
 
 protected:
 
 	/** The song to be represented by this entry. */
-	SongPtr m_Song;
+	SongPtr mSong;
 
 	/** The filter (of the template) that chose this song; nullptr if inserted explicitly by the user. */
-	FilterPtr m_Filter;
+	FilterPtr mFilter;
 
 	/** The duration limit assigned to this item.
-	Initially inherited from m_Filter, but user-editable.
+	Initially inherited from mFilter, but user-editable.
 	-1 if no limit. */
-	double m_DurationLimit;
+	double mDurationLimit;
 };
 
 

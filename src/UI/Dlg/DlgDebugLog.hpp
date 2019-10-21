@@ -31,7 +31,7 @@ class DlgDebugLog:
 
 public:
 
-	explicit DlgDebugLog(QWidget * a_Parent = nullptr);
+	explicit DlgDebugLog(QWidget * aParent = nullptr);
 
 	~DlgDebugLog();
 
@@ -39,17 +39,17 @@ public:
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgDebugLog> m_UI;
+	std::unique_ptr<Ui::DlgDebugLog> mUI;
 
 
 	/** Adds the specified message to twMessages. */
 	void addMessage(
-		const QDateTime & a_DateTime,
-		const QtMsgType a_Type,
-		const QString & a_FileName,
-		const QString & a_Function,
-		int a_LineNum,
-		const QString & a_Message
+		const QDateTime & aDateTime,
+		const QtMsgType aType,
+		const QString & aFileName,
+		const QString & aFunction,
+		int aLineNum,
+		const QString & aMessage
 	);
 };
 

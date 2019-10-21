@@ -8,25 +8,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ComponentCollection:
 
-void ComponentCollection::addComponent(ComponentCollection::EKind a_Kind, ComponentCollection::ComponentBasePtr a_Component)
+void ComponentCollection::addComponent(ComponentCollection::EKind aKind, ComponentCollection::ComponentBasePtr aComponent)
 {
-	auto itr = m_Components.find(a_Kind);
-	if (itr != m_Components.end())
+	auto itr = mComponents.find(aKind);
+	if (itr != mComponents.end())
 	{
 		assert(!"Component of this kind is already present in the collection");
-		throw LogicError("Duplicate component in collection: %1", a_Kind);
+		throw LogicError("Duplicate component in collection: %1", aKind);
 	}
-	m_Components[a_Kind] = a_Component;
+	mComponents[aKind] = aComponent;
 }
 
 
 
 
 
-ComponentCollection::ComponentBasePtr ComponentCollection::get(ComponentCollection::EKind a_Kind)
+ComponentCollection::ComponentBasePtr ComponentCollection::get(ComponentCollection::EKind aKind)
 {
-	auto itr = m_Components.find(a_Kind);
-	if (itr != m_Components.end())
+	auto itr = mComponents.find(aKind);
+	if (itr != mComponents.end())
 	{
 		return itr->second;
 	}

@@ -6,10 +6,10 @@
 
 
 
-MidiController::MidiController(MidiPortInPtr a_PortIn):
-	m_PortIn(a_PortIn)
+MidiController::MidiController(MidiPortInPtr aPortIn):
+	mPortIn(aPortIn)
 {
-	connect(a_PortIn.get(), &MidiPort::unplugged, this, &MidiController::unplugged);
+	connect(aPortIn.get(), &MidiPort::unplugged, this, &MidiController::unplugged);
 }
 
 
@@ -17,16 +17,16 @@ MidiController::MidiController(MidiPortInPtr a_PortIn):
 
 
 MidiController::MidiController(
-	MidiPortInPtr a_PortIn,
-	MidiPortOutPtr a_PortOut
+	MidiPortInPtr aPortIn,
+	MidiPortOutPtr aPortOut
 ):
-	m_PortIn(a_PortIn),
-	m_PortOut(a_PortOut)
+	mPortIn(aPortIn),
+	mPortOut(aPortOut)
 {
-	connect(a_PortIn.get(),  &MidiPort::unplugged, this, &MidiController::unplugged);
-	if (a_PortOut != nullptr)
+	connect(aPortIn.get(),  &MidiPort::unplugged, this, &MidiController::unplugged);
+	if (aPortOut != nullptr)
 	{
-		connect(a_PortOut.get(), &MidiPort::unplugged, this, &MidiController::unplugged);
+		connect(aPortOut.get(), &MidiPort::unplugged, this, &MidiController::unplugged);
 	}
 }
 
@@ -57,65 +57,65 @@ void MidiController::portUnplugged()
 // SimpleMidiController:
 
 SimpleMidiController::SimpleMidiController(
-	MidiPortInPtr a_MidiPortIn,
-	MidiPortOutPtr a_MidiPortOut,
-	const SimpleMidiController::KeyMap & a_KeyMap,
-	const SimpleMidiController::LedMap & a_LedMap,
-	const SimpleMidiController::SliderMap & a_SliderMap,
-	const SimpleMidiController::WheelMap & a_WheelMap,
-	const QString & a_ControllerName
+	MidiPortInPtr aMidiPortIn,
+	MidiPortOutPtr aMidiPortOut,
+	const SimpleMidiController::KeyMap & aKeyMap,
+	const SimpleMidiController::LedMap & aLedMap,
+	const SimpleMidiController::SliderMap & aSliderMap,
+	const SimpleMidiController::WheelMap & aWheelMap,
+	const QString & aControllerName
 ):
-	Super(a_MidiPortIn, a_MidiPortOut),
-	m_KeyMap(a_KeyMap),
-	m_LedMap(a_LedMap),
-	m_SliderMap(a_SliderMap),
-	m_WheelMap(a_WheelMap),
-	m_ControllerName(a_ControllerName)
+	Super(aMidiPortIn, aMidiPortOut),
+	mKeyMap(aKeyMap),
+	mLedMap(aLedMap),
+	mSliderMap(aSliderMap),
+	mWheelMap(aWheelMap),
+	mControllerName(aControllerName)
 {
-	connect(m_PortIn.get(), &MidiPortIn::receivedMessage, this, &SimpleMidiController::processMidiInMessage);
+	connect(mPortIn.get(), &MidiPortIn::receivedMessage, this, &SimpleMidiController::processMidiInMessage);
 }
 
 
 
 
 
-void SimpleMidiController::setLed(int a_Led, bool a_On)
+void SimpleMidiController::setLed(int aLed, bool aOn)
 {
-	if (m_PortOut == nullptr)
+	if (mPortOut == nullptr)
 	{
 		return;
 	}
-	auto led = m_LedMap.find(a_Led);
-	if (led == m_LedMap.end())
+	auto led = mLedMap.find(aLed);
+	if (led == mLedMap.end())
 	{
 		return;
 	}
-	unsigned char msgType = a_On ? 0x90 : 0x80;
-	m_PortOut->sendMessage({msgType, led->second, 0x40});
+	unsigned char msgType = aOn ? 0x90 : 0x80;
+	mPortOut->sendMessage({msgType, led->second, 0x40});
 }
 
 
 
 
 
-void SimpleMidiController::processMidiInMessage(double a_TimeStamp, const QByteArray & a_Message)
+void SimpleMidiController::processMidiInMessage(double aTimeStamp, const QByteArray & aMessage)
 {
-	Q_UNUSED(a_TimeStamp);
+	Q_UNUSED(aTimeStamp);
 
-	if (a_Message.isEmpty())
+	if (aMessage.isEmpty())
 	{
 		return;
 	}
 
-	auto msgBytes = reinterpret_cast<const unsigned char *>(a_Message.constData());
+	auto msgBytes = reinterpret_cast<const unsigned char *>(aMessage.constData());
 	switch (msgBytes[0] & 0xf0)
 	{
 		case 0x80:  // Note OFF
 		case 0x90:  // Note ON
 		{
-			if (a_Message.size() != 3)
+			if (aMessage.size() != 3)
 			{
-				qDebug() << "Invalid NoteOnOff MIDI message size: " << Utils::toHex(a_Message);
+				qDebug() << "Invalid NoteOnOff MIDI message size: " << Utils::toHex(aMessage);
 				return;
 			}
 			if (
@@ -128,39 +128,39 @@ void SimpleMidiController::processMidiInMessage(double a_TimeStamp, const QByteA
 			}
 			else
 			{
-				auto key = m_KeyMap.find(msgBytes[1]);
-				if (key != m_KeyMap.end())
+				auto key = mKeyMap.find(msgBytes[1]);
+				if (key != mKeyMap.end())
 				{
 					emit keyPressed(key->second);
 					return;
 				}
 			}
-			// qDebug() << "Unhandled Note: " << Utils::toHex(a_Message);
+			// qDebug() << "Unhandled Note: " << Utils::toHex(aMessage);
 			break;
 		}
 
 		case 0xb0:  // Control change
 		{
-			if (a_Message.size() != 3)
+			if (aMessage.size() != 3)
 			{
-				qDebug() << "Invalid ControlChange MIDI message size: " << Utils::toHex(a_Message);
+				qDebug() << "Invalid ControlChange MIDI message size: " << Utils::toHex(aMessage);
 				return;
 			}
-			auto slider = m_SliderMap.find(msgBytes[1]);
-			if (slider != m_SliderMap.end())
+			auto slider = mSliderMap.find(msgBytes[1]);
+			if (slider != mSliderMap.end())
 			{
 				auto value = static_cast<double>(msgBytes[2]) / 127;
 				emit sliderSet(slider->second, value);
 				return;
 			}
-			auto wheel = m_WheelMap.find(msgBytes[1]);
-			if (wheel != m_WheelMap.end())
+			auto wheel = mWheelMap.find(msgBytes[1]);
+			if (wheel != mWheelMap.end())
 			{
 				auto numSteps = (msgBytes[2] < 0x40) ? msgBytes[2] : (msgBytes[2] - 128);
 				emit wheelMoved(wheel->second, numSteps);
 				return;
 			}
-			// qDebug() << "Unhandled ControlChange: " << Utils::toHex(a_Message);
+			// qDebug() << "Unhandled ControlChange: " << Utils::toHex(aMessage);
 			break;
 		}
 

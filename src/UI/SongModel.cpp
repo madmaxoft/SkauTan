@@ -15,13 +15,13 @@
 
 /** Returns a string representation of the specified song's length.
 a_Length is the length in seconds. */
-static QString formatLength(const Song & a_Song)
+static QString formatLength(const Song & aSong)
 {
-	if (!a_Song.length().isPresent())
+	if (!aSong.length().isPresent())
 	{
 		return QString();
 	}
-	auto len = static_cast<int>(floor(a_Song.length().value() + 0.5));
+	auto len = static_cast<int>(floor(aSong.length().value() + 0.5));
 	return QString("%1:%2").arg(len / 60).arg(QString::number(len % 60), 2, QChar('0'));
 }
 
@@ -29,26 +29,26 @@ static QString formatLength(const Song & a_Song)
 
 
 
-static QString formatMPM(const DatedOptional<double> & a_SongMPM)
+static QString formatMPM(const DatedOptional<double> & aSongMPM)
 {
-	if (!a_SongMPM.isPresent())
+	if (!aSongMPM.isPresent())
 	{
 		return QString();
 	}
-	return QLocale().toString(a_SongMPM.value(), 'f', 1);
+	return QLocale().toString(aSongMPM.value(), 'f', 1);
 }
 
 
 
 
 
-static QString formatLastPlayed(const Song & a_Song)
+static QString formatLastPlayed(const Song & aSong)
 {
-	if (!a_Song.lastPlayed().isPresent())
+	if (!aSong.lastPlayed().isPresent())
 	{
 		return QString();
 	}
-	return a_Song.lastPlayed().value().toString("yyyy-MM-dd HH:mm:ss");
+	return aSong.lastPlayed().value().toString("yyyy-MM-dd HH:mm:ss");
 }
 
 
@@ -56,11 +56,11 @@ static QString formatLastPlayed(const Song & a_Song)
 
 
 /** Returns the number in the DatedOptional, if present, as a string, or an empty string if empty. */
-template <typename T> static QString numberIfPresent(const DatedOptional<T> & a_Value)
+template <typename T> static QString numberIfPresent(const DatedOptional<T> & aValue)
 {
-	if (a_Value.isPresent())
+	if (aValue.isPresent())
 	{
-		return QLocale::system().toString(a_Value.value(), 'f', 1);
+		return QLocale::system().toString(aValue.value(), 'f', 1);
 	}
 	else
 	{
@@ -72,15 +72,15 @@ template <typename T> static QString numberIfPresent(const DatedOptional<T> & a_
 
 
 
-static QString formatRating(const Song & a_Song)
+static QString formatRating(const Song & aSong)
 {
-	const auto & rating = a_Song.rating();
+	const auto & rating = aSong.rating();
 	QString res;
-	res.append(rating.m_RhythmClarity.isPresent()   ? QString::number(rating.m_RhythmClarity.value(),   'f', 1) : "--");
+	res.append(rating.mRhythmClarity.isPresent()   ? QString::number(rating.mRhythmClarity.value(),   'f', 1) : "--");
 	res.append(" | ");
-	res.append(rating.m_GenreTypicality.isPresent() ? QString::number(rating.m_GenreTypicality.value(), 'f', 1) : "--");
+	res.append(rating.mGenreTypicality.isPresent() ? QString::number(rating.mGenreTypicality.value(), 'f', 1) : "--");
 	res.append(" | ");
-	res.append(rating.m_Popularity.isPresent()      ? QString::number(rating.m_Popularity.value(),      'f', 1) : "--");
+	res.append(rating.mPopularity.isPresent()      ? QString::number(rating.mPopularity.value(),      'f', 1) : "--");
 	return res;
 }
 
@@ -88,17 +88,17 @@ static QString formatRating(const Song & a_Song)
 
 
 
-template <typename T> static QString formatLastModTooltip(const DatedOptional<T> & a_Value)
+template <typename T> static QString formatLastModTooltip(const DatedOptional<T> & aValue)
 {
-	if (!a_Value.lastModification().isValid())
+	if (!aValue.lastModification().isValid())
 	{
-		return QString("%1").arg(a_Value.valueOrDefault());  // Convert from non-strings to QString
+		return QString("%1").arg(aValue.valueOrDefault());  // Convert from non-strings to QString
 	}
 	else
 	{
 		return SongModel::tr("%1\nLast modified: %2")
-			.arg(a_Value.valueOrDefault())
-			.arg(a_Value.lastModification().toString(Qt::SystemLocaleLongDate));
+			.arg(aValue.valueOrDefault())
+			.arg(aValue.lastModification().toString(Qt::SystemLocaleLongDate));
 	}
 }
 
@@ -106,13 +106,13 @@ template <typename T> static QString formatLastModTooltip(const DatedOptional<T>
 
 
 
-static QString formatSkipStart(const DatedOptional<double> & a_SkipStart)
+static QString formatSkipStart(const DatedOptional<double> & aSkipStart)
 {
-	if (!a_SkipStart.isPresent())
+	if (!aSkipStart.isPresent())
 	{
 		return QString();
 	}
-	return Utils::formatFractionalTime(a_SkipStart.value(), 3);
+	return Utils::formatFractionalTime(aSkipStart.value(), 3);
 }
 
 
@@ -120,14 +120,14 @@ static QString formatSkipStart(const DatedOptional<double> & a_SkipStart)
 
 
 /** Returns true if the song's detected tempo is not empty and outside competition range. */
-static bool isDetectedTempoOutsideCompetitionRange(SongPtr a_Song)
+static bool isDetectedTempoOutsideCompetitionRange(SongPtr aSong)
 {
-	auto tempo = a_Song->sharedData()->m_DetectedTempo;
+	auto tempo = aSong->sharedData()->mDetectedTempo;
 	if (!tempo.isPresent())
 	{
 		return false;
 	}
-	auto genre = a_Song->primaryGenre().valueOrDefault();
+	auto genre = aSong->primaryGenre().valueOrDefault();
 	auto competitionRange = Song::competitionTempoRangeForGenre(genre);
 	if (competitionRange.first <= 0)
 	{
@@ -145,53 +145,53 @@ static bool isDetectedTempoOutsideCompetitionRange(SongPtr a_Song)
 ////////////////////////////////////////////////////////////////////////////////
 // SongModel:
 
-SongModel::SongModel(Database & a_DB):
-	m_DB(a_DB)
+SongModel::SongModel(Database & aDB):
+	mDB(aDB)
 {
-	connect(&m_DB, &Database::songFileAdded, this, &SongModel::addSongFile);
-	connect(&m_DB, &Database::songSaved,     this, &SongModel::songChanged);
-	connect(&m_DB, &Database::songRemoved,   this, &SongModel::delSong);
+	connect(&mDB, &Database::songFileAdded, this, &SongModel::addSongFile);
+	connect(&mDB, &Database::songSaved,     this, &SongModel::songChanged);
+	connect(&mDB, &Database::songRemoved,   this, &SongModel::delSong);
 }
 
 
 
 
 
-SongPtr SongModel::songFromIndex(const QModelIndex & a_Idx) const
+SongPtr SongModel::songFromIndex(const QModelIndex & aIdx) const
 {
-	if (!a_Idx.isValid())
+	if (!aIdx.isValid())
 	{
 		return nullptr;
 	}
-	return songFromRow(a_Idx.row());
+	return songFromRow(aIdx.row());
 }
 
 
 
 
 
-SongPtr SongModel::songFromRow(int a_Row) const
+SongPtr SongModel::songFromRow(int aRow) const
 {
-	if ((a_Row < 0) || (static_cast<size_t>(a_Row) >= m_DB.songs().size()))
+	if ((aRow < 0) || (static_cast<size_t>(aRow) >= mDB.songs().size()))
 	{
 		return nullptr;
 	}
-	return m_DB.songs()[static_cast<size_t>(a_Row)];
+	return mDB.songs()[static_cast<size_t>(aRow)];
 }
 
 
 
 
 
-QModelIndex SongModel::indexFromSong(const Song * a_Song, int a_Column)
+QModelIndex SongModel::indexFromSong(const Song * aSong, int aColumn)
 {
-	const auto & songs = m_DB.songs();
+	const auto & songs = mDB.songs();
 	int row = 0;
 	for (const auto & s: songs)
 	{
-		if (s.get() == a_Song)
+		if (s.get() == aSong)
 		{
-			return createIndex(row, a_Column);
+			return createIndex(row, aColumn);
 		}
 		row += 1;
 	}
@@ -203,20 +203,20 @@ QModelIndex SongModel::indexFromSong(const Song * a_Song, int a_Column)
 
 
 
-int SongModel::rowCount(const QModelIndex & a_Parent) const
+int SongModel::rowCount(const QModelIndex & aParent) const
 {
-	Q_UNUSED(a_Parent);
+	Q_UNUSED(aParent);
 
-	return static_cast<int>(m_DB.songs().size());
+	return static_cast<int>(mDB.songs().size());
 }
 
 
 
 
 
-int SongModel::columnCount(const QModelIndex & a_Parent) const
+int SongModel::columnCount(const QModelIndex & aParent) const
 {
-	Q_UNUSED(a_Parent);
+	Q_UNUSED(aParent);
 
 	return colMax;
 }
@@ -225,43 +225,43 @@ int SongModel::columnCount(const QModelIndex & a_Parent) const
 
 
 
-QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
+QVariant SongModel::data(const QModelIndex & aIndex, int aRole) const
 {
 	if (
-		!a_Index.isValid() ||
-		(a_Index.row() < 0) ||
-		(a_Index.row() >= static_cast<int>(m_DB.songs().size()))
+		!aIndex.isValid() ||
+		(aIndex.row() < 0) ||
+		(aIndex.row() >= static_cast<int>(mDB.songs().size()))
 	)
 	{
 		return QVariant();
 	}
-	const auto & song = songFromRow(a_Index.row());
-	switch (a_Role)
+	const auto & song = songFromRow(aIndex.row());
+	switch (aRole)
 	{
 		case roleSongPtr: return QVariant::fromValue(song);
 		case Qt::DisplayRole:
 		case Qt::EditRole:
 		{
-			switch (a_Index.column())
+			switch (aIndex.column())
 			{
 				case colFileName:                  return song->fileName();
 				case colLength:                    return formatLength(*song);
 				case colLastPlayed:                return formatLastPlayed(*song);
-				case colLocalRating:               return numberIfPresent(song->rating().m_Local);
+				case colLocalRating:               return numberIfPresent(song->rating().mLocal);
 				case colRating:                    return formatRating(*song);
-				case colManualAuthor:              return song->tagManual().m_Author.valueOrDefault();
-				case colManualTitle:               return song->tagManual().m_Title.valueOrDefault();
-				case colManualGenre:               return song->tagManual().m_Genre.valueOrDefault();
-				case colManualMeasuresPerMinute:   return formatMPM(song->tagManual().m_MeasuresPerMinute);
-				case colFileNameAuthor:            return song->tagFileName().m_Author.valueOrDefault();
-				case colFileNameTitle:             return song->tagFileName().m_Title.valueOrDefault();
-				case colFileNameGenre:             return song->tagFileName().m_Genre.valueOrDefault();
-				case colFileNameMeasuresPerMinute: return formatMPM(song->tagFileName().m_MeasuresPerMinute);
-				case colId3Author:                 return song->tagId3().m_Author.valueOrDefault();
-				case colId3Title:                  return song->tagId3().m_Title.valueOrDefault();
-				case colId3Genre:                  return song->tagId3().m_Genre.valueOrDefault();
-				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().m_MeasuresPerMinute);
-				case colDetectedTempo:             return formatMPM(song->sharedData()->m_DetectedTempo);
+				case colManualAuthor:              return song->tagManual().mAuthor.valueOrDefault();
+				case colManualTitle:               return song->tagManual().mTitle.valueOrDefault();
+				case colManualGenre:               return song->tagManual().mGenre.valueOrDefault();
+				case colManualMeasuresPerMinute:   return formatMPM(song->tagManual().mMeasuresPerMinute);
+				case colFileNameAuthor:            return song->tagFileName().mAuthor.valueOrDefault();
+				case colFileNameTitle:             return song->tagFileName().mTitle.valueOrDefault();
+				case colFileNameGenre:             return song->tagFileName().mGenre.valueOrDefault();
+				case colFileNameMeasuresPerMinute: return formatMPM(song->tagFileName().mMeasuresPerMinute);
+				case colId3Author:                 return song->tagId3().mAuthor.valueOrDefault();
+				case colId3Title:                  return song->tagId3().mTitle.valueOrDefault();
+				case colId3Genre:                  return song->tagId3().mGenre.valueOrDefault();
+				case colId3MeasuresPerMinute:      return formatMPM(song->tagId3().mMeasuresPerMinute);
+				case colDetectedTempo:             return formatMPM(song->sharedData()->mDetectedTempo);
 				case colNumMatchingFilters:        return numMatchingFilters(song);
 				case colNumDuplicates:             return numDuplicates(song);
 				case colSkipStart:                 return formatSkipStart(song->skipStart());
@@ -270,7 +270,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		}
 		case Qt::BackgroundColorRole:
 		{
-			switch (a_Index.column())
+			switch (aIndex.column())
 			{
 				case colDetectedTempo:      return (isDetectedTempoOutsideCompetitionRange(song)) ? QColor(255, 255, 192) : QVariant();
 				case colNumMatchingFilters: return (numMatchingFilters(song) > 0) ? QVariant() : QColor(255, 192, 192);
@@ -285,12 +285,12 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		}
 		case Qt::ToolTipRole:
 		{
-			switch (a_Index.column())
+			switch (aIndex.column())
 			{
-				case colManualAuthor:            return formatLastModTooltip(song->tagManual().m_Author);
-				case colManualTitle:             return formatLastModTooltip(song->tagManual().m_Title);
-				case colManualGenre:             return formatLastModTooltip(song->tagManual().m_Genre);
-				case colManualMeasuresPerMinute: return formatLastModTooltip(song->tagManual().m_MeasuresPerMinute);
+				case colManualAuthor:            return formatLastModTooltip(song->tagManual().mAuthor);
+				case colManualTitle:             return formatLastModTooltip(song->tagManual().mTitle);
+				case colManualGenre:             return formatLastModTooltip(song->tagManual().mGenre);
+				case colManualMeasuresPerMinute: return formatLastModTooltip(song->tagManual().mMeasuresPerMinute);
 				case colDetectedTempo:
 				{
 					if (isDetectedTempoOutsideCompetitionRange(song))
@@ -299,12 +299,12 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 						return (
 							tr("The detected tempo is suspicious: outside the competition range (%1 - %2).")
 								.arg(range.first).arg(range.second) + "\n" +
-							formatLastModTooltip(song->sharedData()->m_DetectedTempo)
+							formatLastModTooltip(song->sharedData()->mDetectedTempo)
 						);
 					}
 					else
 					{
-						return formatLastModTooltip(song->sharedData()->m_DetectedTempo);
+						return formatLastModTooltip(song->sharedData()->mDetectedTempo);
 					}
 				}
 			}
@@ -312,7 +312,7 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 		}
 		case Qt::TextAlignmentRole:
 		{
-			switch (a_Index.column())
+			switch (aIndex.column())
 			{
 				case colNumMatchingFilters:
 				case colNumDuplicates:
@@ -336,17 +336,17 @@ QVariant SongModel::data(const QModelIndex & a_Index, int a_Role) const
 
 
 
-QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const
+QVariant SongModel::headerData(int aSection, Qt::Orientation aOrientation, int aRole) const
 {
-	if (a_Orientation != Qt::Horizontal)
+	if (aOrientation != Qt::Horizontal)
 	{
 		return QVariant();
 	}
-	if (a_Role != Qt::DisplayRole)
+	if (aRole != Qt::DisplayRole)
 	{
 		return QVariant();
 	}
-	switch (a_Section)
+	switch (aSection)
 	{
 		case colFileName:                  return tr("File name");
 		case colLength:                    return tr("Length");
@@ -377,11 +377,11 @@ QVariant SongModel::headerData(int a_Section, Qt::Orientation a_Orientation, int
 
 
 
-Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
+Qt::ItemFlags SongModel::flags(const QModelIndex & aIndex) const
 {
-	if (a_Index.isValid())
+	if (aIndex.isValid())
 	{
-		switch (a_Index.column())
+		switch (aIndex.column())
 		{
 			case colLocalRating:
 			case colManualAuthor:
@@ -390,18 +390,18 @@ Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
 			case colManualTitle:
 			{
 				// Editable:
-				return Super::flags(a_Index) | Qt::ItemIsEditable;
+				return Super::flags(aIndex) | Qt::ItemIsEditable;
 			}
 			default:
 			{
 				// Not editable
-				return Super::flags(a_Index);
+				return Super::flags(aIndex);
 			}
 		}
 	}
 	else
 	{
-		return Super::flags(a_Index);
+		return Super::flags(aIndex);
 	}
 }
 
@@ -409,35 +409,35 @@ Qt::ItemFlags SongModel::flags(const QModelIndex & a_Index) const
 
 
 
-bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, int a_Role)
+bool SongModel::setData(const QModelIndex & aIndex, const QVariant & aValue, int aRole)
 {
-	if ((a_Role != Qt::DisplayRole) && (a_Role != Qt::EditRole))
+	if ((aRole != Qt::DisplayRole) && (aRole != Qt::EditRole))
 	{
 		return false;
 	}
 	if (
-		!a_Index.isValid() ||
-		(a_Index.row() < 0) ||
-		(a_Index.row() >= static_cast<int>(m_DB.songs().size()))
+		!aIndex.isValid() ||
+		(aIndex.row() < 0) ||
+		(aIndex.row() >= static_cast<int>(mDB.songs().size()))
 	)
 	{
 		return false;
 	}
-	const auto & song = songFromRow(a_Index.row());
-	switch (a_Index.column())
+	const auto & song = songFromRow(aIndex.row());
+	switch (aIndex.column())
 	{
 		case colFileName: return false;
 		case colLastPlayed: return false;
 		case colLength: return false;
 		case colRating: return false;
-		case colLocalRating: song->setLocalRating(Utils::clamp(a_Value.toDouble(), 0.0, 5.0)); break;
-		case colManualAuthor: song->setAuthor(a_Value.toString()); break;
-		case colManualTitle: song->setTitle(a_Value.toString()); break;
-		case colManualGenre: song->setGenre(a_Value.toString()); break;
-		case colManualMeasuresPerMinute: song->setMeasuresPerMinute(a_Value.toDouble()); break;
+		case colLocalRating: song->setLocalRating(Utils::clamp(aValue.toDouble(), 0.0, 5.0)); break;
+		case colManualAuthor: song->setAuthor(aValue.toString()); break;
+		case colManualTitle: song->setTitle(aValue.toString()); break;
+		case colManualGenre: song->setGenre(aValue.toString()); break;
+		case colManualMeasuresPerMinute: song->setMeasuresPerMinute(aValue.toDouble()); break;
 	}
 	emit songEdited(song);
-	emit dataChanged(a_Index, a_Index, {a_Role});
+	emit dataChanged(aIndex, aIndex, {aRole});
 	return true;
 }
 
@@ -445,12 +445,12 @@ bool SongModel::setData(const QModelIndex & a_Index, const QVariant & a_Value, i
 
 
 
-qulonglong SongModel::numMatchingFilters(SongPtr a_Song) const
+qulonglong SongModel::numMatchingFilters(SongPtr aSong) const
 {
 	qulonglong res = 0;
-	for (const auto & filter: m_DB.getFavoriteFilters())
+	for (const auto & filter: mDB.getFavoriteFilters())
 	{
-		if (filter->rootNode()->isSatisfiedBy(*a_Song))
+		if (filter->rootNode()->isSatisfiedBy(*aSong))
 		{
 			res += 1;
 		}
@@ -462,9 +462,9 @@ qulonglong SongModel::numMatchingFilters(SongPtr a_Song) const
 
 
 
-qulonglong SongModel::numDuplicates(SongPtr a_Song) const
+qulonglong SongModel::numDuplicates(SongPtr aSong) const
 {
-	auto sd = a_Song->sharedData();
+	auto sd = aSong->sharedData();
 	if (sd == nullptr)
 	{
 		return 1;
@@ -476,11 +476,11 @@ qulonglong SongModel::numDuplicates(SongPtr a_Song) const
 
 
 
-void SongModel::addSongFile(SongPtr a_NewSong)
+void SongModel::addSongFile(SongPtr aNewSong)
 {
-	Q_UNUSED(a_NewSong);
+	Q_UNUSED(aNewSong);
 
-	auto lastIdx = static_cast<int>(m_DB.songs().size()) - 1;
+	auto lastIdx = static_cast<int>(mDB.songs().size()) - 1;
 	beginInsertRows(QModelIndex(), lastIdx, lastIdx);
 	endInsertRows();
 }
@@ -489,11 +489,11 @@ void SongModel::addSongFile(SongPtr a_NewSong)
 
 
 
-void SongModel::delSong(SongPtr a_Song, size_t a_Index)
+void SongModel::delSong(SongPtr aSong, size_t aIndex)
 {
-	Q_UNUSED(a_Song);
+	Q_UNUSED(aSong);
 
-	auto idx = static_cast<int>(a_Index);
+	auto idx = static_cast<int>(aIndex);
 	beginRemoveRows(QModelIndex(), idx, idx);
 	endRemoveRows();
 }
@@ -502,9 +502,9 @@ void SongModel::delSong(SongPtr a_Song, size_t a_Index)
 
 
 
-void SongModel::songChanged(SongPtr a_Song)
+void SongModel::songChanged(SongPtr aSong)
 {
-	auto idx = indexFromSong(a_Song.get());
+	auto idx = indexFromSong(aSong.get());
 	if (!idx.isValid())
 	{
 		return;
@@ -520,8 +520,8 @@ void SongModel::songChanged(SongPtr a_Song)
 ////////////////////////////////////////////////////////////////////////////////
 // SongModelEditorDelegate:
 
-SongModelEditorDelegate::SongModelEditorDelegate(QWidget * a_Parent):
-	Super(a_Parent)
+SongModelEditorDelegate::SongModelEditorDelegate(QWidget * aParent):
+	Super(aParent)
 {
 }
 
@@ -530,27 +530,27 @@ SongModelEditorDelegate::SongModelEditorDelegate(QWidget * a_Parent):
 
 
 QWidget * SongModelEditorDelegate::createEditor(
-	QWidget * a_Parent,
-	const QStyleOptionViewItem & a_Option,
-	const QModelIndex & a_Index
+	QWidget * aParent,
+	const QStyleOptionViewItem & aOption,
+	const QModelIndex & aIndex
 ) const
 {
-	if (!a_Index.isValid())
+	if (!aIndex.isValid())
 	{
 		return nullptr;
 	}
-	switch (a_Index.column())
+	switch (aIndex.column())
 	{
 		case SongModel::colManualAuthor:
 		case SongModel::colManualTitle:
 		{
 			// Default text editor:
-			return Super::createEditor(a_Parent, a_Option, a_Index);
+			return Super::createEditor(aParent, aOption, aIndex);
 		}
 		case SongModel::colManualGenre:
 		{
 			// Special editor:
-			auto res = new QComboBox(a_Parent);
+			auto res = new QComboBox(aParent);
 			res->setFrame(false);
 			res->addItems(Song::recognizedGenres());
 			res->setMaxVisibleItems(res->count());
@@ -560,7 +560,7 @@ QWidget * SongModelEditorDelegate::createEditor(
 		case SongModel::colLocalRating:
 		{
 			// Text editor limited to entering numbers:
-			auto res = new QLineEdit(a_Parent);
+			auto res = new QLineEdit(aParent);
 			res->setFrame(false);
 			res->setValidator(new QDoubleValidator(res));
 			return res;
@@ -591,37 +591,37 @@ QWidget * SongModelEditorDelegate::createEditor(
 
 
 void SongModelEditorDelegate::setEditorData(
-	QWidget * a_Editor,
-	const QModelIndex & a_Index
+	QWidget * aEditor,
+	const QModelIndex & aIndex
 ) const
 {
-	if (!a_Index.isValid())
+	if (!aIndex.isValid())
 	{
 		return;
 	}
-	switch (a_Index.column())
+	switch (aIndex.column())
 	{
 		case SongModel::colManualAuthor:
 		case SongModel::colManualTitle:
 		{
 			// Default text editor:
-			Super::setEditorData(a_Editor, a_Index);
+			Super::setEditorData(aEditor, aIndex);
 			return;
 		}
 		case SongModel::colManualGenre:
 		{
 			// Special editor:
-			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			auto cb = qobject_cast<QComboBox *>(aEditor);
 			assert(cb != nullptr);
-			cb->setCurrentText(a_Index.data().toString());
+			cb->setCurrentText(aIndex.data().toString());
 			return;
 		}
 		case SongModel::colManualMeasuresPerMinute:
 		case SongModel::colLocalRating:
 		{
-			auto le = qobject_cast<QLineEdit *>(a_Editor);
+			auto le = qobject_cast<QLineEdit *>(aEditor);
 			assert(le != nullptr);
-			le->setText(a_Index.data().toString());
+			le->setText(aIndex.data().toString());
 			return;
 		}
 		case SongModel::colFileName:
@@ -650,38 +650,38 @@ void SongModelEditorDelegate::setEditorData(
 
 
 void SongModelEditorDelegate::setModelData(
-	QWidget * a_Editor,
-	QAbstractItemModel * a_Model,
-	const QModelIndex & a_Index
+	QWidget * aEditor,
+	QAbstractItemModel * aModel,
+	const QModelIndex & aIndex
 ) const
 {
-	if (!a_Index.isValid())
+	if (!aIndex.isValid())
 	{
 		return;
 	}
-	switch (a_Index.column())
+	switch (aIndex.column())
 	{
 		case SongModel::colManualAuthor:
 		case SongModel::colManualTitle:
 		{
 			// Default text editor:
-			Super::setModelData(a_Editor, a_Model, a_Index);
+			Super::setModelData(aEditor, aModel, aIndex);
 			return;
 		}
 		case SongModel::colManualGenre:
 		{
 			// Special editor:
-			auto cb = qobject_cast<QComboBox *>(a_Editor);
+			auto cb = qobject_cast<QComboBox *>(aEditor);
 			assert(cb != nullptr);
-			a_Model->setData(a_Index, cb->currentText());
+			aModel->setData(aIndex, cb->currentText());
 			return;
 		}
 		case SongModel::colManualMeasuresPerMinute:
 		case SongModel::colLocalRating:
 		{
-			auto le = qobject_cast<QLineEdit *>(a_Editor);
+			auto le = qobject_cast<QLineEdit *>(aEditor);
 			assert(le != nullptr);
-			a_Model->setData(a_Index, le->locale().toDouble(le->text()));
+			aModel->setData(aIndex, le->locale().toDouble(le->text()));
 			return;
 		}
 		case SongModel::colFileName:
@@ -722,25 +722,25 @@ void SongModelEditorDelegate::commitAndCloseEditor()
 ////////////////////////////////////////////////////////////////////////////////
 // SongModelFilter:
 
-SongModelFilter::SongModelFilter(SongModel & a_ParentModel):
-	m_ParentModel(a_ParentModel),
-	m_Filter(fltNone),
-	m_SearchString("", QRegularExpression::CaseInsensitiveOption)
+SongModelFilter::SongModelFilter(SongModel & aParentModel):
+	mParentModel(aParentModel),
+	mFilter(fltNone),
+	mSearchString("", QRegularExpression::CaseInsensitiveOption)
 {
-	setSourceModel(&m_ParentModel);
+	setSourceModel(&mParentModel);
 }
 
 
 
 
 
-void SongModelFilter::setFilter(SongModelFilter::EFilter a_Filter)
+void SongModelFilter::setFilter(SongModelFilter::EFilter aFilter)
 {
-	if (m_Filter == a_Filter)
+	if (mFilter == aFilter)
 	{
 		return;
 	}
-	m_Filter = a_Filter;
+	mFilter = aFilter;
 	STOPWATCH("setFilter");
 	invalidateFilter();
 }
@@ -749,9 +749,9 @@ void SongModelFilter::setFilter(SongModelFilter::EFilter a_Filter)
 
 
 
-void SongModelFilter::setSearchString(const QString & a_SearchString)
+void SongModelFilter::setSearchString(const QString & aSearchString)
 {
-	m_SearchString.setPattern(a_SearchString);
+	mSearchString.setPattern(aSearchString);
 	STOPWATCH("setSearchString");
 	invalidateFilter();
 }
@@ -760,9 +760,9 @@ void SongModelFilter::setSearchString(const QString & a_SearchString)
 
 
 
-void SongModelFilter::setFavoriteFilters(const std::vector<FilterPtr> & a_FavoriteFilters)
+void SongModelFilter::setFavoriteFilters(const std::vector<FilterPtr> & aFavoriteFilters)
 {
-	m_FavoriteFilters = a_FavoriteFilters;
+	mFavoriteFilters = aFavoriteFilters;
 	STOPWATCH("setFavoriteTemplateItems");
 	invalidateFilter();
 }
@@ -771,29 +771,29 @@ void SongModelFilter::setFavoriteFilters(const std::vector<FilterPtr> & a_Favori
 
 
 
-bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcParent) const
+bool SongModelFilter::filterAcceptsRow(int aSrcRow, const QModelIndex & aSrcParent) const
 {
-	assert(!a_SrcParent.isValid());
-	Q_UNUSED(a_SrcParent);  // For release builds
+	assert(!aSrcParent.isValid());
+	Q_UNUSED(aSrcParent);  // For release builds
 
-	auto song = m_ParentModel.songFromRow(a_SrcRow);
+	auto song = mParentModel.songFromRow(aSrcRow);
 	if (song == nullptr)
 	{
-		qWarning() << "Got a row without an assigned song: " << a_SrcRow;
+		qWarning() << "Got a row without an assigned song: " << aSrcRow;
 		assert(!"Got a row without an assigned song");
 		return false;
 	}
-	switch (m_Filter)
+	switch (mFilter)
 	{
 		case fltNone: break;
 		case fltNoId3:
 		{
 			const auto & id3Tag = song->tagId3();
 			if (
-				(id3Tag.m_Author.isEmpty()) &&
-				(id3Tag.m_Title.isEmpty()) &&
-				(id3Tag.m_Genre.isEmpty()) &&
-				!id3Tag.m_MeasuresPerMinute.isPresent()
+				(id3Tag.mAuthor.isEmpty()) &&
+				(id3Tag.mTitle.isEmpty()) &&
+				(id3Tag.mGenre.isEmpty()) &&
+				!id3Tag.mMeasuresPerMinute.isPresent()
 			)
 			{
 				break;
@@ -831,7 +831,7 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 
 		case fltNoFilterMatch:
 		{
-			for (const auto & filter: m_FavoriteFilters)
+			for (const auto & filter: mFavoriteFilters)
 			{
 				if (filter->rootNode()->isSatisfiedBy(*song))
 				{
@@ -882,19 +882,19 @@ bool SongModelFilter::filterAcceptsRow(int a_SrcRow, const QModelIndex & a_SrcPa
 
 
 
-bool SongModelFilter::songMatchesSearchString(SongPtr a_Song) const
+bool SongModelFilter::songMatchesSearchString(SongPtr aSong) const
 {
 	if (
-		m_SearchString.match(a_Song->tagManual().m_Author.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagManual().m_Title.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagManual().m_Genre.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Author.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Title.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagId3().m_Genre.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Author.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Title.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->tagFileName().m_Genre.valueOrDefault()).hasMatch() ||
-		m_SearchString.match(a_Song->fileName()).hasMatch()
+		mSearchString.match(aSong->tagManual().mAuthor.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagManual().mTitle.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagManual().mGenre.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagId3().mAuthor.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagId3().mTitle.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagId3().mGenre.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagFileName().mAuthor.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagFileName().mTitle.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->tagFileName().mGenre.valueOrDefault()).hasMatch() ||
+		mSearchString.match(aSong->fileName()).hasMatch()
 	)
 	{
 		return true;

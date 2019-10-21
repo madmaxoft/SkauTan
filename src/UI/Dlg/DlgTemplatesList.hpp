@@ -35,8 +35,8 @@ class DlgTemplatesList:
 public:
 
 	explicit DlgTemplatesList(
-		ComponentCollection & a_Components,
-		QWidget * a_Parent = nullptr
+		ComponentCollection & aComponents,
+		QWidget * aParent = nullptr
 	);
 
 	virtual ~DlgTemplatesList() override;
@@ -45,49 +45,49 @@ public:
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgTemplatesList> m_UI;
+	std::unique_ptr<Ui::DlgTemplatesList> mUI;
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** Set to true if the UI is updating internally; false when the changes come from the user. */
-	bool m_IsInternalChange;
+	bool mIsInternalChange;
 
 
 	/** Returns the template that is at the specified row in the table. */
-	TemplatePtr templateFromRow(int a_Row);
+	TemplatePtr templateFromRow(int aRow);
 
 	/** Updates the specified row in the template table with the current template data. */
-	void updateTemplateRow(int a_Row, const Template & a_Template);
+	void updateTemplateRow(int aRow, const Template & aTemplate);
 
 	/** Updates the specified row in the template item table with the current template item data. */
-	void updateTemplateItemRow(int a_Row, const Filter & a_Item);
+	void updateTemplateItemRow(int aRow, const Filter & aItem);
 
 	/** Exports the selected templates to the specified file. */
-	void exportTemplatesTo(const QString & a_FileName);
+	void exportTemplatesTo(const QString & aFileName);
 
 	/** Imports the templates from the specified file, lets the user choose which ones to import. */
-	void importTemplatesFrom(const QString & a_FileName);
+	void importTemplatesFrom(const QString & aFileName);
 
 	/** Updates the menu for the Add Item button. */
 	void updateFilterMenu();
 
 	/** Inserts the specified filter to the current template's items, after the current selection. */
-	void insertFilter(FilterPtr a_Filter);
+	void insertFilter(FilterPtr aFilter);
 
 	/** Returns the currently selected template.
 	Returns nullptr if no selection or multiple templates selected. */
 	TemplatePtr currentTemplate();
 
 	/** Swaps the templates on the specified rows both in the UI and in the DB,
-	and selects the new row a_Row2.
+	and selects the new row aRow2.
 	Asserts that the rows are valid. */
-	void swapTemplatesAndSelectSecond(int a_Row1, int a_Row2);
+	void swapTemplatesAndSelectSecond(int aRow1, int aRow2);
 
 	/** Swaps the template items on the specified rows both in the UI and in the DB,
-	and selects the new row a_Row2.
+	and selects the new row aRow2.
 	Asserts that the template and the rows are valid. */
-	void swapItemsAndSelectSecond(int a_Row1, int a_Row2);
+	void swapItemsAndSelectSecond(int aRow1, int aRow2);
 
 
 
@@ -110,20 +110,20 @@ protected slots:
 	/** The selection in the template list has changed. */
 	void templateSelectionChanged();
 
-	/** The template in the table has changed, either by us (m_IsInternalChange) or by the user.
+	/** The template in the table has changed, either by us (mIsInternalChange) or by the user.
 	If the change was by the user, save the new contents to the template. */
-	void templateChanged(QTableWidgetItem * a_Item);
+	void templateChanged(QTableWidgetItem * aItem);
 
 	/** The selection in the item / filter list has changed. */
 	void itemSelectionChanged();
 
 	/** The template item at the specified index was doubleclicked.
 	Displays the UI for editing the filter. */
-	void itemDoubleClicked(int a_Row, int a_Column);
+	void itemDoubleClicked(int aRow, int aColumn);
 
-	/** The item in the table has changed, either by us (m_IsInternalChange) or by the user.
+	/** The item in the table has changed, either by us (mIsInternalChange) or by the user.
 	If the change was by the user, save the new contents to the filter. */
-	void itemChanged(QTableWidgetItem * a_Item);
+	void itemChanged(QTableWidgetItem * aItem);
 
 	/** The user clicked the Export button.
 	Shows a file selection dialog, then exports selected templates into that file. */

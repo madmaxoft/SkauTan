@@ -7,22 +7,22 @@
 
 
 
-DlgDebugLog::DlgDebugLog(QWidget * a_Parent):
-	Super(a_Parent),
-	m_UI(new Ui::DlgDebugLog)
+DlgDebugLog::DlgDebugLog(QWidget * aParent):
+	Super(aParent),
+	mUI(new Ui::DlgDebugLog)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgDebugLog", *this);
-	Settings::loadHeaderView("DlgDebugLog", "twMessages", *(m_UI->twMessages->horizontalHeader()));
+	Settings::loadHeaderView("DlgDebugLog", "twMessages", *(mUI->twMessages->horizontalHeader()));
 
 	// Connect the signals:
-	connect(m_UI->btnClose, &QPushButton::clicked, this, &QDialog::close);
+	connect(mUI->btnClose, &QPushButton::clicked, this, &QDialog::close);
 
 	// Insert debug messages:
 	const auto & msgs = DebugLogger::get().lastMessages();
 	for (const auto & msg: msgs)
 	{
-		addMessage(msg.m_DateTime, msg.m_Type, msg.m_FileName, msg.m_Function, msg.m_LineNum, msg.m_Message);
+		addMessage(msg.mDateTime, msg.mType, msg.mFileName, msg.mFunction, msg.mLineNum, msg.mMessage);
 	}
 
 	// Make the dialog have Maximize button on Windows:
@@ -35,7 +35,7 @@ DlgDebugLog::DlgDebugLog(QWidget * a_Parent):
 
 DlgDebugLog::~DlgDebugLog()
 {
-	Settings::saveHeaderView("DlgDebugLog", "twMessages", *(m_UI->twMessages->horizontalHeader()));
+	Settings::saveHeaderView("DlgDebugLog", "twMessages", *(mUI->twMessages->horizontalHeader()));
 	Settings::saveWindowPos("DlgDebugLog", *this);
 }
 
@@ -43,13 +43,13 @@ DlgDebugLog::~DlgDebugLog()
 
 
 
-void DlgDebugLog::addMessage(const QDateTime & a_DateTime, const QtMsgType a_Type, const QString & a_FileName, const QString & a_Function, int a_LineNum, const QString & a_Message)
+void DlgDebugLog::addMessage(const QDateTime & aDateTime, const QtMsgType aType, const QString & aFileName, const QString & aFunction, int aLineNum, const QString & aMessage)
 {
-	auto row = m_UI->twMessages->rowCount();
-	m_UI->twMessages->setRowCount(row + 1);
+	auto row = mUI->twMessages->rowCount();
+	mUI->twMessages->setRowCount(row + 1);
 
 	QString typeString;
-	switch (a_Type)
+	switch (aType)
 	{
 		case QtDebugMsg:    typeString = "D"; break;
 		case QtInfoMsg:     typeString = "I"; break;
@@ -57,11 +57,11 @@ void DlgDebugLog::addMessage(const QDateTime & a_DateTime, const QtMsgType a_Typ
 		case QtCriticalMsg: typeString = "C"; break;
 		case QtFatalMsg:    typeString = "F"; break;
 	}
-	QString lineNumber = (a_LineNum > 0) ? QString::number(a_LineNum) : QString();
-	m_UI->twMessages->setItem(row, 0, new QTableWidgetItem(a_DateTime.toString("yyyy-dd-MM hh:mm:ss")));
-	m_UI->twMessages->setItem(row, 1, new QTableWidgetItem(typeString));
-	m_UI->twMessages->setItem(row, 2, new QTableWidgetItem(a_FileName));
-	m_UI->twMessages->setItem(row, 3, new QTableWidgetItem(a_Function));
-	m_UI->twMessages->setItem(row, 4, new QTableWidgetItem(QString::number(a_LineNum)));
-	m_UI->twMessages->setItem(row, 5, new QTableWidgetItem(a_Message));
+	QString lineNumber = (aLineNum > 0) ? QString::number(aLineNum) : QString();
+	mUI->twMessages->setItem(row, 0, new QTableWidgetItem(aDateTime.toString("yyyy-dd-MM hh:mm:ss")));
+	mUI->twMessages->setItem(row, 1, new QTableWidgetItem(typeString));
+	mUI->twMessages->setItem(row, 2, new QTableWidgetItem(aFileName));
+	mUI->twMessages->setItem(row, 3, new QTableWidgetItem(aFunction));
+	mUI->twMessages->setItem(row, 4, new QTableWidgetItem(QString::number(aLineNum)));
+	mUI->twMessages->setItem(row, 5, new QTableWidgetItem(aMessage));
 }

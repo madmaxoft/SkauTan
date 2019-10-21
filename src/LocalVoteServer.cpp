@@ -26,25 +26,25 @@ class Connection:
 
 public:
 
-	Connection(LocalVoteServer & a_Server, QTcpSocket * a_Socket):
-		m_Server(a_Server),
-		m_Socket(a_Socket),
-		m_Parser(*this)
+	Connection(LocalVoteServer & aServer, QTcpSocket * aSocket):
+		mServer(aServer),
+		mSocket(aSocket),
+		mParser(*this)
 	{
-		connect(m_Socket, &QTcpSocket::readyRead,
+		connect(mSocket, &QTcpSocket::readyRead,
 			[this]()
 			{
-				while (m_Socket->bytesAvailable() > 0)
+				while (mSocket->bytesAvailable() > 0)
 				{
-					auto data = m_Socket->read(50);
+					auto data = mSocket->read(50);
 					auto size = static_cast<size_t>(data.size());
 					size_t pos = 0;
 					while (size > 0)
 					{
-						auto consumed = m_Parser.parse(data.constData() + pos, size);
+						auto consumed = mParser.parse(data.constData() + pos, size);
 						if (consumed == std::string::npos)
 						{
-							m_Socket->close();
+							mSocket->close();
 							return;
 						}
 						size -= consumed;
@@ -59,54 +59,54 @@ public:
 protected:
 
 	/** The server component that will handle the requests, once received. */
-	LocalVoteServer & m_Server;
+	LocalVoteServer & mServer;
 
 	/** The socket on which to read / write. */
-	QTcpSocket * m_Socket;
+	QTcpSocket * mSocket;
 
 	/** The parser that keeps state of the HTTP protocol. */
-	Http::MessageParser m_Parser;
+	Http::MessageParser mParser;
 
 	/** The request being currently serviced. */
-	std::shared_ptr<Http::IncomingRequest> m_CurrentRequest;
+	std::shared_ptr<Http::IncomingRequest> mCurrentRequest;
 
 	/** The body of the request currently being serviced. */
-	std::string m_CurrentBodyData;
+	std::string mCurrentBodyData;
 
 
 
 
 
-	virtual void onError(const std::string & a_ErrorDescription) override
+	virtual void onError(const std::string & aErrorDescription) override
 	{
-		qDebug() << "HTTP Connection error: " << a_ErrorDescription.c_str();
-		m_Socket->disconnect();
+		qDebug() << "HTTP Connection error: " << aErrorDescription.c_str();
+		mSocket->disconnect();
 	}
 
 
 
 
-	virtual void onFirstLine(const std::string & a_FirstLine) override
+	virtual void onFirstLine(const std::string & aFirstLine) override
 	{
-		auto split = Http::Utils::stringSplit(a_FirstLine, " ");
+		auto split = Http::Utils::stringSplit(aFirstLine, " ");
 		if (split.size() != 3)
 		{
-			qDebug() << "Invalid first line: " << a_FirstLine.c_str();
-			m_Socket->disconnect();
+			qDebug() << "Invalid first line: " << aFirstLine.c_str();
+			mSocket->disconnect();
 			return;
 		}
-		m_CurrentRequest.reset(new Http::IncomingRequest(split[0], split[1]));
-		m_CurrentBodyData.clear();
+		mCurrentRequest.reset(new Http::IncomingRequest(split[0], split[1]));
+		mCurrentBodyData.clear();
 	}
 
 
 
 
-	virtual void onHeaderLine(const std::string & a_Key, const std::string & a_Value) override
+	virtual void onHeaderLine(const std::string & aKey, const std::string & aValue) override
 	{
-		if (m_CurrentRequest != nullptr)
+		if (mCurrentRequest != nullptr)
 		{
-			m_CurrentRequest->addHeader(a_Key, a_Value);
+			mCurrentRequest->addHeader(aKey, aValue);
 		}
 	}
 
@@ -122,9 +122,9 @@ protected:
 
 
 
-	virtual void onBodyData(const void * a_Data, size_t a_Size) override
+	virtual void onBodyData(const void * aData, size_t aSize) override
 	{
-		m_CurrentBodyData.append(reinterpret_cast<const char *>(a_Data), a_Size);
+		mCurrentBodyData.append(reinterpret_cast<const char *>(aData), aSize);
 	}
 
 
@@ -133,14 +133,14 @@ protected:
 
 	virtual void onBodyFinished() override
 	{
-		m_Server.handleRequest(m_Socket, *m_CurrentRequest, m_CurrentBodyData);
-		if (!m_CurrentRequest->doesAllowKeepAlive())
+		mServer.handleRequest(mSocket, *mCurrentRequest, mCurrentBodyData);
+		if (!mCurrentRequest->doesAllowKeepAlive())
 		{
-			m_Socket->close();
+			mSocket->close();
 		}
-		m_CurrentRequest.reset();
-		m_CurrentBodyData.clear();
-		m_Parser.reset();
+		mCurrentRequest.reset();
+		mCurrentBodyData.clear();
+		mParser.reset();
 	}
 };
 
@@ -151,14 +151,14 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // LocalVoteServer:
 
-LocalVoteServer::LocalVoteServer(ComponentCollection & a_Components, QObject * a_Parent):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_HashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length()),
-	m_IsStarted(false),
-	m_NumVotes(0)
+LocalVoteServer::LocalVoteServer(ComponentCollection & aComponents, QObject * aParent):
+	Super(aParent),
+	mComponents(aComponents),
+	mHashLength(QCryptographicHash::hash("", QCryptographicHash::Sha1).length()),
+	mIsStarted(false),
+	mNumVotes(0)
 {
-	connect(&m_Server, &QTcpServer::newConnection, this, &LocalVoteServer::onNewConnection);
+	connect(&mServer, &QTcpServer::newConnection, this, &LocalVoteServer::onNewConnection);
 }
 
 
@@ -166,20 +166,20 @@ LocalVoteServer::LocalVoteServer(ComponentCollection & a_Components, QObject * a
 
 
 void LocalVoteServer::handleRequest(
-	QTcpSocket * a_Socket,
-	const Http::IncomingRequest & a_Request,
-	const std::string & a_RequestBody
+	QTcpSocket * aSocket,
+	const Http::IncomingRequest & aRequest,
+	const std::string & aRequestBody
 )
 {
-	qDebug() << "Request: " << a_Request.method().c_str() << " " << a_Request.url().c_str();
+	qDebug() << "Request: " << aRequest.method().c_str() << " " << aRequest.url().c_str();
 
-	Q_UNUSED(a_RequestBody);
+	Q_UNUSED(aRequestBody);
 
 	// If the request is for the root, return the root page contents:
-	const auto & url = a_Request.url();
+	const auto & url = aRequest.url();
 	if (url == "/")
 	{
-		return sendFile(a_Socket, "index.html");
+		return sendFile(aSocket, "index.html");
 	}
 
 	// If the request is for the static data, return them from the disk / resources:
@@ -187,19 +187,19 @@ void LocalVoteServer::handleRequest(
 	{
 		if (url.find("/../") != std::string::npos)
 		{
-			return send404(a_Socket);
+			return send404(aSocket);
 		}
-		return sendFile(a_Socket, url);
+		return sendFile(aSocket, url);
 	}
 
 	// If the request is for an API, deliver it to the API processor:
 	if (url.compare(0, 5, "/api/") == 0)
 	{
-		return processApi(a_Socket, a_Request, a_RequestBody);
+		return processApi(aSocket, aRequest, aRequestBody);
 	}
 
 	// Nothing matched, send a 404:
-	return send404(a_Socket);
+	return send404(aSocket);
 }
 
 
@@ -208,18 +208,18 @@ void LocalVoteServer::handleRequest(
 
 quint16 LocalVoteServer::port() const
 {
-	if (!m_IsStarted)
+	if (!mIsStarted)
 	{
 		throw LogicError("Server not running");
 	}
-	return m_Port;
+	return mPort;
 }
 
 
 
 
 
-void LocalVoteServer::sendFile(QTcpSocket * a_Socket, const std::string & a_RelativePath)
+void LocalVoteServer::sendFile(QTcpSocket * aSocket, const std::string & aRelativePath)
 {
 	std::string contents;
 	auto webLang = QProcessEnvironment::systemEnvironment().value("SKAUTAN_WEB_LANGUAGE", "").toStdString();
@@ -245,27 +245,27 @@ void LocalVoteServer::sendFile(QTcpSocket * a_Socket, const std::string & a_Rela
 	prefixes.push_back(":/VoteServer/");
 	for (const auto & prefix: prefixes)
 	{
-		QFile f(QString::fromStdString(prefix + a_RelativePath));
+		QFile f(QString::fromStdString(prefix + aRelativePath));
 		if (f.open(QIODevice::ReadOnly))
 		{
 			contents = f.readAll().toStdString();
 			auto resp = Http::SimpleOutgoingResponse::serialize(200, "OK", contents);
-			a_Socket->write(QByteArray::fromStdString(resp));
+			aSocket->write(QByteArray::fromStdString(resp));
 			qDebug() << "  Sending file " << f.fileName();
 			return;
 		}
 	}
 	// File not found, send a 404 error:
-	return send404(a_Socket);
+	return send404(aSocket);
 }
 
 
 
 
 
-void LocalVoteServer::send404(QTcpSocket * a_Socket)
+void LocalVoteServer::send404(QTcpSocket * aSocket)
 {
-	a_Socket->write(QByteArray::fromStdString(
+	aSocket->write(QByteArray::fromStdString(
 		Http::SimpleOutgoingResponse::serialize(
 			404, "Not found", "text/plain", "The specified resource was not found"
 		)
@@ -278,12 +278,12 @@ void LocalVoteServer::send404(QTcpSocket * a_Socket)
 
 
 void LocalVoteServer::processApi(
-	QTcpSocket * a_Socket,
-	const Http::IncomingRequest & a_Request,
-	const std::string & a_RequestBody
+	QTcpSocket * aSocket,
+	const Http::IncomingRequest & aRequest,
+	const std::string & aRequestBody
 )
 {
-	const auto & url = a_Request.urlPath();
+	const auto & url = aRequest.urlPath();
 	using Handler = std::function<void(LocalVoteServer *, QTcpSocket *, const Http::IncomingRequest &, const std::string &)>;
 	static const std::map<std::string, Handler> apiMap =
 	{
@@ -293,9 +293,9 @@ void LocalVoteServer::processApi(
 	auto handler = apiMap.find(url);
 	if (handler == apiMap.end())
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
-	return (handler->second)(this, a_Socket, a_Request, a_RequestBody);
+	return (handler->second)(this, aSocket, aRequest, aRequestBody);
 }
 
 
@@ -303,19 +303,19 @@ void LocalVoteServer::processApi(
 
 
 void LocalVoteServer::apiPlaylist(
-	QTcpSocket * a_Socket,
-	const Http::IncomingRequest & a_Request,
-	const std::string & a_RequestBody
+	QTcpSocket * aSocket,
+	const Http::IncomingRequest & aRequest,
+	const std::string & aRequestBody
 )
 {
-	Q_UNUSED(a_Request);
-	Q_UNUSED(a_RequestBody);
+	Q_UNUSED(aRequest);
+	Q_UNUSED(aRequestBody);
 
 	// Check the requested start against history size:
-	auto start = a_Request.headerToNumber("x-skautan-playlist-start", 0ul);
-	if (start >= m_History.size())
+	auto start = aRequest.headerToNumber("x-skautan-playlist-start", 0ul);
+	if (start >= mHistory.size())
 	{
-		a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
+		aSocket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 			200, "OK", "application/json", "[]"
 		)));
 		qDebug() << "  Sending empty json";
@@ -324,10 +324,10 @@ void LocalVoteServer::apiPlaylist(
 
 	// Send all songs in the history:
 	QByteArray out ("[");
-	auto len = m_History.size();
+	auto len = mHistory.size();
 	for (size_t index = start; index < len; ++index)
 	{
-		auto song = m_History[index];
+		auto song = mHistory[index];
 		QJsonObject entry;
 		entry["hash"]      = QString::fromUtf8(song->hash().toHex());
 		entry["author"]    = song->primaryAuthor().valueOrDefault();
@@ -336,15 +336,15 @@ void LocalVoteServer::apiPlaylist(
 		entry["genre"]     = song->primaryGenre().valueOrDefault();
 		entry["mpm"]       = song->primaryMeasuresPerMinute().valueOr(-1);
 		entry["index"]     = static_cast<qlonglong>(index);
-		entry["ratingRC"]  = song->rating().m_RhythmClarity.valueOr(2.5);
-		entry["ratingGT"]  = song->rating().m_GenreTypicality.valueOr(2.5);
-		entry["ratingPop"] = song->rating().m_Popularity.valueOr(2.5);
+		entry["ratingRC"]  = song->rating().mRhythmClarity.valueOr(2.5);
+		entry["ratingGT"]  = song->rating().mGenreTypicality.valueOr(2.5);
+		entry["ratingPop"] = song->rating().mPopularity.valueOr(2.5);
 		QJsonDocument doc(entry);
 		out.append(doc.toJson());
 		out.append(",\r\n");
 	}
 	out.append("null]");
-	a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
+	aSocket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 		200, "OK", "application/json", out.toStdString()
 	)));
 	qDebug() << "  Sending playlist json";
@@ -355,9 +355,9 @@ void LocalVoteServer::apiPlaylist(
 
 
 void LocalVoteServer::apiVote(
-	QTcpSocket * a_Socket,
-	const Http::IncomingRequest & a_Request,
-	const std::string & a_RequestBody
+	QTcpSocket * aSocket,
+	const Http::IncomingRequest & aRequest,
+	const std::string & aRequestBody
 )
 {
 	// Dummy callbacks - we're not handling files here:
@@ -370,64 +370,64 @@ void LocalVoteServer::apiVote(
 	} callbacks;
 
 	// Parse the posted parameters:
-	Http::FormParser parser(a_Request, callbacks);
-	parser.parse(a_RequestBody.data(), a_RequestBody.size());
+	Http::FormParser parser(aRequest, callbacks);
+	parser.parse(aRequestBody.data(), aRequestBody.size());
 	if (!parser.finish())
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 
 	// Extract and check the parameters:
 	auto songHash = parser.find("songHash");
-	if ((songHash == parser.end()) || (songHash->second.size() != static_cast<size_t>(2 * m_HashLength)))
+	if ((songHash == parser.end()) || (songHash->second.size() != static_cast<size_t>(2 * mHashLength)))
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 	auto voteType = parser.find("voteType");
 	if (voteType == parser.end())
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 	auto voteValue = parser.find("voteValue");
 	if (voteValue == parser.end())
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 	int value = 0;
 	if (!Http::Utils::stringToInteger(voteValue->second, value))
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 	auto hash = QByteArray::fromHex(QByteArray::fromStdString(songHash->second));
-	if (hash.length() != m_HashLength)
+	if (hash.length() != mHashLength)
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 
 	// Dispatch the vote according to type:
 	if (voteType->second == "rhythmClarity")
 	{
-		m_NumVotes += 1;
+		mNumVotes += 1;
 		emit addVoteRhythmClarity(hash, value);
 	}
 	else if (voteType->second == "genreTypicality")
 	{
-		m_NumVotes += 1;
+		mNumVotes += 1;
 		emit addVoteGenreTypicality(hash, value);
 	}
 	else if (voteType->second == "popularity")
 	{
-		m_NumVotes += 1;
+		mNumVotes += 1;
 		emit addVotePopularity(hash, value);
 	}
 	else
 	{
-		return send404(a_Socket);
+		return send404(aSocket);
 	}
 
 	// TODO: Send an updated rating back to the client
 
-	a_Socket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
+	aSocket->write(QByteArray::fromStdString(Http::SimpleOutgoingResponse::serialize(
 		200, "OK", "text/plain", ""
 	)));
 	qDebug() << "  Sending empty OK";
@@ -439,7 +439,7 @@ void LocalVoteServer::apiVote(
 
 void LocalVoteServer::onNewConnection()
 {
-	auto socket = m_Server.nextPendingConnection();
+	auto socket = mServer.nextPendingConnection();
 	auto connection = new Connection(*this, socket);
 	connect(socket, &QTcpSocket::disconnected, connection, &QObject::deleteLater);
 }
@@ -448,12 +448,12 @@ void LocalVoteServer::onNewConnection()
 
 
 
-void LocalVoteServer::startServer(quint16 a_Port)
+void LocalVoteServer::startServer(quint16 aPort)
 {
-	m_Server.close();
-	m_Server.listen(QHostAddress::Any, a_Port);
-	m_Port = a_Port;
-	m_IsStarted = true;
+	mServer.close();
+	mServer.listen(QHostAddress::Any, aPort);
+	mPort = aPort;
+	mIsStarted = true;
 }
 
 
@@ -462,24 +462,24 @@ void LocalVoteServer::startServer(quint16 a_Port)
 
 void LocalVoteServer::stopServer()
 {
-	m_IsStarted = false;
-	m_Port = 0;
-	m_Server.close();
+	mIsStarted = false;
+	mPort = 0;
+	mServer.close();
 }
 
 
 
 
 
-void LocalVoteServer::startedPlayback(IPlaylistItemPtr a_Item)
+void LocalVoteServer::startedPlayback(IPlaylistItemPtr aItem)
 {
 	// Only interested in songs:
-	auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
+	auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(aItem);
 	if (spi == nullptr)
 	{
 		return;
 	}
 
 	// Save to history:
-	m_History.push_back(spi->song());
+	mHistory.push_back(spi->song());
 }

@@ -43,59 +43,59 @@ public:
 	the metadata for each source. */
 	struct Tag
 	{
-		DatedOptional<QString> m_Author;
-		DatedOptional<QString> m_Title;
-		DatedOptional<QString> m_Genre;
-		DatedOptional<double>  m_MeasuresPerMinute;
+		DatedOptional<QString> mAuthor;
+		DatedOptional<QString> mTitle;
+		DatedOptional<QString> mGenre;
+		DatedOptional<double>  mMeasuresPerMinute;
 
 		Tag() = default;
-		Tag(const Tag & a_Other) = default;
+		Tag(const Tag & aOther) = default;
 		Tag(
-			const QString & a_Author,
-			const QString & a_Title,
-			const QString & a_Genre,
-			double a_MeasuresPerMinute
+			const QString & aAuthor,
+			const QString & aTitle,
+			const QString & aGenre,
+			double aMeasuresPerMinute
 		):
-			m_Author(a_Author),
-			m_Title(a_Title),
-			m_Genre(a_Genre),
-			m_MeasuresPerMinute(a_MeasuresPerMinute)
+			mAuthor(aAuthor),
+			mTitle(aTitle),
+			mGenre(aGenre),
+			mMeasuresPerMinute(aMeasuresPerMinute)
 		{
 		}
 
 		Tag(
-			const QString & a_Author,
-			const QString & a_Title,
-			const QString & a_Genre
+			const QString & aAuthor,
+			const QString & aTitle,
+			const QString & aGenre
 		):
-			m_Author(a_Author),
-			m_Title(a_Title),
-			m_Genre(a_Genre)
+			mAuthor(aAuthor),
+			mTitle(aTitle),
+			mGenre(aGenre)
 		{
 		}
 
 		Tag(
-			const QString & a_Author,
-			const QString & a_Title
+			const QString & aAuthor,
+			const QString & aTitle
 		):
-			m_Author(a_Author),
-			m_Title(a_Title)
+			mAuthor(aAuthor),
+			mTitle(aTitle)
 		{
 		}
 
-		constexpr bool operator == (const Tag & a_Other) const noexcept
+		constexpr bool operator == (const Tag & aOther) const noexcept
 		{
 			return (
-				(m_Title == a_Other.m_Title) &&
-				(m_Author == a_Other.m_Author) &&
-				(m_Genre == a_Other.m_Genre) &&
-				(m_MeasuresPerMinute == a_Other.m_MeasuresPerMinute)
+				(mTitle == aOther.mTitle) &&
+				(mAuthor == aOther.mAuthor) &&
+				(mGenre == aOther.mGenre) &&
+				(mMeasuresPerMinute == aOther.mMeasuresPerMinute)
 			);
 		}
 
-		constexpr bool operator != (const Tag & a_Other) const noexcept
+		constexpr bool operator != (const Tag & aOther) const noexcept
 		{
-			return !(operator==(a_Other));
+			return !(operator==(aOther));
 		}
 	};
 
@@ -103,62 +103,62 @@ public:
 	/** Rating in various categories (#100) */
 	struct Rating
 	{
-		DatedOptional<double> m_RhythmClarity;
-		DatedOptional<double> m_GenreTypicality;
-		DatedOptional<double> m_Popularity;
-		DatedOptional<double> m_Local;
+		DatedOptional<double> mRhythmClarity;
+		DatedOptional<double> mGenreTypicality;
+		DatedOptional<double> mPopularity;
+		DatedOptional<double> mLocal;
 	};
 
 
 	/** Data that can be shared among multiple files that represent the same song (same hash). */
 	struct SharedData
 	{
-		QByteArray m_Hash;
-		DatedOptional<double> m_Length;
-		DatedOptional<QDateTime> m_LastPlayed;
-		Rating m_Rating;
-		Tag m_TagManual;
-		mutable QMutex m_Mtx;                   ///< Mutex protecting m_Duplicates against multithreaded access
-		std::vector<Song *> m_Duplicates;       ///< All songs having the same hash
-		DatedOptional<double> m_SkipStart;      ///< Where to start playing
-		DatedOptional<QString> m_Notes;
-		DatedOptional<QColor> m_BgColor;        ///< BgColor used for displaying the song in ClassroomWindow
-		DatedOptional<double> m_DetectedTempo;  ///< Tempo that was detected using TempoDetect
+		QByteArray mHash;
+		DatedOptional<double> mLength;
+		DatedOptional<QDateTime> mLastPlayed;
+		Rating mRating;
+		Tag mTagManual;
+		mutable QMutex mMtx;                   ///< Mutex protecting mDuplicates against multithreaded access
+		std::vector<Song *> mDuplicates;       ///< All songs having the same hash
+		DatedOptional<double> mSkipStart;      ///< Where to start playing
+		DatedOptional<QString> mNotes;
+		DatedOptional<QColor> mBgColor;        ///< BgColor used for displaying the song in ClassroomWindow
+		DatedOptional<double> mDetectedTempo;  ///< Tempo that was detected using TempoDetect
 
 		SharedData(
-			const QByteArray & a_Hash,
-			DatedOptional<double> && a_Length,
-			DatedOptional<QDateTime> && a_LastPlayed,
-			Rating && a_Rating,
-			Tag && a_TagManual,
-			DatedOptional<double> && a_SkipStart,
-			DatedOptional<QString> && a_Notes,
-			DatedOptional<QColor> && a_BgColor,
-			DatedOptional<double> && a_DetectedTempo
+			const QByteArray & aHash,
+			DatedOptional<double> && aLength,
+			DatedOptional<QDateTime> && aLastPlayed,
+			Rating && aRating,
+			Tag && aTagManual,
+			DatedOptional<double> && aSkipStart,
+			DatedOptional<QString> && aNotes,
+			DatedOptional<QColor> && aBgColor,
+			DatedOptional<double> && aDetectedTempo
 		):
-			m_Hash(a_Hash),
-			m_Length(std::move(a_Length)),
-			m_LastPlayed(std::move(a_LastPlayed)),
-			m_Rating(std::move(a_Rating)),
-			m_TagManual(std::move(a_TagManual)),
-			m_SkipStart(std::move(a_SkipStart)),
-			m_Notes(std::move(a_Notes)),
-			m_BgColor(std::move(a_BgColor)),
-			m_DetectedTempo(std::move(a_DetectedTempo))
+			mHash(aHash),
+			mLength(std::move(aLength)),
+			mLastPlayed(std::move(aLastPlayed)),
+			mRating(std::move(aRating)),
+			mTagManual(std::move(aTagManual)),
+			mSkipStart(std::move(aSkipStart)),
+			mNotes(std::move(aNotes)),
+			mBgColor(std::move(aBgColor)),
+			mDetectedTempo(std::move(aDetectedTempo))
 		{
 		}
 
 		SharedData(
-			const QByteArray & a_Hash,
-			double a_Length
+			const QByteArray & aHash,
+			double aLength
 		):
-			m_Hash(a_Hash),
-			m_Length(a_Length)
+			mHash(aHash),
+			mLength(aLength)
 		{
 		}
 
-		void addDuplicate(Song * a_Duplicate);
-		void delDuplicate(const Song * a_Duplicate);
+		void addDuplicate(Song * aDuplicate);
+		void delDuplicate(const Song * aDuplicate);
 
 		/** Returns the count of all duplicates for this SharedData. Thread-safe. */
 		size_t duplicatesCount() const;
@@ -173,35 +173,35 @@ public:
 	/** Creates a new instance that has only the file name and size set, all the other metadata are empty.
 	Used when adding new files. */
 	explicit Song(
-		const QString & a_FileName,
-		SharedDataPtr a_SharedData
+		const QString & aFileName,
+		SharedDataPtr aSharedData
 	);
 
 	/** Creates a new instance with all fields set.
 	Used when loading songs from the DB. */
 	explicit Song(
-		QString && a_FileName,
-		SharedDataPtr a_SharedData,
-		Tag && a_TagFileName,
-		Tag && a_TagId3,
-		QVariant && a_LastTagRescanned,
-		QVariant && a_NumTagRescanAttempts
+		QString && aFileName,
+		SharedDataPtr aSharedData,
+		Tag && aTagFileName,
+		Tag && aTagId3,
+		QVariant && aLastTagRescanned,
+		QVariant && aNumTagRescanAttempts
 	);
 
-	Song(const Song & a_Song) = delete;
-	Song(Song && a_Song) = delete;
+	Song(const Song & aSong) = delete;
+	Song(Song && aSong) = delete;
 
 	~Song();
 
-	const QString & fileName() const { return m_FileName; }
-	const QByteArray & hash() const { return m_SharedData->m_Hash; }
-	const Tag & tagManual() const { return m_SharedData->m_TagManual; }
-	const Tag & tagFileName() const { return m_TagFileName; }
-	const Tag & tagId3() const { return m_TagId3; }
-	const QVariant & lastTagRescanned() const { return m_LastTagRescanned; }
-	const QVariant & numTagRescanAttempts() const { return m_NumTagRescanAttempts; }
-	const SharedDataPtr & sharedData() const { return m_SharedData; }
-	const DatedOptional<QString> & notes() const { return m_SharedData->m_Notes; }
+	const QString & fileName() const { return mFileName; }
+	const QByteArray & hash() const { return mSharedData->mHash; }
+	const Tag & tagManual() const { return mSharedData->mTagManual; }
+	const Tag & tagFileName() const { return mTagFileName; }
+	const Tag & tagId3() const { return mTagId3; }
+	const QVariant & lastTagRescanned() const { return mLastTagRescanned; }
+	const QVariant & numTagRescanAttempts() const { return mNumTagRescanAttempts; }
+	const SharedDataPtr & sharedData() const { return mSharedData; }
+	const DatedOptional<QString> & notes() const { return mSharedData->mNotes; }
 
 	// These return the value from the first tag which has the value valid, in the order or Manual, Id3, FileName
 	const DatedOptional<QString> & primaryAuthor() const;
@@ -210,64 +210,64 @@ public:
 	const DatedOptional<double>  & primaryMeasuresPerMinute() const;
 
 	// These return values from the shared data, if available:
-	const DatedOptional<double> &    length()     const { return m_SharedData->m_Length; }
-	const DatedOptional<QDateTime> & lastPlayed() const { return m_SharedData->m_LastPlayed; }
-	const Rating &   rating()     const { return m_SharedData->m_Rating; }
+	const DatedOptional<double> &    length()     const { return mSharedData->mLength; }
+	const DatedOptional<QDateTime> & lastPlayed() const { return mSharedData->mLastPlayed; }
+	const Rating &   rating()     const { return mSharedData->mRating; }
 	const DatedOptional<double> skipStart() const;
-	const DatedOptional<QColor> & bgColor() const { return m_SharedData->m_BgColor; }
-	const DatedOptional<double> detectedTempo() const { return m_SharedData->m_DetectedTempo; }
+	const DatedOptional<QColor> & bgColor() const { return mSharedData->mBgColor; }
+	const DatedOptional<double> detectedTempo() const { return mSharedData->mDetectedTempo; }
 
 	/** Returns whether the disk file still exists and it matches our stored hash. */
 	bool isStillValid() const;
 
 	/** Updates the length of the song, in seconds. */
-	void setLength(double a_Length);
+	void setLength(double aLength);
 
 	// Setters that redirect into the Manual tag:
-	void setAuthor(QVariant a_Author) { m_SharedData->m_TagManual.m_Author = a_Author; }
-	void setTitle(QVariant a_Title) { m_SharedData->m_TagManual.m_Title = a_Title; }
-	void setGenre(const QString & a_Genre) { m_SharedData->m_TagManual.m_Genre = a_Genre; }
-	void setMeasuresPerMinute(double a_MeasuresPerMinute) { m_SharedData->m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
+	void setAuthor(QVariant aAuthor) { mSharedData->mTagManual.mAuthor = aAuthor; }
+	void setTitle(QVariant aTitle) { mSharedData->mTagManual.mTitle = aTitle; }
+	void setGenre(const QString & aGenre) { mSharedData->mTagManual.mGenre = aGenre; }
+	void setMeasuresPerMinute(double aMeasuresPerMinute) { mSharedData->mTagManual.mMeasuresPerMinute = aMeasuresPerMinute; }
 
 	// Setters for specific tags:
-	void setManualAuthor(QVariant a_Author) { m_SharedData->m_TagManual.m_Author = a_Author; }
-	void setManualTitle(QVariant a_Title) { m_SharedData->m_TagManual.m_Title = a_Title; }
-	void setManualGenre(const QString & a_Genre) { m_SharedData->m_TagManual.m_Genre = a_Genre; }
-	void setManualMeasuresPerMinute(double a_MeasuresPerMinute) { m_SharedData->m_TagManual.m_MeasuresPerMinute = a_MeasuresPerMinute; }
-	void setManualTag(const Tag & a_Tag) { m_SharedData->m_TagManual = a_Tag; }
-	void setId3Author(const QString & a_Author) { m_TagId3.m_Author = a_Author; }
-	void setId3Title(const QString & a_Title)   { m_TagId3.m_Title  = a_Title; }
-	void setId3Genre(const QString & a_Genre)   { m_TagId3.m_Genre  = a_Genre; }
-	void setId3MeasuresPerMinute(double a_MPM)  { m_TagId3.m_MeasuresPerMinute = a_MPM; }
-	void setId3Tag(const Tag & a_Tag) { m_TagId3 = a_Tag; }
-	void setFileNameAuthor(const QString & a_Author) { m_TagFileName.m_Author = a_Author; }
-	void setFileNameTitle(const QString & a_Title)   { m_TagFileName.m_Title  = a_Title; }
-	void setFileNameGenre(const QString & a_Genre)   { m_TagFileName.m_Genre  = a_Genre; }
-	void setFileNameMeasuresPerMinute(double a_MPM)  { m_TagFileName.m_MeasuresPerMinute = a_MPM; }
-	void setFileNameTag(const Tag & a_Tag) { m_TagFileName = a_Tag; }
+	void setManualAuthor(QVariant aAuthor) { mSharedData->mTagManual.mAuthor = aAuthor; }
+	void setManualTitle(QVariant aTitle) { mSharedData->mTagManual.mTitle = aTitle; }
+	void setManualGenre(const QString & aGenre) { mSharedData->mTagManual.mGenre = aGenre; }
+	void setManualMeasuresPerMinute(double aMeasuresPerMinute) { mSharedData->mTagManual.mMeasuresPerMinute = aMeasuresPerMinute; }
+	void setManualTag(const Tag & aTag) { mSharedData->mTagManual = aTag; }
+	void setId3Author(const QString & aAuthor) { mTagId3.mAuthor = aAuthor; }
+	void setId3Title(const QString & aTitle)   { mTagId3.mTitle  = aTitle; }
+	void setId3Genre(const QString & aGenre)   { mTagId3.mGenre  = aGenre; }
+	void setId3MeasuresPerMinute(double aMPM)  { mTagId3.mMeasuresPerMinute = aMPM; }
+	void setId3Tag(const Tag & aTag) { mTagId3 = aTag; }
+	void setFileNameAuthor(const QString & aAuthor) { mTagFileName.mAuthor = aAuthor; }
+	void setFileNameTitle(const QString & aTitle)   { mTagFileName.mTitle  = aTitle; }
+	void setFileNameGenre(const QString & aGenre)   { mTagFileName.mGenre  = aGenre; }
+	void setFileNameMeasuresPerMinute(double aMPM)  { mTagFileName.mMeasuresPerMinute = aMPM; }
+	void setFileNameTag(const Tag & aTag) { mTagFileName = aTag; }
 
 	// Basic setters:
-	void setLastTagRescanned(const QDateTime & a_LastTagRescanned) { m_LastTagRescanned = a_LastTagRescanned; }
-	void setNumTagRescanAttempts(int a_NumTagRescanAttempts) { m_NumTagRescanAttempts = a_NumTagRescanAttempts; }
-	void setNotes(const QString & a_Notes) { m_SharedData->m_Notes = a_Notes; }
+	void setLastTagRescanned(const QDateTime & aLastTagRescanned) { mLastTagRescanned = aLastTagRescanned; }
+	void setNumTagRescanAttempts(int aNumTagRescanAttempts) { mNumTagRescanAttempts = aNumTagRescanAttempts; }
+	void setNotes(const QString & aNotes) { mSharedData->mNotes = aNotes; }
 
 	// Setters that preserve the date information:
-	void setNotes(const DatedOptional<QString> & a_Notes) { m_SharedData->m_Notes = a_Notes; }
+	void setNotes(const DatedOptional<QString> & aNotes) { mSharedData->mNotes = aNotes; }
 
 	// Setters that move-preserve the date information:
-	void setNotes(DatedOptional<QString> && a_Notes) { m_SharedData->m_Notes = std::move(a_Notes); }
+	void setNotes(DatedOptional<QString> && aNotes) { mSharedData->mNotes = std::move(aNotes); }
 
 	/** Sets the local rating, if SharedData is present; otherwise ignored. */
-	void setLocalRating(double a_Value);
+	void setLocalRating(double aValue);
 
 	/** Sets the skip start, if SharedData is present; otherwise ignored. */
-	void setSkipStart(double a_Seconds);
+	void setSkipStart(double aSeconds);
 
 	/** Removes the skip-start, if SharedData is present; otherwise ignored. */
 	void delSkipStart();
 
 	/** Sets the BgColor, if SharedData is present; otherwise ignored. */
-	void setBgColor(const QColor & a_BgColor);
+	void setBgColor(const QColor & aBgColor);
 
 	/** Removes all properties from the Manual tag. */
 	void clearManualTag();
@@ -283,34 +283,34 @@ public:
 	/** Returns the first of the three variants that is non-empty.
 	Returns the third if all are null.*/
 	template <typename T> static const DatedOptional<T> & primaryValue(
-		const DatedOptional<T> & a_First,
-		const DatedOptional<T> & a_Second,
-		const DatedOptional<T> & a_Third
+		const DatedOptional<T> & aFirst,
+		const DatedOptional<T> & aSecond,
+		const DatedOptional<T> & aThird
 	)
 	{
-		if (!a_First.isEmpty())
+		if (!aFirst.isEmpty())
 		{
-			return a_First;
+			return aFirst;
 		}
-		if (!a_Second.isEmpty())
+		if (!aSecond.isEmpty())
 		{
-			return a_Second;
+			return aSecond;
 		}
-		return a_Third;
+		return aThird;
 	}
 
 	/** Returns the competition tempo range for the specified genre.
 	If the genre is not known, returns 0 .. MAX_USHORT */
-	static std::pair<double, double> competitionTempoRangeForGenre(const QString & a_Genre);
+	static std::pair<double, double> competitionTempoRangeForGenre(const QString & aGenre);
 
 	/** Returns the tempo range to be used for tempo detection, based on the specified genre.
 	If the genre is not known, returns the generic range of 17 .. 80. */
-	static std::pair<int, int> detectionTempoRangeForGenre(const QString & a_Genre);
+	static std::pair<int, int> detectionTempoRangeForGenre(const QString & aGenre);
 
 	/** Returns the most likely MPM value given the MPM or BPM input and genre.
 	If the input is double, triple or quadruple of a competition range MPM, return 1/2, 1/3 or 1/4 of the input,
 	otherwise returns the input. */
-	static double adjustMpm(double a_Input, const QString & a_Genre);
+	static double adjustMpm(double aInput, const QString & aGenre);
 
 	/** Returns all the songs that have the same hash as this song, including this. */
 	std::vector<Song *> duplicates();
@@ -321,18 +321,18 @@ public:
 
 protected:
 
-	QString m_FileName;
-	SharedDataPtr m_SharedData;
-	Tag m_TagFileName;
-	Tag m_TagId3;
-	QVariant m_LastTagRescanned;
-	QVariant m_NumTagRescanAttempts;
+	QString mFileName;
+	SharedDataPtr mSharedData;
+	Tag mTagFileName;
+	Tag mTagId3;
+	QVariant mLastTagRescanned;
+	QVariant mNumTagRescanAttempts;
 
 	/** An empty variant returned when there's no shared data for a song */
-	static QVariant m_Empty;
+	static QVariant mEmpty;
 
 	/** An empty rating returned when there's no shared ddata for a song. */
-	static Rating m_EmptyRating;
+	static Rating mEmptyRating;
 };
 
 Q_DECLARE_METATYPE(SongPtr);

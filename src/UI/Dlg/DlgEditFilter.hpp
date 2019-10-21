@@ -37,9 +37,9 @@ public:
 
 	/** Creates a new dialog instance for editing the specified filter. */
 	explicit DlgEditFilter(
-		ComponentCollection & a_Components,
-		Filter & a_Filter,
-		QWidget * a_Parent = nullptr
+		ComponentCollection & aComponents,
+		Filter & aFilter,
+		QWidget * aParent = nullptr
 	);
 
 	virtual ~DlgEditFilter() override;
@@ -48,13 +48,13 @@ public:
 private:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The filter being edited. */
-	Filter & m_Filter;
+	Filter & mFilter;
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::DlgEditFilter> m_UI;
+	std::unique_ptr<Ui::DlgEditFilter> mUI;
 
 
 protected:
@@ -62,7 +62,7 @@ protected:
 	/** Called by Qt when the dialog is closed by the OS's [X] button. */
 	virtual void reject() override;
 
-	/** Saves the direct UI values into m_Item. */
+	/** Saves the direct UI values into mItem. */
 	void save();
 
 	/** Returns the node that is represented by the currently selected Node tree item.
@@ -73,26 +73,26 @@ protected:
 	void rebuildFilterModel();
 
 	/** Recursively adds children of the specified filter to the specified item. */
-	void addNodeChildren(Filter::Node & a_ParentNode, QTreeWidgetItem & a_ParentItem);
+	void addNodeChildren(Filter::Node & aParentNode, QTreeWidgetItem & aParentItem);
 
 	/** Creates a QStandardItem representing the specified node. */
-	QTreeWidgetItem * createItemFromNode(const Filter::Node & a_Node);
+	QTreeWidgetItem * createItemFromNode(const Filter::Node & aNode);
 
 	/** Returns a user-visible caption for the specified node. */
-	QString getNodeCaption(const Filter::Node & a_Node);
+	QString getNodeCaption(const Filter::Node & aNode);
 
 	/** Selects the item in twNodes that corresponds to the specified filter node.
 	If the node is not found, selection is unchanged. */
-	void selectNodeItem(const Filter::Node & a_Node);
+	void selectNodeItem(const Filter::Node & aNode);
 
 	/** Returns the twNodes' item representing the specified filter node.
 	Returns nullptr if not found. */
-	QTreeWidgetItem * getNodeItem(const Filter::Node & a_Node);
+	QTreeWidgetItem * getNodeItem(const Filter::Node & aNode);
 
 
 protected slots:
 
-	/** Saves the direct UI values into m_Item and closes the dialog. */
+	/** Saves the direct UI values into mItem and closes the dialog. */
 	void saveAndClose();
 
 	/** Adds a sibling of the currently selected node, inserting a combinator parent if needed.
@@ -121,7 +121,7 @@ protected slots:
 
 	/** The text in the BgColor LineEdit has changed.
 	Applies the new color to the LineEdit's background. */
-	void bgColorTextChanged(const QString & a_NewText);
+	void bgColorTextChanged(const QString & aNewText);
 
 	/** Opens the color chooser, sets the selected color to leBgColor. */
 	void chooseBgColor();
@@ -129,7 +129,7 @@ protected slots:
 	/** The text in the DurationLimit QLineEdit has been edited.
 	Try to parse it and change the QLineEdit's background to indicate success / failure.
 	If a valid duration is input, set chbDurationLimit to checked. */
-	void durationLimitEdited(const QString & a_NewText);
+	void durationLimitEdited(const QString & aNewText);
 };
 
 

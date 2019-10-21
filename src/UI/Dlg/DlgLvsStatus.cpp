@@ -12,9 +12,9 @@
 
 
 
-static QPixmap renderQrCode(const QString & a_Text)
+static QPixmap renderQrCode(const QString & aText)
 {
-	auto qr = qrcodegen::QrCode::encodeText(a_Text.toUtf8().constData(), qrcodegen::QrCode::Ecc::HIGH);
+	auto qr = qrcodegen::QrCode::encodeText(aText.toUtf8().constData(), qrcodegen::QrCode::Ecc::HIGH);
 	auto size = qr.getSize();
 	QImage img(size, size, QImage::Format_Mono);
 	for (int x = 0; x < size; ++x)
@@ -34,20 +34,20 @@ static QPixmap renderQrCode(const QString & a_Text)
 ////////////////////////////////////////////////////////////////////////////////
 // DlgLvsStatus:
 
-DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Parent):
-	Super(a_Parent),
-	m_UI(new Ui::DlgLvsStatus),
-	m_Components(a_Components)
+DlgLvsStatus::DlgLvsStatus(ComponentCollection & aComponents, QWidget * aParent):
+	Super(aParent),
+	mUI(new Ui::DlgLvsStatus),
+	mComponents(aComponents)
 {
-	m_UI->setupUi(this);
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgVoteServer", *this);
 	updateVoteCount();
 
 	// Fill in the addresses:
-	auto lvs = m_Components.get<LocalVoteServer>();
+	auto lvs = mComponents.get<LocalVoteServer>();
 	auto serverPort = lvs->port();
 	auto interfaces = QNetworkInterface::allInterfaces();
-	auto tw = m_UI->twAddresses;
+	auto tw = mUI->twAddresses;
 	QStringList res;
 	int row = 0;
 	for (const auto &intf: interfaces)
@@ -81,7 +81,7 @@ DlgLvsStatus::DlgLvsStatus(ComponentCollection & a_Components, QWidget * a_Paren
 	tw->resizeColumnsToContents();
 
 	// Connect signals and slots:
-	connect(m_UI->btnClose, &QPushButton::pressed,                    this, &QDialog::close);
+	connect(mUI->btnClose, &QPushButton::pressed,                    this, &QDialog::close);
 	connect(tw,             &QTableWidget::doubleClicked,             this, &DlgLvsStatus::cellDblClicked);
 	connect(tw,             &QTableWidget::currentCellChanged,        this, &DlgLvsStatus::displayQrCode);
 	connect(lvs.get(),      &LocalVoteServer::addVoteRhythmClarity,   this, &DlgLvsStatus::updateVoteCount);
@@ -102,11 +102,11 @@ DlgLvsStatus::~DlgLvsStatus()
 
 
 
-void DlgLvsStatus::cellDblClicked(const QModelIndex & a_Index)
+void DlgLvsStatus::cellDblClicked(const QModelIndex & aIndex)
 {
-	if (a_Index.column() == 0)
+	if (aIndex.column() == 0)
 	{
-		auto cellData = a_Index.data().toString();
+		auto cellData = aIndex.data().toString();
 		if (cellData.contains("http://"))
 		{
 			auto url = QUrl(cellData);
@@ -122,10 +122,10 @@ void DlgLvsStatus::cellDblClicked(const QModelIndex & a_Index)
 void DlgLvsStatus::displayQrCode()
 {
 	QString url;
-	auto curRow = m_UI->twAddresses->currentRow();
+	auto curRow = mUI->twAddresses->currentRow();
 	if (curRow >= 0)
 	{
-		auto item = m_UI->twAddresses->item(curRow, 0);
+		auto item = mUI->twAddresses->item(curRow, 0);
 		if (item != nullptr)
 		{
 			url = item->data(Qt::DisplayRole).toString();
@@ -133,11 +133,11 @@ void DlgLvsStatus::displayQrCode()
 	}
 	if (url.isEmpty())
 	{
-		m_UI->lblQrCode->setPixmap(QPixmap());
+		mUI->lblQrCode->setPixmap(QPixmap());
 	}
 	else
 	{
-		m_UI->lblQrCode->setPixmap(renderQrCode(url));
+		mUI->lblQrCode->setPixmap(renderQrCode(url));
 	}
 }
 
@@ -147,6 +147,6 @@ void DlgLvsStatus::displayQrCode()
 
 void DlgLvsStatus::updateVoteCount()
 {
-	auto lvs = m_Components.get<LocalVoteServer>();
-	m_UI->lblVoteCount->setText(tr("Number of votes: %1").arg(lvs->numVotes()));
+	auto lvs = mComponents.get<LocalVoteServer>();
+	mUI->lblVoteCount->setText(tr("Number of votes: %1").arg(lvs->numVotes()));
 }

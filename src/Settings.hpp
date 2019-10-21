@@ -29,42 +29,42 @@ class Settings
 public:
 
 	/** Initializes the Settings subsystem. */
-	static void init(const QString & a_IniFileName);
+	static void init(const QString & aIniFileName);
 
 	/** Saves QHeaderView's columns' widths. */
-	static void saveHeaderView(const char * a_WindowName, const char * a_HeaderViewName, const QHeaderView & a_HeaderView);
+	static void saveHeaderView(const char * aWindowName, const char * aHeaderViewName, const QHeaderView & aHeaderView);
 
 	/** Restores previously saved QHeaderView's columns' widths. */
-	static void loadHeaderView(const char * a_WindowName, const char * a_HeaderViewName, QHeaderView & a_HeaderView);
+	static void loadHeaderView(const char * aWindowName, const char * aHeaderViewName, QHeaderView & aHeaderView);
 
 	/** Saves a top level window's position and size. */
-	static void saveWindowPos(const char * a_WindowName, const QWidget & a_Window);
+	static void saveWindowPos(const char * aWindowName, const QWidget & aWindow);
 
 	/** Restores a previously saved top level window's position and size. */
-	static void loadWindowPos(const char * a_WindowName, QWidget & a_Window);
+	static void loadWindowPos(const char * aWindowName, QWidget & aWindow);
 
 	/** Saves the splitter section sizes. */
-	static void saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter & a_Splitter);
+	static void saveSplitterSizes(const char * aWindowName, const char * aSplitterName, const QSplitter & aSplitter);
 
 	/** Saves the splitter section sizes. */
-	static void saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter * a_Splitter);
+	static void saveSplitterSizes(const char * aWindowName, const char * aSplitterName, const QSplitter * aSplitter);
 
 	/** Restores previously saves splitter section sizes. */
-	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter);
+	static void loadSplitterSizes(const char * aWindowName, const char * aSplitterName, QSplitter & aSplitter);
 
 	/** Restores previously saves splitter section sizes. */
-	static void loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter * a_Splitter);
+	static void loadSplitterSizes(const char * aWindowName, const char * aSplitterName, QSplitter * aSplitter);
 
 	/** Saves a generic value. */
-	static void saveValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Value);
+	static void saveValue(const char * aWindowName, const char * aValueName, const QVariant & aValue);
 
 	/** Loads a previously saved generic value. */
-	static QVariant loadValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Default = QVariant());
+	static QVariant loadValue(const char * aWindowName, const char * aValueName, const QVariant & aDefault = QVariant());
 
 
 protected:
 
-	static std::unique_ptr<QSettings> m_Settings;
+	static std::unique_ptr<QSettings> mSettings;
 };
 
 

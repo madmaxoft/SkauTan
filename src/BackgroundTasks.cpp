@@ -19,7 +19,7 @@ BackgroundTasks::BackgroundTasks()
 		auto executor = std::make_unique<Executor>(*this);
 		auto executorPtr = executor.get();
 		executor->setObjectName(QString("BackgroundTasks::Executor::%1").arg(i));
-		m_Executors.push_back(std::move(executor));
+		mExecutors.push_back(std::move(executor));
 		executorPtr->start(QThread::LowestPriority);
 	}
 }
@@ -30,7 +30,7 @@ BackgroundTasks::BackgroundTasks()
 
 BackgroundTasks::~BackgroundTasks()
 {
-	assert(m_ShouldTerminate.load());  // App must explicitly call stopAll() before exiting;
+	assert(mShouldTerminate.load());  // App must explicitly call stopAll() before exiting;
 }
 
 
@@ -47,21 +47,21 @@ BackgroundTasks & BackgroundTasks::get()
 
 
 
-void BackgroundTasks::addTask(TaskPtr a_Task, bool a_Prioritize)
+void BackgroundTasks::addTask(TaskPtr aTask, bool aPrioritize)
 {
 	{
-		QMutexLocker lock(&m_Mtx);
-		if (a_Prioritize)
+		QMutexLocker lock(&mMtx);
+		if (aPrioritize)
 		{
-			m_Tasks.push_front(a_Task);
+			mTasks.push_front(aTask);
 		}
 		else
 		{
-			m_Tasks.push_back(a_Task);
+			mTasks.push_back(aTask);
 		}
 	}
-	emit taskAdded(a_Task);
-	m_WaitForTasks.wakeOne();
+	emit taskAdded(aTask);
+	mWaitForTasks.wakeOne();
 }
 
 
@@ -69,10 +69,10 @@ void BackgroundTasks::addTask(TaskPtr a_Task, bool a_Prioritize)
 
 
 void BackgroundTasks::enqueue(
-	const QString & a_TaskName,
-	std::function<void ()> a_Task,
-	bool a_Prioritize,
-	std::function<void ()> a_OnAbort
+	const QString & aTaskName,
+	std::function<void ()> aTask,
+	bool aPrioritize,
+	std::function<void ()> aOnAbort
 )
 {
 	/** Adapter between a Task class and two functions. */
@@ -82,31 +82,31 @@ void BackgroundTasks::enqueue(
 
 	public:
 
-		FunctionTask(const QString & a_FnName, std::function<void ()> a_FnTask, std::function<void ()> a_FnOnAbort):
-			Super(a_FnName),
-			m_Task(a_FnTask),
-			m_OnAbort(a_FnOnAbort)
+		FunctionTask(const QString & aFnName, std::function<void ()> aFnTask, std::function<void ()> aFnOnAbort):
+			Super(aFnName),
+			mTask(aFnTask),
+			mOnAbort(aFnOnAbort)
 		{
 		}
 
 		virtual void execute() override
 		{
-			m_Task();
+			mTask();
 		}
 
 		virtual void abort() override
 		{
-			m_OnAbort();
+			mOnAbort();
 			Super::abort();
 		}
 
 	protected:
-		std::function<void ()> m_Task;
-		std::function<void ()> m_OnAbort;
+		std::function<void ()> mTask;
+		std::function<void ()> mOnAbort;
 	};
 
 	// Enqueue the task adapter:
-	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(a_TaskName, a_Task, a_OnAbort), a_Prioritize);
+	BackgroundTasks::get().addTask(std::make_shared<FunctionTask>(aTaskName, aTask, aOnAbort), aPrioritize);
 }
 
 
@@ -115,8 +115,8 @@ void BackgroundTasks::enqueue(
 
 const std::list<BackgroundTasks::TaskPtr> BackgroundTasks::tasks() const
 {
-	QMutexLocker lock(&m_Mtx);
-	std::list<TaskPtr> res(m_Tasks);
+	QMutexLocker lock(&mMtx);
+	std::list<TaskPtr> res(mTasks);
 	return res;
 }
 
@@ -128,19 +128,19 @@ void BackgroundTasks::stopAll()
 {
 	// Tell all executors to terminate:
 	qDebug() << "Terminating all executors...";
-	m_ShouldTerminate = true;
-	m_WaitForTasks.wakeAll();
+	mShouldTerminate = true;
+	mWaitForTasks.wakeAll();
 
 	// Wait for all executors to terminate:
 	qDebug() << "Waiting for all executors...";
-	for (auto & e: m_Executors)
+	for (auto & e: mExecutors)
 	{
 		e->wait();
 	}
 
 	// Abort all tasks left over in the queue:
 	qDebug() << "Aborting non-executed tasks.";
-	for (auto & t: m_Tasks)
+	for (auto & t: mTasks)
 	{
 		t->abort();
 		emit taskAborted(t);
@@ -153,21 +153,21 @@ void BackgroundTasks::stopAll()
 
 BackgroundTasks::TaskPtr BackgroundTasks::getNextTask()
 {
-	QMutexLocker lock(&m_Mtx);
-	if (m_ShouldTerminate)
+	QMutexLocker lock(&mMtx);
+	if (mShouldTerminate)
 	{
 		return nullptr;
 	}
-	while (m_Tasks.empty())
+	while (mTasks.empty())
 	{
-		if (m_ShouldTerminate)
+		if (mShouldTerminate)
 		{
 			return nullptr;
 		}
-		m_WaitForTasks.wait(&m_Mtx);
+		mWaitForTasks.wait(&mMtx);
 	}
-	auto task = m_Tasks.front();
-	m_Tasks.pop_front();
+	auto task = mTasks.front();
+	mTasks.pop_front();
 	return task;
 }
 
@@ -175,9 +175,9 @@ BackgroundTasks::TaskPtr BackgroundTasks::getNextTask()
 
 
 
-void BackgroundTasks::emitTaskFinished(BackgroundTasks::TaskPtr a_Task)
+void BackgroundTasks::emitTaskFinished(BackgroundTasks::TaskPtr aTask)
 {
-	emit taskFinished(a_Task);
+	emit taskFinished(aTask);
 }
 
 
@@ -187,8 +187,8 @@ void BackgroundTasks::emitTaskFinished(BackgroundTasks::TaskPtr a_Task)
 ////////////////////////////////////////////////////////////////////////////////
 // BackgroundTasks::Executor:
 
-BackgroundTasks::Executor::Executor(BackgroundTasks & a_Parent):
-	m_Parent(a_Parent)
+BackgroundTasks::Executor::Executor(BackgroundTasks & aParent):
+	mParent(aParent)
 {
 }
 
@@ -197,17 +197,17 @@ BackgroundTasks::Executor::Executor(BackgroundTasks & a_Parent):
 
 void BackgroundTasks::Executor::run()
 {
-	auto task = m_Parent.getNextTask();
+	auto task = mParent.getNextTask();
 	while (task != nullptr)
 	{
 		task->execute();
 		QMetaObject::invokeMethod(
-			&m_Parent,
+			&mParent,
 			"emitTaskFinished",
 			Qt::QueuedConnection,
 			Q_ARG(BackgroundTasks::TaskPtr, task)
 		);
-		task = m_Parent.getNextTask();
+		task = mParent.getNextTask();
 	}
 }
 

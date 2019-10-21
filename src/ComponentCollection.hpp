@@ -52,8 +52,8 @@ protected:
 	{
 		friend class ::ComponentCollection;
 	public:
-		ComponentBase(EKind a_Kind):
-			m_Kind(a_Kind)
+		ComponentBase(EKind aKind):
+			mKind(aKind)
 		{
 		}
 
@@ -61,7 +61,7 @@ protected:
 
 
 	protected:
-		EKind m_Kind;
+		EKind mKind;
 	};
 
 	using ComponentBasePtr = std::shared_ptr<ComponentBase>;
@@ -88,9 +88,9 @@ public:
 	/** Adds the specified component into the collection.
 	Asserts that a component of the same kind doesn't already exist. */
 	template <typename ComponentClass>
-	void addComponent(std::shared_ptr<ComponentClass> a_Component)
+	void addComponent(std::shared_ptr<ComponentClass> aComponent)
 	{
-		addComponent(ComponentClass::kind(), a_Component);
+		addComponent(ComponentClass::kind(), aComponent);
 	}
 
 
@@ -98,9 +98,9 @@ public:
 	adds it to the collection and returns a shared ptr to it.
 	Asserts that a component of the same kind doesn't already exist. */
 	template <typename ComponentClass, typename... Args>
-	std::shared_ptr<ComponentClass> addNew(Args &&... a_Args)
+	std::shared_ptr<ComponentClass> addNew(Args &&... aArgs)
 	{
-		auto res = std::make_shared<ComponentClass>(std::forward<Args>(a_Args)...);
+		auto res = std::make_shared<ComponentClass>(std::forward<Args>(aArgs)...);
 		if (res == nullptr)
 		{
 			throw RuntimeError("Failed to create component %1", ComponentClass::kind());
@@ -111,7 +111,7 @@ public:
 
 
 	/** Returns the component of the specified class.
-	Usage: auto db = m_Components.get<Database>(); */
+	Usage: auto db = mComponents.get<Database>(); */
 	template <typename ComponentClass>
 	std::shared_ptr<ComponentClass> get()
 	{
@@ -122,17 +122,17 @@ public:
 protected:
 
 	/** The collection of all components. */
-	std::map<EKind, ComponentBasePtr> m_Components;
+	std::map<EKind, ComponentBasePtr> mComponents;
 
 
 	/** Adds the specified component into the collection.
 	Asserts that a component of the same kind doesn't already exist.
 	Client code should use the templated version, this is its actual implementation. */
-	void addComponent(EKind a_Kind, ComponentBasePtr a_Component);
+	void addComponent(EKind aKind, ComponentBasePtr aComponent);
 
 	/** Returns the component of the specified kind, as a base pointer.
 	Clients should use the templated get() instead (which calls this internally). */
-	ComponentBasePtr get(EKind a_Kind);
+	ComponentBasePtr get(EKind aKind);
 };
 
 

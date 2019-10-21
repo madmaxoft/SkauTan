@@ -8,21 +8,21 @@
 
 
 
-QVariant Song::m_Empty;
-Song::Rating Song::m_EmptyRating;
+QVariant Song::mEmpty;
+Song::Rating Song::mEmptyRating;
 
 
 
 
 
 Song::Song(
-	const QString & a_FileName,
-	SharedDataPtr a_SharedData
+	const QString & aFileName,
+	SharedDataPtr aSharedData
 ):
-	m_FileName(a_FileName),
-	m_SharedData(a_SharedData)
+	mFileName(aFileName),
+	mSharedData(aSharedData)
 {
-	a_SharedData->addDuplicate(this);
+	aSharedData->addDuplicate(this);
 }
 
 
@@ -30,21 +30,21 @@ Song::Song(
 
 
 Song::Song(
-	QString && a_FileName,
-	SharedDataPtr a_SharedData,
-	Tag && a_TagFileName,
-	Tag && a_TagId3,
-	QVariant && a_LastTagRescanned,
-	QVariant && a_NumTagRescanAttempts
+	QString && aFileName,
+	SharedDataPtr aSharedData,
+	Tag && aTagFileName,
+	Tag && aTagId3,
+	QVariant && aLastTagRescanned,
+	QVariant && aNumTagRescanAttempts
 ):
-	m_FileName(std::move(a_FileName)),
-	m_SharedData(a_SharedData),
-	m_TagFileName(std::move(a_TagFileName)),
-	m_TagId3(std::move(a_TagId3)),
-	m_LastTagRescanned(std::move(a_LastTagRescanned)),
-	m_NumTagRescanAttempts(std::move(a_NumTagRescanAttempts))
+	mFileName(std::move(aFileName)),
+	mSharedData(aSharedData),
+	mTagFileName(std::move(aTagFileName)),
+	mTagId3(std::move(aTagId3)),
+	mLastTagRescanned(std::move(aLastTagRescanned)),
+	mNumTagRescanAttempts(std::move(aNumTagRescanAttempts))
 {
-	a_SharedData->addDuplicate(this);
+	aSharedData->addDuplicate(this);
 }
 
 
@@ -53,7 +53,7 @@ Song::Song(
 
 Song::~Song()
 {
-	m_SharedData->delDuplicate(this);
+	mSharedData->delDuplicate(this);
 }
 
 
@@ -63,9 +63,9 @@ Song::~Song()
 const DatedOptional<QString> & Song::primaryAuthor() const
 {
 	return primaryValue(
-		m_SharedData->m_TagManual.m_Author,
-		m_TagId3.m_Author,
-		m_TagFileName.m_Author
+		mSharedData->mTagManual.mAuthor,
+		mTagId3.mAuthor,
+		mTagFileName.mAuthor
 	);
 }
 
@@ -76,9 +76,9 @@ const DatedOptional<QString> & Song::primaryAuthor() const
 const DatedOptional<QString> & Song::primaryTitle() const
 {
 	return primaryValue(
-		m_SharedData->m_TagManual.m_Title,
-		m_TagId3.m_Title,
-		m_TagFileName.m_Title
+		mSharedData->mTagManual.mTitle,
+		mTagId3.mTitle,
+		mTagFileName.mTitle
 	);
 }
 
@@ -89,9 +89,9 @@ const DatedOptional<QString> & Song::primaryTitle() const
 const DatedOptional<QString> & Song::primaryGenre() const
 {
 	return primaryValue(
-		m_SharedData->m_TagManual.m_Genre,
-		m_TagId3.m_Genre,
-		m_TagFileName.m_Genre
+		mSharedData->mTagManual.mGenre,
+		mTagId3.mGenre,
+		mTagFileName.mGenre
 	);
 }
 
@@ -102,9 +102,9 @@ const DatedOptional<QString> & Song::primaryGenre() const
 const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 {
 	return primaryValue(
-		m_SharedData->m_TagManual.m_MeasuresPerMinute,
-		m_TagId3.m_MeasuresPerMinute,
-		m_TagFileName.m_MeasuresPerMinute
+		mSharedData->mTagManual.mMeasuresPerMinute,
+		mTagId3.mMeasuresPerMinute,
+		mTagFileName.mMeasuresPerMinute
 	);
 }
 
@@ -114,34 +114,34 @@ const DatedOptional<double> & Song::primaryMeasuresPerMinute() const
 
 const DatedOptional<double> Song::skipStart() const
 {
-	return m_SharedData->m_SkipStart;
+	return mSharedData->mSkipStart;
 }
 
 
 
 
 
-void Song::setLength(double a_Length)
+void Song::setLength(double aLength)
 {
-	m_SharedData->m_Length = a_Length;
+	mSharedData->mLength = aLength;
 }
 
 
 
 
 
-void Song::setLocalRating(double a_Value)
+void Song::setLocalRating(double aValue)
 {
-	m_SharedData->m_Rating.m_Local = a_Value;
+	mSharedData->mRating.mLocal = aValue;
 }
 
 
 
 
 
-void Song::setSkipStart(double a_Seconds)
+void Song::setSkipStart(double aSeconds)
 {
-	m_SharedData->m_SkipStart = a_Seconds;
+	mSharedData->mSkipStart = aSeconds;
 }
 
 
@@ -150,18 +150,18 @@ void Song::setSkipStart(double a_Seconds)
 
 void Song::delSkipStart()
 {
-	m_SharedData->m_SkipStart.reset();
+	mSharedData->mSkipStart.reset();
 }
 
 
 
 
 
-void Song::setBgColor(const QColor & a_BgColor)
+void Song::setBgColor(const QColor & aBgColor)
 {
-	if (m_SharedData != nullptr)
+	if (mSharedData != nullptr)
 	{
-		m_SharedData->m_BgColor = a_BgColor;
+		mSharedData->mBgColor = aBgColor;
 	}
 }
 
@@ -171,10 +171,10 @@ void Song::setBgColor(const QColor & a_BgColor)
 
 void Song::clearManualTag()
 {
-	m_SharedData->m_TagManual.m_Author.reset();
-	m_SharedData->m_TagManual.m_Title.reset();
-	m_SharedData->m_TagManual.m_Genre.reset();
-	m_SharedData->m_TagManual.m_MeasuresPerMinute.reset();
+	mSharedData->mTagManual.mAuthor.reset();
+	mSharedData->mTagManual.mTitle.reset();
+	mSharedData->mTagManual.mGenre.reset();
+	mSharedData->mTagManual.mMeasuresPerMinute.reset();
 }
 
 
@@ -187,8 +187,8 @@ bool Song::needsTagRescan() const
 	// A rescan would have set the values (to empty strings if it failed)
 	// TODO: Rescan if the file's last changed time grows over the last metadata updated value
 	return (
-		!m_TagFileName.m_Author.isPresent() ||
-		!m_TagId3.m_Author.isPresent()
+		!mTagFileName.mAuthor.isPresent() ||
+		!mTagId3.mAuthor.isPresent()
 	);
 }
 
@@ -202,19 +202,19 @@ QStringList Song::getWarnings() const
 
 	// If auto-detected genres are different and there's no override, report:
 	if (
-		m_SharedData->m_TagManual.m_Genre.isEmpty() &&  // Manual override not set
-		!m_TagFileName.m_Genre.isEmpty() &&
-		!m_TagId3.m_Genre.isEmpty() &&
-		(m_TagId3.m_Genre.value() != m_TagFileName.m_Genre.value())   // ID3 genre not equal to FileName genre
+		mSharedData->mTagManual.mGenre.isEmpty() &&  // Manual override not set
+		!mTagFileName.mGenre.isEmpty() &&
+		!mTagId3.mGenre.isEmpty() &&
+		(mTagId3.mGenre.value() != mTagFileName.mGenre.value())   // ID3 genre not equal to FileName genre
 	)
 	{
 		res.append(tr("Genre detection is confused, please provide a manual override."));
 	}
 
 	// If the detected MPM is way outside the primary genre's competition range, report:
-	if (!m_SharedData->m_TagManual.m_MeasuresPerMinute.isPresent())  // Allow the user to override the warning
+	if (!mSharedData->mTagManual.mMeasuresPerMinute.isPresent())  // Allow the user to override the warning
 	{
-		auto primaryMPM = m_TagId3.m_MeasuresPerMinute.isPresent() ? m_TagId3.m_MeasuresPerMinute : m_TagFileName.m_MeasuresPerMinute;
+		auto primaryMPM = mTagId3.mMeasuresPerMinute.isPresent() ? mTagId3.mMeasuresPerMinute : mTagFileName.mMeasuresPerMinute;
 		if (primaryMPM.isPresent())
 		{
 			auto mpm = primaryMPM.value();
@@ -242,7 +242,7 @@ QStringList Song::getWarnings() const
 
 
 
-std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_Genre)
+std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & aGenre)
 {
 	// Map of genre -> tempo range (Source: http://www.sut.cz/soutezni-rad-hobby-dance/#par14 )
 	static const std::map<QString, std::pair<double, double>> competitionTempoRanges =
@@ -265,7 +265,7 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 	};
 
 	// Find the genre:
-	auto itr = competitionTempoRanges.find(a_Genre.toUpper());
+	auto itr = competitionTempoRanges.find(aGenre.toUpper());
 	if (itr == competitionTempoRanges.end())
 	{
 		return std::make_pair(0, std::numeric_limits<unsigned short>::max());
@@ -277,7 +277,7 @@ std::pair<double, double> Song::competitionTempoRangeForGenre(const QString & a_
 
 
 
-std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & a_Genre)
+std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & aGenre)
 {
 	// Map of genre -> tempo range
 	static const std::map<QString, std::pair<int, int>> detectionTempoRanges =
@@ -298,7 +298,7 @@ std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & a_Genre)
 	};
 
 	// Find the genre:
-	auto itr = detectionTempoRanges.find(a_Genre.toUpper());
+	auto itr = detectionTempoRanges.find(aGenre.toUpper());
 	if (itr == detectionTempoRanges.end())
 	{
 		return std::make_pair(17, 80);
@@ -310,33 +310,33 @@ std::pair<int, int> Song::detectionTempoRangeForGenre(const QString & a_Genre)
 
 
 
-double Song::adjustMpm(double a_Input, const QString & a_Genre)
+double Song::adjustMpm(double aInput, const QString & aGenre)
 {
-	auto mpmRange = detectionTempoRangeForGenre(a_Genre);
+	auto mpmRange = detectionTempoRangeForGenre(aGenre);
 	if (mpmRange.first < 0)
 	{
 		// No known competition range, don't adjust anything
-		return a_Input;
+		return aInput;
 	}
 
-	if (a_Input < mpmRange.second)
+	if (aInput < mpmRange.second)
 	{
 		// Input is low enough, no adjustment needed
-		return a_Input;
+		return aInput;
 	}
 
 	// Half, quarter, or third (last) the input, if the result is in range:
 	double divisor[] = {2, 4, 3};
 	for (auto d: divisor)
 	{
-		if ((a_Input >= mpmRange.first * d) && (a_Input <= mpmRange.second * d))
+		if ((aInput >= mpmRange.first * d) && (aInput <= mpmRange.second * d))
 		{
-			return a_Input / d;
+			return aInput / d;
 		}
 	}
 
 	// No adjustment was valid, return unchanged:
-	return a_Input;
+	return aInput;
 }
 
 
@@ -345,7 +345,7 @@ double Song::adjustMpm(double a_Input, const QString & a_Genre)
 
 std::vector<Song *> Song::duplicates()
 {
-	return m_SharedData->duplicates();
+	return mSharedData->duplicates();
 }
 
 
@@ -381,32 +381,32 @@ QStringList Song::recognizedGenres()
 ////////////////////////////////////////////////////////////////////////////////
 // Song::SharedData:
 
-void Song::SharedData::addDuplicate(Song * a_Duplicate)
+void Song::SharedData::addDuplicate(Song * aDuplicate)
 {
-	QMutexLocker lock(&m_Mtx);
-	for (const auto & d: m_Duplicates)
+	QMutexLocker lock(&mMtx);
+	for (const auto & d: mDuplicates)
 	{
-		if (d == a_Duplicate)
+		if (d == aDuplicate)
 		{
 			// Already added, bail out.
 			return;
 		}
 	}
-	m_Duplicates.push_back(a_Duplicate);
+	mDuplicates.push_back(aDuplicate);
 }
 
 
 
 
 
-void Song::SharedData::delDuplicate(const Song * a_Duplicate)
+void Song::SharedData::delDuplicate(const Song * aDuplicate)
 {
-	QMutexLocker lock(&m_Mtx);
-	for (auto itr = m_Duplicates.begin(), end = m_Duplicates.end(); itr != end; ++itr)
+	QMutexLocker lock(&mMtx);
+	for (auto itr = mDuplicates.begin(), end = mDuplicates.end(); itr != end; ++itr)
 	{
-		if (*itr == a_Duplicate)
+		if (*itr == aDuplicate)
 		{
-			m_Duplicates.erase(itr);
+			mDuplicates.erase(itr);
 			break;
 		}
 	}
@@ -418,8 +418,8 @@ void Song::SharedData::delDuplicate(const Song * a_Duplicate)
 
 size_t Song::SharedData::duplicatesCount() const
 {
-	QMutexLocker lock(&m_Mtx);
-	return m_Duplicates.size();
+	QMutexLocker lock(&mMtx);
+	return mDuplicates.size();
 }
 
 
@@ -428,6 +428,6 @@ size_t Song::SharedData::duplicatesCount() const
 
 std::vector<Song *> Song::SharedData::duplicates() const
 {
-	QMutexLocker lock(&m_Mtx);
-	return m_Duplicates;
+	QMutexLocker lock(&mMtx);
+	return mDuplicates;
 }

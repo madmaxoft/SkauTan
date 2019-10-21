@@ -5,44 +5,44 @@
 
 
 
-DatabaseImport::DatabaseImport(const Database & a_From, Database & a_To, const Options & a_Options):
-	m_From(a_From),
-	m_To(a_To),
-	m_Options(a_Options)
+DatabaseImport::DatabaseImport(const Database & aFrom, Database & aTo, const Options & aOptions):
+	mFrom(aFrom),
+	mTo(aTo),
+	mOptions(aOptions)
 {
-	if (m_Options.m_ShouldImportManualTag)
+	if (mOptions.mShouldImportManualTag)
 	{
 		importManualTag();
 	}
-	if (m_Options.m_ShouldImportLastPlayedDate)
+	if (mOptions.mShouldImportLastPlayedDate)
 	{
 		importLastPlayedDate();
 	}
-	if (m_Options.m_ShouldImportLocalRating)
+	if (mOptions.mShouldImportLocalRating)
 	{
 		importLocalRating();
 	}
-	if (m_Options.m_ShouldImportCommunityRating)
+	if (mOptions.mShouldImportCommunityRating)
 	{
 		importCommunityRating();
 	}
-	if (m_Options.m_ShouldImportPlaybackHistory)
+	if (mOptions.mShouldImportPlaybackHistory)
 	{
 		importPlaybackHistory();
 	}
-	if (m_Options.m_ShouldImportSkipStart)
+	if (mOptions.mShouldImportSkipStart)
 	{
 		importSkipStart();
 	}
-	if (m_Options.m_ShouldImportDeletionHistory)
+	if (mOptions.mShouldImportDeletionHistory)
 	{
 		importDeletionHistory();
 	}
-	if (m_Options.m_ShouldImportSongColors)
+	if (mOptions.mShouldImportSongColors)
 	{
 		importSongColors();
 	}
-	m_To.saveAllSongSharedData();
+	mTo.saveAllSongSharedData();
 }
 
 
@@ -51,17 +51,17 @@ DatabaseImport::DatabaseImport(const Database & a_From, Database & a_To, const O
 
 void DatabaseImport::importManualTag()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest  = m_To.sharedDataFromHash(sd.first);
+		auto dest  = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_TagManual.m_Author.updateIfNewer(sd.second->m_TagManual.m_Author);
-		dest->m_TagManual.m_Title.updateIfNewer(sd.second->m_TagManual.m_Title);
-		dest->m_TagManual.m_Genre.updateIfNewer(sd.second->m_TagManual.m_Genre);
-		dest->m_TagManual.m_MeasuresPerMinute.updateIfNewer(sd.second->m_TagManual.m_MeasuresPerMinute);
+		dest->mTagManual.mAuthor.updateIfNewer(sd.second->mTagManual.mAuthor);
+		dest->mTagManual.mTitle.updateIfNewer(sd.second->mTagManual.mTitle);
+		dest->mTagManual.mGenre.updateIfNewer(sd.second->mTagManual.mGenre);
+		dest->mTagManual.mMeasuresPerMinute.updateIfNewer(sd.second->mTagManual.mMeasuresPerMinute);
 	}
 }
 
@@ -71,14 +71,14 @@ void DatabaseImport::importManualTag()
 
 void DatabaseImport::importDetectedTempo()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest  = m_To.sharedDataFromHash(sd.first);
+		auto dest  = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_DetectedTempo.updateIfNewer(sd.second->m_DetectedTempo);
+		dest->mDetectedTempo.updateIfNewer(sd.second->mDetectedTempo);
 	}
 }
 
@@ -88,14 +88,14 @@ void DatabaseImport::importDetectedTempo()
 
 void DatabaseImport::importLastPlayedDate()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest = m_To.sharedDataFromHash(sd.first);
+		auto dest = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_LastPlayed.updateIfNewer(sd.second->m_LastPlayed);
+		dest->mLastPlayed.updateIfNewer(sd.second->mLastPlayed);
 	}
 }
 
@@ -105,14 +105,14 @@ void DatabaseImport::importLastPlayedDate()
 
 void DatabaseImport::importLocalRating()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest = m_To.sharedDataFromHash(sd.first);
+		auto dest = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_Rating.m_Local.updateIfNewer(sd.second->m_Rating.m_Local);
+		dest->mRating.mLocal.updateIfNewer(sd.second->mRating.mLocal);
 	}
 }
 
@@ -128,16 +128,16 @@ void DatabaseImport::importCommunityRating()
 	importVotes("VotesPopularity");
 
 	// Update the aggregated ratings:
-	auto votesRC  = m_To.loadVotes("VotesRhythmClarity");
-	auto votesGT  = m_To.loadVotes("VotesGenreTypicality");
-	auto votesPop = m_To.loadVotes("VotesPopularity");
-	for (auto & sd: m_To.songSharedDataMap())
+	auto votesRC  = mTo.loadVotes("VotesRhythmClarity");
+	auto votesGT  = mTo.loadVotes("VotesGenreTypicality");
+	auto votesPop = mTo.loadVotes("VotesPopularity");
+	for (auto & sd: mTo.songSharedDataMap())
 	{
-		sd.second->m_Rating.m_RhythmClarity.updateIfNewer  (averageVotes(votesRC, sd.first));
-		sd.second->m_Rating.m_GenreTypicality.updateIfNewer(averageVotes(votesRC, sd.first));
-		sd.second->m_Rating.m_Popularity.updateIfNewer     (averageVotes(votesRC, sd.first));
+		sd.second->mRating.mRhythmClarity.updateIfNewer  (averageVotes(votesRC, sd.first));
+		sd.second->mRating.mGenreTypicality.updateIfNewer(averageVotes(votesRC, sd.first));
+		sd.second->mRating.mPopularity.updateIfNewer     (averageVotes(votesRC, sd.first));
 	}
-	m_To.saveAllSongSharedData();
+	mTo.saveAllSongSharedData();
 }
 
 
@@ -146,8 +146,8 @@ void DatabaseImport::importCommunityRating()
 
 void DatabaseImport::importPlaybackHistory()
 {
-	auto fromHistory = m_From.playbackHistory();
-	auto toHistory   = m_To.playbackHistory();
+	auto fromHistory = mFrom.playbackHistory();
+	auto toHistory   = mTo.playbackHistory();
 
 	// Special cases: empty histories:
 	if (fromHistory.empty())
@@ -156,14 +156,14 @@ void DatabaseImport::importPlaybackHistory()
 	}
 	if (toHistory.empty())
 	{
-		m_To.addPlaybackHistory(fromHistory);
+		mTo.addPlaybackHistory(fromHistory);
 		return;
 	}
 
 	// Compare each item by date:
-	auto comparison = [](const Database::HistoryItem & a_Item1, const Database::HistoryItem a_Item2)
+	auto comparison = [](const Database::HistoryItem & aItem1, const Database::HistoryItem aItem2)
 	{
-		return (a_Item1.m_Timestamp < a_Item2.m_Timestamp);
+		return (aItem1.mTimestamp < aItem2.mTimestamp);
 	};
 	std::sort(fromHistory.begin(), fromHistory.end(), comparison);
 	std::sort(toHistory.begin(), toHistory.end(), comparison);
@@ -172,7 +172,7 @@ void DatabaseImport::importPlaybackHistory()
 	auto itrT = toHistory.cbegin(),   endT = toHistory.cend();
 	for (; itrF != endF;)
 	{
-		if (itrF->m_Timestamp == itrT->m_Timestamp)
+		if (itrF->mTimestamp == itrT->mTimestamp)
 		{
 			itrF++;
 			itrT++;
@@ -181,7 +181,7 @@ void DatabaseImport::importPlaybackHistory()
 				break;
 			}
 		}
-		else if (itrF->m_Timestamp > itrT->m_Timestamp)
+		else if (itrF->mTimestamp > itrT->mTimestamp)
 		{
 			++itrT;
 			if (itrT == endT)
@@ -192,7 +192,7 @@ void DatabaseImport::importPlaybackHistory()
 		}
 		else
 		{
-			// itrF->m_Timestamp < itrT->m_Timestamp
+			// itrF->mTimestamp < itrT->mTimestamp
 			toAdd.push_back(*itrF);
 			++itrF;
 		}
@@ -205,7 +205,7 @@ void DatabaseImport::importPlaybackHistory()
 			toAdd.push_back(*itrF);
 		}
 	}
-	m_To.addPlaybackHistory(toAdd);
+	mTo.addPlaybackHistory(toAdd);
 }
 
 
@@ -214,14 +214,14 @@ void DatabaseImport::importPlaybackHistory()
 
 void DatabaseImport::importSkipStart()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest = m_To.sharedDataFromHash(sd.first);
+		auto dest = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_SkipStart.updateIfNewer(sd.second->m_SkipStart);
+		dest->mSkipStart.updateIfNewer(sd.second->mSkipStart);
 	}
 }
 
@@ -232,15 +232,15 @@ void DatabaseImport::importSkipStart()
 void DatabaseImport::importDeletionHistory()
 {
 	// Special cases: empty histories:
-	const auto & fromHistory = m_From.removedSongs();
-	const auto & toHistory = m_To.removedSongs();
+	const auto & fromHistory = mFrom.removedSongs();
+	const auto & toHistory = mTo.removedSongs();
 	if (fromHistory.empty())
 	{
 		return;
 	}
 	if (toHistory.empty())
 	{
-		m_To.addSongRemovalHistory(fromHistory);
+		mTo.addSongRemovalHistory(fromHistory);
 		return;
 	}
 
@@ -250,7 +250,7 @@ void DatabaseImport::importDeletionHistory()
 	auto itrT = toHistory.cbegin(),   endT = toHistory.cend();
 	for (; itrF != endF;)
 	{
-		if ((*itrF)->m_DateRemoved == (*itrT)->m_DateRemoved)
+		if ((*itrF)->mDateRemoved == (*itrT)->mDateRemoved)
 		{
 			itrF++;
 			itrT++;
@@ -259,7 +259,7 @@ void DatabaseImport::importDeletionHistory()
 				break;
 			}
 		}
-		else if ((*itrF)->m_DateRemoved > (*itrT)->m_DateRemoved)
+		else if ((*itrF)->mDateRemoved > (*itrT)->mDateRemoved)
 		{
 			++itrT;
 			if (itrT == endT)
@@ -270,7 +270,7 @@ void DatabaseImport::importDeletionHistory()
 		}
 		else
 		{
-			// itrF->m_DateRemoved < itrT->m_DateRemoved
+			// itrF->mDateRemoved < itrT->mDateRemoved
 			toAdd.push_back(*itrF);
 			++itrF;
 		}
@@ -283,7 +283,7 @@ void DatabaseImport::importDeletionHistory()
 			toAdd.push_back(*itrF);
 		}
 	}
-	m_To.addSongRemovalHistory(toAdd);
+	mTo.addSongRemovalHistory(toAdd);
 }
 
 
@@ -292,14 +292,14 @@ void DatabaseImport::importDeletionHistory()
 
 void DatabaseImport::importSongColors()
 {
-	for (auto & sd: m_From.songSharedDataMap())
+	for (auto & sd: mFrom.songSharedDataMap())
 	{
-		auto dest = m_To.sharedDataFromHash(sd.first);
+		auto dest = mTo.sharedDataFromHash(sd.first);
 		if (dest == nullptr)
 		{
 			continue;
 		}
-		dest->m_BgColor.updateIfNewer(sd.second->m_BgColor);
+		dest->mBgColor.updateIfNewer(sd.second->mBgColor);
 	}
 }
 
@@ -307,17 +307,17 @@ void DatabaseImport::importSongColors()
 
 
 
-void DatabaseImport::importVotes(const QString & a_TableName)
+void DatabaseImport::importVotes(const QString & aTableName)
 {
-	auto fromVotes = m_From.loadVotes(a_TableName);
-	auto toVotes   = m_To.loadVotes(a_TableName);
+	auto fromVotes = mFrom.loadVotes(aTableName);
+	auto toVotes   = mTo.loadVotes(aTableName);
 	if (fromVotes.empty())
 	{
 		return;
 	}
 	if (toVotes.empty())
 	{
-		m_To.addVotes(a_TableName, fromVotes);
+		mTo.addVotes(aTableName, fromVotes);
 		return;
 	}
 
@@ -327,7 +327,7 @@ void DatabaseImport::importVotes(const QString & a_TableName)
 	auto itrT = toVotes.cbegin(),   endT = toVotes.cend();
 	for (; itrF != endF;)
 	{
-		if (itrF->m_DateAdded == itrT->m_DateAdded)
+		if (itrF->mDateAdded == itrT->mDateAdded)
 		{
 			itrF++;
 			itrT++;
@@ -336,7 +336,7 @@ void DatabaseImport::importVotes(const QString & a_TableName)
 				break;
 			}
 		}
-		else if (itrF->m_DateAdded > itrT->m_DateAdded)
+		else if (itrF->mDateAdded > itrT->mDateAdded)
 		{
 			++itrT;
 			if (itrT == endT)
@@ -347,7 +347,7 @@ void DatabaseImport::importVotes(const QString & a_TableName)
 		}
 		else
 		{
-			// itrF->m_DateAdded < itrT->m_DateAdded
+			// itrF->mDateAdded < itrT->mDateAdded
 			toAdd.push_back(*itrF);
 			++itrF;
 		}
@@ -360,7 +360,7 @@ void DatabaseImport::importVotes(const QString & a_TableName)
 			toAdd.push_back(*itrF);
 		}
 	}
-	m_To.addVotes(a_TableName, toAdd);
+	mTo.addVotes(aTableName, toAdd);
 }
 
 
@@ -368,17 +368,17 @@ void DatabaseImport::importVotes(const QString & a_TableName)
 
 
 DatedOptional<double> DatabaseImport::averageVotes(
-	const std::vector<Database::Vote> & a_Votes,
-	const QByteArray & a_SongHash
+	const std::vector<Database::Vote> & aVotes,
+	const QByteArray & aSongHash
 )
 {
 	int sum = 0;
 	int count = 0;
-	for (const auto & v: a_Votes)
+	for (const auto & v: aVotes)
 	{
-		if (v.m_SongHash == a_SongHash)
+		if (v.mSongHash == aSongHash)
 		{
-			sum += v.m_VoteValue;
+			sum += v.mVoteValue;
 			count += 1;
 		}
 	}

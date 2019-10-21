@@ -36,45 +36,45 @@ public:
 		colMax,
 	};
 
-	PlaylistItemModel(Playlist & a_Playlist);
+	PlaylistItemModel(Playlist & aPlaylist);
 
 	/** Called when a track was modified externally and the model should update. */
-	void trackWasModified(const IPlaylistItem & a_Item);
+	void trackWasModified(const IPlaylistItem & aItem);
 
 
 protected:
 
 	/** The playlist on which the model is based. */
-	Playlist & m_Playlist;
+	Playlist & mPlaylist;
 
 	/** The item that is highlighted as the current one. */
-	int m_CurrentItemIdx;
+	int mCurrentItemIdx;
 
 
 	// QAbstractTableModel overrides:
-	virtual Qt::ItemFlags flags(const QModelIndex & a_Index) const override;
+	virtual Qt::ItemFlags flags(const QModelIndex & aIndex) const override;
 	virtual Qt::DropActions supportedDropActions() const override;
-	virtual bool dropMimeData(const QMimeData * a_Data, Qt::DropAction a_Action, int a_Row, int a_Column, const QModelIndex & a_Parent) override;
-	virtual QMimeData * mimeData(const QModelIndexList & a_Indexes) const override;
+	virtual bool dropMimeData(const QMimeData * aData, Qt::DropAction aAction, int aRow, int aColumn, const QModelIndex & aParent) override;
+	virtual QMimeData * mimeData(const QModelIndexList & aIndexes) const override;
 	virtual QStringList mimeTypes() const override;
-	virtual int rowCount(const QModelIndex & a_Parent) const override;
-	virtual int columnCount(const QModelIndex & a_Parent) const override;
-	virtual QVariant data(const QModelIndex & a_Index, int a_Role) const override;
-	virtual QVariant headerData(int a_Section, Qt::Orientation a_Orientation, int a_Role) const override;
+	virtual int rowCount(const QModelIndex & aParent) const override;
+	virtual int columnCount(const QModelIndex & aParent) const override;
+	virtual QVariant data(const QModelIndex & aIndex, int aRole) const override;
+	virtual QVariant headerData(int aSection, Qt::Orientation aOrientation, int aRole) const override;
 
 
 protected slots:
 
-	void playlistItemAdded(IPlaylistItem * a_Item);
-	void playlistItemDeleting(IPlaylistItem * a_Item, int a_Index);
-	void playlistItemReplaced(int a_Index, IPlaylistItem * a_NewItem);
-	void playlistItemInserted(int a_Index, IPlaylistItem * a_NewItem);
+	void playlistItemAdded(IPlaylistItem * aItem);
+	void playlistItemDeleting(IPlaylistItem * aItem, int aIndex);
+	void playlistItemReplaced(int aIndex, IPlaylistItem * aNewItem);
+	void playlistItemInserted(int aIndex, IPlaylistItem * aNewItem);
 
-	/** Emitted by m_Playlist when its index of the current item changes. */
-	void playlistCurrentChanged(int a_CurrentItemIdx);
+	/** Emitted by mPlaylist when its index of the current item changes. */
+	void playlistCurrentChanged(int aCurrentItemIdx);
 
-	/** Emitted by m_Playlist when an item's start or end time changed. */
-	void playlistItemTimesChanged(int a_ItemIdx, IPlaylistItem * a_Item);
+	/** Emitted by mPlaylist when an item's start or end time changed. */
+	void playlistItemTimesChanged(int aItemIdx, IPlaylistItem * aItem);
 };
 
 
@@ -92,26 +92,26 @@ public:
 
 	// QStyledItemDelegate overrides:
 	virtual void paint(
-		QPainter * a_Painter,
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		QPainter * aPainter,
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) const override;
 	virtual QSize sizeHint(
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) const override;
 	virtual bool editorEvent(
-		QEvent * a_Event,
-		QAbstractItemModel * a_Model,
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		QEvent * aEvent,
+		QAbstractItemModel * aModel,
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) override;
 
 
 signals:
 
 	/** Emitted when the user clicks the Replace button. */
-	void replaceSong(const QModelIndex & a_Index);
+	void replaceSong(const QModelIndex & aIndex);
 };
 
 

@@ -32,7 +32,7 @@ class AbstractEnumerator:
 
 public:
 
-	AbstractEnumerator(QObject * a_Parent): Super(a_Parent) {}
+	AbstractEnumerator(QObject * aParent): Super(aParent) {}
 
 	// Force a virtual destructor:
 	virtual ~AbstractEnumerator() {}
@@ -48,10 +48,10 @@ public:
 signals:
 
 	/** Emitted when a new controller is detected. */
-	void newControllerDetected(std::shared_ptr<AbstractController> a_Controller);
+	void newControllerDetected(std::shared_ptr<AbstractController> aController);
 
 	/** Emitted when a controller is disconnected from the system. */
-	void controllerDisconnected(std::shared_ptr<AbstractController> a_Controller);
+	void controllerDisconnected(std::shared_ptr<AbstractController> aController);
 
 
 public slots:

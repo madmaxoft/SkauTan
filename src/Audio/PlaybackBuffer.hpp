@@ -26,51 +26,51 @@ class PlaybackBuffer:
 	public AudioDataSource
 {
 public:
-	PlaybackBuffer(const QAudioFormat & a_OutputFormat);
+	PlaybackBuffer(const QAudioFormat & aOutputFormat);
 
 	// AudioDataSource overrides:
 	virtual void abort() override;
 	virtual void abortWithError() override;
-	virtual bool shouldAbort() const override { return m_ShouldAbort.load(); }
-	virtual void fadeOut(int a_Msec) override { Q_UNUSED(a_Msec); }
-	virtual const QAudioFormat & format() const override { return m_OutputFormat; }
+	virtual bool shouldAbort() const override { return mShouldAbort.load(); }
+	virtual void fadeOut(int aMsec) override { Q_UNUSED(aMsec); }
+	virtual const QAudioFormat & format() const override { return mOutputFormat; }
 	virtual double currentSongPosition() const override;
 	virtual double remainingTime() const override;
-	virtual void seekTo(double a_Time) override;
+	virtual void seekTo(double aTime) override;
 	virtual void clear() override {}  // Ignored
 	virtual bool waitForData() override;
-	virtual size_t read(void * a_Dest, size_t a_Len) override;
-	virtual void setTempo(double a_Tempo) override { Q_UNUSED(a_Tempo); }
+	virtual size_t read(void * aDest, size_t aLen) override;
+	virtual void setTempo(double aTempo) override { Q_UNUSED(aTempo); }
 
 	/** Writes the specified data to the buffer.
 	Blocks until all the data can fit into the buffer.
 	Wakes up the output from its initial pause (waitForData()), if needed.
 	Returns true if the decoder should continue, false if it should abort. */
-	bool writeDecodedAudio(const void * a_Data, size_t a_Len);
+	bool writeDecodedAudio(const void * aData, size_t aLen);
 
 	/** Sets the buffer duration, in seconds.
 	Allocates the audio buffer. */
-	void setDuration(double a_DurationSec);
+	void setDuration(double aDurationSec);
 
 	/** Returns the whole internal buffer for audio data from the decoder.
 	Note that this may be accessed from other threads only after the duration has been set. */
-	const std::vector<char> & audioData() const { return m_AudioData; }
+	const std::vector<char> & audioData() const { return mAudioData; }
 
 	/** Returns the current read position within the buffer.
 	Used by WaveformDisplay to draw the current position indicator. */
-	size_t readPos() const { return m_ReadPos; }
+	size_t readPos() const { return mReadPos; }
 
 	/** Returns the current write position within the buffer.
 	Used by the WaveformDisplay to know where to finish rendering. */
-	size_t writePos() const { return m_WritePos; }
+	size_t writePos() const { return mWritePos; }
 
 	/** Returns the total size of the audio data buffer.
 	Used by the WaveformDisplay to know how many samples to process in total. */
-	size_t bufferLimit() const { return m_BufferLimit; }
+	size_t bufferLimit() const { return mBufferLimit; }
 
 	/** Seeks to the specified audio frame.
 	Sets the read position for the next read operation to read the specified frame. */
-	void seekToFrame(int a_Frame);
+	void seekToFrame(int aFrame);
 
 	/** Returns the total duration of the stored audio data, in fractional seconds. */
 	double duration() const;
@@ -79,7 +79,7 @@ public:
 protected:
 
 	/** The audio format of the output data. */
-	QAudioFormat m_OutputFormat;
+	QAudioFormat mOutputFormat;
 
 	/** Indicates that there is no more data coming in from the decoder.
 	Marks the audio data as complete. */
@@ -89,34 +89,34 @@ protected:
 private:
 
 	/** The mutex protecting all the variables against multithreaded access. */
-	QMutex m_Mtx;
+	QMutex mMtx;
 
 	/** A condition variable that can be waited upon and is set when the decoder produces the first data. */
-	QWaitCondition m_CVHasData;
+	QWaitCondition mCVHasData;
 
 	/** The audio data coming from the decoder, the whole song. */
-	std::vector<char> m_AudioData;
+	std::vector<char> mAudioData;
 
-	/** Position in m_AudioData where the next write operation should start. */
-	std::atomic<size_t> m_WritePos;
+	/** Position in mAudioData where the next write operation should start. */
+	std::atomic<size_t> mWritePos;
 
-	/** Position in m_AudioData where the next read operation should start. */
-	std::atomic<size_t> m_ReadPos;
+	/** Position in mAudioData where the next read operation should start. */
+	std::atomic<size_t> mReadPos;
 
-	/** The maximum data position in m_AudioData.
-	Normally set to m_AudioData size, but if the decoder encounters an early EOF, it will lower the limit
+	/** The maximum data position in mAudioData.
+	Normally set to mAudioData size, but if the decoder encounters an early EOF, it will lower the limit
 	to the current write position. */
-	std::atomic<size_t> m_BufferLimit;
+	std::atomic<size_t> mBufferLimit;
 
 	/** A flag specifying if the object should abort its work. */
-	std::atomic<bool> m_ShouldAbort;
+	std::atomic<bool> mShouldAbort;
 
 	/** A flag that specifies that an error has occured while decoding. */
-	bool m_HasError;
+	bool mHasError;
 
-	/** Initial value of m_ReadPos, to be copied once the decoder provides the BufferLimit.
+	/** Initial value of mReadPos, to be copied once the decoder provides the BufferLimit.
 	Used for seeking before the decoder provides any data (skip-start). */
-	size_t m_ReadPosInit;
+	size_t mReadPosInit;
 };
 
 using PlaybackBufferPtr = std::shared_ptr<PlaybackBuffer>;

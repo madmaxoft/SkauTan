@@ -9,15 +9,15 @@
 
 
 
-std::unique_ptr<QSettings> Settings::m_Settings;
+std::unique_ptr<QSettings> Settings::mSettings;
 
 
 
 
 
 #define CHECK_VALID \
-	assert(m_Settings != nullptr); \
-	if (m_Settings == nullptr) \
+	assert(mSettings != nullptr); \
+	if (mSettings == nullptr) \
 	{ \
 		qWarning() << "The Settings object has not been initialized."; \
 		return; \
@@ -27,9 +27,9 @@ std::unique_ptr<QSettings> Settings::m_Settings;
 
 
 
-void Settings::init(const QString & a_IniFileName)
+void Settings::init(const QString & aIniFileName)
 {
-	m_Settings = std::make_unique<QSettings>(a_IniFileName, QSettings::IniFormat);
+	mSettings = std::make_unique<QSettings>(aIniFileName, QSettings::IniFormat);
 }
 
 
@@ -37,26 +37,26 @@ void Settings::init(const QString & a_IniFileName)
 
 
 void Settings::saveHeaderView(
-	const char * a_WindowName,
-	const char * a_HeaderViewName,
-	const QHeaderView & a_HeaderView
+	const char * aWindowName,
+	const char * aHeaderViewName,
+	const QHeaderView & aHeaderView
 )
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->beginGroup(a_HeaderViewName);
-			m_Settings->beginWriteArray("columns");
-				int numColumns = a_HeaderView.count();
+	mSettings->beginGroup(aWindowName);
+		mSettings->beginGroup(aHeaderViewName);
+			mSettings->beginWriteArray("columns");
+				int numColumns = aHeaderView.count();
 				for (int i = 0; i < numColumns; ++i)
 				{
-					m_Settings->setArrayIndex(i);
-					m_Settings->setValue("sectionSize",a_HeaderView.sectionSize(i));
+					mSettings->setArrayIndex(i);
+					mSettings->setValue("sectionSize",aHeaderView.sectionSize(i));
 				}
-			m_Settings->endArray();
-		m_Settings->endGroup();
-	m_Settings->endGroup();
-	m_Settings->sync();
+			mSettings->endArray();
+		mSettings->endGroup();
+	mSettings->endGroup();
+	mSettings->sync();
 }
 
 
@@ -64,161 +64,161 @@ void Settings::saveHeaderView(
 
 
 void Settings::loadHeaderView(
-	const char * a_WindowName,
-	const char * a_HeaderViewName,
-	QHeaderView & a_HeaderView
+	const char * aWindowName,
+	const char * aHeaderViewName,
+	QHeaderView & aHeaderView
 )
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->beginGroup(a_HeaderViewName);
-			int numInSettings = m_Settings->beginReadArray("columns");
-				int numInControl = a_HeaderView.count();
+	mSettings->beginGroup(aWindowName);
+		mSettings->beginGroup(aHeaderViewName);
+			int numInSettings = mSettings->beginReadArray("columns");
+				int numInControl = aHeaderView.count();
 				int numColumns = std::min(numInSettings, numInControl);
 				for (int i = 0; i < numColumns; ++i)
 				{
-					m_Settings->setArrayIndex(i);
-					auto s = m_Settings->value("sectionSize").toInt();
+					mSettings->setArrayIndex(i);
+					auto s = mSettings->value("sectionSize").toInt();
 					if (s > 0)
 					{
-						a_HeaderView.resizeSection(i, s);
+						aHeaderView.resizeSection(i, s);
 					}
 				}
-			m_Settings->endArray();
-		m_Settings->endGroup();
-	m_Settings->endGroup();
+			mSettings->endArray();
+		mSettings->endGroup();
+	mSettings->endGroup();
 }
 
 
 
 
 
-void Settings::saveWindowPos(const char * a_WindowName, const QWidget & a_Window)
+void Settings::saveWindowPos(const char * aWindowName, const QWidget & aWindow)
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->setValue("pos", a_Window.pos());
-		m_Settings->setValue("size", a_Window.size());
-	m_Settings->endGroup();
-	m_Settings->sync();
+	mSettings->beginGroup(aWindowName);
+		mSettings->setValue("pos", aWindow.pos());
+		mSettings->setValue("size", aWindow.size());
+	mSettings->endGroup();
+	mSettings->sync();
 }
 
 
 
 
 
-void Settings::loadWindowPos(const char * a_WindowName, QWidget & a_Window)
+void Settings::loadWindowPos(const char * aWindowName, QWidget & aWindow)
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		a_Window.resize(m_Settings->value("size", a_Window.size()).toSize());
-		a_Window.move(  m_Settings->value("pos",  a_Window.pos()).toPoint());
-	m_Settings->endGroup();
+	mSettings->beginGroup(aWindowName);
+		aWindow.resize(mSettings->value("size", aWindow.size()).toSize());
+		aWindow.move(  mSettings->value("pos",  aWindow.pos()).toPoint());
+	mSettings->endGroup();
 }
 
 
 
 
 
-void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter & a_Splitter)
+void Settings::saveSplitterSizes(const char * aWindowName, const char * aSplitterName, const QSplitter & aSplitter)
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->beginGroup(a_SplitterName);
-			m_Settings->beginWriteArray("sectionSizes");
-				const auto & sizes = a_Splitter.sizes();
+	mSettings->beginGroup(aWindowName);
+		mSettings->beginGroup(aSplitterName);
+			mSettings->beginWriteArray("sectionSizes");
+				const auto & sizes = aSplitter.sizes();
 				int numSections = sizes.count();
 				for (int i = 0; i < numSections; ++i)
 				{
-					m_Settings->setArrayIndex(i);
-					m_Settings->setValue("sectionSize", sizes[i]);
+					mSettings->setArrayIndex(i);
+					mSettings->setValue("sectionSize", sizes[i]);
 				}
-			m_Settings->endArray();
-		m_Settings->endGroup();
-	m_Settings->endGroup();
-	m_Settings->sync();
+			mSettings->endArray();
+		mSettings->endGroup();
+	mSettings->endGroup();
+	mSettings->sync();
 }
 
 
 
 
 
-void Settings::saveSplitterSizes(const char * a_WindowName, const char * a_SplitterName, const QSplitter * a_Splitter)
+void Settings::saveSplitterSizes(const char * aWindowName, const char * aSplitterName, const QSplitter * aSplitter)
 {
-	assert(a_Splitter != nullptr);
-	saveSplitterSizes(a_WindowName, a_SplitterName, *a_Splitter);
+	assert(aSplitter != nullptr);
+	saveSplitterSizes(aWindowName, aSplitterName, *aSplitter);
 }
 
 
 
 
 
-void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter & a_Splitter)
+void Settings::loadSplitterSizes(const char * aWindowName, const char * aSplitterName, QSplitter & aSplitter)
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->beginGroup(a_SplitterName);
-			int numSections = m_Settings->beginReadArray("sectionSizes");
+	mSettings->beginGroup(aWindowName);
+		mSettings->beginGroup(aSplitterName);
+			int numSections = mSettings->beginReadArray("sectionSizes");
 				QList<int> sectionSizes;
 				for (int i = 0; i < numSections; ++i)
 				{
-					m_Settings->setArrayIndex(i);
-					sectionSizes.append(m_Settings->value("sectionSize").toInt());
+					mSettings->setArrayIndex(i);
+					sectionSizes.append(mSettings->value("sectionSize").toInt());
 				}
 				if (!sectionSizes.isEmpty())
 				{
-					a_Splitter.setSizes(sectionSizes);
+					aSplitter.setSizes(sectionSizes);
 				}
-			m_Settings->endArray();
-		m_Settings->endGroup();
-	m_Settings->endGroup();
+			mSettings->endArray();
+		mSettings->endGroup();
+	mSettings->endGroup();
 }
 
 
 
 
 
-void Settings::loadSplitterSizes(const char * a_WindowName, const char * a_SplitterName, QSplitter * a_Splitter)
+void Settings::loadSplitterSizes(const char * aWindowName, const char * aSplitterName, QSplitter * aSplitter)
 {
-	assert(a_Splitter != nullptr);
-	loadSplitterSizes(a_WindowName, a_SplitterName, *a_Splitter);
+	assert(aSplitter != nullptr);
+	loadSplitterSizes(aWindowName, aSplitterName, *aSplitter);
 }
 
 
 
 
 
-void Settings::saveValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Value)
+void Settings::saveValue(const char * aWindowName, const char * aValueName, const QVariant & aValue)
 {
 	CHECK_VALID;
 
-	m_Settings->beginGroup(a_WindowName);
-		m_Settings->setValue(a_ValueName, a_Value);
-	m_Settings->endGroup();
-	m_Settings->sync();
+	mSettings->beginGroup(aWindowName);
+		mSettings->setValue(aValueName, aValue);
+	mSettings->endGroup();
+	mSettings->sync();
 }
 
 
 
 
 
-QVariant Settings::loadValue(const char * a_WindowName, const char * a_ValueName, const QVariant & a_Default)
+QVariant Settings::loadValue(const char * aWindowName, const char * aValueName, const QVariant & aDefault)
 {
-	assert(m_Settings != nullptr);
-	if (m_Settings == nullptr)
+	assert(mSettings != nullptr);
+	if (mSettings == nullptr)
 	{
 		qWarning() << "The Settings object has not been initialized.";
-		return a_Default;
+		return aDefault;
 	}
 
-	m_Settings->beginGroup(a_WindowName);
-		auto res = m_Settings->value(a_ValueName, a_Default);
-	m_Settings->endGroup();
+	mSettings->beginGroup(aWindowName);
+		auto res = mSettings->value(aValueName, aDefault);
+	mSettings->endGroup();
 
 	return res;
 }

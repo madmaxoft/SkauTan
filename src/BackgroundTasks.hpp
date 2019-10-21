@@ -44,20 +44,20 @@ public:
 	static BackgroundTasks & get();
 
 	/** Adds the specified task to the internal list of tasks to run.
-	If a_Prioritize is true, adds the task to the front of the queue (executed asap),
+	If aPrioritize is true, adds the task to the front of the queue (executed asap),
 	otherwise adds to the end of the queue (executed last).
 	The task is then run when an executor becomes free. */
-	void addTask(TaskPtr a_Task, bool a_Prioritize = false);
+	void addTask(TaskPtr aTask, bool aPrioritize = false);
 
 	/** Adds a new task to the queue that executes the specified function.
-	If a_Prioritize is true, adds the task to the front of the queue (executed asap),
+	If aPrioritize is true, adds the task to the front of the queue (executed asap),
 	otherwise adds to the end of the queue (executed last).
-	a_OnAbort is called if the task is to be aborted (even before it starts). */
+	aOnAbort is called if the task is to be aborted (even before it starts). */
 	static void enqueue(
-		const QString & a_TaskName,
-		std::function<void()> a_Task,
-		bool a_Prioritize = false,
-		std::function<void()> a_OnAbort = [](){}
+		const QString & aTaskName,
+		std::function<void()> aTask,
+		bool aPrioritize = false,
+		std::function<void()> aOnAbort = [](){}
 	);
 
 	const std::list<TaskPtr> tasks() const;
@@ -74,32 +74,32 @@ protected:
 	{
 	public:
 		/** Creates a new executor that executes tasks of the specified BackgroundTasks. */
-		Executor(BackgroundTasks & a_Parent);
+		Executor(BackgroundTasks & aParent);
 
 		void run();
 
 	protected:
-		BackgroundTasks & m_Parent;
+		BackgroundTasks & mParent;
 	};
 
 	using ExecutorUPtr = std::unique_ptr<Executor>;
 
 
 
-	/** The mutex protecting m_Tasks against multithreaded access. */
-	mutable QMutex m_Mtx;
+	/** The mutex protecting mTasks against multithreaded access. */
+	mutable QMutex mMtx;
 
-	QWaitCondition m_WaitForTasks;
+	QWaitCondition mWaitForTasks;
 
 	/** The queue of tasks to be executed.
-	Protected against multithreaded access by m_Mtx. */
-	std::list<TaskPtr> m_Tasks;
+	Protected against multithreaded access by mMtx. */
+	std::list<TaskPtr> mTasks;
 
 	/** The threads that can execute tasks. */
-	std::vector<ExecutorUPtr> m_Executors;
+	std::vector<ExecutorUPtr> mExecutors;
 
 	/** Flag that is set when the entire background processing should terminate as soon as possible. */
-	std::atomic<bool> m_ShouldTerminate;
+	std::atomic<bool> mShouldTerminate;
 
 
 
@@ -107,7 +107,7 @@ protected:
 
 	~BackgroundTasks();
 
-	/** Returns the next task from m_Tasks to execute.
+	/** Returns the next task from mTasks to execute.
 	Waits for a task to become available (or the instance shutdown).
 	Returns nullptr if instance is shutting down before a task is ready. */
 	TaskPtr getNextTask();
@@ -116,19 +116,19 @@ protected:
 signals:
 
 	/** Emitted after the task is added. */
-	void taskAdded(BackgroundTasks::TaskPtr a_Task);
+	void taskAdded(BackgroundTasks::TaskPtr aTask);
 
 	/** Emitted after the task is finished and removed from the task list. */
-	void taskFinished(BackgroundTasks::TaskPtr a_Task);
+	void taskFinished(BackgroundTasks::TaskPtr aTask);
 
 	/** Emitted when a task is aborted. */
-	void taskAborted(BackgroundTasks::TaskPtr a_Task);
+	void taskAborted(BackgroundTasks::TaskPtr aTask);
 
 
 private slots:
 
 	/** Received from the executors' threads, invokes the taskFinished() signal for the specified task. */
-	void emitTaskFinished(BackgroundTasks::TaskPtr a_Task);
+	void emitTaskFinished(BackgroundTasks::TaskPtr aTask);
 };
 
 
@@ -142,7 +142,7 @@ class BackgroundTasks::Task:
 
 public:
 
-	Task(const QString & a_Name) : m_Name(a_Name), m_ShouldTerminate(false) {}
+	Task(const QString & aName) : mName(aName), mShouldTerminate(false) {}
 
 	// Force a virtual destructor
 	virtual ~Task() {}
@@ -154,18 +154,18 @@ public:
 	/** Called by the Executor if the entire BackgroundTasks instance is being destroyed.
 	The task should terminate as soon as possible.
 	The default implementation sets a flag that can be checked periodically. */
-	virtual void abort() { m_ShouldTerminate = true; }
+	virtual void abort() { mShouldTerminate = true; }
 
 	/** Returns the user-visible task name. */
-	const QString & name() const { return m_Name; }
+	const QString & name() const { return mName; }
 
 protected:
 
 	/** The name of the task, as shown to the user. */
-	const QString m_Name;
+	const QString mName;
 
 	/** Flag that is set when the task should terminate as soon as possible. */
-	std::atomic<bool> m_ShouldTerminate;
+	std::atomic<bool> mShouldTerminate;
 };
 
 

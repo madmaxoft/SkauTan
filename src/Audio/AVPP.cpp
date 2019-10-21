@@ -34,11 +34,11 @@ class Initializer
 	}
 
 
-	static void qtLogger(void *, int, const char * a_Format, va_list a_Params)
+	static void qtLogger(void *, int, const char * aFormat, va_list aParams)
 	{
 		// Ignore LibAV logging for now
-		Q_UNUSED(a_Format);
-		Q_UNUSED(a_Params);
+		Q_UNUSED(aFormat);
+		Q_UNUSED(aParams);
 	}
 
 
@@ -59,7 +59,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // FileIO:
 
-std::shared_ptr<FileIO> FileIO::createContext(const QString & a_FileName)
+std::shared_ptr<FileIO> FileIO::createContext(const QString & aFileName)
 {
 	Initializer::init();
 	auto res = std::shared_ptr<FileIO>(new FileIO);
@@ -67,14 +67,14 @@ std::shared_ptr<FileIO> FileIO::createContext(const QString & a_FileName)
 	{
 		return nullptr;
 	}
-	if (!res->Open(a_FileName))
+	if (!res->Open(aFileName))
 	{
 		return nullptr;
 	}
 	static const int bufferSize = 4096;
 	auto buffer = reinterpret_cast<unsigned char *>(av_malloc(bufferSize));
-	res->m_Context = avio_alloc_context(buffer, bufferSize, 0, res.get(), &FileIO::read, nullptr, &FileIO::seek);
-	if (res->m_Context == nullptr)
+	res->mContext = avio_alloc_context(buffer, bufferSize, 0, res.get(), &FileIO::read, nullptr, &FileIO::seek);
+	if (res->mContext == nullptr)
 	{
 		av_free(buffer);
 		return nullptr;
@@ -87,7 +87,7 @@ std::shared_ptr<FileIO> FileIO::createContext(const QString & a_FileName)
 
 
 FileIO::FileIO():
-	m_Context(nullptr)
+	mContext(nullptr)
 {
 }
 
@@ -97,9 +97,9 @@ FileIO::FileIO():
 
 FileIO::~FileIO()
 {
-	if (m_Context != nullptr)
+	if (mContext != nullptr)
 	{
-		avio_context_free(&m_Context);
+		avio_context_free(&mContext);
 	}
 }
 
@@ -107,15 +107,15 @@ FileIO::~FileIO()
 
 
 
-bool FileIO::Open(const QString & a_FileName)
+bool FileIO::Open(const QString & aFileName)
 {
-	std::unique_ptr<QFile> f(new QFile(a_FileName));
+	std::unique_ptr<QFile> f(new QFile(aFileName));
 	if (!f->open(QIODevice::ReadOnly))
 	{
 		return false;
 	}
 
-	std::swap(m_File, f);
+	std::swap(mFile, f);
 	return true;
 }
 
@@ -123,52 +123,52 @@ bool FileIO::Open(const QString & a_FileName)
 
 
 
-int FileIO::read(void * a_This, uint8_t * a_Dst, int a_Size)
+int FileIO::read(void * aThis, uint8_t * aDst, int aSize)
 {
-	auto This = reinterpret_cast<FileIO *>(a_This);
-	return static_cast<int>(This->m_File->read(reinterpret_cast<char *>(a_Dst), a_Size));
+	auto This = reinterpret_cast<FileIO *>(aThis);
+	return static_cast<int>(This->mFile->read(reinterpret_cast<char *>(aDst), aSize));
 }
 
 
 
 
 
-int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
+int64_t FileIO::seek(void * aThis, int64_t aOffset, int aWhence)
 {
-	// qDebug() << "Seek to offset " << a_Offset << " from " << a_Whence;
-	auto This = reinterpret_cast<FileIO *>(a_This);
-	switch (a_Whence)
+	// qDebug() << "Seek to offset " << aOffset << " from " << aWhence;
+	auto This = reinterpret_cast<FileIO *>(aThis);
+	switch (aWhence)
 	{
 		case SEEK_CUR:
 		{
-			if (!This->m_File->seek(This->m_File->pos() + a_Offset))
+			if (!This->mFile->seek(This->mFile->pos() + aOffset))
 			{
 				qWarning() << "Relative-Seek failed.";
 				return -1;
 			}
-			return This->m_File->pos();
+			return This->mFile->pos();
 		}
 		case SEEK_SET:
 		{
-			if (!This->m_File->seek(a_Offset))
+			if (!This->mFile->seek(aOffset))
 			{
 				qWarning() << "Absolute-Seek failed.";
 				return -1;
 			}
-			return a_Offset;
+			return aOffset;
 		}
 		case SEEK_END:
 		{
-			if (!This->m_File->seek(This->m_File->size() - a_Offset))
+			if (!This->mFile->seek(This->mFile->size() - aOffset))
 			{
 				qWarning() << "End-Seek failed.";
 				return -1;
 			}
-			return This->m_File->pos();
+			return This->mFile->pos();
 		}
 	}
 	// _X 2018-05-11: This seems to happen way too often upon opening a new file, disabling.
-	// qWarning() << "Unexpected seek operation: " << a_Whence << ", offset " << a_Offset;
+	// qWarning() << "Unexpected seek operation: " << aWhence << ", offset " << aOffset;
 	return -1;
 }
 
@@ -179,11 +179,11 @@ int64_t FileIO::seek(void * a_This, int64_t a_Offset, int a_Whence)
 ////////////////////////////////////////////////////////////////////////////////
 // CodecContext:
 
-std::shared_ptr<CodecContext> CodecContext::create(AVCodec * a_Codec)
+std::shared_ptr<CodecContext> CodecContext::create(AVCodec * aCodec)
 {
 	Initializer::init();
-	auto res = std::shared_ptr<CodecContext>(new CodecContext(a_Codec));
-	if (res->m_Context == nullptr)
+	auto res = std::shared_ptr<CodecContext>(new CodecContext(aCodec));
+	if (res->mContext == nullptr)
 	{
 		return nullptr;
 	}
@@ -196,9 +196,9 @@ std::shared_ptr<CodecContext> CodecContext::create(AVCodec * a_Codec)
 
 CodecContext::~CodecContext()
 {
-	if (m_Context != nullptr)
+	if (mContext != nullptr)
 	{
-		avcodec_free_context(&m_Context);
+		avcodec_free_context(&mContext);
 	}
 }
 
@@ -206,9 +206,9 @@ CodecContext::~CodecContext()
 
 
 
-bool CodecContext::open(AVCodec * a_Codec)
+bool CodecContext::open(AVCodec * aCodec)
 {
-	auto ret = avcodec_open2(m_Context, a_Codec, nullptr);
+	auto ret = avcodec_open2(mContext, aCodec, nullptr);
 	if (ret < 0)
 	{
 		qWarning() << "Cannot open codec: " << ret;
@@ -221,8 +221,8 @@ bool CodecContext::open(AVCodec * a_Codec)
 
 
 
-CodecContext::CodecContext(AVCodec * a_Codec):
-	m_Context(avcodec_alloc_context3(a_Codec))
+CodecContext::CodecContext(AVCodec * aCodec):
+	mContext(avcodec_alloc_context3(aCodec))
 {
 }
 
@@ -233,16 +233,16 @@ CodecContext::CodecContext(AVCodec * a_Codec):
 ////////////////////////////////////////////////////////////////////////////////
 // Resampler:
 
-AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType a_SampleType)
+AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType aSampleType)
 {
-	switch (a_SampleType)
+	switch (aSampleType)
 	{
 		case QAudioFormat::SignedInt: return AV_SAMPLE_FMT_S16;
 		case QAudioFormat::Float:     return AV_SAMPLE_FMT_FLT;
 		default:
 		{
-			qWarning() << "Unhandled sample type: " << a_SampleType;
-			throw RuntimeError("Unhandled sample type: %1", a_SampleType);
+			qWarning() << "Unhandled sample type: " << aSampleType;
+			throw RuntimeError("Unhandled sample type: %1", aSampleType);
 		}
 	}
 }
@@ -251,9 +251,9 @@ AVSampleFormat Resampler::sampleFormatFromSampleType(QAudioFormat::SampleType a_
 
 
 
-uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
+uint64_t Resampler::channelLayoutFromChannelCount(int aChannelCount)
 {
-	switch (a_ChannelCount)
+	switch (aChannelCount)
 	{
 		case 1: return AV_CH_LAYOUT_MONO;
 		case 2: return AV_CH_LAYOUT_STEREO;
@@ -262,8 +262,8 @@ uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
 		case 6: return AV_CH_LAYOUT_5POINT1;
 		default:
 		{
-			qWarning() << "Unhandled ChannelCount:" << a_ChannelCount;
-			throw RuntimeError("Unhandled ChannelCount: %1: ", a_ChannelCount);
+			qWarning() << "Unhandled ChannelCount:" << aChannelCount;
+			throw RuntimeError("Unhandled ChannelCount: %1: ", aChannelCount);
 		}
 	}
 }
@@ -273,15 +273,15 @@ uint64_t Resampler::channelLayoutFromChannelCount(int a_ChannelCount)
 
 
 Resampler * Resampler::create(
-	uint64_t a_SrcChannelLayout,
-	int a_SrcSampleRate,
-	AVSampleFormat a_SrcSampleFormat,
-	const QAudioFormat & a_OutputFormat
+	uint64_t aSrcChannelLayout,
+	int aSrcSampleRate,
+	AVSampleFormat aSrcSampleFormat,
+	const QAudioFormat & aOutputFormat
 )
 {
 	Initializer::init();
 	auto res = std::unique_ptr<Resampler>(new Resampler);
-	if (!res->init(a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat, a_OutputFormat))
+	if (!res->init(aSrcChannelLayout, aSrcSampleRate, aSrcSampleFormat, aOutputFormat))
 	{
 		return nullptr;
 	}
@@ -293,21 +293,21 @@ Resampler * Resampler::create(
 
 
 Resampler * Resampler::create(
-	int a_SrcSampleRate,
-	int a_DstSampleRate,
-	uint64_t a_ChannelLayout,
-	AVSampleFormat a_SampleFormat
+	int aSrcSampleRate,
+	int aDstSampleRate,
+	uint64_t aChannelLayout,
+	AVSampleFormat aSampleFormat
 )
 {
 	Initializer::init();
 	auto res = std::unique_ptr<Resampler>(new Resampler);
 	if (!res->init(
-		a_ChannelLayout,
-		a_SrcSampleRate,
-		a_SampleFormat,
-		a_ChannelLayout,
-		a_DstSampleRate,
-		a_SampleFormat
+		aChannelLayout,
+		aSrcSampleRate,
+		aSampleFormat,
+		aChannelLayout,
+		aDstSampleRate,
+		aSampleFormat
 	))
 	{
 		return nullptr;
@@ -320,11 +320,11 @@ Resampler * Resampler::create(
 
 
 Resampler::Resampler():
-	m_Context(nullptr),
-	m_Buffer(nullptr),
-	m_BufferMaxNumSamples(0),
-	m_BufferLineSize(0),
-	m_BufferSampleFormat(AV_SAMPLE_FMT_S16P)
+	mContext(nullptr),
+	mBuffer(nullptr),
+	mBufferMaxNumSamples(0),
+	mBufferLineSize(0),
+	mBufferSampleFormat(AV_SAMPLE_FMT_S16P)
 {
 }
 
@@ -334,13 +334,13 @@ Resampler::Resampler():
 
 Resampler::~Resampler()
 {
-	if (m_Context != nullptr)
+	if (mContext != nullptr)
 	{
-		swr_free(&m_Context);
+		swr_free(&mContext);
 	}
-	if (m_Buffer != nullptr)
+	if (mBuffer != nullptr)
 	{
-		av_freep(&m_Buffer[0]);
+		av_freep(&mBuffer[0]);
 	}
 }
 
@@ -349,22 +349,22 @@ Resampler::~Resampler()
 
 
 bool Resampler::init(
-	uint64_t a_SrcChannelLayout,
-	int a_SrcSampleRate,
-	AVSampleFormat a_SrcSampleFormat,
-	const QAudioFormat & a_OutputFormat
+	uint64_t aSrcChannelLayout,
+	int aSrcSampleRate,
+	AVSampleFormat aSrcSampleFormat,
+	const QAudioFormat & aOutputFormat
 )
 {
 	try
 	{
 		// Translate QAudioFormat into LibAV/SWR format:
-		auto dstChannelLayout = channelLayoutFromChannelCount(a_OutputFormat.channelCount());
-		assert(av_get_channel_layout_nb_channels(dstChannelLayout) == a_OutputFormat.channelCount());
-		AVSampleFormat dstSampleFormat = sampleFormatFromSampleType(a_OutputFormat.sampleType());
+		auto dstChannelLayout = channelLayoutFromChannelCount(aOutputFormat.channelCount());
+		assert(av_get_channel_layout_nb_channels(dstChannelLayout) == aOutputFormat.channelCount());
+		AVSampleFormat dstSampleFormat = sampleFormatFromSampleType(aOutputFormat.sampleType());
 
 		return init(
-			a_SrcChannelLayout, a_SrcSampleRate, a_SrcSampleFormat,
-			dstChannelLayout, a_OutputFormat.sampleRate(), dstSampleFormat
+			aSrcChannelLayout, aSrcSampleRate, aSrcSampleFormat,
+			dstChannelLayout, aOutputFormat.sampleRate(), dstSampleFormat
 		);
 	}
 	catch (const std::exception & exc)
@@ -379,31 +379,31 @@ bool Resampler::init(
 
 
 bool Resampler::init(
-	uint64_t a_SrcChannelLayout,
-	int a_SrcSampleRate,
-	AVSampleFormat a_SrcSampleFormat,
-	uint64_t a_DstChannelLayout,
-	int a_DstSampleRate,
-	AVSampleFormat a_DstSampleFormat
+	uint64_t aSrcChannelLayout,
+	int aSrcSampleRate,
+	AVSampleFormat aSrcSampleFormat,
+	uint64_t aDstChannelLayout,
+	int aDstSampleRate,
+	AVSampleFormat aDstSampleFormat
 )
 {
 	// Create and init the context:
-	m_Context = swr_alloc_set_opts(
+	mContext = swr_alloc_set_opts(
 		nullptr,
-		static_cast<int64_t>(a_DstChannelLayout),
-		a_DstSampleFormat,
-		a_DstSampleRate,
-		static_cast<int64_t>(a_SrcChannelLayout),
-		a_SrcSampleFormat,
-		a_SrcSampleRate,
+		static_cast<int64_t>(aDstChannelLayout),
+		aDstSampleFormat,
+		aDstSampleRate,
+		static_cast<int64_t>(aSrcChannelLayout),
+		aSrcSampleFormat,
+		aSrcSampleRate,
 		0, nullptr  // logging - unused
 	);
-	if (m_Context == nullptr)
+	if (mContext == nullptr)
 	{
 		qWarning() << "Failed to create SWResampler context.";
 		return false;
 	}
-	auto err = swr_init(m_Context);
+	auto err = swr_init(mContext);
 	if (err != 0)
 	{
 		qWarning() << "Failed to initialize SWResampler context: " << err;
@@ -411,10 +411,10 @@ bool Resampler::init(
 	}
 
 	// Create the output buffer structure:
-	m_DstChannelCount = av_get_channel_layout_nb_channels(a_DstChannelLayout);
+	mDstChannelCount = av_get_channel_layout_nb_channels(aDstChannelLayout);
 	err = av_samples_alloc_array_and_samples(
-		&m_Buffer, &m_BufferLineSize, m_DstChannelCount,
-		1000, a_DstSampleFormat, 0
+		&mBuffer, &mBufferLineSize, mDstChannelCount,
+		1000, aDstSampleFormat, 0
 	);
 	if (err < 0)
 	{
@@ -422,7 +422,7 @@ bool Resampler::init(
 		return false;
 	}
 
-	m_BufferSampleFormat = a_DstSampleFormat;
+	mBufferSampleFormat = aDstSampleFormat;
 	return true;
 }
 
@@ -430,23 +430,23 @@ bool Resampler::init(
 
 
 
-std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int a_Len)
+std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** aBuffers, int aLen)
 {
-	assert(m_Context != nullptr);
+	assert(mContext != nullptr);
 
-	int outLen = swr_get_out_samples(m_Context, a_Len);
+	int outLen = swr_get_out_samples(mContext, aLen);
 	if (outLen < 0)
 	{
 		qWarning() << "Cannot query conversion buffer size: " << outLen;
 		outLen = 64 * 1024;  // Take a wild guess
 	}
-	if (outLen > m_BufferMaxNumSamples)
+	if (outLen > mBufferMaxNumSamples)
 	{
-		m_BufferMaxNumSamples = outLen;
-		av_freep(&m_Buffer[0]);
+		mBufferMaxNumSamples = outLen;
+		av_freep(&mBuffer[0]);
 		auto err = av_samples_alloc(
-			m_Buffer, &m_BufferLineSize, m_DstChannelCount,
-			m_BufferMaxNumSamples, m_BufferSampleFormat, 1
+			mBuffer, &mBufferLineSize, mDstChannelCount,
+			mBufferMaxNumSamples, mBufferSampleFormat, 1
 		);
 		if (err < 0)
 		{
@@ -454,7 +454,7 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 			return std::make_pair(nullptr, 0);
 		}
 	}
-	auto numOutputSamples = swr_convert(m_Context, m_Buffer, m_BufferMaxNumSamples, a_Buffers, a_Len);
+	auto numOutputSamples = swr_convert(mContext, mBuffer, mBufferMaxNumSamples, aBuffers, aLen);
 	if (numOutputSamples < 0)
 	{
 		qWarning() << "Sample conversion failed: " << numOutputSamples;
@@ -462,7 +462,7 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 	}
 
 	// Output through to AudioOutput:
-	return std::make_pair(m_Buffer[0], static_cast<size_t>(numOutputSamples));
+	return std::make_pair(mBuffer[0], static_cast<size_t>(numOutputSamples));
 }
 
 
@@ -472,41 +472,41 @@ std::pair<uint8_t *, size_t> Resampler::convert(const uint8_t ** a_Buffers, int 
 ////////////////////////////////////////////////////////////////////////////////
 // Format:
 
-FormatPtr Format::createContext(const QString & a_FileName)
+FormatPtr Format::createContext(const QString & aFileName)
 {
 	Initializer::init();
 
 	// Create an IO wrapper:
-	auto io = FileIO::createContext(a_FileName);
+	auto io = FileIO::createContext(aFileName);
 	if (io == nullptr)
 	{
-		qWarning() << "IO creation failed (" << a_FileName << ")";
+		qWarning() << "IO creation failed (" << aFileName << ")";
 		return nullptr;
 	}
 
 	// Create the context:
 	auto res = std::unique_ptr<Format>(new Format(io));
-	if ((res == nullptr) || (res->m_Context == nullptr))
+	if ((res == nullptr) || (res->mContext == nullptr))
 	{
-		qWarning() << "Creation failed (" << a_FileName << ")";
+		qWarning() << "Creation failed (" << aFileName << ")";
 		return nullptr;
 	}
 
 	// Open and detect format:
-	auto ret = avformat_open_input(&res->m_Context, nullptr, nullptr, nullptr);
+	auto ret = avformat_open_input(&res->mContext, nullptr, nullptr, nullptr);
 	if (ret != 0)
 	{
 		// User-supplied AVFormatContext is freed upon failure, need to un-bind:
-		res->m_Context = nullptr;
-		qWarning() << "Opening failed: " << ret << " (" << a_FileName << ")";
+		res->mContext = nullptr;
+		qWarning() << "Opening failed: " << ret << " (" << aFileName << ")";
 		return nullptr;
 	}
 
 	// Find the stream info:
-	ret = avformat_find_stream_info(res->m_Context, nullptr);
+	ret = avformat_find_stream_info(res->mContext, nullptr);
 	if (ret < 0)
 	{
-		qWarning() << "Cannot find stream info: " << ret << " (" << a_FileName << ")";
+		qWarning() << "Cannot find stream info: " << ret << " (" << aFileName << ")";
 	}
 
 	return res;
@@ -516,15 +516,15 @@ FormatPtr Format::createContext(const QString & a_FileName)
 
 
 
-Format::Format(std::shared_ptr<FileIO> a_IO):
-	m_Context(avformat_alloc_context()),
-	m_IO(a_IO),
-	m_AudioOutput(nullptr),
-	m_AudioStreamIdx(-1)
+Format::Format(std::shared_ptr<FileIO> aIO):
+	mContext(avformat_alloc_context()),
+	mIO(aIO),
+	mAudioOutput(nullptr),
+	mAudioStreamIdx(-1)
 {
-	if (m_Context != nullptr)
+	if (mContext != nullptr)
 	{
-		m_Context->pb = m_IO->m_Context;
+		mContext->pb = mIO->mContext;
 	}
 }
 
@@ -534,10 +534,10 @@ Format::Format(std::shared_ptr<FileIO> a_IO):
 
 Format::~Format()
 {
-	if (m_Context != nullptr)
+	if (mContext != nullptr)
 	{
-		av_freep(m_Context->pb);
-		avformat_close_input(&m_Context);
+		av_freep(mContext->pb);
+		avformat_close_input(&mContext);
 	}
 }
 
@@ -545,38 +545,38 @@ Format::~Format()
 
 
 
-bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
+bool Format::routeAudioTo(PlaybackBuffer * aPlaybackBuffer)
 {
-	assert(m_AudioOutput == nullptr);  // Only one stream can be decoded into audio within a session
+	assert(mAudioOutput == nullptr);  // Only one stream can be decoded into audio within a session
 
 	AVCodec * audioDecoder = nullptr;
-	m_AudioStreamIdx = av_find_best_stream(m_Context, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
-	if (m_AudioStreamIdx < 0)
+	mAudioStreamIdx = av_find_best_stream(mContext, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
+	if (mAudioStreamIdx < 0)
 	{
-		qWarning() << "Failed to find an audio stream in the file: " << m_AudioStreamIdx;
-		m_AudioStreamIdx = -1;
+		qWarning() << "Failed to find an audio stream in the file: " << mAudioStreamIdx;
+		mAudioStreamIdx = -1;
 		return false;
 	}
 
 	// Create a decoding context:
-	m_AudioDecoderContext = CodecContext::create(audioDecoder);
-	if (m_AudioDecoderContext == nullptr)
+	mAudioDecoderContext = CodecContext::create(audioDecoder);
+	if (mAudioDecoderContext == nullptr)
 	{
 		qWarning() << "Failed to allocate decoder context.";
 		return false;
 	}
-	avcodec_parameters_to_context(m_AudioDecoderContext->m_Context, m_Context->streams[m_AudioStreamIdx]->codecpar);
-	av_opt_set_int(m_AudioDecoderContext->m_Context, "refcounted_frames", 1, 0);
+	avcodec_parameters_to_context(mAudioDecoderContext->mContext, mContext->streams[mAudioStreamIdx]->codecpar);
+	av_opt_set_int(mAudioDecoderContext->mContext, "refcounted_frames", 1, 0);
 
 	// Open the audio decoder:
-	if (!m_AudioDecoderContext->open(audioDecoder))
+	if (!mAudioDecoderContext->open(audioDecoder))
 	{
 		qWarning() << "Cannot open decoder context.";
-		m_AudioDecoderContext.reset();
+		mAudioDecoderContext.reset();
 		return false;
 	}
-	m_AudioOutput = a_PlaybackBuffer;
-	a_PlaybackBuffer->setDuration(static_cast<double>(m_Context->duration) / 1000000);
+	mAudioOutput = aPlaybackBuffer;
+	aPlaybackBuffer->setDuration(static_cast<double>(mContext->duration) / 1000000);
 	return true;
 }
 
@@ -585,19 +585,19 @@ bool Format::routeAudioTo(PlaybackBuffer * a_PlaybackBuffer)
 
 
 bool Format::feedRawAudioDataTo(
-	std::function<void (const void * /* a_Data */, int /* a_Size */)> a_Function,
-	double & a_LengthSec
+	std::function<void (const void * /* aData */, int /* aSize */)> aFunction,
+	double & aLengthSec
 )
 {
-	assert(m_AudioOutput == nullptr);  // Cannot work as both decoder and feeder
+	assert(mAudioOutput == nullptr);  // Cannot work as both decoder and feeder
 
 	// Find the stream to feed:
 	AVCodec * audioDecoder = nullptr;
-	m_AudioStreamIdx = av_find_best_stream(m_Context, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
-	if (m_AudioStreamIdx < 0)
+	mAudioStreamIdx = av_find_best_stream(mContext, AVMEDIA_TYPE_AUDIO, -1, -1, &audioDecoder, 0);
+	if (mAudioStreamIdx < 0)
 	{
-		qWarning() << "Failed to find an audio stream in the file: " << m_AudioStreamIdx;
-		m_AudioStreamIdx = -1;
+		qWarning() << "Failed to find an audio stream in the file: " << mAudioStreamIdx;
+		mAudioStreamIdx = -1;
 		return false;
 	}
 
@@ -606,17 +606,17 @@ bool Format::feedRawAudioDataTo(
 	qint64 maxPts = 0;
 	while (true)
 	{
-		auto ret = av_read_frame(m_Context, &packet);
+		auto ret = av_read_frame(mContext, &packet);
 		if (ret < 0)
 		{
 			break;
 		}
 
-		if (packet.stream_index == m_AudioStreamIdx)
+		if (packet.stream_index == mAudioStreamIdx)
 		{
 			if (packet.size >= 0)
 			{
-				a_Function(packet.data, packet.size);
+				aFunction(packet.data, packet.size);
 			}
 			else
 			{
@@ -631,8 +631,8 @@ bool Format::feedRawAudioDataTo(
 	}
 	if (maxPts > 0)
 	{
-		auto stream = m_Context->streams[m_AudioStreamIdx];
-		a_LengthSec = static_cast<double>(maxPts) * stream->time_base.num / stream->time_base.den;
+		auto stream = mContext->streams[mAudioStreamIdx];
+		aLengthSec = static_cast<double>(maxPts) * stream->time_base.num / stream->time_base.den;
 	}
 	qDebug() << "Feeding done.";
 	return true;
@@ -644,15 +644,15 @@ bool Format::feedRawAudioDataTo(
 
 void Format::decode()
 {
-	assert(m_AudioOutput != nullptr);
-	assert(m_AudioDecoderContext != nullptr);
+	assert(mAudioOutput != nullptr);
+	assert(mAudioDecoderContext != nullptr);
 
 	AVPacket packet;
 	AVFrame * frame = av_frame_alloc();
-	m_ShouldTerminate = false;
-	while (!m_ShouldTerminate)
+	mShouldTerminate = false;
+	while (!mShouldTerminate)
 	{
-		auto ret = av_read_frame(m_Context, &packet);
+		auto ret = av_read_frame(mContext, &packet);
 		if (ret < 0)
 		{
 			// Normal condition on EOF
@@ -660,9 +660,9 @@ void Format::decode()
 			return;
 		}
 
-		if (packet.stream_index == m_AudioStreamIdx)
+		if (packet.stream_index == mAudioStreamIdx)
 		{
-			ret = avcodec_send_packet(m_AudioDecoderContext->m_Context, &packet);
+			ret = avcodec_send_packet(mAudioDecoderContext->mContext, &packet);
 			if (ret < 0)
 			{
 				qWarning() << "Error while sending a packet to the decoder: " << ret;
@@ -671,7 +671,7 @@ void Format::decode()
 
 			while (ret >= 0)
 			{
-				ret = avcodec_receive_frame(m_AudioDecoderContext->m_Context, frame);
+				ret = avcodec_receive_frame(mAudioDecoderContext->mContext, frame);
 				if ((ret == AVERROR(EAGAIN)) || (ret == AVERROR_EOF))
 				{
 					// Need more data / explicit EOF found
@@ -694,9 +694,9 @@ void Format::decode()
 
 
 
-std::shared_ptr<PlaybackBuffer> Format::decodeEntireAudio(const QAudioFormat & a_Format)
+std::shared_ptr<PlaybackBuffer> Format::decodeEntireAudio(const QAudioFormat & aFormat)
 {
-	auto res = std::make_shared<PlaybackBuffer>(a_Format);
+	auto res = std::make_shared<PlaybackBuffer>(aFormat);
 	routeAudioTo(res.get());
 	decode();
 	return res;
@@ -706,27 +706,27 @@ std::shared_ptr<PlaybackBuffer> Format::decodeEntireAudio(const QAudioFormat & a
 
 
 
-void Format::outputAudioData(AVFrame * a_Frame)
+void Format::outputAudioData(AVFrame * aFrame)
 {
-	if (m_Resampler == nullptr)
+	if (mResampler == nullptr)
 	{
-		m_Resampler.reset(Resampler::create(
-			a_Frame->channel_layout,
-			a_Frame->sample_rate,
-			static_cast<AVSampleFormat>(a_Frame->format),
-			m_AudioOutput->format()
+		mResampler.reset(Resampler::create(
+			aFrame->channel_layout,
+			aFrame->sample_rate,
+			static_cast<AVSampleFormat>(aFrame->format),
+			mAudioOutput->format()
 		));
-		if (m_Resampler == nullptr)
+		if (mResampler == nullptr)
 		{
 			qWarning() << "Cannot create audio resampler.";
-			m_ShouldTerminate = true;
-			m_AudioOutput->abortWithError();
+			mShouldTerminate = true;
+			mAudioOutput->abortWithError();
 			return;
 		}
 	}
-	auto out = m_Resampler->convert(const_cast<const uint8_t **>(a_Frame->data), a_Frame->nb_samples);
-	auto numBytes = out.second * static_cast<size_t>(m_AudioOutput->format().bytesPerFrame());
-	m_ShouldTerminate = !m_AudioOutput->writeDecodedAudio(out.first, numBytes);
+	auto out = mResampler->convert(const_cast<const uint8_t **>(aFrame->data), aFrame->nb_samples);
+	auto numBytes = out.second * static_cast<size_t>(mAudioOutput->format().bytesPerFrame());
+	mShouldTerminate = !mAudioOutput->writeDecodedAudio(out.first, numBytes);
 }
 
 
@@ -750,13 +750,13 @@ class InputFormats
 				auto ext = QString::fromLocal8Bit(fmt->extensions);
 				for (const auto & e: ext.split(','))
 				{
-					m_Extensions.push_back(e.toLower());
+					mExtensions.push_back(e.toLower());
 				}
 			}
 		}
 	}
 
-	std::vector<QString> m_Extensions;
+	std::vector<QString> mExtensions;
 
 public:
 
@@ -767,10 +767,10 @@ public:
 	}
 
 	/** Returns true iff the extension is supported by the input formats. */
-	bool isExtensionSupported(const QString & a_Extension)
+	bool isExtensionSupported(const QString & aExtension)
 	{
-		auto lcExt = a_Extension.toLower();
-		for (const auto & ext: m_Extensions)
+		auto lcExt = aExtension.toLower();
+		for (const auto & ext: mExtensions)
 		{
 			if (lcExt == ext)
 			{
@@ -788,10 +788,10 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 // AVPP namespace:
 
-bool isExtensionSupported(const QString & a_Extension)
+bool isExtensionSupported(const QString & aExtension)
 {
-	Q_UNUSED(a_Extension);
-	return InputFormats::get().isExtensionSupported(a_Extension);
+	Q_UNUSED(aExtension);
+	return InputFormats::get().isExtensionSupported(aExtension);
 }
 
 

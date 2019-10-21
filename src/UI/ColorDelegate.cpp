@@ -7,9 +7,9 @@
 
 
 
-ColorDelegate::ColorDelegate(const QString & a_ColorDialogCaption, QObject * a_Parent):
-	Super(a_Parent),
-	m_ColorDialogCaption(a_ColorDialogCaption)
+ColorDelegate::ColorDelegate(const QString & aColorDialogCaption, QObject * aParent):
+	Super(aParent),
+	mColorDialogCaption(aColorDialogCaption)
 {
 }
 
@@ -18,22 +18,22 @@ ColorDelegate::ColorDelegate(const QString & a_ColorDialogCaption, QObject * a_P
 
 
 void ColorDelegate::paint(
-	QPainter * a_Painter,
-	const QStyleOptionViewItem & a_Option,
-	const QModelIndex & a_Index
+	QPainter * aPainter,
+	const QStyleOptionViewItem & aOption,
+	const QModelIndex & aIndex
 ) const
 {
 	// Draw the button:
 	QStyleOptionButton button;
-	button.rect = buttonRectFromItemRect(a_Option.rect);
+	button.rect = buttonRectFromItemRect(aOption.rect);
 	button.text = "...";
 	button.state = QStyle::State_Enabled;
-	QApplication::style()->drawControl(QStyle::CE_PushButton, &button, a_Painter);
+	QApplication::style()->drawControl(QStyle::CE_PushButton, &button, aPainter);
 
 	// Draw the text, using the original delegate:
-	QStyleOptionViewItem txt(a_Option);
+	QStyleOptionViewItem txt(aOption);
 	txt.rect.setWidth(txt.rect.width() - txt.rect.height() - 1);
-	Super::paint(a_Painter, txt,a_Index);
+	Super::paint(aPainter, txt,aIndex);
 }
 
 
@@ -41,26 +41,26 @@ void ColorDelegate::paint(
 
 
 bool ColorDelegate::editorEvent(
-	QEvent * a_Event,
-	QAbstractItemModel * a_Model,
-	const QStyleOptionViewItem & a_Option,
-	const QModelIndex & a_Index
+	QEvent * aEvent,
+	QAbstractItemModel * aModel,
+	const QStyleOptionViewItem & aOption,
+	const QModelIndex & aIndex
 )
 {
-	if (a_Event->type() == QEvent::MouseButtonRelease)
+	if (aEvent->type() == QEvent::MouseButtonRelease)
 	{
-		auto evt = reinterpret_cast<QMouseEvent *>(a_Event);
-		auto btnRect = buttonRectFromItemRect(a_Option.rect);
+		auto evt = reinterpret_cast<QMouseEvent *>(aEvent);
+		auto btnRect = buttonRectFromItemRect(aOption.rect);
 		if (btnRect.contains(evt->pos()))
 		{
 			auto c = QColorDialog::getColor(
-				QColor(a_Model->data(a_Index).toString()),
+				QColor(aModel->data(aIndex).toString()),
 				nullptr,  // TODO: A proper parent
-				m_ColorDialogCaption
+				mColorDialogCaption
 			);
 			if (c.isValid())
 			{
-				a_Model->setData(a_Index, c.name());
+				aModel->setData(aIndex, c.name());
 			}
 			return true;
 		}
@@ -73,12 +73,12 @@ bool ColorDelegate::editorEvent(
 
 
 
-QRect ColorDelegate::buttonRectFromItemRect(const QRect & a_ItemRect) const
+QRect ColorDelegate::buttonRectFromItemRect(const QRect & aItemRect) const
 {
 	return QRect (
-		a_ItemRect.right() - a_ItemRect.height(),  // Left
-		a_ItemRect.top(),                          // Top
-		a_ItemRect.height(),                       // Width
-		a_ItemRect.height()                        // Height
+		aItemRect.right() - aItemRect.height(),  // Left
+		aItemRect.top(),                          // Top
+		aItemRect.height(),                       // Width
+		aItemRect.height()                        // Height
 	);
 }

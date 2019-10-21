@@ -12,9 +12,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Template:
 
-Template::Template(qlonglong a_DbRowId):
-	m_DbRowId(a_DbRowId),
-	m_BgColor(255, 255, 255)
+Template::Template(qlonglong aDbRowId):
+	mDbRowId(aDbRowId),
+	mBgColor(255, 255, 255)
 {
 }
 
@@ -22,11 +22,11 @@ Template::Template(qlonglong a_DbRowId):
 
 
 
-Template::Template(qlonglong a_DbRowId, QString && a_DisplayName, QString && a_Notes):
-	m_DbRowId(a_DbRowId),
-	m_DisplayName(std::move(a_DisplayName)),
-	m_Notes(std::move(a_Notes)),
-	m_BgColor(255, 255, 255)
+Template::Template(qlonglong aDbRowId, QString && aDisplayName, QString && aNotes):
+	mDbRowId(aDbRowId),
+	mDisplayName(std::move(aDisplayName)),
+	mNotes(std::move(aNotes)),
+	mBgColor(255, 255, 255)
 {
 }
 
@@ -34,58 +34,58 @@ Template::Template(qlonglong a_DbRowId, QString && a_DisplayName, QString && a_N
 
 
 
-void Template::setDbRowId(qlonglong a_DbRowId)
+void Template::setDbRowId(qlonglong aDbRowId)
 {
-	assert(m_DbRowId == -1);  // Cannot already have a RowID
-	m_DbRowId = a_DbRowId;
+	assert(mDbRowId == -1);  // Cannot already have a RowID
+	mDbRowId = aDbRowId;
 }
 
 
 
 
 
-void Template::appendItem(FilterPtr a_Filter)
+void Template::appendItem(FilterPtr aFilter)
 {
-	m_Items.push_back(a_Filter);
+	mItems.push_back(aFilter);
 }
 
 
 
 
 
-void Template::insertItem(FilterPtr a_Item, int a_DstIndex)
+void Template::insertItem(FilterPtr aItem, int aDstIndex)
 {
-	m_Items.insert(m_Items.begin() + a_DstIndex, a_Item);
+	mItems.insert(mItems.begin() + aDstIndex, aItem);
 }
 
 
 
 
 
-void Template::delItem(int a_Index)
+void Template::delItem(int aIndex)
 {
-	assert(a_Index >= 0);
-	assert(static_cast<size_t>(a_Index) < m_Items.size());
-	m_Items.erase(m_Items.begin() + a_Index);
+	assert(aIndex >= 0);
+	assert(static_cast<size_t>(aIndex) < mItems.size());
+	mItems.erase(mItems.begin() + aIndex);
 }
 
 
 
 
 
-bool Template::removeAllFilterRefs(FilterPtr a_Filter)
+bool Template::removeAllFilterRefs(FilterPtr aFilter)
 {
-	auto itr = std::remove_if(m_Items.begin(), m_Items.end(),
-		[a_Filter](FilterPtr a_CBFilter)
+	auto itr = std::remove_if(mItems.begin(), mItems.end(),
+		[aFilter](FilterPtr aCBFilter)
 		{
-			return (a_Filter == a_CBFilter);
+			return (aFilter == aCBFilter);
 		}
 	);
-	if (itr == m_Items.end())
+	if (itr == mItems.end())
 	{
 		return false;
 	}
-	m_Items.erase(itr, m_Items.end());
+	mItems.erase(itr, mItems.end());
 	return true;
 }
 
@@ -93,17 +93,17 @@ bool Template::removeAllFilterRefs(FilterPtr a_Filter)
 
 
 
-void Template::replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters)
+void Template::replaceSameFilters(const std::vector<FilterPtr> & aKnownFilters)
 {
 	// Build a hash-map of the known filters:
 	std::map<QByteArray, FilterPtr> knownFiltersByHash;
-	for (const auto & filter: a_KnownFilters)
+	for (const auto & filter: aKnownFilters)
 	{
 		knownFiltersByHash[filter->hash()] = filter;
 	}
 
 	// Replace:
-	for (auto itr = m_Items.begin(), end = m_Items.end(); itr != end; ++itr)
+	for (auto itr = mItems.begin(), end = mItems.end(); itr != end; ++itr)
 	{
 		auto knownItr = knownFiltersByHash.find((*itr)->hash());
 		if (knownItr != knownFiltersByHash.end())
@@ -117,14 +117,14 @@ void Template::replaceSameFilters(const std::vector<FilterPtr> & a_KnownFilters)
 
 
 
-bool Template::replaceFilter(const Filter & a_From, Filter & a_To)
+bool Template::replaceFilter(const Filter & aFrom, Filter & aTo)
 {
 	bool hasReplaced = false;
-	for (auto itr = m_Items.begin(), end = m_Items.end(); itr != end; ++itr)
+	for (auto itr = mItems.begin(), end = mItems.end(); itr != end; ++itr)
 	{
-		if (itr->get() == &a_From)
+		if (itr->get() == &aFrom)
 		{
-			*itr = a_To.shared_from_this();
+			*itr = aTo.shared_from_this();
 			hasReplaced = true;
 		}
 	}
@@ -135,12 +135,12 @@ bool Template::replaceFilter(const Filter & a_From, Filter & a_To)
 
 
 
-void Template::swapItemsByIdx(size_t a_Index1, size_t a_Index2)
+void Template::swapItemsByIdx(size_t aIndex1, size_t aIndex2)
 {
-	assert(a_Index1 < m_Items.size());
-	assert(a_Index2 < m_Items.size());
+	assert(aIndex1 < mItems.size());
+	assert(aIndex2 < mItems.size());
 
-	std::swap(m_Items[a_Index1], m_Items[a_Index2]);
+	std::swap(mItems[aIndex1], mItems[aIndex2]);
 }
 
 
@@ -151,10 +151,10 @@ void Template::swapItemsByIdx(size_t a_Index1, size_t a_Index2)
 ////////////////////////////////////////////////////////////////////////////////
 // TemplateXmlExport:
 
-QByteArray TemplateXmlExport::run(const std::vector<TemplatePtr> & a_Templates)
+QByteArray TemplateXmlExport::run(const std::vector<TemplatePtr> & aTemplates)
 {
 	TemplateXmlExport exporter;
-	return exporter.exportAll(a_Templates);
+	return exporter.exportAll(aTemplates);
 }
 
 
@@ -163,27 +163,27 @@ QByteArray TemplateXmlExport::run(const std::vector<TemplatePtr> & a_Templates)
 
 TemplateXmlExport::TemplateXmlExport()
 {
-	m_Document.appendChild(m_Document.createComment("These are templates exported from SkauTan. https://github.com/madmaxoft/SkauTan"));
+	mDocument.appendChild(mDocument.createComment("These are templates exported from SkauTan. https://github.com/madmaxoft/SkauTan"));
 }
 
 
 
 
 
-QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & a_Templates)
+QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & aTemplates)
 {
-	auto root = m_Document.createElement("SkauTanTemplates");
-	m_Document.appendChild(root);
-	for (const auto & tmpl: a_Templates)
+	auto root = mDocument.createElement("SkauTanTemplates");
+	mDocument.appendChild(root);
+	for (const auto & tmpl: aTemplates)
 	{
-		auto templateElement = m_Document.createElement("SkauTanTemplate");
+		auto templateElement = mDocument.createElement("SkauTanTemplate");
 		templateElement.setAttribute("name", tmpl->displayName());
 		templateElement.setAttribute("notes", tmpl->notes());
 		templateElement.setAttribute("bgColor", tmpl->bgColor().name());
-		auto itemsElement = m_Document.createElement("items");
+		auto itemsElement = mDocument.createElement("items");
 		for (const auto & item: tmpl->items())
 		{
-			auto itemElement = m_Document.createElement("item");
+			auto itemElement = mDocument.createElement("item");
 			itemElement.setAttribute("name", item->displayName());
 			itemElement.setAttribute("notes", item->notes());
 			itemElement.setAttribute("bgColor", item->bgColor().name());
@@ -195,7 +195,7 @@ QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & a_Templ
 			{
 				itemElement.setAttribute("durationLimit", item->durationLimit().value());
 			}
-			auto filterElement = m_Document.createElement("filter");
+			auto filterElement = mDocument.createElement("filter");
 			addNodeToDom(item->rootNode(), filterElement);
 			itemElement.appendChild(filterElement);
 			itemsElement.appendChild(itemElement);
@@ -204,25 +204,25 @@ QByteArray TemplateXmlExport::exportAll(const std::vector<TemplatePtr> & a_Templ
 		root.appendChild(templateElement);
 	}
 
-	return m_Document.toByteArray();
+	return mDocument.toByteArray();
 }
 
 
 
 
 
-void TemplateXmlExport::addNodeToDom(const Filter::NodePtr && a_Node, QDomElement & a_ParentElement)
+void TemplateXmlExport::addNodeToDom(const Filter::NodePtr && aNode, QDomElement & aParentElement)
 {
 	QString elementName;
-	switch (a_Node->kind())
+	switch (aNode->kind())
 	{
 		case Filter::Node::nkComparison:
 		{
-			auto cmpElement = m_Document.createElement("comparison");
-			a_ParentElement.appendChild(cmpElement);
-			cmpElement.setAttribute("songProperty", a_Node->songProperty());
-			cmpElement.setAttribute("comparison", a_Node->comparison());
-			cmpElement.setAttribute("value", a_Node->value().toString());
+			auto cmpElement = mDocument.createElement("comparison");
+			aParentElement.appendChild(cmpElement);
+			cmpElement.setAttribute("songProperty", aNode->songProperty());
+			cmpElement.setAttribute("comparison", aNode->comparison());
+			cmpElement.setAttribute("value", aNode->value().toString());
 			return;
 		}
 		case Filter::Node::nkAnd:
@@ -237,9 +237,9 @@ void TemplateXmlExport::addNodeToDom(const Filter::NodePtr && a_Node, QDomElemen
 		}
 	}
 	assert(!elementName.isEmpty());
-	auto combinationElement = m_Document.createElement(elementName);
-	a_ParentElement.appendChild(combinationElement);
-	for (const auto & ch: a_Node->children())
+	auto combinationElement = mDocument.createElement(elementName);
+	aParentElement.appendChild(combinationElement);
+	for (const auto & ch: aNode->children())
 	{
 		addNodeToDom(std::move(ch), combinationElement);
 	}
@@ -253,10 +253,10 @@ void TemplateXmlExport::addNodeToDom(const Filter::NodePtr && a_Node, QDomElemen
 ////////////////////////////////////////////////////////////////////////////////
 // TemplateXmlImport:
 
-std::vector<TemplatePtr> TemplateXmlImport::run(const QByteArray & a_XmlData)
+std::vector<TemplatePtr> TemplateXmlImport::run(const QByteArray & aXmlData)
 {
 	TemplateXmlImport import;
-	return import.importAll(a_XmlData);
+	return import.importAll(aXmlData);
 }
 
 
@@ -271,18 +271,18 @@ TemplateXmlImport::TemplateXmlImport()
 
 
 
-std::vector<TemplatePtr> TemplateXmlImport::importAll(const QByteArray & a_XmlData)
+std::vector<TemplatePtr> TemplateXmlImport::importAll(const QByteArray & aXmlData)
 {
 	std::vector<TemplatePtr> res;
 	QString errMsg;
 	int errLine, errColumn;
-	if (!m_Document.setContent(a_XmlData, false, &errMsg, &errLine, &errColumn))
+	if (!mDocument.setContent(aXmlData, false, &errMsg, &errLine, &errColumn))
 	{
 		qWarning() << "Failed to parse the XML: Line "
 			<< errLine << ", column " << errColumn << ", msg: " << errMsg;
 		return res;
 	}
-	auto docElement = m_Document.documentElement();
+	auto docElement = mDocument.documentElement();
 	if (docElement.tagName() != "SkauTanTemplates")
 	{
 		qWarning() << "The root element is not <SkauTanTemplates>. Got " << docElement.tagName();
@@ -303,12 +303,12 @@ std::vector<TemplatePtr> TemplateXmlImport::importAll(const QByteArray & a_XmlDa
 
 
 
-TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlElement)
+TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & aTemplateXmlElement)
 {
 	auto res = std::make_shared<Template>(
 		-1,
-		a_TemplateXmlElement.attribute("name"),
-		a_TemplateXmlElement.attribute("notes")
+		aTemplateXmlElement.attribute("name"),
+		aTemplateXmlElement.attribute("notes")
 	);
 	if (res == nullptr)
 	{
@@ -316,14 +316,14 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 	}
 
 	// Read the template's bgColor:
-	QColor c(a_TemplateXmlElement.attribute("bgColor"));
+	QColor c(aTemplateXmlElement.attribute("bgColor"));
 	if (c.isValid())
 	{
 		res->setBgColor(c);
 	}
 
 	// Read the template's items:
-	auto items = a_TemplateXmlElement.firstChildElement("items");
+	auto items = aTemplateXmlElement.firstChildElement("items");
 	if (items.isNull())
 	{
 		qDebug() << "Template item " << res->displayName() << " contains no <items>.";
@@ -344,13 +344,13 @@ TemplatePtr TemplateXmlImport::readTemplate(const QDomElement & a_TemplateXmlEle
 
 
 
-FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlElement)
+FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & aItemXmlElement)
 {
 	auto res = std::make_shared<Filter>(
 		-1,
-		a_ItemXmlElement.attribute("name"),
-		a_ItemXmlElement.attribute("notes"),
-		(a_ItemXmlElement.attribute("isFavorite", "0") == "1"),
+		aItemXmlElement.attribute("name"),
+		aItemXmlElement.attribute("notes"),
+		(aItemXmlElement.attribute("isFavorite", "0") == "1"),
 		QColor(),
 		DatedOptional<double>()
 	);
@@ -360,14 +360,14 @@ FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlEleme
 	}
 
 	// Read the item's bgColor:
-	QColor c(a_ItemXmlElement.attribute("bgColor"));
+	QColor c(aItemXmlElement.attribute("bgColor"));
 	if (c.isValid())
 	{
 		res->setBgColor(c);
 	}
 
 	// Read the item's durationLimit:
-	auto durationLimitStr = a_ItemXmlElement.attribute("durationLimit");
+	auto durationLimitStr = aItemXmlElement.attribute("durationLimit");
 	bool isOK;
 	auto durationLimit = durationLimitStr.toDouble(&isOK);
 	if (isOK)
@@ -376,7 +376,7 @@ FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlEleme
 	}
 
 	// Read the item's filter nodes:
-	auto fe = a_ItemXmlElement.firstChildElement("filter");
+	auto fe = aItemXmlElement.firstChildElement("filter");
 	if (fe.isNull())
 	{
 		qWarning() << "There's no <filter> element in filter " << res->displayName();
@@ -402,17 +402,17 @@ FilterPtr TemplateXmlImport::readTemplateItem(const QDomElement & a_ItemXmlEleme
 
 
 
-Filter::NodePtr TemplateXmlImport::readTemplateFilterNode(const QDomElement & a_FilterXmlElement)
+Filter::NodePtr TemplateXmlImport::readTemplateFilterNode(const QDomElement & aFilterXmlElement)
 {
 	// Read a comparison filter node:
-	const auto & tagName = a_FilterXmlElement.tagName();
+	const auto & tagName = aFilterXmlElement.tagName();
 	if (tagName == "comparison")
 	{
 		try
 		{
-			auto songProperty = Filter::Node::intToSongProperty(a_FilterXmlElement.attribute("songProperty").toInt());
-			auto comparison   = Filter::Node::intToComparison  (a_FilterXmlElement.attribute("comparison"  ).toInt());
-			auto value = a_FilterXmlElement.attribute("value");
+			auto songProperty = Filter::Node::intToSongProperty(aFilterXmlElement.attribute("songProperty").toInt());
+			auto comparison   = Filter::Node::intToComparison  (aFilterXmlElement.attribute("comparison"  ).toInt());
+			auto value = aFilterXmlElement.attribute("value");
 			return std::make_shared<Filter::Node>(songProperty, comparison, value);
 		}
 		catch (const std::exception & exc)
@@ -440,7 +440,7 @@ Filter::NodePtr TemplateXmlImport::readTemplateFilterNode(const QDomElement & a_
 	auto res = std::make_shared<Filter::Node>(kind);
 
 	// Read the children nodes:
-	for (auto ce = a_FilterXmlElement.firstChildElement(); !ce.isNull(); ce = ce.nextSiblingElement())
+	for (auto ce = aFilterXmlElement.firstChildElement(); !ce.isNull(); ce = ce.nextSiblingElement())
 	{
 		auto child = readTemplateFilterNode(ce);
 		if (child == nullptr)

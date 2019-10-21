@@ -7,13 +7,13 @@
 
 
 static void midiPortErrorCallback(
-	RtMidiError::Type a_Type,
-	const std::string & a_ErrorText,
-	void * a_UserData
+	RtMidiError::Type aType,
+	const std::string & aErrorText,
+	void * aUserData
 )
 {
-	auto port = static_cast<MidiPort *>(a_UserData);
-	qWarning() << "MIDI port error: port " << port->portName().c_str() << ", error type " << a_Type << ", msg " << a_ErrorText.c_str();
+	auto port = static_cast<MidiPort *>(aUserData);
+	qWarning() << "MIDI port error: port " << port->portName().c_str() << ", error type " << aType << ", msg " << aErrorText.c_str();
 	emit port->unplugged();
 };
 
@@ -24,8 +24,8 @@ static void midiPortErrorCallback(
 ////////////////////////////////////////////////////////////////////////////////
 // MidiPort:
 
-MidiPort::MidiPort(QObject * a_Parent):
-	Super(a_Parent)
+MidiPort::MidiPort(QObject * aParent):
+	Super(aParent)
 {
 
 }
@@ -83,33 +83,33 @@ MidiPortIn::~MidiPortIn()
 
 
 
-bool MidiPortIn::open(unsigned a_PortNumber)
+bool MidiPortIn::open(unsigned aPortNumber)
 {
-	if (m_MidiIn != nullptr)
+	if (mMidiIn != nullptr)
 	{
 		emit unplugged();
-		m_MidiIn.reset(nullptr);
+		mMidiIn.reset(nullptr);
 	}
 
-	m_MidiIn.reset(new RtMidiIn);
-	auto portName = m_MidiIn->getPortName(a_PortNumber);
+	mMidiIn.reset(new RtMidiIn);
+	auto portName = mMidiIn->getPortName(aPortNumber);
 	try
 	{
-		m_MidiIn->openPort(a_PortNumber, portName);
-		m_MidiIn->setCallback(&MidiPortIn::midiPortCallback, this);
-		m_MidiIn->ignoreTypes(false, true, false);
-		m_MidiIn->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
+		mMidiIn->openPort(aPortNumber, portName);
+		mMidiIn->setCallback(&MidiPortIn::midiPortCallback, this);
+		mMidiIn->ignoreTypes(false, true, false);
+		mMidiIn->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
 	}
-	catch (const RtMidiError & a_Error)
+	catch (const RtMidiError & aError)
 	{
 		qWarning() << "Error while opening MIDI IN port "
-			<< a_PortNumber << " (" << portName.c_str() << "): "
-			<< a_Error.what();
-		m_MidiIn.reset(nullptr);
+			<< aPortNumber << " (" << portName.c_str() << "): "
+			<< aError.what();
+		mMidiIn.reset(nullptr);
 		return false;
 	}
-	m_PortNumber = a_PortNumber;
-	m_PortName = portName;
+	mPortNumber = aPortNumber;
+	mPortName = portName;
 	return true;
 }
 
@@ -146,31 +146,31 @@ MidiPortOut::~MidiPortOut()
 
 
 
-bool MidiPortOut::open(unsigned a_PortNumber)
+bool MidiPortOut::open(unsigned aPortNumber)
 {
-	if (m_MidiOut != nullptr)
+	if (mMidiOut != nullptr)
 	{
 		emit unplugged();
-		m_MidiOut.reset(nullptr);
+		mMidiOut.reset(nullptr);
 	}
 
-	m_MidiOut.reset(new RtMidiOut);
-	auto portName = m_MidiOut->getPortName(a_PortNumber);
+	mMidiOut.reset(new RtMidiOut);
+	auto portName = mMidiOut->getPortName(aPortNumber);
 	try
 	{
-		m_MidiOut->openPort(a_PortNumber, portName);
-		m_MidiOut->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
+		mMidiOut->openPort(aPortNumber, portName);
+		mMidiOut->setErrorCallback(midiPortErrorCallback, static_cast<MidiPort *>(this));
 	}
-	catch (const RtMidiError & a_Error)
+	catch (const RtMidiError & aError)
 	{
 		qWarning() << "Error while opening MIDI OUT port "
-			<< a_PortNumber << " (" << portName.c_str() << "): "
-			<< a_Error.what();
-		m_MidiOut.reset(nullptr);
+			<< aPortNumber << " (" << portName.c_str() << "): "
+			<< aError.what();
+		mMidiOut.reset(nullptr);
 		return false;
 	}
-	m_PortNumber = a_PortNumber;
-	m_PortName = portName;
+	mPortNumber = aPortNumber;
+	mPortName = portName;
 	return true;
 }
 
@@ -178,15 +178,15 @@ bool MidiPortOut::open(unsigned a_PortNumber)
 
 
 
-void MidiPortOut::sendMessage(const std::vector<unsigned char> & a_Message)
+void MidiPortOut::sendMessage(const std::vector<unsigned char> & aMessage)
 {
 	try
 	{
-		m_MidiOut->sendMessage(&a_Message);
+		mMidiOut->sendMessage(&aMessage);
 	}
-	catch (const RtMidiError & a_Error)
+	catch (const RtMidiError & aError)
 	{
-		qDebug() << "MIDI OUT error (port " << m_PortName.c_str() << "): " << a_Error.what();
+		qDebug() << "MIDI OUT error (port " << mPortName.c_str() << "): " << aError.what();
 		emit unplugged();
 	}
 }

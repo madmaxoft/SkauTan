@@ -29,7 +29,7 @@ class BackgroundTempoDetector:
 public:
 
 	/** Creates a new stopped instance. */
-	BackgroundTempoDetector(ComponentCollection & a_Components);
+	BackgroundTempoDetector(ComponentCollection & aComponents);
 
 	/** Starts the repeater.
 	Ignored if already started. */
@@ -40,27 +40,27 @@ public:
 	void stop();
 
 	/** Returns true if there's a task currently being executed. */
-	bool isRunning() { return m_IsRunning.load(); }
+	bool isRunning() { return mIsRunning.load(); }
 
 
 protected:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** True if there's a TempoDetectTask queued / running in the background. */
-	std::atomic<bool> m_IsRunning;
+	std::atomic<bool> mIsRunning;
 
 	/** If true, the enqueueing loop will not enqueue any more tasks and will terminate after the current
 	detection finishes. */
-	std::atomic<bool> m_ShouldAbort;
+	std::atomic<bool> mShouldAbort;
 
 	/** The songs that have failed to provide a tempo; these will be skipped until program restart.
-	Protected against multithreaded access by m_MtxFailedSongs. */
-	std::set<Song::SharedDataPtr> m_FailedSongs;
+	Protected against multithreaded access by mMtxFailedSongs. */
+	std::set<Song::SharedDataPtr> mFailedSongs;
 
-	/** Mutex for protecting m_FailedSongs agains multithreaded access. */
-	std::mutex m_MtxFailedSongs;
+	/** Mutex for protecting mFailedSongs agains multithreaded access. */
+	std::mutex mMtxFailedSongs;
 
 
 	/** Picks a song from the DB that should be processed next.

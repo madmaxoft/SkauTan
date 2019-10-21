@@ -39,69 +39,69 @@ class DlgSongs:
 public:
 
 	/** Creates a new dialog instance.
-	a_FilterModel is the filter to apply to songs before displaying, nullptr to show all songs.
-	If a_ShowManipulators is true, the buttons for adding songs / adding to playlist are shown. */
+	aFilterModel is the filter to apply to songs before displaying, nullptr to show all songs.
+	If aShowManipulators is true, the buttons for adding songs / adding to playlist are shown. */
 	explicit DlgSongs(
-		ComponentCollection & a_Components,
-		std::unique_ptr<QSortFilterProxyModel> && a_FilterModel,
-		bool a_ShowManipulators,
-		QWidget * a_Parent
+		ComponentCollection & aComponents,
+		std::unique_ptr<QSortFilterProxyModel> && aFilterModel,
+		bool aShowManipulators,
+		QWidget * aParent
 	);
 
 	virtual ~DlgSongs() override;
 
 	/** Adds songs from the specified files to the DB, skipping non-existent files.
 	Duplicate files are skipped. */
-	void addFiles(const QStringList & a_FileNames);
+	void addFiles(const QStringList & aFileNames);
 
 	/** Adds songs from the specified path to the DB, recursively.
 	Skips duplicate files. */
-	void addFolderRecursive(const QString & a_Path);
+	void addFolderRecursive(const QString & aPath);
 
 
 private:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The Qt-managed UI.  */
-	std::unique_ptr<Ui::DlgSongs> m_UI;
+	std::unique_ptr<Ui::DlgSongs> mUI;
 
-	/** The filter that is applied to m_SongModel before displaying. */
-	std::unique_ptr<QSortFilterProxyModel> m_FilterModel;
+	/** The filter that is applied to mSongModel before displaying. */
+	std::unique_ptr<QSortFilterProxyModel> mFilterModel;
 
 	/** The songs, displayed in the UI. */
-	SongModel m_SongModel;
+	SongModel mSongModel;
 
 	/** The advanced filter for the song model. */
-	SongModelFilter m_SongModelFilter;
+	SongModelFilter mSongModelFilter;
 
 	/** Timer for updating the UI periodically with background-generated information. */
-	QTimer m_PeriodicUiUpdate;
+	QTimer mPeriodicUiUpdate;
 
 	/** Stores whether the LibraryRescan progress is shown or not; updated periodically. */
-	bool m_IsLibraryRescanShown;
+	bool mIsLibraryRescanShown;
 
 	/** The total number of songs that were in the LibraryRescan UI on the last update.
 	Used for detecting whether to change the UI. */
-	int m_LastLibraryRescanTotal;
+	int mLastLibraryRescanTotal;
 
 	/** The queue length in the LibraryRescan UI on the last update.
 	Used for detecting whether to change the UI. */
-	int m_LastLibraryRescanQueue;
+	int mLastLibraryRescanQueue;
 
-	/** The new search text to be set into m_SongModelFilter in periodic UI update.
+	/** The new search text to be set into mSongModelFilter in periodic UI update.
 	The text isn't set immediately to avoid slowdowns while still typing the string. */
-	QString m_NewSearchText;
+	QString mNewSearchText;
 
-	/** Number of ticks until m_NewSearchText is set into m_SongModelFilter in the periodic UI update.
+	/** Number of ticks until mNewSearchText is set into mSongModelFilter in the periodic UI update.
 	The text isn't set immediately to avoid slowdowns while still typing the string,
 	this counter goes from a fixed value down to zero on each periodic UI update and only when reaching zero
 	is the search text applied. */
-	int m_TicksUntilSetSearchText;
+	int mTicksUntilSetSearchText;
 
 	/** The context menu to display for rclk in tblSongs. */
-	std::unique_ptr<QMenu> m_ContextMenu;
+	std::unique_ptr<QMenu> mContextMenu;
 
 
 	/** Updates the UI related to song stats (count, filter) */
@@ -110,15 +110,15 @@ private:
 	/** Adds the filter items into the cbFilter UI, and sets up connections for the search and filter. */
 	void initFilterSearch();
 
-	/** Creates the m_ContextMenu. */
+	/** Creates the mContextMenu. */
 	void createContextMenu();
 
 	/** Returns the song represented by the specified index in tblSongs.
-	Translates the index through m_FilterModel and m_SongModelFilter. */
-	SongPtr songFromIndex(const QModelIndex & a_Index);
+	Translates the index through mFilterModel and mSongModelFilter. */
+	SongPtr songFromIndex(const QModelIndex & aIndex);
 
 	/** Sets the selected songs' local rating to the specified value. */
-	void rateSelectedSongs(double a_Rating);
+	void rateSelectedSongs(double aRating);
 
 
 private slots:
@@ -149,21 +149,21 @@ private slots:
 	void rescanMetadata();
 
 	/** Emitted by the model after the user edits a song. */
-	void modelSongEdited(SongPtr a_Song);
+	void modelSongEdited(SongPtr aSong);
 
 	/** Called periodically to update the UI with background-generated information. */
 	void periodicUiUpdate();
 
 	/** The user has chosen a filter from cbFilter.
-	Applies the filter to m_SongModelFilter. */
-	void filterChosen(int a_Index);
+	Applies the filter to mSongModelFilter. */
+	void filterChosen(int aIndex);
 
 	/** The user has edited the search text in leSearch.
-	Applies the search text to m_SongModelFilter. */
-	void searchTextEdited(const QString & a_NewText);
+	Applies the search text to mSongModelFilter. */
+	void searchTextEdited(const QString & aNewText);
 
 	/** Shows the tblSongs context menu at the specified position. */
-	void showSongsContextMenu(const QPoint & a_Pos);
+	void showSongsContextMenu(const QPoint & aPos);
 
 	/** Shows the DlgSongProperties for the (first) selected song. */
 	void showProperties();
@@ -187,10 +187,10 @@ private slots:
 signals:
 
 	/** Emitted when the user asks to add songs to the playlist. */
-	void addSongToPlaylist(SongPtr a_Song);
+	void addSongToPlaylist(SongPtr aSong);
 
 	/** Emitted when the user asks to insert songs into the playlist (after the current playlist selection). */
-	void insertSongToPlaylist(SongPtr a_Song);
+	void insertSongToPlaylist(SongPtr aSong);
 };
 
 

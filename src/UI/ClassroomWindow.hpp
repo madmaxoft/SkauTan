@@ -32,59 +32,59 @@ class ClassroomWindow:
 
 public:
 
-	explicit ClassroomWindow(ComponentCollection & a_Components);
+	explicit ClassroomWindow(ComponentCollection & aComponents);
 
 	~ClassroomWindow();
 
 	/** Sets the window to use for switching to the Playlist mode. */
-	void setPlaylistWindow(QWidget & a_PlaylistWindow);
+	void setPlaylistWindow(QWidget & aPlaylistWindow);
 
 
 private:
 
 	/** The Qt-managed UI. */
-	std::unique_ptr<Ui::ClassroomWindow> m_UI;
+	std::unique_ptr<Ui::ClassroomWindow> mUI;
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The timer used for periodic UI updates. */
-	QTimer m_UpdateTimer;
+	QTimer mUpdateTimer;
 
 	/** The window that will be shown when asked to switch to Playlist mode. */
-	QWidget * m_PlaylistWindow;
+	QWidget * mPlaylistWindow;
 
 	/** Set to true while updating the UI as a reaction to an internal event.
 	If true, the changes in the UI shouldn't be propagated further. */
-	bool m_IsInternalChange;
+	bool mIsInternalChange;
 
-	/** If positive, the number of m_UpdateTimer ticks until the current Duration Limit settings are applied.
+	/** If positive, the number of mUpdateTimer ticks until the current Duration Limit settings are applied.
 	Used by the leDurationLimit to apply the settings only after some time after the last edit,
 	to avoid applying a limit parsed from number in the middle of editing. */
-	int m_TicksToDurationLimitApply;
+	int mTicksToDurationLimitApply;
 
 	/** The song on which the context menu actions are applied. */
-	std::shared_ptr<Song> m_ContextSong;
+	std::shared_ptr<Song> mContextSong;
 
 	/** All the songs matching the current filter.
 	Updated when the filter is chosen by the user, in updateAllFilterSongs().
-	Used to populate the song list, after post-filtering with m_SearchFilter, in applySearchFilterToSongs(). */
-	std::vector<std::shared_ptr<Song>> m_AllFilterSongs;
+	Used to populate the song list, after post-filtering with mSearchFilter, in applySearchFilterToSongs(). */
+	std::vector<std::shared_ptr<Song>> mAllFilterSongs;
 
 	/** The search string entered by the user to filter out songs.
 	Updated immediately on UI change, but applied with a delay not to slow down the UI. */
-	QString m_NewSearchText;
+	QString mNewSearchText;
 
 	/** The compiled search string entered by the user to filter out songs. */
-	QRegularExpression m_SearchFilter;
+	QRegularExpression mSearchFilter;
 
-	/** Number of periodicUpradeUi()'s ticks before m_NewSearchText is applied from the lineedit to the*/
-	int m_TicksUntilSetSearchText;
+	/** Number of periodicUpradeUi()'s ticks before mNewSearchText is applied from the lineedit to the*/
+	int mTicksUntilSetSearchText;
 
 	// The DJControllers registrations:
-	DJControllers::KeyHandlerRegPtr    m_DjKeyHandler;
-	DJControllers::SliderHandlerRegPtr m_DjSliderHandler;
-	DJControllers::WheelHandlerRegPtr  m_DjWheelHandler;
+	DJControllers::KeyHandlerRegPtr    mDjKeyHandler;
+	DJControllers::SliderHandlerRegPtr mDjSliderHandler;
+	DJControllers::WheelHandlerRegPtr  mDjWheelHandler;
 
 
 	/** Updates the list of filters in lwFilters. */
@@ -95,32 +95,32 @@ private:
 
 	/** Adds the specified song to the playlist and starts playing it.
 	If another song is currently playing, fade-out is used for it. */
-	void startPlayingSong(std::shared_ptr<Song> a_Song);
+	void startPlayingSong(std::shared_ptr<Song> aSong);
 
 	/** Applies the settings in the UI related to Duration Limit to the currently playing track. */
 	void applyDurationLimitSettings();
 
 	/** Updates the list item by the current data from its linked Song. */
-	void updateSongItem(QListWidgetItem & a_Item);
+	void updateSongItem(QListWidgetItem & aItem);
 
 	/** Updates the list item representing the specified song by the song current data.
 	If the song is not represented by any item, ignored silently. */
-	void updateSongItem(Song & a_Song);
+	void updateSongItem(Song & aSong);
 
-	/** Sets the background color of m_ContextSong. */
-	void setContextSongBgColor(QColor a_BgColor);
+	/** Sets the background color of mContextSong. */
+	void setContextSongBgColor(QColor aBgColor);
 
-	/** Sets the rating of m_ContextSong. */
-	void rateContextSong(double a_LocalRating);
+	/** Sets the rating of mContextSong. */
+	void rateContextSong(double aLocalRating);
 
 	/** Returns the list item representing the given song, or nullptr if no such item. */
-	QListWidgetItem * itemFromSong(Song & a_Song);
+	QListWidgetItem * itemFromSong(Song & aSong);
 
 	/** Shows the context menu for a song at the specified position.
-	The menu items act on m_ContextSong (so that this can be reused from multiple song sources). */
-	void showSongContextMenu(const QPoint & a_Pos, std::shared_ptr<Song> a_Song);
+	The menu items act on mContextSong (so that this can be reused from multiple song sources). */
+	void showSongContextMenu(const QPoint & aPos, std::shared_ptr<Song> aSong);
 
-	/** Updates lwSongs with all songs from m_AllFilterSongs that match m_SearchFilter.
+	/** Updates lwSongs with all songs from mAllFilterSongs that match mSearchFilter.
 	Called when the user selects a different template-filter, or if they edit the search filter. */
 	void applySearchFilterToSongs();
 
@@ -131,13 +131,13 @@ private:
 public slots:
 
 	/** Handler for keypresses on the DJ controller. */
-	void handleDjControllerKey(int a_Key);
+	void handleDjControllerKey(int aKey);
 
 	/** Handler for slider changes on the DJ controller. */
-	void handleDjControllerSlider(int a_Slider, qreal a_Value);
+	void handleDjControllerSlider(int aSlider, qreal aValue);
 
 	/** Handler for wheel moves on the DJ controller. */
-	void handleDjControllerWheel(int a_Wheel, int a_NumSteps);
+	void handleDjControllerWheel(int aWheel, int aNumSteps);
 
 
 private slots:
@@ -150,16 +150,16 @@ private slots:
 
 	/** The user has dbl-clicked on the specified item.
 	Starts playing the song, applying a fadeout if already playing another before. */
-	void songItemDoubleClicked(QListWidgetItem * a_Item);
+	void songItemDoubleClicked(QListWidgetItem * aItem);
 
 	/** Called periodically to update the UI. */
 	void periodicUIUpdate();
 
 	/** Emitted by the global volume control slider; updates the player volume. */
-	void volumeSliderMoved(int a_NewValue);
+	void volumeSliderMoved(int aNewValue);
 
 	/** Emitted by the global tempo slider; updates the playback tempo. */
-	void tempoValueChanged(int a_NewValue);
+	void tempoValueChanged(int aNewValue);
 
 	/** The user clicked the "reset tempo" button. */
 	void tempoResetClicked();
@@ -167,19 +167,19 @@ private slots:
 	/** Emitted by Player after changing the volume from within the player,
 	such as loading a new track with pre-set default volume and KeepVolume turned off.
 	Updates the Volume UI. */
-	void playerVolumeChanged(qreal a_Volume);
+	void playerVolumeChanged(qreal aVolume);
 
 	/** Emitted by Player after changing the tempo from within the player,
 	such as loading a new track with pre-set default tempo and KeepTempo turned off.
 	Updates the Tempo UI. */
-	void playerTempoChanged(qreal a_TempoCoeff);
+	void playerTempoChanged(qreal aTempoCoeff);
 
 	/** The Duration Limit checkbox was clicked, applies or removes the duration limit. */
 	void durationLimitClicked();
 
 	/** The Duration Limit lineedit was edited, applies the duration limit.
 	If the string is invalid, colors the text red and refuses to apply the limit. */
-	void durationLimitEdited(const QString & a_NewText);
+	void durationLimitEdited(const QString & aNewText);
 
 	/** Plays the song that is currently selected.
 	If another song is already playing, applies a fade-out to it first. */
@@ -216,16 +216,16 @@ private slots:
 	void showDebugLog();
 
 	/** Shows the context menu for lwSongs items at the specified position. */
-	void showSongListContextMenu(const QPoint & a_Pos);
+	void showSongListContextMenu(const QPoint & aPos);
 
 	/** Shows the context menu for lblCurrentlyPlaying at the specified position.
 	The context menu is the same as for lwSongs. */
-	void showCurSongContextMenu(const QPoint & a_Pos);
+	void showCurSongContextMenu(const QPoint & aPos);
 
 	/** The user has changed the search text.
-	Updates the m_SearchFilter and starts a countdown for it to be applied.
+	Updates the mSearchFilter and starts a countdown for it to be applied.
 	Does not apply the filter immediately, so that the UI doesn't slow down waiting for the filtering. */
-	void searchTextEdited(const QString & a_NewSearchText);
+	void searchTextEdited(const QString & aNewSearchText);
 };
 
 

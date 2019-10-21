@@ -11,36 +11,36 @@
 
 
 
-WaveformDisplay::WaveformDisplay(QWidget * a_Parent):
-	Super(a_Parent),
-	m_Player(nullptr),
-	m_PlaybackBuffer(nullptr),
-	m_Width(1000),
-	m_IsPeakDataComplete(false)
+WaveformDisplay::WaveformDisplay(QWidget * aParent):
+	Super(aParent),
+	mPlayer(nullptr),
+	mPlaybackBuffer(nullptr),
+	mWidth(1000),
+	mIsPeakDataComplete(false)
 {
-	m_Peaks.resize(static_cast<size_t>(m_Width));
-	m_Sums.resize(static_cast<size_t>(m_Width));
-	connect(&m_UpdateTimer, &QTimer::timeout, this, &WaveformDisplay::updateOnTimer);
+	mPeaks.resize(static_cast<size_t>(mWidth));
+	mSums.resize(static_cast<size_t>(mWidth));
+	connect(&mUpdateTimer, &QTimer::timeout, this, &WaveformDisplay::updateOnTimer);
 }
 
 
 
 
 
-void WaveformDisplay::setPlayer(Player & a_Player)
+void WaveformDisplay::setPlayer(Player & aPlayer)
 {
-	if (m_Player != nullptr)
+	if (mPlayer != nullptr)
 	{
-		disconnect(m_Player);
+		disconnect(mPlayer);
 	}
-	m_Player = &a_Player;
-	connect(m_Player, &Player::startedPlayback,  this, &WaveformDisplay::playerStartedPlayback);
-	connect(m_Player, &Player::finishedPlayback, this, &WaveformDisplay::playerFinishedPlayback);
+	mPlayer = &aPlayer;
+	connect(mPlayer, &Player::startedPlayback,  this, &WaveformDisplay::playerStartedPlayback);
+	connect(mPlayer, &Player::finishedPlayback, this, &WaveformDisplay::playerFinishedPlayback);
 
 	// If the player has a track loaded, display it in the widget:
-	if (m_Player->isTrackLoaded())
+	if (mPlayer->isTrackLoaded())
 	{
-		playerStartedPlayback(m_Player->currentTrack(), m_Player->playbackBuffer());
+		playerStartedPlayback(mPlayer->currentTrack(), mPlayer->playbackBuffer());
 	}
 }
 
@@ -48,85 +48,85 @@ void WaveformDisplay::setPlayer(Player & a_Player)
 
 
 
-void WaveformDisplay::paint(QPainter & a_Painter, int a_Height)
+void WaveformDisplay::paint(QPainter & aPainter, int aHeight)
 {
-	if (m_PlaybackBuffer == nullptr)
+	if (mPlaybackBuffer == nullptr)
 	{
 		return;
 	}
-	Utils::QPainterSaver saver(a_Painter);
+	Utils::QPainterSaver saver(aPainter);
 
 	// Paint the skip-start background:
 	int skipStartPx = 0;
-	if ((m_CurrentSong != nullptr) && m_CurrentSong->skipStart().isPresent())
+	if ((mCurrentSong != nullptr) && mCurrentSong->skipStart().isPresent())
 	{
-		skipStartPx = timeToScreen(m_CurrentSong->skipStart().value());
-		a_Painter.setBrush(QColor(128, 0, 0));
-		a_Painter.drawRect(0, 0, skipStartPx, a_Height);
+		skipStartPx = timeToScreen(mCurrentSong->skipStart().value());
+		aPainter.setBrush(QColor(128, 0, 0));
+		aPainter.drawRect(0, 0, skipStartPx, aHeight);
 	}
 
 	// Paint the duration limit background:
-	int durationLimitCutoffPx = m_Width;
-	auto durLimit = m_Player->currentTrack()->durationLimit();
+	int durationLimitCutoffPx = mWidth;
+	auto durLimit = mPlayer->currentTrack()->durationLimit();
 	if (durLimit >= 0)
 	{
-		auto dlc = m_Player->currentPosition() + durLimit - m_Player->totalTime();
+		auto dlc = mPlayer->currentPosition() + durLimit - mPlayer->totalTime();
 		durationLimitCutoffPx = timeToScreen(dlc);
-		a_Painter.setBrush(QColor(128, 0, 0));
-		a_Painter.drawRect(durationLimitCutoffPx, 0, m_Width, a_Height);
+		aPainter.setBrush(QColor(128, 0, 0));
+		aPainter.drawRect(durationLimitCutoffPx, 0, mWidth, aHeight);
 	}
 
 	// Paint the waveform:
-	int halfHeight = a_Height / 2;
+	int halfHeight = aHeight / 2;
 	int mid = halfHeight;
-	a_Painter.setPen(QColor(255, 128, 128));
-	for (int i = 0; i < m_Width; ++i)
+	aPainter.setPen(QColor(255, 128, 128));
+	for (int i = 0; i < mWidth; ++i)
 	{
 		if (i == skipStartPx)
 		{
-			a_Painter.setPen(QColor(128, 128, 128));
+			aPainter.setPen(QColor(128, 128, 128));
 		}
 		if (i == durationLimitCutoffPx)
 		{
-			a_Painter.setPen(QColor(255, 128, 128));
+			aPainter.setPen(QColor(255, 128, 128));
 		}
-		int v = m_Peaks[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
-		a_Painter.drawLine(i, mid - v, i, mid + v);
+		int v = mPeaks[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
+		aPainter.drawLine(i, mid - v, i, mid + v);
 	}
-	a_Painter.setPen(QColor(255, 192, 192));
-	for (int i = 0; i < m_Width; ++i)
+	aPainter.setPen(QColor(255, 192, 192));
+	for (int i = 0; i < mWidth; ++i)
 	{
 		if (i == skipStartPx)
 		{
-			a_Painter.setPen(QColor(255, 255, 255));
+			aPainter.setPen(QColor(255, 255, 255));
 		}
 		if (i == durationLimitCutoffPx)
 		{
-			a_Painter.setPen(QColor(255, 192, 192));
+			aPainter.setPen(QColor(255, 192, 192));
 		}
-		int v = m_Sums[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
-		a_Painter.drawLine(i, mid - v, i, mid + v);
+		int v = mSums[static_cast<unsigned>(i)] * halfHeight / std::numeric_limits<short>::max();
+		aPainter.drawLine(i, mid - v, i, mid + v);
 	}
 
 	// Paint the player position:
-	auto pos = m_PlaybackBuffer->readPos();
-	auto total = m_PlaybackBuffer->bufferLimit();
-	a_Painter.setPen(QPen(QBrush(QColor(0, 160, 0)), 2));
-	int left = static_cast<int>(static_cast<float>(m_Width) * pos / total);
-	a_Painter.drawLine(left, 0, left, a_Height);
+	auto pos = mPlaybackBuffer->readPos();
+	auto total = mPlaybackBuffer->bufferLimit();
+	aPainter.setPen(QPen(QBrush(QColor(0, 160, 0)), 2));
+	int left = static_cast<int>(static_cast<float>(mWidth) * pos / total);
+	aPainter.drawLine(left, 0, left, aHeight);
 
 	// Paint the skip-start end-line:
 	if (skipStartPx > 0)
 	{
-		a_Painter.setPen(QColor(255, 0, 0));
-		a_Painter.drawLine(skipStartPx, 0, skipStartPx, a_Height);
+		aPainter.setPen(QColor(255, 0, 0));
+		aPainter.drawLine(skipStartPx, 0, skipStartPx, aHeight);
 	}
 
 	// Paint the duration limit end-line:
-	if (durationLimitCutoffPx < m_Width)
+	if (durationLimitCutoffPx < mWidth)
 	{
-		a_Painter.setPen(QColor(255, 0, 0));
-		a_Painter.drawLine(durationLimitCutoffPx, 0, durationLimitCutoffPx, a_Height);
+		aPainter.setPen(QColor(255, 0, 0));
+		aPainter.drawLine(durationLimitCutoffPx, 0, durationLimitCutoffPx, aHeight);
 	}
 }
 
@@ -136,28 +136,28 @@ void WaveformDisplay::paint(QPainter & a_Painter, int a_Height)
 
 void WaveformDisplay::calculatePeaks()
 {
-	if (m_PlaybackBuffer == nullptr)
+	if (mPlaybackBuffer == nullptr)
 	{
-		std::fill(m_Peaks.begin(), m_Peaks.end(), 0);
-		std::fill(m_Sums.begin(), m_Sums.end(), 0);
+		std::fill(mPeaks.begin(), mPeaks.end(), 0);
+		std::fill(mSums.begin(), mSums.end(), 0);
 		return;
 	}
 
 	// For the peak calculation we consider the playback buffer as having a single channel only
 	// since it doesn't matter visually.
-	auto totalSamples = m_PlaybackBuffer->bufferLimit() / sizeof(short);
-	auto writePos = m_PlaybackBuffer->writePos() / sizeof(short);
-	m_IsPeakDataComplete = (writePos == totalSamples);
-	auto width = static_cast<size_t>(m_Width);
+	auto totalSamples = mPlaybackBuffer->bufferLimit() / sizeof(short);
+	auto writePos = mPlaybackBuffer->writePos() / sizeof(short);
+	mIsPeakDataComplete = (writePos == totalSamples);
+	auto width = static_cast<size_t>(mWidth);
 	size_t fromSample = 0;
-	auto sample = reinterpret_cast<const short *>(m_PlaybackBuffer->audioData().data());
+	auto sample = reinterpret_cast<const short *>(mPlaybackBuffer->audioData().data());
 	for (size_t i = 0; i < width; ++i)
 	{
 		size_t toSample = totalSamples * (i + 1) / width;
 		if (toSample >= writePos)
 		{
-			std::fill(m_Peaks.begin() + static_cast<int>(i), m_Peaks.end(), 0);
-			std::fill(m_Sums.begin() + static_cast<int>(i), m_Sums.end(), 0);
+			std::fill(mPeaks.begin() + static_cast<int>(i), mPeaks.end(), 0);
+			std::fill(mSums.begin() + static_cast<int>(i), mSums.end(), 0);
 			break;
 		}
 		short minValue = 0;
@@ -175,8 +175,8 @@ void WaveformDisplay::calculatePeaks()
 			}
 			sum += std::abs(sample[sampleIdx]);
 		}
-		m_Peaks[i] = std::max<short>(maxValue, -minValue);
-		m_Sums[i] = static_cast<int>(sum / static_cast<int>(toSample - fromSample + 1));
+		mPeaks[i] = std::max<short>(maxValue, -minValue);
+		mSums[i] = static_cast<int>(sum / static_cast<int>(toSample - fromSample + 1));
 		fromSample = toSample;
 	}
 }
@@ -185,17 +185,17 @@ void WaveformDisplay::calculatePeaks()
 
 
 
-void WaveformDisplay::setSkipStart(int a_PosX)
+void WaveformDisplay::setSkipStart(int aPosX)
 {
-	if (m_CurrentSong == nullptr)
+	if (mCurrentSong == nullptr)
 	{
 		qDebug() << "Not a song, ignoring.";
 		return;
 	}
-	auto skipStart = screenToTime(a_PosX);
-	qDebug() << "Setting skip-start for " << m_CurrentSong->fileName() << " to " << skipStart;
-	m_CurrentSong->setSkipStart(skipStart);
-	emit songChanged(m_CurrentSong);
+	auto skipStart = screenToTime(aPosX);
+	qDebug() << "Setting skip-start for " << mCurrentSong->fileName() << " to " << skipStart;
+	mCurrentSong->setSkipStart(skipStart);
+	emit songChanged(mCurrentSong);
 	update();
 }
 
@@ -205,13 +205,13 @@ void WaveformDisplay::setSkipStart(int a_PosX)
 
 void WaveformDisplay::delSkipStart()
 {
-	if (m_CurrentSong == nullptr)
+	if (mCurrentSong == nullptr)
 	{
 		qDebug() << "Not a song, ignoring.";
 		return;
 	}
-	m_CurrentSong->delSkipStart();
-	emit songChanged(m_CurrentSong);
+	mCurrentSong->delSkipStart();
+	emit songChanged(mCurrentSong);
 	update();
 }
 
@@ -219,22 +219,22 @@ void WaveformDisplay::delSkipStart()
 
 
 
-void WaveformDisplay::paintEvent(QPaintEvent * a_Event)
+void WaveformDisplay::paintEvent(QPaintEvent * aEvent)
 {
 	QPainter painter(this);
-	painter.fillRect(a_Event->rect(), QBrush(QColor(0, 0, 0)));
-	paint(painter, a_Event->rect().height());
+	painter.fillRect(aEvent->rect(), QBrush(QColor(0, 0, 0)));
+	paint(painter, aEvent->rect().height());
 }
 
 
 
 
 
-void WaveformDisplay::resizeEvent(QResizeEvent * a_Event)
+void WaveformDisplay::resizeEvent(QResizeEvent * aEvent)
 {
-	m_Width = a_Event->size().width();
-	m_Peaks.resize(static_cast<size_t>(m_Width));
-	m_Sums.resize(static_cast<size_t>(m_Width));
+	mWidth = aEvent->size().width();
+	mPeaks.resize(static_cast<size_t>(mWidth));
+	mSums.resize(static_cast<size_t>(mWidth));
 	calculatePeaks();
 }
 
@@ -254,74 +254,74 @@ QSize WaveformDisplay::sizeHint() const
 
 
 
-void WaveformDisplay::mouseReleaseEvent(QMouseEvent * a_Event)
+void WaveformDisplay::mouseReleaseEvent(QMouseEvent * aEvent)
 {
-	if ((m_PlaybackBuffer == nullptr) || (m_Player == nullptr))
+	if ((mPlaybackBuffer == nullptr) || (mPlayer == nullptr))
 	{
 		return;
 	}
 
-	if (a_Event->button() != Qt::LeftButton)
+	if (aEvent->button() != Qt::LeftButton)
 	{
 		return;
 	}
-	m_Player->seekTo(screenToTime(a_Event->pos().x()));
+	mPlayer->seekTo(screenToTime(aEvent->pos().x()));
 }
 
 
 
 
 
-void WaveformDisplay::contextMenuEvent(QContextMenuEvent * a_Event)
+void WaveformDisplay::contextMenuEvent(QContextMenuEvent * aEvent)
 {
-	auto x = a_Event->x();
+	auto x = aEvent->x();
 	QMenu menu;
 	auto actSetSkipStart = menu.addAction(tr("Set skip-start here"));
 	auto actDelSkipStart = menu.addAction(tr("Remove skip-start"));
-	actSetSkipStart->setEnabled(m_CurrentSong != nullptr);
-	actDelSkipStart->setEnabled((m_CurrentSong != nullptr) && m_CurrentSong->skipStart().isPresent());
+	actSetSkipStart->setEnabled(mCurrentSong != nullptr);
+	actDelSkipStart->setEnabled((mCurrentSong != nullptr) && mCurrentSong->skipStart().isPresent());
 	connect(actSetSkipStart, &QAction::triggered, [this, x]() { setSkipStart (x); });
 	connect(actDelSkipStart, &QAction::triggered, [this]() { delSkipStart(); });
-	menu.exec(a_Event->globalPos());
+	menu.exec(aEvent->globalPos());
 }
 
 
 
 
 
-int WaveformDisplay::timeToScreen(double a_Seconds)
+int WaveformDisplay::timeToScreen(double aSeconds)
 {
-	assert(m_PlaybackBuffer != nullptr);
-	return static_cast<int>(m_Width * a_Seconds / m_PlaybackBuffer->duration());
+	assert(mPlaybackBuffer != nullptr);
+	return static_cast<int>(mWidth * aSeconds / mPlaybackBuffer->duration());
 }
 
 
 
 
 
-double WaveformDisplay::screenToTime(int a_PosX)
+double WaveformDisplay::screenToTime(int aPosX)
 {
-	assert(m_PlaybackBuffer != nullptr);
-	assert(m_Width > 0);
-	auto x = Utils::clamp(a_PosX, 0, m_Width);
-	return m_PlaybackBuffer->duration() * x / m_Width;
+	assert(mPlaybackBuffer != nullptr);
+	assert(mWidth > 0);
+	auto x = Utils::clamp(aPosX, 0, mWidth);
+	return mPlaybackBuffer->duration() * x / mWidth;
 }
 
 
 
 
 
-void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBufferPtr a_PlaybackBuffer)
+void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr aItem, PlaybackBufferPtr aPlaybackBuffer)
 {
-	Q_UNUSED(a_Item);
+	Q_UNUSED(aItem);
 
-	m_PlaybackBuffer = a_PlaybackBuffer;
-	m_UpdateTimer.start(50);
-	m_IsPeakDataComplete = false;
-	auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(m_Player->currentTrack());
+	mPlaybackBuffer = aPlaybackBuffer;
+	mUpdateTimer.start(50);
+	mIsPeakDataComplete = false;
+	auto plis = std::dynamic_pointer_cast<PlaylistItemSong>(mPlayer->currentTrack());
 	if (plis != nullptr)
 	{
-		m_CurrentSong = plis->song();
+		mCurrentSong = plis->song();
 	}
 }
 
@@ -331,8 +331,8 @@ void WaveformDisplay::playerStartedPlayback(IPlaylistItemPtr a_Item, PlaybackBuf
 
 void WaveformDisplay::playerFinishedPlayback()
 {
-	m_PlaybackBuffer = nullptr;
-	m_UpdateTimer.stop();
+	mPlaybackBuffer = nullptr;
+	mUpdateTimer.stop();
 }
 
 
@@ -342,7 +342,7 @@ void WaveformDisplay::playerFinishedPlayback()
 void WaveformDisplay::updateOnTimer()
 {
 	// Recalculate the peaks, unless we already have the full data:
-	if (!m_IsPeakDataComplete)
+	if (!mIsPeakDataComplete)
 	{
 		calculatePeaks();
 	}

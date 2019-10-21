@@ -75,9 +75,9 @@ static Filter::Node::Comparison g_Comparisons[] =
 
 /** Returns the index into g_SongProperties that has the same property as the specified filter.
 Returns -1 if not found. */
-static int indexFromSongProperty(const Filter::Node & a_Node)
+static int indexFromSongProperty(const Filter::Node & aNode)
 {
-	auto prop = a_Node.songProperty();
+	auto prop = aNode.songProperty();
 	for (size_t i = 0; i < ARRAYCOUNT(g_SongProperties); ++i)
 	{
 		if (g_SongProperties[i] == prop)
@@ -92,9 +92,9 @@ static int indexFromSongProperty(const Filter::Node & a_Node)
 
 
 
-static int indexFromComparison(const Filter::Node & a_Node)
+static int indexFromComparison(const Filter::Node & aNode)
 {
-	auto cmp = a_Node.comparison();
+	auto cmp = aNode.comparison();
 	for (size_t i = 0; i < ARRAYCOUNT(g_Comparisons); ++i)
 	{
 		if (g_Comparisons[i] == cmp)
@@ -117,8 +117,8 @@ class SongFilterModel:
 	public QSortFilterProxyModel
 {
 public:
-	SongFilterModel(const Filter & a_Filter):
-		m_Filter(a_Filter)
+	SongFilterModel(const Filter & aFilter):
+		mFilter(aFilter)
 	{
 	}
 
@@ -126,26 +126,26 @@ public:
 protected:
 
 	/** The filter to be applied. */
-	const Filter & m_Filter;
+	const Filter & mFilter;
 
 
-	virtual bool filterAcceptsRow(int a_SourceRow, const QModelIndex & a_SourceParent) const override
+	virtual bool filterAcceptsRow(int aSourceRow, const QModelIndex & aSourceParent) const override
 	{
-		if (a_SourceParent.isValid())
+		if (aSourceParent.isValid())
 		{
 			assert(!"This filter should not be used for multi-level data");
 			return false;
 		}
 
-		auto idx = sourceModel()->index(a_SourceRow, 0, a_SourceParent);
+		auto idx = sourceModel()->index(aSourceRow, 0, aSourceParent);
 		auto song = sourceModel()->data(idx, SongModel::roleSongPtr).value<SongPtr>();
 		if (song == nullptr)
 		{
-			qWarning() << "Underlying model returned nullptr song for row " << a_SourceRow;
+			qWarning() << "Underlying model returned nullptr song for row " << aSourceRow;
 			assert(!"Unexpected nullptr song");
 			return false;
 		}
-		return m_Filter.rootNode()->isSatisfiedBy(*song);
+		return mFilter.rootNode()->isSatisfiedBy(*song);
 	}
 };
 
@@ -169,36 +169,36 @@ public:
 
 	// Add the combobox to size:
 	virtual QSize sizeHint(
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) const override
 	{
-		Q_UNUSED(a_Index);
-		auto widget = a_Option.widget;
+		Q_UNUSED(aIndex);
+		auto widget = aOption.widget;
 		auto style = (widget != nullptr) ? widget->style() : QApplication::style();
-		return style->sizeFromContents(QStyle::CT_ComboBox, &a_Option, Super::sizeHint(a_Option, a_Index), widget);
+		return style->sizeFromContents(QStyle::CT_ComboBox, &aOption, Super::sizeHint(aOption, aIndex), widget);
 	}
 
 
 
 	// editing
 	virtual QWidget * createEditor(
-		QWidget * a_Parent,
-		const QStyleOptionViewItem & a_Option,
-		const QModelIndex & a_Index
+		QWidget * aParent,
+		const QStyleOptionViewItem & aOption,
+		const QModelIndex & aIndex
 	) const override
 	{
-		Q_UNUSED(a_Option);
+		Q_UNUSED(aOption);
 
 		// HACK: TreeWidget stores its QTreeWidgetItem ptrs in the index's internalPtr:
-		auto item = reinterpret_cast<const QTreeWidgetItem *>(a_Index.internalPointer());
+		auto item = reinterpret_cast<const QTreeWidgetItem *>(aIndex.internalPointer());
 
 		auto node = reinterpret_cast<Filter::Node *>(item->data(0, roleFilterNodePtr).toULongLong());
 
 		if (node->canHaveChildren())
 		{
 			// This is a combinator, use a single combobox as the editor:
-			auto res = new QComboBox(a_Parent);
+			auto res = new QComboBox(aParent);
 			res->setEditable(false);
 			res->setProperty("nodePtr", reinterpret_cast<qulonglong>(node));
 			res->addItems({
@@ -210,7 +210,7 @@ public:
 		else
 		{
 			// This is a comparison filter, use a layout for the editor
-			auto editor = new QFrame(a_Parent);
+			auto editor = new QFrame(aParent);
 			editor->setFrameShape(QFrame::Panel);
 			editor->setLineWidth(0);
 			editor->setFrameShadow(QFrame::Plain);
@@ -243,22 +243,22 @@ public:
 
 
 
-	virtual void setEditorData(QWidget * a_Editor, const QModelIndex & a_Index) const override
+	virtual void setEditorData(QWidget * aEditor, const QModelIndex & aIndex) const override
 	{
-		Q_UNUSED(a_Index);
-		auto filter = reinterpret_cast<const Filter::Node *>(a_Editor->property("nodePtr").toULongLong());
+		Q_UNUSED(aIndex);
+		auto filter = reinterpret_cast<const Filter::Node *>(aEditor->property("nodePtr").toULongLong());
 		assert(filter != nullptr);
 		if (filter->canHaveChildren())
 		{
-			auto cb = reinterpret_cast<QComboBox *>(a_Editor);
+			auto cb = reinterpret_cast<QComboBox *>(aEditor);
 			assert(cb != nullptr);
 			cb->setCurrentIndex((filter->kind() == Filter::Node::nkOr) ? 1 : 0);
 		}
 		else
 		{
-			auto cbProp       = a_Editor->property("cbProp").value<QComboBox *>();
-			auto cbComparison = a_Editor->property("cbComparison").value<QComboBox *>();
-			auto leValue      = a_Editor->property("leValue").value<QLineEdit *>();
+			auto cbProp       = aEditor->property("cbProp").value<QComboBox *>();
+			auto cbComparison = aEditor->property("cbComparison").value<QComboBox *>();
+			auto leValue      = aEditor->property("leValue").value<QLineEdit *>();
 			assert(cbProp != nullptr);
 			assert(cbComparison != nullptr);
 			assert(leValue != nullptr);
@@ -271,27 +271,27 @@ public:
 
 
 	virtual void setModelData(
-		QWidget * a_Editor,
-		QAbstractItemModel * a_Model,
-		const QModelIndex & a_Index
+		QWidget * aEditor,
+		QAbstractItemModel * aModel,
+		const QModelIndex & aIndex
 	) const override
 	{
-		Q_UNUSED(a_Model);
-		Q_UNUSED(a_Index);
+		Q_UNUSED(aModel);
+		Q_UNUSED(aIndex);
 
-		auto node = reinterpret_cast<Filter::Node *>(a_Editor->property("nodePtr").toULongLong());
+		auto node = reinterpret_cast<Filter::Node *>(aEditor->property("nodePtr").toULongLong());
 		assert(node != nullptr);
 		if (node->canHaveChildren())
 		{
-			auto cb = reinterpret_cast<QComboBox *>(a_Editor);
+			auto cb = reinterpret_cast<QComboBox *>(aEditor);
 			assert(cb != nullptr);
 			node->setKind((cb->currentIndex() == 0) ? Filter::Node::nkAnd : Filter::Node::nkOr);
 		}
 		else
 		{
-			auto cbProp       = a_Editor->property("cbProp").value<QComboBox *>();
-			auto cbComparison = a_Editor->property("cbComparison").value<QComboBox *>();
-			auto leValue      = a_Editor->property("leValue").value<QLineEdit *>();
+			auto cbProp       = aEditor->property("cbProp").value<QComboBox *>();
+			auto cbComparison = aEditor->property("cbComparison").value<QComboBox *>();
+			auto leValue      = aEditor->property("leValue").value<QLineEdit *>();
 			assert(cbProp != nullptr);
 			assert(cbComparison != nullptr);
 			assert(leValue != nullptr);
@@ -307,7 +307,7 @@ public:
 			}
 			node->setValue(leValue->text());
 		}
-		a_Model->setData(a_Index, node->getCaption());
+		aModel->setData(aIndex, node->getCaption());
 	}
 };
 
@@ -319,48 +319,48 @@ public:
 // DlgEditTemplateItem:
 
 DlgEditFilter::DlgEditFilter(
-	ComponentCollection & a_Components,
-	Filter & a_Filter,
-	QWidget * a_Parent
+	ComponentCollection & aComponents,
+	Filter & aFilter,
+	QWidget * aParent
 ):
-	Super(a_Parent),
-	m_Components(a_Components),
-	m_Filter(a_Filter),
-	m_UI(new Ui::DlgEditFilter)
+	Super(aParent),
+	mComponents(aComponents),
+	mFilter(aFilter),
+	mUI(new Ui::DlgEditFilter)
 {
-	m_Filter.checkNodeConsistency();
-	m_UI->setupUi(this);
+	mFilter.checkNodeConsistency();
+	mUI->setupUi(this);
 	Settings::loadWindowPos("DlgEditFilter", *this);
-	m_UI->twNodes->setItemDelegate(new FilterNodeDelegate);
+	mUI->twNodes->setItemDelegate(new FilterNodeDelegate);
 
 	// Connect the signals:
-	connect(m_UI->btnClose,            &QPushButton::clicked,   this, &DlgEditFilter::saveAndClose);
-	connect(m_UI->btnAddSibling,       &QPushButton::clicked,   this, &DlgEditFilter::addNodeSibling);
-	connect(m_UI->btnInsertCombinator, &QPushButton::clicked,   this, &DlgEditFilter::insertNodeCombinator);
-	connect(m_UI->btnRemoveFilter,     &QPushButton::clicked,   this, &DlgEditFilter::removeNode);
-	connect(m_UI->btnPreview,          &QPushButton::clicked,   this, &DlgEditFilter::previewFilter);
-	connect(m_UI->leBgColor,           &QLineEdit::textChanged, this, &DlgEditFilter::bgColorTextChanged);
-	connect(m_UI->btnBgColor,          &QPushButton::clicked,   this, &DlgEditFilter::chooseBgColor);
-	connect(m_UI->leDurationLimit,     &QLineEdit::textEdited,  this, &DlgEditFilter::durationLimitEdited);
+	connect(mUI->btnClose,            &QPushButton::clicked,   this, &DlgEditFilter::saveAndClose);
+	connect(mUI->btnAddSibling,       &QPushButton::clicked,   this, &DlgEditFilter::addNodeSibling);
+	connect(mUI->btnInsertCombinator, &QPushButton::clicked,   this, &DlgEditFilter::insertNodeCombinator);
+	connect(mUI->btnRemoveFilter,     &QPushButton::clicked,   this, &DlgEditFilter::removeNode);
+	connect(mUI->btnPreview,          &QPushButton::clicked,   this, &DlgEditFilter::previewFilter);
+	connect(mUI->leBgColor,           &QLineEdit::textChanged, this, &DlgEditFilter::bgColorTextChanged);
+	connect(mUI->btnBgColor,          &QPushButton::clicked,   this, &DlgEditFilter::chooseBgColor);
+	connect(mUI->leDurationLimit,     &QLineEdit::textEdited,  this, &DlgEditFilter::durationLimitEdited);
 	connect(
-		m_UI->twNodes->selectionModel(), &QItemSelectionModel::selectionChanged,
+		mUI->twNodes->selectionModel(), &QItemSelectionModel::selectionChanged,
 		this, &DlgEditFilter::nodeSelectionChanged
 	);
-	connect(m_UI->twNodes->model(), &QAbstractItemModel::dataChanged, this, &DlgEditFilter::updateFilterStats);
+	connect(mUI->twNodes->model(), &QAbstractItemModel::dataChanged, this, &DlgEditFilter::updateFilterStats);
 
 	// Set the data into the UI:
-	m_UI->leDisplayName->setText(m_Filter.displayName());
-	m_UI->chbIsFavorite->setChecked(m_Filter.isFavorite());
-	m_UI->pteNotes->setPlainText(m_Filter.notes());
-	m_UI->leBgColor->setText(m_Filter.bgColor().name());
-	if (m_Filter.durationLimit().isPresent())
+	mUI->leDisplayName->setText(mFilter.displayName());
+	mUI->chbIsFavorite->setChecked(mFilter.isFavorite());
+	mUI->pteNotes->setPlainText(mFilter.notes());
+	mUI->leBgColor->setText(mFilter.bgColor().name());
+	if (mFilter.durationLimit().isPresent())
 	{
-		m_UI->leDurationLimit->setText(Utils::formatTime(m_Filter.durationLimit().value()));
+		mUI->leDurationLimit->setText(Utils::formatTime(mFilter.durationLimit().value()));
 	}
 
 	// Display the node tree:
 	rebuildFilterModel();
-	m_UI->twNodes->expandAll();
+	mUI->twNodes->expandAll();
 
 	// Update the UI state:
 	nodeSelectionChanged();
@@ -374,7 +374,7 @@ DlgEditFilter::DlgEditFilter(
 DlgEditFilter::~DlgEditFilter()
 {
 	Settings::saveWindowPos("DlgEditTemplateItem", *this);
-	delete m_UI->twNodes->itemDelegate();
+	delete mUI->twNodes->itemDelegate();
 }
 
 
@@ -395,30 +395,30 @@ void DlgEditFilter::reject()
 
 void DlgEditFilter::save()
 {
-	m_Filter.setDisplayName(m_UI->leDisplayName->text());
-	m_Filter.setIsFavorite(m_UI->chbIsFavorite->isChecked());
-	m_Filter.setNotes(m_UI->pteNotes->toPlainText());
-	QColor c(m_UI->leBgColor->text());
+	mFilter.setDisplayName(mUI->leDisplayName->text());
+	mFilter.setIsFavorite(mUI->chbIsFavorite->isChecked());
+	mFilter.setNotes(mUI->pteNotes->toPlainText());
+	QColor c(mUI->leBgColor->text());
 	if (c.isValid())
 	{
-		m_Filter.setBgColor(c);
+		mFilter.setBgColor(c);
 	}
 	bool isOK;
-	auto dur = m_UI->leDurationLimit->text();
+	auto dur = mUI->leDurationLimit->text();
 	if (dur.isEmpty())
 	{
-		m_Filter.resetDurationLimit();
+		mFilter.resetDurationLimit();
 	}
 	else
 	{
 		auto durationLimit = Utils::parseTime(dur, isOK);
 		if (isOK)
 		{
-			m_Filter.setDurationLimit(durationLimit);
+			mFilter.setDurationLimit(durationLimit);
 		}
 		else
 		{
-			m_Filter.resetDurationLimit();
+			mFilter.resetDurationLimit();
 		}
 	}
 }
@@ -429,7 +429,7 @@ void DlgEditFilter::save()
 
 Filter::Node * DlgEditFilter::selectedNode() const
 {
-	auto item = m_UI->twNodes->currentItem();
+	auto item = mUI->twNodes->currentItem();
 	if (item == nullptr)
 	{
 		return nullptr;
@@ -443,26 +443,26 @@ Filter::Node * DlgEditFilter::selectedNode() const
 
 void DlgEditFilter::rebuildFilterModel()
 {
-	m_UI->twNodes->clear();
-	auto root = createItemFromNode(*(m_Filter.rootNode()));
-	m_UI->twNodes->addTopLevelItem(root);
-	addNodeChildren(*(m_Filter.rootNode()), *root);
+	mUI->twNodes->clear();
+	auto root = createItemFromNode(*(mFilter.rootNode()));
+	mUI->twNodes->addTopLevelItem(root);
+	addNodeChildren(*(mFilter.rootNode()), *root);
 }
 
 
 
 
 
-void DlgEditFilter::addNodeChildren(Filter::Node & a_ParentNode, QTreeWidgetItem & a_ParentItem)
+void DlgEditFilter::addNodeChildren(Filter::Node & aParentNode, QTreeWidgetItem & aParentItem)
 {
-	if (!a_ParentNode.canHaveChildren())
+	if (!aParentNode.canHaveChildren())
 	{
 		return;
 	}
-	for (const auto & ch: a_ParentNode.children())
+	for (const auto & ch: aParentNode.children())
 	{
 		auto item = createItemFromNode(*ch);
-		a_ParentItem.addChild(item);
+		aParentItem.addChild(item);
 		addNodeChildren(*ch, *item);
 	}
 }
@@ -471,11 +471,11 @@ void DlgEditFilter::addNodeChildren(Filter::Node & a_ParentNode, QTreeWidgetItem
 
 
 
-QTreeWidgetItem * DlgEditFilter::createItemFromNode(const Filter::Node & a_Node)
+QTreeWidgetItem * DlgEditFilter::createItemFromNode(const Filter::Node & aNode)
 {
-	auto res = new QTreeWidgetItem({a_Node.getCaption()});
+	auto res = new QTreeWidgetItem({aNode.getCaption()});
 	res->setFlags(res->flags() | Qt::ItemIsEditable);
-	res->setData(0, roleFilterNodePtr, reinterpret_cast<qulonglong>(&a_Node));
+	res->setData(0, roleFilterNodePtr, reinterpret_cast<qulonglong>(&aNode));
 	return res;
 }
 
@@ -483,26 +483,26 @@ QTreeWidgetItem * DlgEditFilter::createItemFromNode(const Filter::Node & a_Node)
 
 
 
-void DlgEditFilter::selectNodeItem(const Filter::Node & a_Node)
+void DlgEditFilter::selectNodeItem(const Filter::Node & aNode)
 {
-	auto item = getNodeItem(a_Node);
+	auto item = getNodeItem(aNode);
 	if (item == nullptr)
 	{
 		return;
 	}
-	m_UI->twNodes->setCurrentItem(item);
+	mUI->twNodes->setCurrentItem(item);
 }
 
 
 
 
 
-QTreeWidgetItem * DlgEditFilter::getNodeItem(const Filter::Node & a_Node)
+QTreeWidgetItem * DlgEditFilter::getNodeItem(const Filter::Node & aNode)
 {
-	auto parent = a_Node.parent();
+	auto parent = aNode.parent();
 	if (parent == nullptr)
 	{
-		return m_UI->twNodes->topLevelItem(0);
+		return mUI->twNodes->topLevelItem(0);
 	}
 	auto parentItem = getNodeItem(*parent);
 	if (parentItem == nullptr)
@@ -513,11 +513,11 @@ QTreeWidgetItem * DlgEditFilter::getNodeItem(const Filter::Node & a_Node)
 	auto count = children.size();
 	for (size_t i = 0; i < count; ++i)
 	{
-		if (children[i].get() == &a_Node)
+		if (children[i].get() == &aNode)
 		{
 			auto item = parentItem->child(static_cast<int>(i));
 			assert(item != nullptr);
-			assert(item->data(0, roleFilterNodePtr).toULongLong() == reinterpret_cast<qulonglong>(&a_Node));
+			assert(item->data(0, roleFilterNodePtr).toULongLong() == reinterpret_cast<qulonglong>(&aNode));
 			return item;
 		}
 	}
@@ -551,7 +551,7 @@ void DlgEditFilter::addNodeSibling()
 		// Need to update filter's root
 		auto combinator = std::make_shared<Filter::Node>(Filter::Node::nkAnd);
 		combinator->addChild(curNode->shared_from_this());
-		m_Filter.setRootNode(combinator);
+		mFilter.setRootNode(combinator);
 		parent = combinator.get();
 	}
 	auto child = std::make_shared<Filter::Node>(
@@ -561,10 +561,10 @@ void DlgEditFilter::addNodeSibling()
 	);
 	parent->addChild(child);
 
-	m_Filter.checkNodeConsistency();
+	mFilter.checkNodeConsistency();
 
 	rebuildFilterModel();
-	m_UI->twNodes->expandAll();
+	mUI->twNodes->expandAll();
 	selectNodeItem(*child);
 }
 
@@ -585,7 +585,7 @@ void DlgEditFilter::insertNodeCombinator()
 	if (parent == nullptr)
 	{
 		// Need to update item's root
-		m_Filter.setRootNode(combinator);
+		mFilter.setRootNode(combinator);
 	}
 	else
 	{
@@ -598,10 +598,10 @@ void DlgEditFilter::insertNodeCombinator()
 		0
 	));
 
-	m_Filter.checkNodeConsistency();
+	mFilter.checkNodeConsistency();
 
 	rebuildFilterModel();
-	m_UI->twNodes->expandAll();
+	mUI->twNodes->expandAll();
 	selectNodeItem(*combinator);
 }
 
@@ -642,7 +642,7 @@ void DlgEditFilter::removeNode()
 	if (parent == nullptr)
 	{
 		// Special case, removing the entire root, replace with a Noop filter instead:
-		m_Filter.setNoopFilter();
+		mFilter.setNoopFilter();
 	}
 	else
 	{
@@ -657,7 +657,7 @@ void DlgEditFilter::removeNode()
 			if (grandParent == nullptr)
 			{
 				// Special case, the entire root is single-child, replace it:
-				m_Filter.setRootNode(singleChild);
+				mFilter.setRootNode(singleChild);
 				break;
 			}
 			else
@@ -668,10 +668,10 @@ void DlgEditFilter::removeNode()
 		}
 	}
 
-	m_Filter.checkNodeConsistency();
+	mFilter.checkNodeConsistency();
 
 	rebuildFilterModel();
-	m_UI->twNodes->expandAll();
+	mUI->twNodes->expandAll();
 }
 
 
@@ -680,7 +680,7 @@ void DlgEditFilter::removeNode()
 
 void DlgEditFilter::previewFilter()
 {
-	DlgSongs dlg(m_Components, std::make_unique<SongFilterModel>(m_Filter), false, this);
+	DlgSongs dlg(mComponents, std::make_unique<SongFilterModel>(mFilter), false, this);
 	dlg.exec();
 }
 
@@ -691,9 +691,9 @@ void DlgEditFilter::previewFilter()
 void DlgEditFilter::nodeSelectionChanged()
 {
 	auto curNode = selectedNode();
-	m_UI->btnAddSibling->setEnabled(curNode != nullptr);
-	m_UI->btnInsertCombinator->setEnabled(curNode != nullptr);
-	m_UI->btnRemoveFilter->setEnabled((curNode != nullptr) && m_Filter.rootNode()->canHaveChildren());  // The top level filter cannot be removed
+	mUI->btnAddSibling->setEnabled(curNode != nullptr);
+	mUI->btnInsertCombinator->setEnabled(curNode != nullptr);
+	mUI->btnRemoveFilter->setEnabled((curNode != nullptr) && mFilter.rootNode()->canHaveChildren());  // The top level filter cannot be removed
 }
 
 
@@ -702,23 +702,23 @@ void DlgEditFilter::nodeSelectionChanged()
 
 void DlgEditFilter::updateFilterStats()
 {
-	auto numMatching = m_Components.get<Database>()->numSongsMatchingFilter(m_Filter);
-	m_UI->lblMatchingSongCount->setText(tr("Matching songs: %n", "", numMatching));
+	auto numMatching = mComponents.get<Database>()->numSongsMatchingFilter(mFilter);
+	mUI->lblMatchingSongCount->setText(tr("Matching songs: %n", "", numMatching));
 }
 
 
 
 
 
-void DlgEditFilter::bgColorTextChanged(const QString & a_NewText)
+void DlgEditFilter::bgColorTextChanged(const QString & aNewText)
 {
-	QColor c(a_NewText);
+	QColor c(aNewText);
 	if (!c.isValid())
 	{
-		m_UI->leBgColor->setStyleSheet({});
+		mUI->leBgColor->setStyleSheet({});
 		return;
 	}
-	m_UI->leBgColor->setStyleSheet(QString("background-color: %1").arg(a_NewText));
+	mUI->leBgColor->setStyleSheet(QString("background-color: %1").arg(aNewText));
 }
 
 
@@ -728,13 +728,13 @@ void DlgEditFilter::bgColorTextChanged(const QString & a_NewText)
 void DlgEditFilter::chooseBgColor()
 {
 	auto c = QColorDialog::getColor(
-		QColor(m_UI->leBgColor->text()),
+		QColor(mUI->leBgColor->text()),
 		this,
 		tr("SkauTan: Choose template item color")
 	);
 	if (c.isValid())
 	{
-		m_UI->leBgColor->setText(c.name());
+		mUI->leBgColor->setText(c.name());
 	}
 }
 
@@ -742,21 +742,21 @@ void DlgEditFilter::chooseBgColor()
 
 
 
-void DlgEditFilter::durationLimitEdited(const QString & a_NewText)
+void DlgEditFilter::durationLimitEdited(const QString & aNewText)
 {
-	if (a_NewText.trimmed().isEmpty())
+	if (aNewText.trimmed().isEmpty())
 	{
-		m_UI->leDurationLimit->setStyleSheet({});
+		mUI->leDurationLimit->setStyleSheet({});
 		return;
 	}
 	bool isOK;
-	Utils::parseTime(a_NewText, isOK);
+	Utils::parseTime(aNewText, isOK);
 	if (isOK)
 	{
-		m_UI->leDurationLimit->setStyleSheet({});
+		mUI->leDurationLimit->setStyleSheet({});
 	}
 	else
 	{
-		m_UI->leDurationLimit->setStyleSheet("background-color: #ff7f7f");
+		mUI->leDurationLimit->setStyleSheet("background-color: #ff7f7f");
 	}
 }

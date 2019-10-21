@@ -68,9 +68,9 @@ public:
 		Options(Options &&) = default;
 		Options();
 
-		bool operator < (const Options & a_Other);
-		bool operator ==(const Options & a_Other);
-		Options & operator = (const Options & a_Other) = default;
+		bool operator < (const Options & aOther);
+		bool operator ==(const Options & aOther);
+		Options & operator = (const Options & aOther) = default;
 	};
 
 

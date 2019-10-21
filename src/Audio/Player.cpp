@@ -14,7 +14,7 @@ class Player::OutputThread:
 {
 public:
 
-	OutputThread(Player & a_Player, QAudioFormat & a_Format);
+	OutputThread(Player & aPlayer, QAudioFormat & aFormat);
 
 	// QThread overrides:
 	virtual void run() override;
@@ -24,11 +24,11 @@ protected slots:
 
 	/** Starts playing the specified track.
 	Connects self to Player's startingPlayback() in the class constructor. */
-	void startPlaying(IPlaylistItemPtr a_Track);
+	void startPlaying(IPlaylistItemPtr aTrack);
 
 	/** Emitted by the player when the AudioOutput signals that it is idle.
 	Used to finalize the AudioDataSource (#118). */
-	void finishedPlayback(AudioDataSourcePtr a_Src);
+	void finishedPlayback(AudioDataSourcePtr aSrc);
 
 
 protected:
@@ -36,57 +36,57 @@ protected:
 	friend class Player;
 
 	/** The player that owns this thread. */
-	Player & m_Player;
+	Player & mPlayer;
 
 	/** The format that the audio output should consume.*/
-	QAudioFormat m_Format;
+	QAudioFormat mFormat;
 
 	/** The actual audio output. */
-	std::unique_ptr<QAudioOutput> m_Output;
+	std::unique_ptr<QAudioOutput> mOutput;
 };
 
 
 
 
 
-Player::Player(QObject * a_Parent):
-	Super(a_Parent),
-	m_Playlist(new Playlist),
-	m_State(psStopped),
-	m_FadeoutProgress(0),
-	m_Tempo(1)
+Player::Player(QObject * aParent):
+	Super(aParent),
+	mPlaylist(new Playlist),
+	mState(psStopped),
+	mFadeoutProgress(0),
+	mTempo(1)
 {
 	// Pick an audio format:
-	m_Format.setSampleRate(48000);
-	m_Format.setChannelCount(2);
-	m_Format.setSampleSize(16);
-	m_Format.setSampleType(QAudioFormat::SignedInt);
-	m_Format.setByteOrder(QAudioFormat::Endian(QSysInfo::ByteOrder));
-	m_Format.setCodec("audio/pcm");
-	if (QAudioDeviceInfo::defaultOutputDevice().isFormatSupported(m_Format))
+	mFormat.setSampleRate(48000);
+	mFormat.setChannelCount(2);
+	mFormat.setSampleSize(16);
+	mFormat.setSampleType(QAudioFormat::SignedInt);
+	mFormat.setByteOrder(QAudioFormat::Endian(QSysInfo::ByteOrder));
+	mFormat.setCodec("audio/pcm");
+	if (QAudioDeviceInfo::defaultOutputDevice().isFormatSupported(mFormat))
 	{
 		qDebug() << "Using 48 kHz output format";
 	}
 	else
 	{
-		m_Format.setSampleRate(44100);
-		if (QAudioDeviceInfo::defaultOutputDevice().isFormatSupported(m_Format))
+		mFormat.setSampleRate(44100);
+		if (QAudioDeviceInfo::defaultOutputDevice().isFormatSupported(mFormat))
 		{
 			qDebug() << "Using 44.1 kHz output format";
 		}
 		else
 		{
 			qWarning() << "No basic output format supported, attempting default";
-			m_Format = QAudioDeviceInfo::defaultOutputDevice().preferredFormat();
-			qDebug() << "Output audio format: " << m_Format;
+			mFormat = QAudioDeviceInfo::defaultOutputDevice().preferredFormat();
+			qDebug() << "Output audio format: " << mFormat;
 		}
 	}
-	m_OutputThread = std::make_unique<OutputThread>(*this, m_Format);
-	m_OutputThread->start(QThread::HighPriority);
+	mOutputThread = std::make_unique<OutputThread>(*this, mFormat);
+	mOutputThread->start(QThread::HighPriority);
 
-	connect(m_Playlist.get(), &Playlist::itemDeleting,  this,             &Player::deletePlaylistItem);
-	connect(this,             &Player::startedPlayback, m_Playlist.get(), &Playlist::updateItemTimesFromCurrent);
-	connect(this,             &Player::stoppedPlayback, m_Playlist.get(), &Playlist::eraseItemTimesAfterCurrent);
+	connect(mPlaylist.get(), &Playlist::itemDeleting,  this,             &Player::deletePlaylistItem);
+	connect(this,             &Player::startedPlayback, mPlaylist.get(), &Playlist::updateItemTimesFromCurrent);
+	connect(this,             &Player::stoppedPlayback, mPlaylist.get(), &Playlist::eraseItemTimesAfterCurrent);
 }
 
 
@@ -95,7 +95,7 @@ Player::Player(QObject * a_Parent):
 
 Player::~Player()
 {
-	auto outputThread = std::move(m_OutputThread);
+	auto outputThread = std::move(mOutputThread);
 	if (outputThread != nullptr)
 	{
 		outputThread->quit();
@@ -113,11 +113,11 @@ Player::~Player()
 
 double Player::currentPosition() const
 {
-	if (m_AudioDataSource == nullptr)
+	if (mAudioDataSource == nullptr)
 	{
 		return 0;
 	}
-	return m_AudioDataSource->currentSongPosition();
+	return mAudioDataSource->currentSongPosition();
 }
 
 
@@ -126,11 +126,11 @@ double Player::currentPosition() const
 
 double Player::remainingTime() const
 {
-	if (m_AudioDataSource == nullptr)
+	if (mAudioDataSource == nullptr)
 	{
 		return 0;
 	}
-	return m_AudioDataSource->remainingTime();
+	return mAudioDataSource->remainingTime();
 }
 
 
@@ -139,27 +139,27 @@ double Player::remainingTime() const
 
 double Player::totalTime() const
 {
-	if (m_AudioDataSource == nullptr)
+	if (mAudioDataSource == nullptr)
 	{
 		return 0;
 	}
-	return static_cast<double>(m_Elapsed.elapsed()) / 1000;
+	return static_cast<double>(mElapsed.elapsed()) / 1000;
 }
 
 
 
 
 
-void Player::fadeOut(Player::State a_FadeOutState)
+void Player::fadeOut(Player::State aFadeOutState)
 {
-	assert((a_FadeOutState == psFadeOutToStop) || (a_FadeOutState == psFadeOutToTrack));  // Requested a fadeout
-	assert((m_State != psFadeOutToStop) && (m_State != psFadeOutToTrack));  // Not already fading out
+	assert((aFadeOutState == psFadeOutToStop) || (aFadeOutState == psFadeOutToTrack));  // Requested a fadeout
+	assert((mState != psFadeOutToStop) && (mState != psFadeOutToTrack));  // Not already fading out
 
-	m_FadeoutProgress = 0;
-	m_State = a_FadeOutState;
-	if (m_AudioDataSource != nullptr)
+	mFadeoutProgress = 0;
+	mState = aFadeOutState;
+	if (mAudioDataSource != nullptr)
 	{
-		m_AudioDataSource->fadeOut(2000);  // TODO: Settable FadeOut length
+		mAudioDataSource->fadeOut(2000);  // TODO: Settable FadeOut length
 	}
 }
 
@@ -169,30 +169,30 @@ void Player::fadeOut(Player::State a_FadeOutState)
 
 void Player::invalidCurrentTrack()
 {
-	assert(m_CurrentTrack != nullptr);
+	assert(mCurrentTrack != nullptr);
 
-	m_CurrentTrack->markAsUnplayable();
-	emit invalidTrack(m_CurrentTrack);
+	mCurrentTrack->markAsUnplayable();
+	emit invalidTrack(mCurrentTrack);
 }
 
 
 
 
 
-void Player::seekTo(double a_Time)
+void Player::seekTo(double aTime)
 {
-	if (m_State != psPlaying)
+	if (mState != psPlaying)
 	{
 		return;
 	}
-	if (m_AudioDataSource == nullptr)
+	if (mAudioDataSource == nullptr)
 	{
 		return;
 	}
-	m_AudioDataSource->seekTo(a_Time);
-	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
+	mAudioDataSource->seekTo(aTime);
+	if (mCurrentTrack->updateEndTimeFromRemainingTime(mAudioDataSource->remainingTime()))
 	{
-		m_Playlist->updateItemTimesFromCurrent();
+		mPlaylist->updateItemTimesFromCurrent();
 	}
 }
 
@@ -202,7 +202,7 @@ void Player::seekTo(double a_Time)
 
 IPlaylistItemPtr Player::currentTrack()
 {
-	switch (m_State)
+	switch (mState)
 	{
 		case psPlaying:
 		case psFadeOutToStop:
@@ -210,7 +210,7 @@ IPlaylistItemPtr Player::currentTrack()
 		case psPaused:
 		case psStartingPlayback:
 		{
-			return m_Playlist->currentItem();
+			return mPlaylist->currentItem();
 		}
 		case psStopped:
 		{
@@ -227,7 +227,7 @@ IPlaylistItemPtr Player::currentTrack()
 
 bool Player::isPlaying() const
 {
-	switch (m_State)
+	switch (mState)
 	{
 		case psPlaying:
 		case psFadeOutToStop:
@@ -252,7 +252,7 @@ bool Player::isPlaying() const
 
 bool Player::isTrackLoaded() const
 {
-	switch (m_State)
+	switch (mState)
 	{
 		case psPlaying:
 		case psFadeOutToStop:
@@ -275,32 +275,32 @@ bool Player::isTrackLoaded() const
 
 
 
-void Player::setVolume(qreal a_NewVolume)
+void Player::setVolume(qreal aNewVolume)
 {
-	m_OutputThread->m_Output->setVolume(a_NewVolume);
-	emit volumeChanged(a_NewVolume);
+	mOutputThread->mOutput->setVolume(aNewVolume);
+	emit volumeChanged(aNewVolume);
 }
 
 
 
 
 
-void Player::setTempo(qreal a_NewTempo)
+void Player::setTempo(qreal aNewTempo)
 {
-	m_Tempo = a_NewTempo;
-	if (m_AudioDataSource == nullptr)
+	mTempo = aNewTempo;
+	if (mAudioDataSource == nullptr)
 	{
-		emit tempoCoeffChanged(a_NewTempo);
+		emit tempoCoeffChanged(aNewTempo);
 		return;
 	}
-	m_AudioDataSource->setTempo(a_NewTempo);
-	assert(m_CurrentTrack != nullptr);
-	m_CurrentTrack->setTempoCoeff(a_NewTempo);
-	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
+	mAudioDataSource->setTempo(aNewTempo);
+	assert(mCurrentTrack != nullptr);
+	mCurrentTrack->setTempoCoeff(aNewTempo);
+	if (mCurrentTrack->updateEndTimeFromRemainingTime(mAudioDataSource->remainingTime()))
 	{
-		m_Playlist->updateItemTimesFromCurrent();
+		mPlaylist->updateItemTimesFromCurrent();
 	}
-	emit tempoCoeffChanged(a_NewTempo);
+	emit tempoCoeffChanged(aNewTempo);
 }
 
 
@@ -309,10 +309,10 @@ void Player::setTempo(qreal a_NewTempo)
 
 void Player::nextTrack()
 {
-	if (m_State == psFadeOutToTrack)
+	if (mState == psFadeOutToTrack)
 	{
 		// Already fading out to a track, abort the fade-out:
-		auto ads = m_AudioDataSource;
+		auto ads = mAudioDataSource;
 		if (ads != nullptr)
 		{
 			ads->fadeOut(1);
@@ -320,12 +320,12 @@ void Player::nextTrack()
 		return;
 	}
 
-	if (!m_Playlist->nextItem())
+	if (!mPlaylist->nextItem())
 	{
 		// There's no next track in the playlist
 		return;
 	}
-	switch (m_State)
+	switch (mState)
 	{
 		case psStopped:
 		case psPaused:
@@ -346,7 +346,7 @@ void Player::nextTrack()
 		case psFadeOutToStop:
 		{
 			// Already fading out, change to starting the next track afterwards
-			m_State = psFadeOutToTrack;
+			mState = psFadeOutToTrack;
 			break;
 		}
 	}
@@ -358,10 +358,10 @@ void Player::nextTrack()
 
 void Player::prevTrack()
 {
-	if (m_State == psFadeOutToTrack)
+	if (mState == psFadeOutToTrack)
 	{
 		// Already fading out to a track, abort the fade-out:
-		auto ads = m_AudioDataSource;
+		auto ads = mAudioDataSource;
 		if (ads != nullptr)
 		{
 			ads->fadeOut(1);
@@ -369,12 +369,12 @@ void Player::prevTrack()
 		return;
 	}
 
-	if (!m_Playlist->prevItem())
+	if (!mPlaylist->prevItem())
 	{
 		// There's no prev track in the playlist
 		return;
 	}
-	switch (m_State)
+	switch (mState)
 	{
 		case psStopped:
 		case psPaused:
@@ -395,7 +395,7 @@ void Player::prevTrack()
 		case psFadeOutToStop:
 		{
 			// Already fading out, change to starting the prev track afterwards
-			m_State = psFadeOutToTrack;
+			mState = psFadeOutToTrack;
 			break;
 		}
 	}
@@ -407,7 +407,7 @@ void Player::prevTrack()
 
 void Player::startPausePlayback()
 {
-	switch (m_State)
+	switch (mState)
 	{
 		case psStopped:
 		case psPaused:
@@ -424,7 +424,7 @@ void Player::startPausePlayback()
 		case psFadeOutToTrack:
 		{
 			// Already fading out, just stop afterwards
-			m_State = psFadeOutToStop;
+			mState = psFadeOutToStop;
 			return;
 		}
 		case psFadeOutToStop:
@@ -440,17 +440,17 @@ void Player::startPausePlayback()
 
 void Player::startPlayback()
 {
-	auto track = m_Playlist->currentItem();
+	auto track = mPlaylist->currentItem();
 	if (track == nullptr)
 	{
 		return;
 	}
-	switch (m_State)
+	switch (mState)
 	{
 		case psFadeOutToStop:
 		{
 			// We were stopping a track; continue stopping, but schedule the new track to start playing afterwards
-			m_State = psFadeOutToTrack;
+			mState = psFadeOutToTrack;
 			return;
 		}
 		case psFadeOutToTrack:
@@ -468,14 +468,14 @@ void Player::startPlayback()
 		{
 			// We're stopped, start the playback:
 			qDebug() << "Player: Starting playback of track " << track->displayName();
-			m_Elapsed.start();
+			mElapsed.start();
 			emit startingPlayback(track);
-			m_State = psStartingPlayback;
+			mState = psStartingPlayback;
 			return;
 		}
 		case psPaused:
 		{
-			m_OutputThread->m_Output->resume();
+			mOutputThread->mOutput->resume();
 			return;
 		}
 	}
@@ -487,11 +487,11 @@ void Player::startPlayback()
 
 void Player::pausePlayback()
 {
-	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
+	if ((mState != psPlaying) && (mState != psStartingPlayback))
 	{
 		return;
 	}
-	m_OutputThread->m_Output->suspend();
+	mOutputThread->mOutput->suspend();
 }
 
 
@@ -500,7 +500,7 @@ void Player::pausePlayback()
 
 void Player::stopPlayback()
 {
-	switch (m_State)
+	switch (mState)
 	{
 		case psPlaying:
 		case psStartingPlayback:
@@ -513,7 +513,7 @@ void Player::stopPlayback()
 		{
 			// Stop completely without finishing the fadeout
 			qDebug() << "Stopping playback immediately";
-			auto ads = m_AudioDataSource;
+			auto ads = mAudioDataSource;
 			if (ads != nullptr)
 			{
 				ads->fadeOut(1);
@@ -533,14 +533,14 @@ void Player::stopPlayback()
 
 
 
-void Player::jumpTo(int a_ItemIdx)
+void Player::jumpTo(int aItemIdx)
 {
-	if (!m_Playlist->setCurrentItem(a_ItemIdx))
+	if (!mPlaylist->setCurrentItem(aItemIdx))
 	{
 		// Invalid index
 		return;
 	}
-	switch (m_State)
+	switch (mState)
 	{
 		case psPlaying:
 		case psStartingPlayback:
@@ -550,7 +550,7 @@ void Player::jumpTo(int a_ItemIdx)
 		}
 		case psPaused:
 		{
-			m_State = psStopped;
+			mState = psStopped;
 			startPlayback();
 			break;
 		}
@@ -561,7 +561,7 @@ void Player::jumpTo(int a_ItemIdx)
 		}
 		case psFadeOutToStop:
 		{
-			m_State = psFadeOutToTrack;
+			mState = psFadeOutToTrack;
 			break;
 		}
 		case psFadeOutToTrack:
@@ -578,31 +578,31 @@ void Player::jumpTo(int a_ItemIdx)
 
 
 
-void Player::setKeepTempo(bool a_KeepTempo)
+void Player::setKeepTempo(bool aKeepTempo)
 {
-	m_ShouldKeepTempo = a_KeepTempo;
+	mShouldKeepTempo = aKeepTempo;
 }
 
 
 
 
 
-void Player::setKeepVolume(bool a_KeepVolume)
+void Player::setKeepVolume(bool aKeepVolume)
 {
-	m_ShouldKeepVolume = a_KeepVolume;
+	mShouldKeepVolume = aKeepVolume;
 }
 
 
 
 
 
-void Player::deletePlaylistItem(IPlaylistItem * a_Item)
+void Player::deletePlaylistItem(IPlaylistItem * aItem)
 {
-	if ((m_State != psPlaying) && (m_State != psStartingPlayback))
+	if ((mState != psPlaying) && (mState != psStartingPlayback))
 	{
 		return;
 	}
-	if (m_CurrentTrack.get() == a_Item)
+	if (mCurrentTrack.get() == aItem)
 	{
 		// Fade out and start playing the next track if any (the same track index!):
 		fadeOut(psFadeOutToTrack);
@@ -615,41 +615,41 @@ void Player::deletePlaylistItem(IPlaylistItem * a_Item)
 
 void Player::updateTrackTimesFromCurrent()
 {
-	if ((m_CurrentTrack == nullptr) || (m_AudioDataSource == nullptr))
+	if ((mCurrentTrack == nullptr) || (mAudioDataSource == nullptr))
 	{
 		return;
 	}
-	if (m_CurrentTrack->updateEndTimeFromRemainingTime(m_AudioDataSource->remainingTime()))
-	m_Playlist->updateItemTimesFromCurrent();
+	if (mCurrentTrack->updateEndTimeFromRemainingTime(mAudioDataSource->remainingTime()))
+	mPlaylist->updateItemTimesFromCurrent();
 }
 
 
 
 
 
-void Player::outputStateChanged(QAudio::State a_NewState)
+void Player::outputStateChanged(QAudio::State aNewState)
 {
-	switch (a_NewState)
+	switch (aNewState)
 	{
 		case QAudio::StoppedState:
 		case QAudio::IdleState:
 		{
 			// The player has become idle, which means there's no more audio to play.
 			// Either the song finished, or the fadeout was completed.
-			if (m_CurrentTrack != nullptr)
+			if (mCurrentTrack != nullptr)
 			{
-				m_CurrentTrack->m_PlaybackEnded = QDateTime::currentDateTimeUtc();
+				mCurrentTrack->mPlaybackEnded = QDateTime::currentDateTimeUtc();
 			}
-			switch (m_State)
+			switch (mState)
 			{
 				case psPlaying:
 				{
 					// Play the next song in the playlist, if any:
-					m_State = psStopped;
-					emit finishedPlayback(m_AudioDataSource);
-					m_AudioDataSource.reset();
-					m_CurrentTrack.reset();
-					if (m_Playlist->nextItem())
+					mState = psStopped;
+					emit finishedPlayback(mAudioDataSource);
+					mAudioDataSource.reset();
+					mCurrentTrack.reset();
+					if (mPlaylist->nextItem())
 					{
 						startPlayback();
 					}
@@ -663,20 +663,20 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 				case psPaused:
 				{
 					// Stop playing completely:
-					m_State = psStopped;
-					emit finishedPlayback(m_AudioDataSource);
-					m_AudioDataSource.reset();
-					m_CurrentTrack.reset();
+					mState = psStopped;
+					emit finishedPlayback(mAudioDataSource);
+					mAudioDataSource.reset();
+					mCurrentTrack.reset();
 					emit stoppedPlayback();
 					return;
 				}
 				case psFadeOutToTrack:
 				{
 					// Start playing the next scheduled track:
-					m_State = psStopped;
-					emit finishedPlayback(m_AudioDataSource);
-					m_AudioDataSource.reset();
-					m_CurrentTrack.reset();
+					mState = psStopped;
+					emit finishedPlayback(mAudioDataSource);
+					mAudioDataSource.reset();
+					mCurrentTrack.reset();
 					startPlayback();
 					return;
 				}
@@ -692,15 +692,15 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 
 		case QAudio::SuspendedState:
 		{
-			m_State = psPaused;
+			mState = psPaused;
 			return;
 		}
 
 		case QAudio::ActiveState:
 		{
-			if (m_State == psPaused)
+			if (mState == psPaused)
 			{
-				m_State = psPlaying;
+				mState = psPlaying;
 			}
 			return;
 		}
@@ -722,14 +722,14 @@ void Player::outputStateChanged(QAudio::State a_NewState)
 ////////////////////////////////////////////////////////////////////////////////
 // Player::OutputThread:
 
-Player::OutputThread::OutputThread(Player & a_Player, QAudioFormat & a_Format):
-	m_Player(a_Player),
-	m_Format(a_Format)
+Player::OutputThread::OutputThread(Player & aPlayer, QAudioFormat & aFormat):
+	mPlayer(aPlayer),
+	mFormat(aFormat)
 {
 	setObjectName("Player::OutputThread");
 	moveToThread(this);
-	connect(&m_Player, &Player::startingPlayback, this, &Player::OutputThread::startPlaying, Qt::QueuedConnection);
-	connect(&m_Player, &Player::finishedPlayback, this, &Player::OutputThread::finishedPlayback, Qt::QueuedConnection);
+	connect(&mPlayer, &Player::startingPlayback, this, &Player::OutputThread::startPlaying, Qt::QueuedConnection);
+	connect(&mPlayer, &Player::finishedPlayback, this, &Player::OutputThread::finishedPlayback, Qt::QueuedConnection);
 }
 
 
@@ -738,15 +738,15 @@ Player::OutputThread::OutputThread(Player & a_Player, QAudioFormat & a_Format):
 
 void Player::OutputThread::run()
 {
-	m_Output.reset(new QAudioOutput(m_Format));
-	connect(m_Output.get(), &QAudioOutput::stateChanged, &m_Player, &Player::outputStateChanged, Qt::BlockingQueuedConnection);
-	connect(m_Output.get(), &QAudioOutput::notify, [this]()
+	mOutput.reset(new QAudioOutput(mFormat));
+	connect(mOutput.get(), &QAudioOutput::stateChanged, &mPlayer, &Player::outputStateChanged, Qt::BlockingQueuedConnection);
+	connect(mOutput.get(), &QAudioOutput::notify, [this]()
 		{
-			if ((m_Player.m_State != psPlaying) && (m_Player.m_State != psStartingPlayback))
+			if ((mPlayer.mState != psPlaying) && (mPlayer.mState != psStartingPlayback))
 			{
 				return;
 			}
-			auto currTrack = m_Player.currentTrack();
+			auto currTrack = mPlayer.currentTrack();
 			if (currTrack == nullptr)
 			{
 				return;
@@ -757,15 +757,15 @@ void Player::OutputThread::run()
 				// No limit to enforce
 				return;
 			}
-			if (m_Player.m_Elapsed.hasExpired(static_cast<qint64>(1000 * durationLimit)))
+			if (mPlayer.mElapsed.hasExpired(static_cast<qint64>(1000 * durationLimit)))
 			{
-				if (m_Player.playlist().hasNextSong())
+				if (mPlayer.playlist().hasNextSong())
 				{
-					m_Player.nextTrack();
+					mPlayer.nextTrack();
 				}
 				else
 				{
-					m_Player.stopPlayback();
+					mPlayer.stopPlayback();
 				}
 			}
 		}
@@ -777,58 +777,58 @@ void Player::OutputThread::run()
 
 
 
-void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
+void Player::OutputThread::startPlaying(IPlaylistItemPtr aTrack)
 {
-	m_Player.m_CurrentTrack = a_Track;
-	m_Player.m_PlaybackBuffer.reset(a_Track->startDecoding(m_Format));
-	if (m_Player.m_PlaybackBuffer == nullptr)
+	mPlayer.mCurrentTrack = aTrack;
+	mPlayer.mPlaybackBuffer.reset(aTrack->startDecoding(mFormat));
+	if (mPlayer.mPlaybackBuffer == nullptr)
 	{
 		qDebug() << "Cannot start playback, decoder returned failure";
-		m_Player.m_State = psStopped;
-		QMetaObject::invokeMethod(&m_Player, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&m_Player, "nextTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&m_Player, "startPlayback", Qt::QueuedConnection);
+		mPlayer.mState = psStopped;
+		QMetaObject::invokeMethod(&mPlayer, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "nextTrack", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "startPlayback", Qt::QueuedConnection);
 		return;
 	}
-	if (!m_Player.m_PlaybackBuffer->waitForData())
+	if (!mPlayer.mPlaybackBuffer->waitForData())
 	{
 		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
-		m_Player.m_State = psStopped;
-		QMetaObject::invokeMethod(&m_Player, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&m_Player, "nextTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&m_Player, "startPlayback", Qt::QueuedConnection);
+		mPlayer.mState = psStopped;
+		QMetaObject::invokeMethod(&mPlayer, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "nextTrack", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "startPlayback", Qt::QueuedConnection);
 		return;
 	}
 	auto audioDataSource =
 		std::make_shared<AudioFadeOut>(
 		std::make_shared<AudioTempoChange>(
-		m_Player.m_PlaybackBuffer
+		mPlayer.mPlaybackBuffer
 	));
-	if (m_Player.m_ShouldKeepTempo.load())
+	if (mPlayer.mShouldKeepTempo.load())
 	{
-		audioDataSource->setTempo(m_Player.m_Tempo);
+		audioDataSource->setTempo(mPlayer.mTempo);
 	}
 	else
 	{
-		auto tempoCoeff = a_Track->tempoCoeff();
+		auto tempoCoeff = aTrack->tempoCoeff();
 		audioDataSource->setTempo(tempoCoeff);
 		QMetaObject::invokeMethod(
-			&m_Player, "tempoCoeffChanged",
+			&mPlayer, "tempoCoeffChanged",
 			Q_ARG(qreal, tempoCoeff)
 		);
 	}
-	m_Player.m_AudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
-	auto bufSize = m_Format.bytesForDuration(300 * 1000);  // 300 msec buffer
+	mPlayer.mAudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
+	auto bufSize = mFormat.bytesForDuration(300 * 1000);  // 300 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;
-	m_Output->setBufferSize(bufSize);
-	m_Output->start(m_Player.m_AudioDataSource.get());
-	m_Output->setNotifyInterval(100);
-	m_Player.m_State = psPlaying;
-	a_Track->m_PlaybackStarted = QDateTime::currentDateTimeUtc();
-	QMetaObject::invokeMethod(&m_Player, "updateTrackTimesFromCurrent");
+	mOutput->setBufferSize(bufSize);
+	mOutput->start(mPlayer.mAudioDataSource.get());
+	mOutput->setNotifyInterval(100);
+	mPlayer.mState = psPlaying;
+	aTrack->mPlaybackStarted = QDateTime::currentDateTimeUtc();
+	QMetaObject::invokeMethod(&mPlayer, "updateTrackTimesFromCurrent");
 	QMetaObject::invokeMethod(
-		&m_Player, "startedPlayback",
-		Q_ARG(IPlaylistItemPtr, a_Track), Q_ARG(PlaybackBufferPtr, m_Player.m_PlaybackBuffer)
+		&mPlayer, "startedPlayback",
+		Q_ARG(IPlaylistItemPtr, aTrack), Q_ARG(PlaybackBufferPtr, mPlayer.mPlaybackBuffer)
 	);
 }
 
@@ -836,7 +836,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr a_Track)
 
 
 
-void Player::OutputThread::finishedPlayback(AudioDataSourcePtr a_Src)
+void Player::OutputThread::finishedPlayback(AudioDataSourcePtr aSrc)
 {
-	a_Src.reset();  // Remove the last reference to the AudioDataSource here in the output thread.
+	aSrc.reset();  // Remove the last reference to the AudioDataSource here in the output thread.
 }

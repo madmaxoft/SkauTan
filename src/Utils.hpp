@@ -29,17 +29,17 @@ namespace Utils
 
 
 /** Returns the value, clamped to the range provided. */
-template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
+template <typename T> T clamp(T aValue, T aMin, T aMax)
 {
-	if (a_Value < a_Min)
+	if (aValue < aMin)
 	{
-		return a_Min;
+		return aMin;
 	}
-	if (a_Value > a_Max)
+	if (aValue > aMax)
 	{
-		return a_Max;
+		return aMax;
 	}
-	return a_Value;
+	return aValue;
 }
 
 
@@ -47,9 +47,9 @@ template <typename T> T clamp(T a_Value, T a_Min, T a_Max)
 
 
 /** Returns true if the specified value lies within the specified range. Min and Max are inclusive. */
-template <typename T> bool isInRange(T a_Value, T a_Min, T a_Max)
+template <typename T> bool isInRange(T aValue, T aMin, T aMax)
 {
-	return (a_Value >= a_Min) && (a_Value <= a_Max);
+	return (aValue >= aMin) && (aValue <= aMax);
 }
 
 
@@ -57,9 +57,9 @@ template <typename T> bool isInRange(T a_Value, T a_Min, T a_Max)
 
 
 /** Performs floor and static_cast at the same time. */
-template <typename T> T floor(double a_Value)
+template <typename T> T floor(double aValue)
 {
-	return static_cast<T>(std::floor(a_Value));
+	return static_cast<T>(std::floor(aValue));
 }
 
 
@@ -67,9 +67,9 @@ template <typename T> T floor(double a_Value)
 
 
 /** Performs ceil and static_cast at the same time. */
-template <typename T> T ceil(double a_Value)
+template <typename T> T ceil(double aValue)
 {
-	return static_cast<T>(std::ceil(a_Value));
+	return static_cast<T>(std::ceil(aValue));
 }
 
 
@@ -78,23 +78,23 @@ template <typename T> T ceil(double a_Value)
 
 /** Parses the string in the format "[[hh:]mm:]ss.fff" or "[hh:]mmm:ss.fff" into fractional seconds.
 If the string cannot be parsed, isOK is set to false and returns -1. */
-double parseTime(const QString & a_TimeString, bool & isOK);
+double parseTime(const QString & aTimeString, bool & isOK);
 
 /** Formats the time in seconds into string "mmm:ss".
 Fractional second part is rounded and otherwise ignored. */
-QString formatTime(double a_Seconds);
+QString formatTime(double aSeconds);
 
 /** Formats the time in fractional seconds into string "mmm:ss.fff".
 a_Decimals specifies the number of decimal places after the decimal dot ("f"). */
-QString formatFractionalTime(double a_Seconds, int a_NumDecimals);
+QString formatFractionalTime(double aSeconds, int aNumDecimals);
 
 /** Finds the first item in the widget that has the specified data set as its Qt::UserRole,
 and selects the item's row.
 Returns true if item found, false otherwise. */
-bool selectItemWithData(QListWidget * a_ListWidget, const QVariant & a_Data);
+bool selectItemWithData(QListWidget * aListWidget, const QVariant & aData);
 
 /** Returns a string that represents the data in hex. */
-QString toHex(const QByteArray & a_Data);
+QString toHex(const QByteArray & aData);
 
 
 
@@ -107,10 +107,10 @@ class QPainterSaver
 public:
 
 	/** Creates a new instance, saves the QPainter state. */
-	QPainterSaver(QPainter & a_Painter);
+	QPainterSaver(QPainter & aPainter);
 
 	/** Creates a new instance, saves the QPainter state. */
-	QPainterSaver(QPainter * a_Painter);
+	QPainterSaver(QPainter * aPainter);
 
 	/** Restores the QPainter state. */
 	~QPainterSaver();
@@ -119,7 +119,7 @@ public:
 protected:
 
 	/** The painter whose state will be restored on exit. */
-	QPainter * m_Painter;
+	QPainter * mPainter;
 };
 
 

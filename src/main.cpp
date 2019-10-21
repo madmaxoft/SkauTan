@@ -44,23 +44,23 @@
 /** Loads translation for the specified locale from all reasonable locations.
 Returns true if successful, false on failure.
 Tries: resources, <curdir>/translations, <exepath>/translations. */
-static bool tryLoadTranslation(QTranslator & a_Translator, const QLocale & a_Locale)
+static bool tryLoadTranslation(QTranslator & aTranslator, const QLocale & aLocale)
 {
 	static const QString exePath = QCoreApplication::applicationDirPath();
 
-	if (a_Translator.load("SkauTan_" + a_Locale.name(), ":/translations"))
+	if (aTranslator.load("SkauTan_" + aLocale.name(), ":/translations"))
 	{
-		qDebug() << "Loaded translation " << a_Locale.name() << " from resources";
+		qDebug() << "Loaded translation " << aLocale.name() << " from resources";
 		return true;
 	}
-	if (a_Translator.load("SkauTan_" + a_Locale.name(), "translations"))
+	if (aTranslator.load("SkauTan_" + aLocale.name(), "translations"))
 	{
-		qDebug() << "Loaded translation " << a_Locale.name() << " from current folder";
+		qDebug() << "Loaded translation " << aLocale.name() << " from current folder";
 		return true;
 	}
-	if (a_Translator.load("SkauTan_" + a_Locale.name(), exePath + "/translations"))
+	if (aTranslator.load("SkauTan_" + aLocale.name(), exePath + "/translations"))
 	{
-		qDebug() << "Loaded translation " << a_Locale.name() << " from exe folder";
+		qDebug() << "Loaded translation " << aLocale.name() << " from exe folder";
 		return true;
 	}
 	return false;
@@ -70,7 +70,7 @@ static bool tryLoadTranslation(QTranslator & a_Translator, const QLocale & a_Loc
 
 
 
-void initTranslations(QApplication & a_App)
+void initTranslations(QApplication & aApp)
 {
 	auto translator = std::make_unique<QTranslator>();
 	auto locale = QLocale::system();
@@ -84,14 +84,14 @@ void initTranslations(QApplication & a_App)
 		}
 	}
 	qDebug() << "Translator empty: " << translator->isEmpty();
-	a_App.installTranslator(translator.release());
+	aApp.installTranslator(translator.release());
 }
 
 
 
 
 
-void importDefaultTemplates(Database & a_DB)
+void importDefaultTemplates(Database & aDB)
 {
 	qDebug() << "No templates in the DB, inserting defaults...";
 	QFile f(":/other/STT-LAT.SkauTanTemplates");
@@ -108,8 +108,8 @@ void importDefaultTemplates(Database & a_DB)
 	f.close();
 	for (const auto & tmpl: templates)
 	{
-		a_DB.addTemplate(tmpl);
-		a_DB.saveTemplate(*tmpl);
+		aDB.addTemplate(tmpl);
+		aDB.saveTemplate(*tmpl);
 	}
 }
 
@@ -163,10 +163,10 @@ int main(int argc, char *argv[])
 		app.connect(voteServer.get(),    &LocalVoteServer::addVoteGenreTypicality,    mainDB.get(),        &Database::addVoteGenreTypicality);
 		app.connect(voteServer.get(),    &LocalVoteServer::addVotePopularity,         mainDB.get(),        &Database::addVotePopularity);
 		app.connect(tempoDetector.get(), &SongTempoDetector::songTempoDetected,       mainDB.get(),        &Database::saveSongSharedData);
-		app.connect(player.get(),  &Player::startedPlayback, [&](IPlaylistItemPtr a_Item)
+		app.connect(player.get(),  &Player::startedPlayback, [&](IPlaylistItemPtr aItem)
 			{
 				// Update the "last played" value in the DB:
-				auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(a_Item);
+				auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(aItem);
 				if (spi != nullptr)
 				{
 					mainDB->songPlaybackStarted(spi->song());

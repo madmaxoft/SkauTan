@@ -33,16 +33,16 @@ DebugLogger & DebugLogger::get()
 
 std::vector<DebugLogger::Message> DebugLogger::lastMessages() const
 {
-	QMutexLocker lock(&m_Mtx);
+	QMutexLocker lock(&mMtx);
 	std::vector<Message> res;
-	size_t max = sizeof(m_Messages) / sizeof(m_Messages[0]);
+	size_t max = sizeof(mMessages) / sizeof(mMessages[0]);
 	res.reserve(max);
 	for (size_t i = 0; i < max; ++i)
 	{
-		size_t idx = (i + m_NextMessageIdx) % max;
-		if (m_Messages[idx].m_DateTime.isValid())
+		size_t idx = (i + mNextMessageIdx) % max;
+		if (mMessages[idx].mDateTime.isValid())
 		{
-			res.push_back(m_Messages[idx]);
+			res.push_back(mMessages[idx]);
 		}
 	}
 	return res;
@@ -53,13 +53,13 @@ std::vector<DebugLogger::Message> DebugLogger::lastMessages() const
 
 
 void DebugLogger::messageHandler(
-	QtMsgType a_Type,
-	const QMessageLogContext & a_Context,
-	const QString & a_Message
+	QtMsgType aType,
+	const QMessageLogContext & aContext,
+	const QString & aMessage
 )
 {
-	DebugLogger::get().addMessage(a_Type, a_Context, a_Message);
-	g_OldHandler(a_Type, a_Context, a_Message);
+	DebugLogger::get().addMessage(aType, aContext, aMessage);
+	g_OldHandler(aType, aContext, aMessage);
 }
 
 
@@ -67,12 +67,12 @@ void DebugLogger::messageHandler(
 
 
 void DebugLogger::addMessage(
-	QtMsgType a_Type,
-	const QMessageLogContext & a_Context,
-	const QString & a_Message
+	QtMsgType aType,
+	const QMessageLogContext & aContext,
+	const QString & aMessage
 )
 {
-	QMutexLocker lock(&m_Mtx);
-	m_Messages[m_NextMessageIdx] = Message(a_Type, a_Context, a_Message);
-	m_NextMessageIdx = (m_NextMessageIdx + 1) % (sizeof(m_Messages) / sizeof(m_Messages[0]));
+	QMutexLocker lock(&mMtx);
+	mMessages[mNextMessageIdx] = Message(aType, aContext, aMessage);
+	mNextMessageIdx = (mNextMessageIdx + 1) % (sizeof(mMessages) / sizeof(mMessages[0]));
 }

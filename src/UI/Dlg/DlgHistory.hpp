@@ -36,7 +36,7 @@ class DlgHistory:\
 
 public:
 
-	explicit DlgHistory(ComponentCollection & a_Components, QWidget * a_Parent = nullptr);
+	explicit DlgHistory(ComponentCollection & aComponents, QWidget * aParent = nullptr);
 
 	virtual ~DlgHistory() override;
 
@@ -44,51 +44,51 @@ public:
 signals:
 
 	/** Emitted when the user wants to append a song to the playlist. */
-	void appendSongToPlaylist(SongPtr a_Song);
+	void appendSongToPlaylist(SongPtr aSong);
 
 	/** Emitted when the user wants to insert a song into the playlist after the current song. */
-	void insertSongToPlaylist(SongPtr a_Song);
+	void insertSongToPlaylist(SongPtr aSong);
 
 
 private:
 
 	/** The components of the entire program. */
-	ComponentCollection & m_Components;
+	ComponentCollection & mComponents;
 
 	/** The Qt-managed UI.  */
-	std::unique_ptr<Ui::DlgHistory> m_UI;
+	std::unique_ptr<Ui::DlgHistory> mUI;
 
 	/** The context menu for the history view. */
-	std::unique_ptr<QMenu> m_ContextMenu;
+	std::unique_ptr<QMenu> mContextMenu;
 
 	/** The model adapter that performs the filtering.
 	The actual class used is HistoryModelFilter, declared within the CPP file; it is a descendant
 	of QAbstractItemModel so it can be up-cast when needed. */
-	QAbstractItemModel * m_ModelFilter;
+	QAbstractItemModel * mModelFilter;
 
-	/** The new search text to be set into m_SongModelFilter in periodic UI update.
+	/** The new search text to be set into mSongModelFilter in periodic UI update.
 	The text isn't set immediately to avoid slowdowns while still typing the string. */
-	QString m_NewSearchText;
+	QString mNewSearchText;
 
-	/** Number of ticks until m_NewSearchText is set into the filter in the periodic UI update.
+	/** Number of ticks until mNewSearchText is set into the filter in the periodic UI update.
 	The text isn't set immediately to avoid slowdowns while still typing the string,
 	this counter goes from a fixed value down to zero on each periodic UI update and only when reaching zero
 	is the search text applied. */
-	int m_TicksUntilSetSearchText;
+	int mTicksUntilSetSearchText;
 
 	/** Timer for updating the UI periodically with background-generated information. */
-	QTimer m_PeriodicUiUpdate;
+	QTimer mPeriodicUiUpdate;
 
 
 	/** Returns the song represented in the specified table cell.
 	Returns nullptr if no such song. */
-	SongPtr songFromIndex(const QModelIndex & a_Index);
+	SongPtr songFromIndex(const QModelIndex & aIndex);
 
 
 private slots:
 
 	/** Shows the context menu for tblHistory. */
-	void showHistoryContextMenu(const QPoint & a_Pos);
+	void showHistoryContextMenu(const QPoint & aPos);
 
 	/** Emits the appendToPlaylist() signal for each selected song. */
 	void appendToPlaylist();
@@ -106,8 +106,8 @@ private slots:
 	void periodicUiUpdate();
 
 	/** Called when the user edits the search text.
-	Schedules an update in the m_FilterModel. */
-	void searchTextEdited(const QString & a_NewText);
+	Schedules an update in the mFilterModel. */
+	void searchTextEdited(const QString & aNewText);
 };
 
 

@@ -138,10 +138,10 @@ static const struct SimpleControllerDef
 
 
 
-MidiEnumerator::MidiEnumerator(QObject * a_Parent):
-	Super(a_Parent),
-	m_LastNumPortsIn(0),
-	m_LastNumPortsOut(0)
+MidiEnumerator::MidiEnumerator(QObject * aParent):
+	Super(aParent),
+	mLastNumPortsIn(0),
+	mLastNumPortsOut(0)
 {
 }
 
@@ -152,8 +152,8 @@ MidiEnumerator::MidiEnumerator(QObject * a_Parent):
 void MidiEnumerator::periodicUpdate()
 {
 	if (
-		(m_LastNumPortsIn  != MidiPort::getNumInPorts()) ||
-		(m_LastNumPortsOut != MidiPort::getNumOutPorts())
+		(mLastNumPortsIn  != MidiPort::getNumInPorts()) ||
+		(mLastNumPortsOut != MidiPort::getNumOutPorts())
 	)
 	{
 		qDebug() << "MIDI Port counts differ, rescanning...";
@@ -167,7 +167,7 @@ void MidiEnumerator::periodicUpdate()
 
 std::vector<std::shared_ptr<AbstractController> > MidiEnumerator::queryControllers()
 {
-	return m_Controllers;
+	return mControllers;
 }
 
 
@@ -219,20 +219,20 @@ void MidiEnumerator::rescanPorts()
 	}
 
 	// Update the last port counts:
-	m_LastNumPortsIn = numPorts;
-	m_LastNumPortsOut = MidiPort::getNumOutPorts();
+	mLastNumPortsIn = numPorts;
+	mLastNumPortsOut = MidiPort::getNumOutPorts();
 }
 
 
 
 
 
-std::vector<AbstractControllerPtr> MidiEnumerator::detectSinglePortControllers(std::vector<MidiPortInPtr> & a_PortsIn)
+std::vector<AbstractControllerPtr> MidiEnumerator::detectSinglePortControllers(std::vector<MidiPortInPtr> & aPortsIn)
 {
 	// Detect controllers:
 	std::vector<AbstractControllerPtr> res;
 	std::set<MidiPortInPtr> usedPorts;
-	for (auto & port: a_PortsIn)
+	for (auto & port: aPortsIn)
 	{
 		auto controller = controllerFromPortIn(port);
 		if (controller != nullptr)
@@ -245,13 +245,13 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectSinglePortControllers(s
 
 	}
 
-	// Remove usedPorts from a_PortsIn:
-	a_PortsIn.erase(std::remove_if(a_PortsIn.begin(), a_PortsIn.end(),
-		[&](const MidiPortInPtr & a_TestedPort)
+	// Remove usedPorts from aPortsIn:
+	aPortsIn.erase(std::remove_if(aPortsIn.begin(), aPortsIn.end(),
+		[&](const MidiPortInPtr & aTestedPort)
 		{
-			return (usedPorts.find(a_TestedPort) != usedPorts.end());
+			return (usedPorts.find(aTestedPort) != usedPorts.end());
 		}
-	), a_PortsIn.end());
+	), aPortsIn.end());
 
 	return res;
 }
@@ -260,7 +260,7 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectSinglePortControllers(s
 
 
 
-std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std::vector<MidiPortInPtr> & a_PortsIn)
+std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std::vector<MidiPortInPtr> & aPortsIn)
 {
 	// Connect each IN port to a signal that selects the port on a received reply:
 	std::vector<AbstractControllerPtr> res;
@@ -268,13 +268,13 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std
 	MidiPortOutPtr portOut;  // The currently queried OUT port
 	QSemaphore evt(0);  // The event for signalling we found a matching IN port
 	std::vector<QMetaObject::Connection> connections;  // The Qt signal-slot connections to be removed at end
-	for (auto & port: a_PortsIn)
+	for (auto & port: aPortsIn)
 	{
 		connections.push_back(connect(port.get(), &MidiPortIn::receivedMessage,
-			[&res, &usedPorts, port, &portOut, this, &evt](double a_Timestamp, const QByteArray & a_Message)
+			[&res, &usedPorts, port, &portOut, this, &evt](double aTimestamp, const QByteArray & aMessage)
 			{
-				Q_UNUSED(a_Timestamp);
-				auto controller = controllerFromMMCResonse(a_Message, port, portOut);
+				Q_UNUSED(aTimestamp);
+				auto controller = controllerFromMMCResonse(aMessage, port, portOut);
 				if (controller == nullptr)
 				{
 					return;
@@ -310,13 +310,13 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std
 		disconnect(c);
 	}
 
-	// Remove usedPorts from a_PortsIn:
-	a_PortsIn.erase(std::remove_if(a_PortsIn.begin(), a_PortsIn.end(),
-		[&](const MidiPortInPtr & a_TestedPort)
+	// Remove usedPorts from aPortsIn:
+	aPortsIn.erase(std::remove_if(aPortsIn.begin(), aPortsIn.end(),
+		[&](const MidiPortInPtr & aTestedPort)
 		{
-			return (usedPorts.find(a_TestedPort) != usedPorts.end());
+			return (usedPorts.find(aTestedPort) != usedPorts.end());
 		}
-	), a_PortsIn.end());
+	), aPortsIn.end());
 
 	return res;
 }
@@ -326,20 +326,20 @@ std::vector<AbstractControllerPtr> MidiEnumerator::detectDualPortControllers(std
 
 
 AbstractControllerPtr MidiEnumerator::controllerFromMMCResonse(
-	const QByteArray & a_Message,
-	MidiPortInPtr a_PortIn,
-	MidiPortOutPtr a_PortOut
+	const QByteArray & aMessage,
+	MidiPortInPtr aPortIn,
+	MidiPortOutPtr aPortOut
 )
 {
-	if (a_Message.size() < 3)
+	if (aMessage.size() < 3)
 	{
 		// Invalid / too small to be a wanted response
 		return nullptr;
 	}
 
 	// Detect by the response to the MMC device query:
-	auto nameIn = QString::fromStdString(a_PortIn->portName());
-	auto nameOut = QString::fromStdString(a_PortOut->portName());
+	auto nameIn = QString::fromStdString(aPortIn->portName());
+	auto nameOut = QString::fromStdString(aPortOut->portName());
 	for (const auto & c: g_SimpleControllerDefs)
 	{
 		if (!c.portInMatch.match(nameIn).hasMatch())
@@ -350,13 +350,13 @@ AbstractControllerPtr MidiEnumerator::controllerFromMMCResonse(
 		{
 			continue;
 		}
-		auto numToCompare = std::min(static_cast<size_t>(a_Message.size()), c.responseMMC.size());
-		if (memcmp(a_Message.data(), c.responseMMC.data(), numToCompare) != 0)
+		auto numToCompare = std::min(static_cast<size_t>(aMessage.size()), c.responseMMC.size());
+		if (memcmp(aMessage.data(), c.responseMMC.data(), numToCompare) != 0)
 		{
 			continue;
 		}
 		return std::make_shared<SimpleMidiController>(
-			a_PortIn, a_PortOut,
+			aPortIn, aPortOut,
 			c.keyMap,
 			c.ledMap,
 			c.sliderMap,
@@ -371,9 +371,9 @@ AbstractControllerPtr MidiEnumerator::controllerFromMMCResonse(
 
 
 
-AbstractControllerPtr MidiEnumerator::controllerFromPortIn(MidiPortInPtr a_PortIn)
+AbstractControllerPtr MidiEnumerator::controllerFromPortIn(MidiPortInPtr aPortIn)
 {
-	auto name = QString::fromStdString(a_PortIn->portName());
+	auto name = QString::fromStdString(aPortIn->portName());
 
 	for (const auto & d: g_SimpleControllerDefs)
 	{
@@ -387,7 +387,7 @@ AbstractControllerPtr MidiEnumerator::controllerFromPortIn(MidiPortInPtr a_PortI
 			continue;
 		}
 		return std::make_shared<SimpleMidiController>(
-			a_PortIn, nullptr,
+			aPortIn, nullptr,
 			d.keyMap, d.ledMap, d.sliderMap, d.wheelMap, d.controllerName
 		);
 	}
@@ -399,23 +399,23 @@ AbstractControllerPtr MidiEnumerator::controllerFromPortIn(MidiPortInPtr a_PortI
 
 
 
-void MidiEnumerator::addController(AbstractControllerPtr && a_Controller)
+void MidiEnumerator::addController(AbstractControllerPtr && aController)
 {
 	// Add to internal list:
-	m_Controllers.push_back(a_Controller);
+	mControllers.push_back(aController);
 
 	// Emit the signal:
-	emit newControllerDetected(a_Controller);
+	emit newControllerDetected(aController);
 
 	// Connect to the controller's unplugged() signal:
-	connect(a_Controller.get(), &MidiController::unplugged,
-		[this, a_Controller]()
+	connect(aController.get(), &MidiController::unplugged,
+		[this, aController]()
 		{
-			for (auto itr = m_Controllers.begin(), end = m_Controllers.end(); itr != end; ++itr)
+			for (auto itr = mControllers.begin(), end = mControllers.end(); itr != end; ++itr)
 			{
-				if (*itr == a_Controller)
+				if (*itr == aController)
 				{
-					m_Controllers.erase(itr);
+					mControllers.erase(itr);
 					emit controllerDisconnected(*itr);
 					break;
 				}
