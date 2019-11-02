@@ -1319,6 +1319,20 @@ void Database::addToSharedDataManualTags(const std::map<QByteArray, Song::Tag> &
 
 
 
+bool Database::renameFile(Song & aSong, const QString & aFileName)
+{
+	if (!QFile::rename(aSong.fileName(), aFileName))
+	{
+		return false;
+	}
+	aSong.setFileName(aFileName);
+	return true;
+}
+
+
+
+
+
 void Database::loadSongs()
 {
 	// First load the shared data:

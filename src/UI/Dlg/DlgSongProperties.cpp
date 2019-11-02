@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QClipboard>
+#include <QFileDialog>
 #include "ui_DlgSongProperties.h"
 #include "../../DB/Database.hpp"
 #include "../../Settings.hpp"
@@ -65,6 +66,7 @@ DlgSongProperties::DlgSongProperties(
 	mUI->cbManualGenre->addItems(genres);
 	mUI->cbManualGenre->setMaxVisibleItems(genres.count());
 	mUI->lwDuplicates->addActions({
+		mUI->actRenameFile,
 		mUI->actRemoveFromLibrary,
 		mUI->actDeleteFromDisk,
 	});
@@ -84,13 +86,14 @@ DlgSongProperties::DlgSongProperties(
 	connect(mUI->leId3Genre,                &QLineEdit::textEdited,                this, &DlgSongProperties::id3GenreEdited);
 	connect(mUI->leId3Comment,              &QLineEdit::textEdited,                this, &DlgSongProperties::id3CommentEdited);
 	connect(mUI->leId3MeasuresPerMinute,    &QLineEdit::textEdited,                this, &DlgSongProperties::id3MeasuresPerMinuteEdited);
+	connect(mUI->actRenameFile,             &QAction::triggered,                   this, &DlgSongProperties::renameFile);
 	connect(mUI->actRemoveFromLibrary,      &QAction::triggered,                   this, &DlgSongProperties::removeFromLibrary);
 	connect(mUI->actDeleteFromDisk,         &QAction::triggered,                   this, &DlgSongProperties::deleteFromDisk);
 	connect(mUI->btnCopyId3Tag,             &QPushButton::clicked,                 this, &DlgSongProperties::copyId3Tag);
 	connect(mUI->btnCopyPid3Tag,            &QPushButton::clicked,                 this, &DlgSongProperties::copyPid3Tag);
 	connect(mUI->btnCopyFilenameTag,        &QPushButton::clicked,                 this, &DlgSongProperties::copyFilenameTag);
 	connect(mUI->btnTapTempo,               &QPushButton::clicked,                 this, &DlgSongProperties::showTapTempo);
-	connect(td.get(),                        &SongTempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
+	connect(td.get(),                       &SongTempoDetector::songTempoDetected, this, &DlgSongProperties::songTempoDetected);
 
 	// Set the read-only edit boxes' palette to greyed-out:
 	auto p = palette();
@@ -570,6 +573,45 @@ void DlgSongProperties::id3MeasuresPerMinuteEdited(const QString & aNewText)
 
 
 
+void DlgSongProperties::renameFile()
+{
+	const auto row = mUI->lwDuplicates->currentRow();
+	assert(row >= 0);
+	assert(row < mDuplicates.size());
+	auto song = mDuplicates[static_cast<size_t>(row)];
+	if (song == nullptr)
+	{
+		assert(!"Bad songptr");
+		return;
+	}
+	auto fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("SkauTan: Rename file"),
+		song->fileName()
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+	auto db = mComponents.get<Database>();
+	if (!db->renameFile(*song, fileName))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Renaming file failed"),
+			tr("Cannot rename file from %1 to %2.").arg(song->fileName()).arg(fileName)
+		);
+		return;
+	}
+	song->setFileNameTag(MetadataScanner::parseFileNameIntoMetadata(fileName));
+	db->saveSong(song->shared_from_this());
+	mUI->lwDuplicates->currentItem()->setText(fileName);
+}
+
+
+
+
+
 void DlgSongProperties::removeFromLibrary()
 {
 	auto row = mUI->lwDuplicates->currentRow();
@@ -599,7 +641,10 @@ void DlgSongProperties::removeFromLibrary()
 	// Remove from the DB:
 	mComponents.get<Database>()->removeSong(*song, false);
 	mDuplicates.erase(mDuplicates.begin() + row);
+
+	// Remove from the UI:
 	delete mUI->lwDuplicates->takeItem(row);
+	switchDuplicate(0);
 }
 
 

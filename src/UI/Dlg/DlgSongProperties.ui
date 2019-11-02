@@ -443,6 +443,14 @@
     <string>Removes song from library AND deletes the file from the disk</string>
    </property>
   </action>
+  <action name="actRenameFile">
+   <property name="text">
+    <string>Rename file...</string>
+   </property>
+   <property name="toolTip">
+    <string>Rename the selected file, possibly moving it to another folder, while keeping all the metadata</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>leHash</tabstop>

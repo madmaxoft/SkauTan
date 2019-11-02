@@ -183,6 +183,9 @@ private slots:
 	/** Copies the non-empty FileName tag values to the ID3 tag, for all selected songs. */
 	void copyFileNameToId3();
 
+	/** Displays the save-as dialog, then moves the file to the new location. */
+	void renameFile();
+
 
 signals:
 

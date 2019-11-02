@@ -1576,17 +1576,27 @@ Tato operace je nevratná!</translation>
         <translation>Smaže označené skladby z knihovny i z disku</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="126"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="448"/>
+        <source>Rename file...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.ui" line="451"/>
+        <source>Rename the selected file, possibly moving it to another folder, while keeping all the metadata</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="129"/>
         <source>%1 (detection in progress)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="130"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="133"/>
         <source>unknown (detection in progress)</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="118"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="121"/>
         <source>%1:%2 (%n seconds)</source>
         <comment>SongLength</comment>
         <translation>
@@ -1596,40 +1606,55 @@ Tato operace je nevratná!</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="728"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="773"/>
         <source>unknown (detection failed)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="342"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="345"/>
         <source>%3/backup-%2-%1</source>
         <comment>Backup filename format</comment>
         <translation>%3-zaloha-%2-%1</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="351"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="377"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="354"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="380"/>
         <source>SkauTan: Unable to write ID3</source>
         <translation>SkauTan: Nelze zapsat ID3 tag</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="352"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="355"/>
         <source>SkauTan cannot create a backup copy of file %1 before writing the ID3 tag. Without creating a backup the ID3 tag cannot be written. Your changes to the ID3 tag were lost.</source>
         <translation>Nepodařilo se vytvořit záložní kopii souboru %1 před zapsáním ID3 tagu. Bez vytvoření zálohy nelze pokračovat v zápisu tagu. Vaše změny ID3 tagu byly ztraceny.</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="378"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="381"/>
         <source>SkauTan detected that the ID3 tag in file %1 is corrupt, changing it damaged the file. The file has been restored from backup, your changes to the ID3 tag were lost.</source>
         <translation>ID3 tag v souboru %1 je poškozen, pokus o jeho změnu poškodil celý soubor. Soubor byl obnoven ze zálohy a vaše změny ID3 tagy byly ztraceny.</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="587"/>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="623"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="589"/>
+        <source>SkauTan: Rename file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="601"/>
+        <source>SkauTan: Renaming file failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="602"/>
+        <source>Cannot rename file from %1 to %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="629"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="668"/>
         <source>SkauTan: Remove songs?</source>
         <translation>SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="588"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="630"/>
         <source>Are you sure you want to remove the song %1 from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1638,7 +1663,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="624"/>
+        <location filename="../src/UI/Dlg/DlgSongProperties.cpp" line="669"/>
         <source>Are you sure you want to delete the file %1 from the disk? The file will be deleted and all its properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1820,77 +1845,87 @@ Tato operace je nevratná!</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="197"/>
+        <location filename="../src/UI/Dlg/DlgSongs.ui" line="321"/>
+        <source>Rename file...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongs.ui" line="324"/>
+        <source>Rename the selected file, possibly moving it to another folder, while keeping all the metadata</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="199"/>
         <source>Total songs: %1</source>
         <translation>Celkem skladeb: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="201"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="203"/>
         <source>Total songs: %1 (filtered out of %2)</source>
         <translation>Celkem skladeb: %1 (filtrováno z %2)</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="211"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="213"/>
         <source>All songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="212"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="214"/>
         <source>Songs without ID3 tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="213"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="215"/>
         <source>Songs with no genre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="214"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="216"/>
         <source>Songs with no tempo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="215"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="217"/>
         <source>Songs with warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="216"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="218"/>
         <source>Songs not matching any filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="217"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="219"/>
         <source>Songs with duplicates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="218"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="220"/>
         <source>Songs with skip-start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="219"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="221"/>
         <source>Songs where tempo detection failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="301"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="305"/>
         <source>SkauTan: Choose files to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="319"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="323"/>
         <source>SkauTan: Choose folder to add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="349"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="353"/>
         <source>SkauTan: Remove songs?</source>
         <translation type="unfinished">SkauTan: Odebrat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="350"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="354"/>
         <source>Are you sure you want to remove the selected songs from the library? The song files will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1899,12 +1934,12 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="389"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="393"/>
         <source>SkauTan: Delete songs?</source>
         <translation type="unfinished">SkauTan: vymazat skladby?</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="390"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="394"/>
         <source>Are you sure you want to delete the selected songs from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -1913,13 +1948,28 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="594"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="599"/>
         <source>SkauTan: Rate songs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="595"/>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="600"/>
         <source>Rating:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="761"/>
+        <source>SkauTan: Rename file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="773"/>
+        <source>SkauTan: Renaming file failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/Dlg/DlgSongs.cpp" line="774"/>
+        <source>Cannot rename file from %1 to %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3220,17 +3270,17 @@ Tato operace je nevratná!</translation>
 <context>
     <name>Song</name>
     <message>
-        <location filename="../src/Song.cpp" line="211"/>
+        <location filename="../src/Song.cpp" line="220"/>
         <source>Genre detection is confused, please provide a manual override.</source>
         <translation>Detekce žánru se neumí rozhodnout, prosím zadejte manuální hodnotu.</translation>
     </message>
     <message>
-        <location filename="../src/Song.cpp" line="224"/>
+        <location filename="../src/Song.cpp" line="233"/>
         <source>The detected tempo is suspiciously low: Lowest competition tempo: %1; detected tempo: %2</source>
         <translation>Detekované tempo je podezřele nízké: Nejnižší soutěžní tempo: %1; detekované tempo: %2</translation>
     </message>
     <message>
-        <location filename="../src/Song.cpp" line="231"/>
+        <location filename="../src/Song.cpp" line="240"/>
         <source>The detected tempo is suspiciously high: Highest competition tempo: %1; detected tempo: %2</source>
         <translation>Detekované tempo je podezřele vysoké: Nejvyšší závodní tempo: %1; detekované tempo: %2</translation>
     </message>

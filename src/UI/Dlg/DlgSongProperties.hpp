@@ -134,6 +134,9 @@ private slots:
 	/** The user has edited the ID3 mpm, update the current changeset and parsed ID3 values. */
 	void id3MeasuresPerMinuteEdited(const QString & aNewText);
 
+	/** Displays the save-as dialog, then moves the file to the new location. */
+	void renameFile();
+
 	/** Asks for confirmation, then removes the selected duplicate from the library. */
 	void removeFromLibrary();
 

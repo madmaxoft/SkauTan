@@ -219,6 +219,12 @@ public:
 	Saves all SharedData after applying all changes. */
 	void addToSharedDataManualTags(const std::map<QByteArray /* hash */, Song::Tag> & aTags);
 
+	/** Renames the file represented by the specified song, and updates the song to point to the new file.
+	Doesn't update the filename-based tag in the song.
+	Doesn't save the song yet.
+	Returns true if the renaming succeeds, false on failure. */
+	bool renameFile(Song & aSong, const QString & aFileName);
+
 
 protected:
 
