@@ -72,6 +72,7 @@ DlgSongs::DlgSongs(
 	mUI->tblSongs->addActions({
 		mUI->actAddToPlaylist,
 		mUI->actInsertIntoPlaylist,
+		mUI->actRenameFile,
 		mUI->actDeleteFromDisk,
 		mUI->actManualToId3,
 		mUI->actFileNameToId3,
@@ -106,6 +107,7 @@ DlgSongs::DlgSongs(
 	connect(mUI->actTapTempo,           &QAction::triggered,                     this, &DlgSongs::showTapTempo);
 	connect(mUI->actManualToId3,        &QAction::triggered,                     this, &DlgSongs::moveManualToId3);
 	connect(mUI->actFileNameToId3,      &QAction::triggered,                     this, &DlgSongs::copyFileNameToId3);
+	connect(mUI->actRenameFile,         &QAction::triggered,                     this, &DlgSongs::renameFile);
 
 	initFilterSearch();
 	createContextMenu();
@@ -236,6 +238,8 @@ void DlgSongs::createContextMenu()
 	mContextMenu.reset(new QMenu());
 	mContextMenu->addAction(mUI->actAddToPlaylist);
 	mContextMenu->addAction(mUI->actInsertIntoPlaylist);
+	mContextMenu->addSeparator();
+	mContextMenu->addAction(mUI->actRenameFile);
 	mContextMenu->addSeparator();
 	mContextMenu->addAction(mUI->actRemoveFromLibrary);
 	mContextMenu->addAction(mUI->actDeleteFromDisk);
@@ -541,6 +545,7 @@ void DlgSongs::showSongsContextMenu(const QPoint & aPos)
 	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
 	mUI->actAddToPlaylist->setEnabled(!sel.isEmpty());
 	mUI->actInsertIntoPlaylist->setEnabled(!sel.isEmpty());
+	mUI->actRenameFile->setEnabled(sel.count() == 1);
 	mUI->actDeleteFromDisk->setEnabled(!sel.isEmpty());
 	mUI->actProperties->setEnabled(!sel.isEmpty());
 	mUI->actRemoveFromLibrary->setEnabled(!sel.isEmpty());
@@ -731,4 +736,45 @@ void DlgSongs::copyFileNameToId3()
 		MetadataScanner::writeTagToSong(song, tagFile.second);
 		db->saveSong(song);
 	}
+}
+
+
+
+
+
+void DlgSongs::renameFile()
+{
+	const auto & sel = mUI->tblSongs->selectionModel()->selectedRows();
+	if (sel.count() != 1)
+	{
+		assert(!"Bad number of selected items");
+		return;
+	}
+	auto song = songFromIndex(sel[0]);
+	if (song == nullptr)
+	{
+		assert(!"Bad songptr");
+		return;
+	}
+	auto fileName = QFileDialog::getSaveFileName(
+		this,
+		tr("SkauTan: Rename file"),
+		song->fileName()
+	);
+	if (fileName.isEmpty())
+	{
+		return;
+	}
+	auto db = mComponents.get<Database>();
+	if (!db->renameFile(*song, fileName))
+	{
+		QMessageBox::warning(
+			this,
+			tr("SkauTan: Renaming file failed"),
+			tr("Cannot rename file from %1 to %2.").arg(song->fileName()).arg(fileName)
+		);
+		return;
+	}
+	song->setFileNameTag(MetadataScanner::parseFileNameIntoMetadata(fileName));
+	db->saveSong(song);
 }

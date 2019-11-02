@@ -223,6 +223,11 @@ public:
 	/** Updates the length of the song, in seconds. */
 	void setLength(double aLength);
 
+	/** Updates the filename stored in the song.
+	Doesn't rename the file itself.
+	Doesn't update the filename tag. */
+	void setFileName(const QString & aFileName);
+
 	// Setters that redirect into the Manual tag:
 	void setAuthor(QVariant aAuthor) { mSharedData->mTagManual.mAuthor = aAuthor; }
 	void setTitle(QVariant aTitle) { mSharedData->mTagManual.mTitle = aTitle; }

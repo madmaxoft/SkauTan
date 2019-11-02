@@ -130,6 +130,15 @@ void Song::setLength(double aLength)
 
 
 
+void Song::setFileName(const QString & aFileName)
+{
+	mFileName = aFileName;
+}
+
+
+
+
+
 void Song::setLocalRating(double aValue)
 {
 	mSharedData->mRating.mLocal = aValue;

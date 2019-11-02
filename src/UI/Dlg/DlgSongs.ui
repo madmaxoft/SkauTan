@@ -316,6 +316,14 @@
     <string>Copy the FileName tag values into the file's ID3 tag</string>
    </property>
   </action>
+  <action name="actRenameFile">
+   <property name="text">
+    <string>Rename file...</string>
+   </property>
+   <property name="toolTip">
+    <string>Rename the selected file, possibly moving it to another folder, while keeping all the metadata</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>leSearch</tabstop>
