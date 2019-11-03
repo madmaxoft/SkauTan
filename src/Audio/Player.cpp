@@ -533,6 +533,18 @@ void Player::stopPlayback()
 
 
 
+void Player::startNextTrack()
+{
+	if (mPlaylist->nextItem())
+	{
+		startPlayback();
+	}
+}
+
+
+
+
+
 void Player::jumpTo(int aItemIdx)
 {
 	if (!mPlaylist->setCurrentItem(aItemIdx))
@@ -786,8 +798,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr aTrack)
 		qDebug() << "Cannot start playback, decoder returned failure";
 		mPlayer.mState = psStopped;
 		QMetaObject::invokeMethod(&mPlayer, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&mPlayer, "nextTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&mPlayer, "startPlayback", Qt::QueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "startNextTrack", Qt::BlockingQueuedConnection);
 		return;
 	}
 	if (!mPlayer.mPlaybackBuffer->waitForData())
@@ -795,8 +806,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr aTrack)
 		qDebug() << "Cannot start playback, decoder didn't produce any initial data.";
 		mPlayer.mState = psStopped;
 		QMetaObject::invokeMethod(&mPlayer, "invalidCurrentTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&mPlayer, "nextTrack", Qt::BlockingQueuedConnection);
-		QMetaObject::invokeMethod(&mPlayer, "startPlayback", Qt::QueuedConnection);
+		QMetaObject::invokeMethod(&mPlayer, "startNextTrack", Qt::BlockingQueuedConnection);
 		return;
 	}
 	auto audioDataSource =

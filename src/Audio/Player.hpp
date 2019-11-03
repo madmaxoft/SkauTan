@@ -209,6 +209,10 @@ public slots:
 	Ignored is the player is not playing anything. */
 	void stopPlayback();
 
+	/** If a next track is available, starts playing it; otherwise does nothing.
+	Used mainly when encountering an invalid track, to resume playing the next song conditionally. */
+	void startNextTrack();
+
 	/** Starts playing back the playlist item at the specified index.
 	Fades the current track first, if playing.
 	Ignored if the index is invalid. */

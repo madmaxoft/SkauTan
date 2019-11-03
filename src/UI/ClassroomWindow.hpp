@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QRegularExpression>
 #include "../DJControllers.hpp"
+#include "../IPlaylistItem.hpp"
 
 
 
@@ -64,6 +65,9 @@ private:
 
 	/** The song on which the context menu actions are applied. */
 	std::shared_ptr<Song> mContextSong;
+
+	/** The song currently playing. */
+	std::shared_ptr<Song> mCurrentSong;
 
 	/** All the songs matching the current filter.
 	Updated when the filter is chosen by the user, in updateAllFilterSongs().
@@ -172,6 +176,10 @@ private slots:
 	such as loading a new track with pre-set default tempo and KeepTempo turned off.
 	Updates the Tempo UI. */
 	void playerTempoChanged(qreal aTempoCoeff);
+
+	/** Emitted by Player when it encounters an invalid track.
+	Updates the UI to indicate the failure. */
+	void playerInvalidTrack(IPlaylistItemPtr aTrack);
 
 	/** The Duration Limit checkbox was clicked, applies or removes the duration limit. */
 	void durationLimitClicked();

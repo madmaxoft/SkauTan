@@ -111,8 +111,9 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & aComponents):
 	connect(mUI->vsVolume,              &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
 	connect(mUI->vsTempo,               &QSlider::valueChanged,               this,         &ClassroomWindow::tempoValueChanged);
 	connect(mUI->btnTempoReset,         &QPushButton::clicked,                this,         &ClassroomWindow::tempoResetClicked);
-	connect(player.get(),                &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
-	connect(player.get(),                &Player::volumeChanged,               this,         &ClassroomWindow::playerVolumeChanged);
+	connect(player.get(),               &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
+	connect(player.get(),               &Player::volumeChanged,               this,         &ClassroomWindow::playerVolumeChanged);
+	connect(player.get(),               &Player::invalidTrack,                this,         &ClassroomWindow::playerInvalidTrack);
 	connect(mUI->btnPlayPause,          &QPushButton::clicked,                player.get(), &Player::startPausePlayback);
 	connect(mUI->btnStop,               &QPushButton::clicked,                player.get(), &Player::stopPlayback);
 	connect(mUI->chbDurationLimit,      &QCheckBox::clicked,                  this,         &ClassroomWindow::durationLimitClicked);
@@ -226,6 +227,7 @@ void ClassroomWindow::startPlayingSong(std::shared_ptr<Song> aSong)
 	}
 	auto player = mComponents.get<Player>();
 	auto & playlist = player->playlist();
+	mCurrentSong = aSong;
 	playlist.addItem(std::make_shared<PlaylistItemSong>(aSong, selectedFilter()));
 	player->jumpTo(static_cast<int>(playlist.items().size()) - 1);
 	if (!player->isPlaying())
@@ -681,6 +683,25 @@ void ClassroomWindow::playerTempoChanged(qreal aTempoCoeff)
 	mIsInternalChange = true;
 	mUI->vsTempo->setValue(value);
 	mIsInternalChange = false;
+}
+
+
+
+
+
+void ClassroomWindow::playerInvalidTrack(IPlaylistItemPtr aTrack)
+{
+	auto spi = std::dynamic_pointer_cast<PlaylistItemSong>(aTrack);
+	if (spi == nullptr)
+	{
+		return;
+	}
+	if (spi->song() != mCurrentSong)
+	{
+		// The player was playing something else, ignore
+		return;
+	}
+	mUI->lblCurrentlyPlaying->setText(tr("FAILED to play: %1").arg(songDisplayText(*mCurrentSong)));
 }
 
 
