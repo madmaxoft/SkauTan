@@ -1,9 +1,4 @@
-#ifndef DLGREMOVEDSONGS_H
-#define DLGREMOVEDSONGS_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -54,9 +49,3 @@ protected slots:
 	/** The user clicked the Export list, export the data to a file. */
 	void exportList();
 };
-
-
-
-
-
-#endif // DLGREMOVEDSONGS_H

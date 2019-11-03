@@ -1,9 +1,4 @@
-#ifndef DLGLVSSTATUS_H
-#define DLGLVSSTATUS_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -58,9 +53,3 @@ private slots:
 	/** Updates the GUI counter of votes within the current session. */
 	void updateVoteCount();
 };
-
-
-
-
-
-#endif // DLGLVSSTATUS_H

@@ -1,10 +1,4 @@
-#ifndef AUDIOEFFECTS_H
-#define AUDIOEFFECTS_H
-
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include "AudioDataSource.hpp"
@@ -95,9 +89,3 @@ protected:
 	If this doesn't queal to mDestSampleRate on next read, the resampler will be reinitialized. */
 	int mCurrentSampleRate;
 };
-
-
-
-
-
-#endif // AUDIOEFFECTS_H

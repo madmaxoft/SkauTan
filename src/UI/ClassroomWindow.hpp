@@ -1,5 +1,4 @@
-#ifndef CLASSROOMWINDOW_HPP
-#define CLASSROOMWINDOW_HPP
+#pragma once
 
 #include <memory>
 #include <QMainWindow>
@@ -227,9 +226,3 @@ private slots:
 	Does not apply the filter immediately, so that the UI doesn't slow down waiting for the filtering. */
 	void searchTextEdited(const QString & aNewSearchText);
 };
-
-
-
-
-
-#endif // CLASSROOMWINDOW_HPP

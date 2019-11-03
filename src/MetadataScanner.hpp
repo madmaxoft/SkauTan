@@ -1,9 +1,4 @@
-#ifndef METADATASCANNER_H
-#define METADATASCANNER_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <atomic>
@@ -142,9 +137,3 @@ public slots:
 	Once the song is scanned, the songScanned() signal is emitted, as part of this call. */
 	void scanSong(SongPtr aSong);
 };
-
-
-
-
-
-#endif // METADATASCANNER_H

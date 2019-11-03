@@ -1,8 +1,4 @@
-#ifndef SONGMODEL_H
-#define SONGMODEL_H
-
-
-
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QSortFilterProxyModel>
@@ -221,9 +217,3 @@ protected:
 	/** Returns true if the specified row matches the currently set search string. */
 	bool songMatchesSearchString(SongPtr aSong) const;
 };
-
-
-
-
-
-#endif // SONGMODEL_H

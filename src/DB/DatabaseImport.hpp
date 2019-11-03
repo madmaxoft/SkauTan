@@ -1,9 +1,4 @@
-#ifndef DATABASEIMPORT_H
-#define DATABASEIMPORT_H
-
-
-
-
+#pragma once
 
 #include <QString>
 #include "../DatedOptional.hpp"
@@ -67,9 +62,3 @@ private:
 		const QByteArray & aSongHash
 	);
 };
-
-
-
-
-
-#endif // DATABASEIMPORT_H

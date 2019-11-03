@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 #include <QString>
 #include <QObject>
 
@@ -34,4 +31,3 @@ public:
 	Throws and Exception on error. */
 	static void doImport(Database & aDB, const QString & aFileName);
 };
-

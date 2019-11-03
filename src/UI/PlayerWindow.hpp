@@ -1,9 +1,4 @@
-#ifndef PLAYERWINDOW_H
-#define PLAYERWINDOW_H
-
-
-
-
+#pragma once
 
 #include <memory>
 
@@ -259,9 +254,3 @@ private slots:
 	/** Shows the DebugLog dialog. */
 	void showDebugLog();
 };
-
-
-
-
-
-#endif // PLAYERWINDOW_H

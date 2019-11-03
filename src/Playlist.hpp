@@ -1,9 +1,4 @@
-#ifndef PLAYLIST_H
-#define PLAYLIST_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -167,9 +162,3 @@ public slots:
 };
 
 using PlaylistPtr = std::shared_ptr<Playlist>;
-
-
-
-
-
-#endif // PLAYLIST_H

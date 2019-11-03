@@ -1,9 +1,4 @@
-#ifndef SONGDECODER_H
-#define SONGDECODER_H
-
-
-
-
+#pragma once
 
 #include <QSemaphore>
 #include "../Song.hpp"
@@ -44,9 +39,3 @@ protected:
 	/** Internal entrypoint for the decoding. */
 	void decodeInternal();
 };
-
-
-
-
-
-#endif // SONGDECODER_H

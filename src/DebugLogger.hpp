@@ -1,9 +1,4 @@
-#ifndef DEBUGLOGGER_HPP
-#define DEBUGLOGGER_HPP
-
-
-
-
+#pragma once
 
 #include <QObject>
 #include <QMutex>
@@ -104,9 +99,3 @@ protected:
 		const QString & aMessage
 	);
 };
-
-
-
-
-
-#endif // DEBUGLOGGER_HPP

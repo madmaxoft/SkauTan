@@ -1,9 +1,4 @@
-#ifndef PLAYBACKBUFFER_H
-#define PLAYBACKBUFFER_H
-
-
-
-
+#pragma once
 
 #include <atomic>
 
@@ -122,9 +117,3 @@ private:
 using PlaybackBufferPtr = std::shared_ptr<PlaybackBuffer>;
 
 Q_DECLARE_METATYPE(PlaybackBufferPtr);
-
-
-
-
-
-#endif // PLAYBACKBUFFER_H

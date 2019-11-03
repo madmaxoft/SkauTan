@@ -1,9 +1,4 @@
-#ifndef WAVEFORMDISPLAY_H
-#define WAVEFORMDISPLAY_H
-
-
-
-
+#pragma once
 
 #include <QWidget>
 #include <QTimer>
@@ -128,9 +123,3 @@ protected slots:
 	void updateOnTimer();
 
 };
-
-
-
-
-
-#endif // WAVEFORMDISPLAY_H

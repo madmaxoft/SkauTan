@@ -1,9 +1,4 @@
-#ifndef DJCONTROLLERS_H
-#define DJCONTROLLERS_H
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include <QThread>
@@ -212,9 +207,3 @@ public slots:
 	/** Sets the state of the Headphone button's LED. */
 	void setLedPfl(bool aLightUp);
 };
-
-
-
-
-
-#endif // DJCONTROLLERS_H

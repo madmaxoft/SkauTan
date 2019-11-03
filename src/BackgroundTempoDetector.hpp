@@ -1,9 +1,4 @@
-#ifndef BACKGROUNDTEMPODETECTOR_HPP
-#define BACKGROUNDTEMPODETECTOR_HPP
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include <set>
@@ -70,9 +65,3 @@ protected:
 	/** Picks a song to process and enqueues the detection task. */
 	void enqueueAnother();
 };
-
-
-
-
-
-#endif  // BACKGROUNDTEMPODETECTOR_HPP

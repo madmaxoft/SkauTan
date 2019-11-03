@@ -1,9 +1,4 @@
-#ifndef COMPONENTCOLLECTION_H
-#define COMPONENTCOLLECTION_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <map>
@@ -134,9 +129,3 @@ protected:
 	Clients should use the templated get() instead (which calls this internally). */
 	ComponentBasePtr get(EKind aKind);
 };
-
-
-
-
-
-#endif // COMPONENTCOLLECTION_H

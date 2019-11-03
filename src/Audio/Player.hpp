@@ -1,9 +1,4 @@
-#ifndef PLAYER_H
-#define PLAYER_H
-
-
-
-
+#pragma once
 
 #include <memory>
 
@@ -240,9 +235,3 @@ protected slots:
 	Used to detect end-of-track and end-of-fade. */
 	void outputStateChanged(QAudio::State aNewState);
 };
-
-
-
-
-
-#endif // PLAYER_H

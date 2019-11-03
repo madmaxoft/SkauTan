@@ -1,9 +1,4 @@
-#ifndef ABSTRACTENUMERATOR_H
-#define ABSTRACTENUMERATOR_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -56,9 +51,3 @@ signals:
 
 public slots:
 };
-
-
-
-
-
-#endif // ABSTRACTENUMERATOR_H

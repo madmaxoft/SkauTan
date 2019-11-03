@@ -1,9 +1,4 @@
-#ifndef DLGHISTORY_H
-#define DLGHISTORY_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -109,9 +104,3 @@ private slots:
 	Schedules an update in the mFilterModel. */
 	void searchTextEdited(const QString & aNewText);
 };
-
-
-
-
-
-#endif // DLGHISTORY_H

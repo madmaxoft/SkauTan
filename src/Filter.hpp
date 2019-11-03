@@ -1,9 +1,4 @@
-#ifndef FILTER_H
-#define FILTER_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QVariant>
@@ -340,9 +335,3 @@ protected:
 };
 
 Q_DECLARE_METATYPE(FilterPtr);
-
-
-
-
-
-#endif  // FILTER_H

@@ -1,9 +1,4 @@
-#ifndef AVPP_H
-#define AVPP_H
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -268,10 +263,3 @@ namespace AVPP
 
 	bool isExtensionSupported(const QString & aExtension);
 }  // namespace AVPP
-
-
-
-
-
-
-#endif // AVPP_H

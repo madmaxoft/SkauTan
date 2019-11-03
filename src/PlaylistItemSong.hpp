@@ -1,9 +1,4 @@
-#ifndef PLAYLISTITEMSONG_H
-#define PLAYLISTITEMSONG_H
-
-
-
-
+#pragma once
 
 #include "IPlaylistItem.hpp"
 #include "Song.hpp"
@@ -54,9 +49,3 @@ protected:
 	-1 if no limit. */
 	double mDurationLimit;
 };
-
-
-
-
-
-#endif // PLAYLISTITEMSONG_H

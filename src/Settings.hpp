@@ -1,5 +1,8 @@
-#ifndef HEADERCOLUMNSAVER_H
-#define HEADERCOLUMNSAVER_H
+#pragma once
+
+#include <memory>
+#include <QString>
+#include <QVariant>
 
 
 
@@ -10,14 +13,6 @@ class QHeaderView;
 class QSettings;
 class QWidget;
 class QSplitter;
-
-
-
-
-
-#include <memory>
-#include <QString>
-#include <QVariant>
 
 
 
@@ -66,9 +61,3 @@ protected:
 
 	static std::unique_ptr<QSettings> mSettings;
 };
-
-
-
-
-
-#endif // HEADERCOLUMNSAVER_H

@@ -1,9 +1,4 @@
-#ifndef SONGDATABASE_H
-#define SONGDATABASE_H
-
-
-
-
+#pragma once
 
 #include <vector>
 #include <memory>
@@ -387,9 +382,3 @@ protected slots:
 	void addPlaybackHistory(SongPtr aSong, const QDateTime & aTimestamp);
 
 };
-
-
-
-
-
-#endif // SONGDATABASE_H

@@ -1,9 +1,4 @@
-#ifndef COLORDELEGATE_H
-#define COLORDELEGATE_H
-
-
-
-
+#pragma once
 
 #include <QItemDelegate>
 
@@ -51,9 +46,3 @@ protected:
 	/** Returns the rectangle for the button in the specified item's bounding rectangle. */
 	QRect buttonRectFromItemRect(const QRect & aItemRect) const;
 };
-
-
-
-
-
-#endif // COLORDELEGATE_H

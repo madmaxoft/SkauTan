@@ -1,9 +1,4 @@
-#ifndef DLGSONGS_H
-#define DLGSONGS_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -195,9 +190,3 @@ signals:
 	/** Emitted when the user asks to insert songs into the playlist (after the current playlist selection). */
 	void insertSongToPlaylist(SongPtr aSong);
 };
-
-
-
-
-
-#endif // DLGSONGS_H

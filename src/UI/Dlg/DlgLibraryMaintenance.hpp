@@ -1,9 +1,4 @@
-#ifndef DLGLIBRARYMAINTENANCE_HPP
-#define DLGLIBRARYMAINTENANCE_HPP
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -77,9 +72,3 @@ private slots:
 	/** Asks for the source file, then imports tags from the file and fills them into the Library. */
 	void importTags();
 };
-
-
-
-
-
-#endif // DLGLIBRARYMAINTENANCE_HPP

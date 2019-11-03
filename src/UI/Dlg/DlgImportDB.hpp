@@ -1,8 +1,4 @@
-#ifndef DLGIMPORTDB_H
-#define DLGIMPORTDB_H
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -54,9 +50,3 @@ private slots:
 	/** The Browse button has been clicked, ask the user for the DB file. */
 	void browseForDB();
 };
-
-
-
-
-
-#endif // DLGIMPORTDB_H

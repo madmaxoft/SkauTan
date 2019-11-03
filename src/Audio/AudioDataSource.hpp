@@ -1,9 +1,4 @@
-#ifndef AUDIODATASOURCE_H
-#define AUDIODATASOURCE_H
-
-
-
-
+#pragma once
 
 #include <cassert>
 #include <memory>
@@ -211,9 +206,3 @@ public:
 		return -1;
 	}
 };
-
-
-
-
-
-#endif // AUDIODATASOURCE_H

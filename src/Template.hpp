@@ -1,9 +1,4 @@
-#ifndef TEMPLATE_H
-#define TEMPLATE_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -184,9 +179,3 @@ protected:
 	aFilterXmlElement is supposed to represent the <and>, <or> or <comparison> element in the XML. */
 	Filter::NodePtr readTemplateFilterNode(const QDomElement & aNodeXmlElement);
 };
-
-
-
-
-
-#endif // TEMPLATE_H

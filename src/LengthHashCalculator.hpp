@@ -1,9 +1,4 @@
-#ifndef LENGTHHASHCALCULATOR_H
-#define LENGTHHASHCALCULATOR_H
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include <QObject>
@@ -76,9 +71,3 @@ signals:
 	/** Emitted after encountering a problem while lengthing a song. */
 	void songLengthFailed(Song::SharedDataPtr aSharedData);
 };
-
-
-
-
-
-#endif // LENGTHHASHCALCULATOR_H

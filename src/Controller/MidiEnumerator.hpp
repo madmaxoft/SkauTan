@@ -1,9 +1,4 @@
-#ifndef MIDIENUMERATOR_H
-#define MIDIENUMERATOR_H
-
-
-
-
+#pragma once
 
 #include "AbstractEnumerator.hpp"
 
@@ -80,9 +75,3 @@ protected:
 	Emits the newControllerDetected() signal and connects to the controller's unplugged() signal. */
 	void addController(AbstractControllerPtr && aController);
 };
-
-
-
-
-
-#endif // MIDIENUMERATOR_H

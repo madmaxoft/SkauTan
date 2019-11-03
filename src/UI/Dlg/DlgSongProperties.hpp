@@ -1,9 +1,4 @@
-#ifndef DLGSONGPROPERTIES_H
-#define DLGSONGPROPERTIES_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -159,9 +154,3 @@ private slots:
 	If this is the shown song, updates the UI to show the tempo. */
 	void songTempoDetected(Song::SharedDataPtr aSongSD);
 };
-
-
-
-
-
-#endif // DLGSONGPROPERTIES_H

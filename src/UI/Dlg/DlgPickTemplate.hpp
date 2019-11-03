@@ -1,9 +1,4 @@
-#ifndef DLGPICKTEMPLATE_H
-#define DLGPICKTEMPLATE_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -64,9 +59,3 @@ protected slots:
 	aRow and aColumn are the cell coords. */
 	void cellDblClicked(int aRow, int aColumn);
 };
-
-
-
-
-
-#endif // DLGPICKTEMPLATE_H

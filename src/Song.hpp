@@ -1,9 +1,4 @@
-#ifndef SONG_H
-#define SONG_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -342,9 +337,3 @@ protected:
 
 Q_DECLARE_METATYPE(SongPtr);
 Q_DECLARE_METATYPE(Song::SharedDataPtr);
-
-
-
-
-
-#endif // SONG_H

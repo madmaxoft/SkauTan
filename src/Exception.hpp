@@ -1,9 +1,4 @@
-#ifndef EXCEPTION_H
-#define EXCEPTION_H
-
-
-
-
+#pragma once
 
 #include <QString>
 #include <QDebug>
@@ -118,9 +113,3 @@ class LogicError: public Exception
 public:
 	using Exception::Exception;
 };
-
-
-
-
-
-#endif // EXCEPTION_H

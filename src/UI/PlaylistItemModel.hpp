@@ -1,8 +1,4 @@
-#ifndef PLAYLISTITEMMODEL_H
-#define PLAYLISTITEMMODEL_H
-
-
-
+#pragma once
 
 #include <QAbstractTableModel>
 #include <QStyledItemDelegate>
@@ -113,9 +109,3 @@ signals:
 	/** Emitted when the user clicks the Replace button. */
 	void replaceSong(const QModelIndex & aIndex);
 };
-
-
-
-
-
-#endif // PLAYLISTITEMMODEL_H

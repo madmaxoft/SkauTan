@@ -1,9 +1,4 @@
-#ifndef LOCALVOTESERVER_H
-#define LOCALVOTESERVER_H
-
-
-
-
+#pragma once
 
 #include <set>
 #include <atomic>
@@ -155,9 +150,3 @@ public slots:
 	void startedPlayback(IPlaylistItemPtr aItem);
 
 };
-
-
-
-
-
-#endif // LOCALVOTESERVER_H

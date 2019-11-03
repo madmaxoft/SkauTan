@@ -1,8 +1,4 @@
-#ifndef IPLAYLISTITEM_H
-#define IPLAYLISTITEM_H
-
-
-
+#pragma once
 
 #include <memory>
 #include <QString>
@@ -145,9 +141,3 @@ public:
 using IPlaylistItemPtr = std::shared_ptr<IPlaylistItem>;
 
 Q_DECLARE_METATYPE(IPlaylistItemPtr);
-
-
-
-
-
-#endif // IPLAYLISTITEM_H

@@ -1,9 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-
-
-
+#pragma once
 
 #include <cmath>
 
@@ -127,9 +122,3 @@ protected:
 
 
 };  // namespace Utils
-
-
-
-
-
-#endif  // UTILS_H

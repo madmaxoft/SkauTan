@@ -1,9 +1,4 @@
-#ifndef DATABASEUPGRADE_H
-#define DATABASEUPGRADE_H
-
-
-
-
+#pragma once
 
 #include <string>
 #include <QSqlError>
@@ -63,9 +58,3 @@ protected:
 	If the DB contains no versioning data, returns 0. */
 	size_t getVersion();
 };
-
-
-
-
-
-#endif // DATABASEUPGRADE_H

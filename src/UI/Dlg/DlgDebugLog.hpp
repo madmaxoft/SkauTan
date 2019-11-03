@@ -1,9 +1,4 @@
-#ifndef DLGDEBUGLOG_HPP
-#define DLGDEBUGLOG_HPP
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -52,9 +47,3 @@ private:
 		const QString & aMessage
 	);
 };
-
-
-
-
-
-#endif // DLGDEBUGLOG_HPP

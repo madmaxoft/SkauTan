@@ -1,9 +1,4 @@
-#ifndef DLGCHOOSEIMPORTTEMPLATES_H
-#define DLGCHOOSEIMPORTTEMPLATES_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -69,9 +64,3 @@ private slots:
 	/** Enables the Import button based on whether any template is checked. */
 	void templateCellChanged(int aRow, int aColumn);
 };
-
-
-
-
-
-#endif // DLGCHOOSEIMPORTTEMPLATES_H

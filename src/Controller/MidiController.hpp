@@ -1,9 +1,4 @@
-#ifndef MIDICONTROLLER_H
-#define MIDICONTROLLER_H
-
-
-
-
+#pragma once
 
 #include "AbstractController.hpp"
 #include "MidiPort.hpp"
@@ -107,9 +102,3 @@ protected slots:
 	/** A message has been received from MIDI IN, process it through the maps into a logical event. */
 	void processMidiInMessage(double aTimeStamp, const QByteArray & aMessage);
 };
-
-
-
-
-
-#endif // MIDICONTROLLER_H

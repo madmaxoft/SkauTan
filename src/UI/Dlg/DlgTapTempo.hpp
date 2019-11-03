@@ -1,9 +1,4 @@
-#ifndef DLGTAPTEMPO_H
-#define DLGTAPTEMPO_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -90,9 +85,3 @@ private slots:
 	/** Saves the MPM to the song and closes the dialog. */
 	void saveAndClose();
 };
-
-
-
-
-
-#endif // DLGTAPTEMPO_H

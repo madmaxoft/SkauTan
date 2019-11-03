@@ -1,9 +1,4 @@
-#ifndef STOPWATCH_H
-#define STOPWATCH_H
-
-
-
-
+#pragma once
 
 #include <string>
 #include <QElapsedTimer>
@@ -60,9 +55,3 @@ protected:
 };
 
 #define STOPWATCH(X) Stopwatch sw(__FILE__, __LINE__, X);
-
-
-
-
-
-#endif // STOPWATCH_H

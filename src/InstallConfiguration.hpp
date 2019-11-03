@@ -1,9 +1,4 @@
-#ifndef INSTALLCONFIGURATION_H
-#define INSTALLCONFIGURATION_H
-
-
-
-
+#pragma once
 
 #include <QString>
 #include "ComponentCollection.hpp"
@@ -50,9 +45,3 @@ protected:
 	If the path doesn't exist, creates it. */
 	bool isDataPathSuitable(const QString & aFolder);
 };
-
-
-
-
-
-#endif // INSTALLCONFIGURATION_H

@@ -1,10 +1,4 @@
-#ifndef BACKGROUNDTASKS_H
-#define BACKGROUNDTASKS_H
-
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -167,9 +161,3 @@ protected:
 	/** Flag that is set when the task should terminate as soon as possible. */
 	std::atomic<bool> mShouldTerminate;
 };
-
-
-
-
-
-#endif // BACKGROUNDTASKS_H

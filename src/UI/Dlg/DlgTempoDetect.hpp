@@ -1,9 +1,4 @@
-#ifndef DLGTEMPODETECT_H
-#define DLGTEMPODETECT_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -102,9 +97,3 @@ private slots:
 	/** Asks the user for a filename, then saves the debug audio data with levels to the file. */
 	void saveDebugLevels();
 };
-
-
-
-
-
-#endif // DLGTEMPODETECT_H

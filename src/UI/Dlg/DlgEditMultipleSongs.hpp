@@ -1,9 +1,4 @@
-#ifndef DLGEDITMULTIPLESONGS_HPP
-#define DLGEDITMULTIPLESONGS_HPP
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -63,9 +58,3 @@ public slots:
 	If the text is an invalid number, colors the line edit with red background, otherwise clears the background. */
 	void mpmTextEdited(const QString & aNewText);
 };
-
-
-
-
-
-#endif // DLGEDITMULTIPLESONGS_HPP

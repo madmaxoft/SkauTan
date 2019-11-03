@@ -1,9 +1,4 @@
-#ifndef ABSTRACTCONTROLLER_H
-#define ABSTRACTCONTROLLER_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QObject>
@@ -165,9 +160,3 @@ signals:
 };
 
 using AbstractControllerPtr = std::shared_ptr<AbstractController>;
-
-
-
-
-
-#endif // ABSTRACTCONTROLLER_H

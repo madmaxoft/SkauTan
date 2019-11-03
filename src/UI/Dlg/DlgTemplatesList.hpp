@@ -1,9 +1,4 @@
-#ifndef DLGTEMPLATESLIST_H
-#define DLGTEMPLATESLIST_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -148,9 +143,3 @@ protected slots:
 	Ignored if multiple templates are selected. */
 	void moveItemDown();
 };
-
-
-
-
-
-#endif // DLGTEMPLATESLIST_H

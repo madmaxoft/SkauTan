@@ -1,9 +1,4 @@
-#ifndef PLAYLISTIMPORTEXPORT_HPP
-#define PLAYLISTIMPORTEXPORT_HPP
-
-
-
-
+#pragma once
 
 #include <QObject>
 
@@ -44,9 +39,3 @@ public:
 		const QString & aFileName
 	);
 };
-
-
-
-
-
-#endif // PLAYLISTIMPORTEXPORT_HPP

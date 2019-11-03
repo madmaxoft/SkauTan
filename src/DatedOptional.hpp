@@ -1,9 +1,4 @@
-#ifndef DATEDOPTIONAL_H
-#define DATEDOPTIONAL_H
-
-
-
-
+#pragma once
 
 #include <QDateTime>
 #include <QVariant>
@@ -285,9 +280,3 @@ protected:
 	/** Timestamp of the last modification. */
 	QDateTime mLastModification;
 };
-
-
-
-
-
-#endif // DATEDOPTIONAL_H

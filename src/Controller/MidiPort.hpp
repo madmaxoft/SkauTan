@@ -1,9 +1,4 @@
-#ifndef MIDIPORT_H
-#define MIDIPORT_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QObject>
@@ -158,9 +153,3 @@ protected:
 
 using MidiPortInPtr  = std::shared_ptr<MidiPortIn>;
 using MidiPortOutPtr = std::shared_ptr<MidiPortOut>;
-
-
-
-
-
-#endif // MIDIPORT_H

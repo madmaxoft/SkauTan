@@ -1,9 +1,4 @@
-#ifndef DLGEDITTEMPLATEITEM_H
-#define DLGEDITTEMPLATEITEM_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -131,9 +126,3 @@ protected slots:
 	If a valid duration is input, set chbDurationLimit to checked. */
 	void durationLimitEdited(const QString & aNewText);
 };
-
-
-
-
-
-#endif // DLGEDITTEMPLATEITEM_H

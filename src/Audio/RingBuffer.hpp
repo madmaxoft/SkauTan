@@ -1,10 +1,4 @@
-#ifndef RINGBUFFER_H
-#define RINGBUFFER_H
-
-
-
-
-
+#pragma once
 
 #include <atomic>
 #include <QWaitCondition>
@@ -110,9 +104,3 @@ protected:
 	Assumes mMtx is locked. */
 	size_t lockedAvailRead();
 };
-
-
-
-
-
-#endif // RINGBUFFER_H

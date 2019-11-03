@@ -1,9 +1,4 @@
-#ifndef DATABASEBACKUP_H
-#define DATABASEBACKUP_H
-
-
-
-
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -37,9 +32,3 @@ public:
 		const QString & aBackupFolder
 	);
 };
-
-
-
-
-
-#endif // DATABASEBACKUP_H

@@ -1,9 +1,4 @@
-#ifndef DLGBACKGROUNDTASKLIST_H
-#define DLGBACKGROUNDTASKLIST_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -74,9 +69,3 @@ private slots:
 	/** Called periodically to update the UI (task list and count). */
 	void periodicUpdateUi();
 };
-
-
-
-
-
-#endif // DLGBACKGROUNDTASKLIST_H

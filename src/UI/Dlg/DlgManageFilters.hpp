@@ -1,9 +1,4 @@
-#ifndef DLGMANAGEFILTERS_H
-#define DLGMANAGEFILTERS_H
-
-
-
-
+#pragma once
 
 #include <memory>
 #include <QDialog>
@@ -112,9 +107,3 @@ private slots:
 	/** The specified table cell in tblFilters was dblclicked, show the filter editor. */
 	void filterDoubleClicked(int aRow, int aColumn);
 };
-
-
-
-
-
-#endif // DLGMANAGEFILTERS_H
