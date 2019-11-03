@@ -577,7 +577,7 @@ void DlgSongProperties::renameFile()
 {
 	const auto row = mUI->lwDuplicates->currentRow();
 	assert(row >= 0);
-	assert(row < mDuplicates.size());
+	assert(row < static_cast<int>(mDuplicates.size()));
 	auto song = mDuplicates[static_cast<size_t>(row)];
 	if (song == nullptr)
 	{
