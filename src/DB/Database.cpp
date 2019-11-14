@@ -289,7 +289,7 @@ void Database::addSongFile(const QString & aFileName)
 
 	// Insert into DB:
 	QSqlQuery query(mDatabase);
-	if (!query.prepare("INSERT INTO NewFiles (FileName) VALUES(?)"))
+	if (!query.prepare("INSERT OR IGNORE INTO NewFiles (FileName) VALUES(?)"))
 	{
 		qWarning() << "Cannot prepare statement: " << query.lastError();
 		assert(!"DB error");
