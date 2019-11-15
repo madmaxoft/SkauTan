@@ -184,27 +184,27 @@
         <translation>Režim playlistu</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="237"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="238"/>
         <source>Currently playing: %1</source>
         <translation>Zrovna přehráváno: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="704"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="730"/>
         <source>FAILED to play: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="776"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="802"/>
         <source>SkauTan: Remove song?</source>
         <translation>SkauTan: Odebrat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="822"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="848"/>
         <source>SkauTan: Delete song?</source>
         <translation>SkauTan: Vymazat skladbu?</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="777"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="803"/>
         <source>Are you sure you want to remove the selected song from the library? The song file will stay on the disk, but all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
@@ -213,7 +213,7 @@ This operation cannot be undone!</source>
 Tato operace je nevratná!</translation>
     </message>
     <message>
-        <location filename="../src/UI/ClassroomWindow.cpp" line="823"/>
+        <location filename="../src/UI/ClassroomWindow.cpp" line="849"/>
         <source>Are you sure you want to delete the selected song from the disk?The files will be deleted and all properties set in the library will be lost.
 
 This operation cannot be undone!</source>
