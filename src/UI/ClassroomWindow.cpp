@@ -27,8 +27,9 @@
 
 
 /** Returns the display title for the specified item.
-Concatenates the author and title, each only if present. */
-static QString songDisplayText(const Song & aSong)
+Concatenates the author and title, each only if present.
+aTempoCoeff is the current tempo adjust coefficient, from the tempo slider. */
+static QString songDisplayText(const Song & aSong, double aTempoCoeff)
 {
 	auto res = aSong.primaryAuthor().valueOrDefault();
 	if (!aSong.primaryTitle().isEmpty())
@@ -42,7 +43,7 @@ static QString songDisplayText(const Song & aSong)
 	const auto & mpm = aSong.primaryMeasuresPerMinute();
 	if (mpm.isPresent())
 	{
-		auto mpmVal = std::floor(mpm.value() + 0.5);
+		auto mpmVal = std::floor(aTempoCoeff * mpm.value() + 0.5);
 		res.prepend(QString("[%1] ").arg(mpmVal));
 	}
 	else
@@ -50,7 +51,7 @@ static QString songDisplayText(const Song & aSong)
 		const auto & detectedTempo = aSong.detectedTempo();
 		if (detectedTempo.isPresent())
 		{
-			auto mpmVal = std::floor(detectedTempo.value() + 0.5);
+			auto mpmVal = std::floor(aTempoCoeff * detectedTempo.value() + 0.5);
 			res.prepend(QString("[%1] ").arg(mpmVal));
 		}
 	}
@@ -234,7 +235,7 @@ void ClassroomWindow::startPlayingSong(std::shared_ptr<Song> aSong)
 	{
 		player->startPlayback();
 	}
-	mUI->lblCurrentlyPlaying->setText(tr("Currently playing: %1").arg(songDisplayText(*aSong)));
+	mUI->lblCurrentlyPlaying->setText(tr("Currently playing: %1").arg(songDisplayText(*aSong, mCurrentTempoCoeff)));
 	applyDurationLimitSettings();
 }
 
@@ -278,7 +279,7 @@ void ClassroomWindow::updateSongItem(QListWidgetItem & aItem)
 		assert(!"Invalid song pointer");
 		return;
 	}
-	aItem.setText(songDisplayText(*song));
+	aItem.setText(songDisplayText(*song, mCurrentTempoCoeff));
 	QString fileNames;
 	for (const auto & s: song->duplicates())
 	{
@@ -421,7 +422,7 @@ void ClassroomWindow::applySearchFilterToSongs()
 	mUI->lwSongs->clear();
 	for (const auto & song: mAllFilterSongs)
 	{
-		if (mSearchFilter.match(songDisplayText(*song)).hasMatch())
+		if (mSearchFilter.match(songDisplayText(*song, mCurrentTempoCoeff)).hasMatch())
 		{
 			auto item = std::make_unique<QListWidgetItem>();
 			item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
@@ -430,6 +431,18 @@ void ClassroomWindow::applySearchFilterToSongs()
 		}
 	}
 	mUI->lwSongs->sortItems();
+}
+
+
+
+
+void ClassroomWindow::applyTempoAdjustToSongs()
+{
+	int numItems = mUI->lwSongs->count();
+	for (int i = 0; i < numItems; ++i)
+	{
+		updateSongItem(*mUI->lwSongs->item(i));
+	}
 }
 
 
@@ -617,6 +630,16 @@ void ClassroomWindow::periodicUIUpdate()
 			applySearchFilterToSongs();
 		}
 	}
+
+	// If asked to, update the song tempos adjusted by the current tempo value:
+	if (mTicksUntilUpdateTempo > 0)
+	{
+		mTicksUntilUpdateTempo -= 1;
+		if (mTicksUntilUpdateTempo == 0)
+		{
+			applyTempoAdjustToSongs();
+		}
+	}
 }
 
 
@@ -650,6 +673,8 @@ void ClassroomWindow::tempoValueChanged(int aNewValue)
 	{
 		mComponents.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
 	}
+	// Schedule an update to the tempo shown with all songs:
+	mTicksUntilUpdateTempo = 1;
 }
 
 
@@ -679,6 +704,7 @@ void ClassroomWindow::playerVolumeChanged(qreal aVolume)
 
 void ClassroomWindow::playerTempoChanged(qreal aTempoCoeff)
 {
+	mCurrentTempoCoeff = aTempoCoeff;
 	auto value = static_cast<int>((aTempoCoeff * 100 - 100) * 3);
 	mIsInternalChange = true;
 	mUI->vsTempo->setValue(value);
@@ -701,7 +727,7 @@ void ClassroomWindow::playerInvalidTrack(IPlaylistItemPtr aTrack)
 		// The player was playing something else, ignore
 		return;
 	}
-	mUI->lblCurrentlyPlaying->setText(tr("FAILED to play: %1").arg(songDisplayText(*mCurrentSong)));
+	mUI->lblCurrentlyPlaying->setText(tr("FAILED to play: %1").arg(songDisplayText(*mCurrentSong, mCurrentTempoCoeff)));
 }
 
 

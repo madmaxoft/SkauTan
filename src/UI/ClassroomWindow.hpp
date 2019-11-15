@@ -81,8 +81,16 @@ private:
 	/** The compiled search string entered by the user to filter out songs. */
 	QRegularExpression mSearchFilter;
 
-	/** Number of periodicUpradeUi()'s ticks before mNewSearchText is applied from the lineedit to the*/
+	/** Number of periodicUpdateUi()'s ticks before mNewSearchText is applied from the lineedit to
+	the song list. */
 	int mTicksUntilSetSearchText;
+
+	/** Number of periodicUpdateUi()'s ticks before the tempo shown for all songs is updated by the current
+	tempo adjustment. */
+	int  mTicksUntilUpdateTempo;
+
+	/** The current tempo coefficient, as set by the tempo adjust slider. */
+	double mCurrentTempoCoeff;
 
 	// The DJControllers registrations:
 	DJControllers::KeyHandlerRegPtr    mDjKeyHandler;
@@ -126,6 +134,9 @@ private:
 	/** Updates lwSongs with all songs from mAllFilterSongs that match mSearchFilter.
 	Called when the user selects a different template-filter, or if they edit the search filter. */
 	void applySearchFilterToSongs();
+
+	/** Updates the songs listed in lwSongs with their tempo adjusted by the current tempo adjustment value. */
+	void applyTempoAdjustToSongs();
 
 	/** Initializes the window to accept input by DJ controllers. */
 	void setUpDjControllers();
