@@ -57,6 +57,78 @@ public:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// IO:
+
+IO::IO():
+	mContext(nullptr)
+{
+	Initializer::init();
+}
+
+
+
+
+
+IO::~IO()
+{
+	if (mContext != nullptr)
+	{
+		avio_context_free(&mContext);
+	}
+}
+
+
+
+
+
+bool IO::allocContext()
+{
+	static const int bufferSize = 4096;
+	auto buffer = reinterpret_cast<unsigned char *>(av_malloc(bufferSize));
+	mContext = avio_alloc_context(buffer, bufferSize, 0, this, &IO::read, nullptr, &IO::seek);
+	if (mContext == nullptr)
+	{
+		av_free(buffer);
+		return false;
+	}
+	return true;
+}
+
+
+
+
+
+int IO::read(void * aThis, uint8_t * aDst, int aSize)
+{
+	auto io = static_cast<IO *>(aThis);
+	return io->read(aDst, aSize);
+}
+
+
+
+
+
+int64_t IO::seek(void * aThis, int64_t aOffset, int aWhence)
+{
+	auto io = static_cast<IO *>(aThis);
+
+	// Translate aWhence into our Whence enum:
+	switch (aWhence)
+	{
+		case SEEK_SET: return io->seek(aOffset, Whence::fromStart);
+		case SEEK_CUR: return io->seek(aOffset, Whence::fromCurrent);
+		case SEEK_END: return io->seek(aOffset, Whence::fromEnd);
+	}
+
+	// Invalid aWhence, return an error
+	return -1;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // FileIO:
 
 std::shared_ptr<FileIO> FileIO::createContext(const QString & aFileName)
@@ -71,36 +143,11 @@ std::shared_ptr<FileIO> FileIO::createContext(const QString & aFileName)
 	{
 		return nullptr;
 	}
-	static const int bufferSize = 4096;
-	auto buffer = reinterpret_cast<unsigned char *>(av_malloc(bufferSize));
-	res->mContext = avio_alloc_context(buffer, bufferSize, 0, res.get(), &FileIO::read, nullptr, &FileIO::seek);
-	if (res->mContext == nullptr)
+	if (!res->allocContext())
 	{
-		av_free(buffer);
 		return nullptr;
 	}
 	return res;
-}
-
-
-
-
-
-FileIO::FileIO():
-	mContext(nullptr)
-{
-}
-
-
-
-
-
-FileIO::~FileIO()
-{
-	if (mContext != nullptr)
-	{
-		avio_context_free(&mContext);
-	}
 }
 
 
@@ -123,53 +170,117 @@ bool FileIO::Open(const QString & aFileName)
 
 
 
-int FileIO::read(void * aThis, uint8_t * aDst, int aSize)
+int FileIO::read(void * aDst, int aSize)
 {
-	auto This = reinterpret_cast<FileIO *>(aThis);
-	return static_cast<int>(This->mFile->read(reinterpret_cast<char *>(aDst), aSize));
+	return static_cast<int>(mFile->read(reinterpret_cast<char *>(aDst), aSize));
 }
 
 
 
 
 
-int64_t FileIO::seek(void * aThis, int64_t aOffset, int aWhence)
+qint64 FileIO::seek(qint64 aOffset, Whence aWhence)
 {
-	// qDebug() << "Seek to offset " << aOffset << " from " << aWhence;
-	auto This = reinterpret_cast<FileIO *>(aThis);
 	switch (aWhence)
 	{
-		case SEEK_CUR:
+		case Whence::fromCurrent:
 		{
-			if (!This->mFile->seek(This->mFile->pos() + aOffset))
+			if (!mFile->seek(mFile->pos() + aOffset))
 			{
 				qWarning() << "Relative-Seek failed.";
 				return -1;
 			}
-			return This->mFile->pos();
+			return mFile->pos();
 		}
-		case SEEK_SET:
+		case Whence::fromStart:
 		{
-			if (!This->mFile->seek(aOffset))
+			if (!mFile->seek(aOffset))
 			{
 				qWarning() << "Absolute-Seek failed.";
 				return -1;
 			}
 			return aOffset;
 		}
-		case SEEK_END:
+		case Whence::fromEnd:
 		{
-			if (!This->mFile->seek(This->mFile->size() - aOffset))
+			if (!mFile->seek(mFile->size() - aOffset))
 			{
 				qWarning() << "End-Seek failed.";
 				return -1;
 			}
-			return This->mFile->pos();
+			return mFile->pos();
 		}
 	}
-	// _X 2018-05-11: This seems to happen way too often upon opening a new file, disabling.
-	// qWarning() << "Unexpected seek operation: " << aWhence << ", offset " << aOffset;
 	return -1;
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// MemoryIO:
+
+MemoryIO::MemoryIO(const QByteArray & aData):
+	mData(aData),
+	mCurrentPosition(0)
+{
+}
+
+
+
+
+
+std::shared_ptr<MemoryIO> MemoryIO::createContext(const QByteArray & aData)
+{
+	Initializer::init();
+	auto res = std::shared_ptr<MemoryIO>(new MemoryIO(aData));
+	if (res == nullptr)
+	{
+		return nullptr;
+	}
+	if (!res->allocContext())
+	{
+		return nullptr;
+	}
+	return res;
+}
+
+
+
+
+
+int MemoryIO::read(void * aDst, int aSize)
+{
+	int numBytesToCopy = std::min(aSize, mData.size() - mCurrentPosition);
+	if (numBytesToCopy > 0)
+	{
+		memcpy(aDst, mData.data() + mCurrentPosition, static_cast<size_t>(numBytesToCopy));
+	}
+	return numBytesToCopy;
+}
+
+
+
+
+
+qint64 MemoryIO::seek(qint64 aOffset, Whence aWhence)
+{
+	switch (aWhence)
+	{
+		case Whence::fromCurrent: mCurrentPosition += aOffset; break;
+		case Whence::fromStart:   mCurrentPosition = static_cast<int>(aOffset); break;
+		case Whence::fromEnd:     mCurrentPosition = static_cast<int>(mData.size() - aOffset); break;
+	}
+	if (mCurrentPosition < 0)
+	{
+		mCurrentPosition = 0;
+	}
+	if (mCurrentPosition > mData.size())
+	{
+		mCurrentPosition = mData.size();
+	}
+	return mCurrentPosition;
 }
 
 
@@ -516,7 +627,51 @@ FormatPtr Format::createContext(const QString & aFileName)
 
 
 
-Format::Format(std::shared_ptr<FileIO> aIO):
+FormatPtr Format::createContextFromData(const QByteArray & aFileData)
+{
+	Initializer::init();
+
+	// Create an IO wrapper:
+	auto io = MemoryIO::createContext(aFileData);
+	if (io == nullptr)
+	{
+		qWarning() << "IO creation failed";
+		return nullptr;
+	}
+
+	// Create the context:
+	auto res = std::unique_ptr<Format>(new Format(io));
+	if ((res == nullptr) || (res->mContext == nullptr))
+	{
+		qWarning() << "Creation failed";
+		return nullptr;
+	}
+
+	// Open and detect format:
+	auto ret = avformat_open_input(&res->mContext, nullptr, nullptr, nullptr);
+	if (ret != 0)
+	{
+		// User-supplied AVFormatContext is freed upon failure, need to un-bind:
+		res->mContext = nullptr;
+		qWarning() << "Opening failed: " << ret;
+		return nullptr;
+	}
+
+	// Find the stream info:
+	ret = avformat_find_stream_info(res->mContext, nullptr);
+	if (ret < 0)
+	{
+		qWarning() << "Cannot find stream info: " << ret;
+	}
+
+	return res;
+}
+
+
+
+
+
+Format::Format(std::shared_ptr<IO> aIO):
 	mContext(avformat_alloc_context()),
 	mIO(aIO),
 	mAudioOutput(nullptr),

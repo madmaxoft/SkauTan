@@ -26,8 +26,58 @@ class PlaybackBuffer;
 /** Namespace for C++ wrappers over AV library. */
 namespace AVPP
 {
+	/** Represents a generic IO interface passed to the AV library.
+	Wraps the AVIOContext and maps the AV callbacks to virtual functions.
+	Descendants are expected to implement the actual reading (from file, memory, ...) */
+	class IO
+	{
+	public:
+		/** When seeking, what is the offset relative to. */
+		enum class Whence
+		{
+			fromStart,
+			fromCurrent,
+			fromEnd,
+		};
+
+		virtual ~IO();
+
+		/** Reads the specified amount of data.
+		Returns the number of bytes read, or <0 for error. */
+		virtual int read(void * aDst, int aNumBytes) = 0;
+
+		/** Seeks to the specified aOffset, based on aWhence.
+		Returns the current position in the datastream after seeking, <0 on error. */
+		virtual qint64 seek(qint64 aOffset, Whence aWhence) = 0;
+
+	protected:
+		friend class Format;
+
+		/** The AV library's IO context wrapped in this class. */
+		AVIOContext * mContext;
+
+
+		/** Creates a new instance with an nullptr mContext. */
+		IO();
+
+		/** Allocates the mContext and sets the callbacks.
+		Returns true on success, false on failure. */
+		bool allocContext();
+
+		/** The IO reading function (AVIO signature). */
+		static int read(void * aThis, uint8_t * aDst, int aSize);
+
+		/** The IO seeking function (AVIO signature). */
+		static int64_t seek(void * aThis, int64_t aOffset, int aWhence);
+	};  // class IO
+
+
+
+
+
 	/** Represents an AVIOContext tied to a specific file. */
-	class FileIO
+	class FileIO:
+		public IO
 	{
 	public:
 
@@ -35,34 +85,51 @@ namespace AVPP
 		Returns nullptr if the file cannot be opened or upon any error. */
 		static std::shared_ptr<FileIO> createContext(const QString & aFileName);
 
-		/** Destroyes the instance, freeing up what needs to be freed. */
-		virtual ~FileIO();
-
+		// IO overrides:
+		virtual int read(void * aDst, int aNumBytes) override;
+		virtual qint64 seek(qint64 aOffset, Whence aWhence) override;
 
 	protected:
-		friend class Format;
-
-
-		/** The context itself. */
-		AVIOContext * mContext;
 
 		/** The file to which the IO is bound. */
 		std::unique_ptr<QFile> mFile;
 
 
-		/** Creates a new empty instance. */
-		FileIO();
-
 		/** Opens the specified file.
 		Returns true on success, false on failure. */
 		bool Open(const QString & aFileName);
-
-		/** The IO reading function (AVIO signature). */
-		static int read(void * aThis, uint8_t * aDst, int aSize);
-
-		/** The IO seeking function (AVIO signature). */
-		static int64_t seek(void * aThis, int64_t aOffset, int aWhence);
 	};  // class FileIO
+
+
+
+
+	/** Represents an AVIOContext tied to in-memory data. */
+	class MemoryIO:
+		public IO
+	{
+	public:
+
+		/** Creates a new AVIOContext tied to the specified file.
+		Returns nullptr if the file cannot be opened or upon any error. */
+		static std::shared_ptr<MemoryIO> createContext(const QByteArray & aData);
+
+		// IO overrides:
+		virtual int read(void * aDst, int aNumBytes) override;
+		virtual qint64 seek(qint64 aOffset, Whence aWhence) override;
+
+	protected:
+
+		/** The data that this IO should work on. */
+		const QByteArray & mData;
+
+		/** The position within mData where the next read() operation will start. */
+		int mCurrentPosition;
+
+
+		/** Creates a new instance. */
+		MemoryIO(const QByteArray & aData);
+	};  // class MemoryIO
+
 
 
 
@@ -199,6 +266,10 @@ namespace AVPP
 		Returns nullptr on error. */
 		static FormatPtr createContext(const QString & aFileName);
 
+		/** Creates a new AVFormatContext instance tied to the specified AV data (contents of a file).
+		Returns nullptr on error. */
+		static FormatPtr createContextFromData(const QByteArray & aFileData);
+
 		~Format();
 
 		/** Finds the best audio stream and allocates the decoder for it internally.
@@ -231,7 +302,7 @@ namespace AVPP
 		AVFormatContext * mContext;
 
 		/** The IO object used for accessing files. */
-		std::shared_ptr<FileIO> mIO;
+		std::shared_ptr<IO> mIO;
 
 		/** Where the audio data should be output after decoding and resampling. */
 		PlaybackBuffer * mAudioOutput;
@@ -251,7 +322,7 @@ namespace AVPP
 
 
 		/** Creates a new instance and binds it to the specified IO. */
-		Format(std::shared_ptr<FileIO> aIO);
+		Format(std::shared_ptr<IO> aIO);
 
 		/** Outputs the specified audio data frame into mAudioOutput. */
 		void outputAudioData(AVFrame * aFrame);
