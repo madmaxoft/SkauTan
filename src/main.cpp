@@ -10,6 +10,7 @@
 #include "DB/DatabaseBackup.hpp"
 #include "UI/ClassroomWindow.hpp"
 #include "UI/PlayerWindow.hpp"
+#include "BackgroundIO.hpp"
 #include "BackgroundTasks.hpp"
 #include "MetadataScanner.hpp"
 #include "LengthHashCalculator.hpp"
@@ -142,12 +143,13 @@ int main(int argc, char *argv[])
 		cc.addComponent(instConf);
 		auto mainDB           = cc.addNew<Database>(cc);
 		auto scanner          = cc.addNew<MetadataScanner>();
-		auto lhCalc           = cc.addNew<LengthHashCalculator>();
+		auto lhCalc           = cc.addNew<LengthHashCalculator>(cc);
 		auto player           = cc.addNew<Player>();
 		auto midiControllers  = cc.addNew<DJControllers>();
 		auto voteServer       = cc.addNew<LocalVoteServer>(cc);
 		auto tempoDetector    = cc.addNew<SongTempoDetector>();
 		auto bkgTempoDetector = cc.addNew<BackgroundTempoDetector>(cc);
+		cc.addNew<BackgroundIO>();
 
 		// Connect the main objects together:
 		app.connect(mainDB.get(),        &Database::needFileHash,                     lhCalc.get(),        &LengthHashCalculator::queueHashFile);

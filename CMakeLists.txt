@@ -242,6 +242,7 @@ set (SOURCES
 	src/UI/Dlg/DlgTempoDetect.cpp
 
 	# Other sources:
+	src/backgroundIO.cpp
 	src/BackgroundTasks.cpp
 	src/BackgroundTempoDetector.cpp
 	src/ComponentCollection.cpp
@@ -321,6 +322,7 @@ set (HEADERS
 	src/UI/Dlg/DlgTempoDetect.hpp
 
 	# Other headers:
+	src/backgroundIO.hpp
 	src/BackgroundTasks.hpp
 	src/BackgroundTempoDetector.hpp
 	src/ComponentCollection.hpp

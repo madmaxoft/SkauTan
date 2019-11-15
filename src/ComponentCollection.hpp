@@ -37,6 +37,7 @@ public:
 		ckInstallConfiguration,
 		ckTempoDetector,
 		ckBackgroundTempoDetector,
+		ckBackgroundIO,
 	};
 
 
@@ -81,7 +82,7 @@ public:
 
 
 	/** Adds the specified component into the collection.
-	Asserts that a component of the same kind doesn't already exist. */
+	Throws if a component of the same kind already exists. */
 	template <typename ComponentClass>
 	void addComponent(std::shared_ptr<ComponentClass> aComponent)
 	{
@@ -91,7 +92,7 @@ public:
 
 	/** Creates a new component of the specified template type,
 	adds it to the collection and returns a shared ptr to it.
-	Asserts that a component of the same kind doesn't already exist. */
+	Throws if a component of the same kind already exists. */
 	template <typename ComponentClass, typename... Args>
 	std::shared_ptr<ComponentClass> addNew(Args &&... aArgs)
 	{

@@ -15,6 +15,7 @@
 #include "../../Stopwatch.hpp"
 #include "../../LengthHashCalculator.hpp"
 #include "../../Settings.hpp"
+#include "../../BackgroundIO.hpp"
 #include "DlgSongProperties.hpp"
 #include "DlgTempoDetect.hpp"
 #include "DlgTapTempo.hpp"
@@ -163,27 +164,40 @@ void DlgSongs::addFiles(const QStringList & aFileNames)
 
 void DlgSongs::addFolderRecursive(const QString & aPath)
 {
-	QDir dir(aPath + "/");
-	QStringList songs;
-	for (const auto & item: dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot))
-	{
-		if (item.isDir())
+	QString path(aPath);  // Make a copy for the lambdas' logging purposes
+	mComponents.get<BackgroundIO>()->readFolder(
+		BackgroundIO::Priority::Normal,
+		aPath,
+		[this, path](const QFileInfoList & aFolderEntries)
 		{
-			addFolderRecursive(item.absoluteFilePath());
-			continue;
-		}
-		if (!item.isFile())
+			QStringList songs;
+			for (const auto & item: aFolderEntries)
+			{
+				if (item.isDir())
+				{
+					addFolderRecursive(item.absoluteFilePath());
+					continue;
+				}
+				if (!item.isFile())
+				{
+					continue;
+				}
+				songs.append(item.absoluteFilePath());
+			}
+			if (songs.empty())
+			{
+				return;
+			}
+			QMetaObject::invokeMethod(
+				mComponents.get<Database>().get(), "addSongFiles",
+				Q_ARG(QStringList, songs)
+			);
+		},
+		[path](const QString & aErrorText)
 		{
-			continue;
+			qDebug() << "Error while adding songs from folder " << path << ": " << aErrorText;
 		}
-		songs.append(item.absoluteFilePath());
-	}
-	if (songs.empty())
-	{
-		return;
-	}
-	qDebug() << "Adding " << songs.size() << " songs from folder " << aPath;
-	mComponents.get<Database>()->addSongFiles(songs);
+	);
 }
 
 

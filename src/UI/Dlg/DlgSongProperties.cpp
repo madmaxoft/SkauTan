@@ -12,6 +12,7 @@
 #include "../../Utils.hpp"
 #include "../../ComponentCollection.hpp"
 #include "../../MetadataScanner.hpp"
+#include "../../BackgroundIO.hpp"
 #include "../../BackgroundTasks.hpp"
 #include "../../LengthHashCalculator.hpp"
 #include "../../SongTempoDetector.hpp"
@@ -363,7 +364,9 @@ void DlgSongProperties::applyAndClose()
 			MetadataScanner::writeTagToSong(song->shared_from_this(), tag);
 
 			// Check that the song hash hasn't changed; if yes, restore the file from a backup
-			auto hashAndLength = LengthHashCalculator::calculateSongHashAndLength(song->fileName());
+			auto bio = mComponents.get<BackgroundIO>();
+			auto fileData = bio->readEntireFileSync(BackgroundIO::Priority::High, song->fileName());
+			auto hashAndLength = LengthHashCalculator::calculateSongHashAndLength(song->fileName(), fileData);
 			if (hashAndLength.first.isEmpty() || hashAndLength.first != song->hash())
 			{
 				qWarning() << "Song has a different hash after writing tag, reverting to backup: " << song->fileName();

@@ -4,13 +4,15 @@
 #include <QDebug>
 #include <QCryptographicHash>
 #include "Audio/AVPP.hpp"
+#include "BackgroundIO.hpp"
 #include "BackgroundTasks.hpp"
 
 
 
 
 
-LengthHashCalculator::LengthHashCalculator():
+LengthHashCalculator::LengthHashCalculator(ComponentCollection & aComponents):
+	mComponents(aComponents),
 	mQueueLength(0)
 {
 }
@@ -19,9 +21,9 @@ LengthHashCalculator::LengthHashCalculator():
 
 
 
-std::pair<QByteArray, double> LengthHashCalculator::calculateSongHashAndLength(const QString & aFileName)
+std::pair<QByteArray, double> LengthHashCalculator::calculateSongHashAndLength(const QString & aFileName, const QByteArray & aFileData)
 {
-	auto context = AVPP::Format::createContext(aFileName);
+	auto context = AVPP::Format::createContextFromData(aFileData);
 	if (context == nullptr)
 	{
 		qWarning() << "Cannot open song file for hash calculation: " << aFileName;
@@ -72,17 +74,25 @@ void LengthHashCalculator::queueHashFile(const QString & aFileName)
 {
 	mQueueLength += 1;
 	QString fileName(aFileName);
-	BackgroundTasks::enqueue(tr("Calculate hash: %1").arg(aFileName), [this, fileName]()
+	mComponents.get<BackgroundIO>()->readFile(
+		BackgroundIO::Priority::Low,
+		aFileName,
+		[this, fileName](const QByteArray & aFileData)
 		{
-			auto hashAndLength = calculateSongHashAndLength(fileName);
-			mQueueLength -= 1;
-			if (hashAndLength.first.isEmpty())
-			{
-				emit this->fileHashFailed(fileName);
-				return;
-			}
-			emit this->fileHashCalculated(fileName, hashAndLength.first, hashAndLength.second);
-		}
+			BackgroundTasks::enqueue(tr("Calculate hash: %1").arg(fileName), [this, fileName, aFileData]()
+				{
+					auto hashAndLength = calculateSongHashAndLength(fileName, aFileData);
+					mQueueLength -= 1;
+					if (hashAndLength.first.isEmpty())
+					{
+						emit this->fileHashFailed(fileName);
+						return;
+					}
+					emit this->fileHashCalculated(fileName, hashAndLength.first, hashAndLength.second);
+				}
+			);
+		},
+		nullptr
 	);
 }
 

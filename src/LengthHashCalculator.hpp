@@ -24,7 +24,7 @@ class LengthHashCalculator:
 
 public:
 
-	LengthHashCalculator();
+	LengthHashCalculator(ComponentCollection & aComponents);
 
 	/** Returns the number of songs that are queued for hashing. */
 	int queueLength() { return mQueueLength.load(); }
@@ -32,7 +32,7 @@ public:
 	/** Calculates the hash and length of the specified song file.
 	Returns the hash and length (in seconds).
 	If either cannot be calculated, returns an empty QByteArray / negative length. */
-	static std::pair<QByteArray, double> calculateSongHashAndLength(const QString & aFileName);
+	static std::pair<QByteArray, double> calculateSongHashAndLength(const QString & aFileName, const QByteArray & aFileData);
 
 	/** Calculates the length of the specified song file, in seconds.
 	If the length cannot be calculated, returns a negative number. */
@@ -40,6 +40,9 @@ public:
 
 
 protected:
+
+	/** The components of the entire program. */
+	ComponentCollection & mComponents;
 
 	/** The number of songs that are queued for hashing. */
 	std::atomic<int> mQueueLength;

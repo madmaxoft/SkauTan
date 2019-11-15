@@ -68,7 +68,7 @@ public:
 	/** Adds the specified files to the new files list.
 	Schedules the hash to be calculated; once calculated, the song will be added to mSongs.
 	Skips duplicate entries. */
-	void addSongFiles(const QStringList & aFiles);
+	Q_INVOKABLE void addSongFiles(const QStringList & aFiles);
 
 	/** Adds the specified file to the new files list.
 	Schedules the hash to be calculated; once calculated, the song will be added to mSongs.
