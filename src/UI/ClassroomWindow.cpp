@@ -71,7 +71,8 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & aComponents):
 	mPlaylistWindow(nullptr),
 	mIsInternalChange(false),
 	mSearchFilter("", QRegularExpression::CaseInsensitiveOption),
-	mTicksUntilSetSearchText(0)
+	mTicksUntilSetSearchText(0),
+	mCurrentTempoCoeff(1)
 {
 	mUI->setupUi(this);
 	Settings::loadWindowPos("ClassroomWindow", *this);
