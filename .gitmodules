@@ -7,3 +7,6 @@
 [submodule "lib/RtMidi"]
 	path = lib/RtMidi
 	url = https://github.com/madmaxoft/RtMidi
+[submodule "lib/TagLib"]
+	path = lib/TagLib
+	url = https://github.com/madmaxoft/taglib.git
