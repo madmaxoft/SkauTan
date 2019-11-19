@@ -18,7 +18,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\lib\RtMidi.cpp">
+    <ClCompile Include="..\..\lib\RtMidi\RtMidi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

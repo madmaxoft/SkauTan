@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <tchar.h>
 
-#include "../../lib/RtMidi.h"
+#include "../../lib/RtMidi/RtMidi.h"
 
 
 
