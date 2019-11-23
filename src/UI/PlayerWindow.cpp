@@ -119,14 +119,12 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 	connect(mPlaylistDelegate.get(),     &PlaylistItemDelegate::replaceSong,    this,         &PlayerWindow::replaceSong);
 	connect(mUI->tblPlaylist,            &QWidget::customContextMenuRequested,  this,         &PlayerWindow::showPlaylistContextMenu);
 	connect(mUI->waveform,               &WaveformDisplay::songChanged,         db.get(),     &Database::saveSong);
-	connect(player.get(),                 &Player::startedPlayback,              this,         &PlayerWindow::playerStartedPlayback);
-	connect(mUI->chbKeepTempo,           &QCheckBox::toggled,                   player.get(), &Player::setKeepTempo);
-	connect(mUI->chbKeepVolume,          &QCheckBox::toggled,                   player.get(), &Player::setKeepVolume);
-	connect(player.get(),                 &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
-	connect(player.get(),                 &Player::volumeChanged,                this,         &PlayerWindow::playerVolumeChanged);
-	connect(player.get(),                 &Player::invalidTrack,                 this,         &PlayerWindow::invalidTrack);
-	connect(djc.get(),                    &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
-	connect(djc.get(),                    &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
+	connect(player.get(),                &Player::startedPlayback,              this,         &PlayerWindow::playerStartedPlayback);
+	connect(player.get(),                &Player::tempoCoeffChanged,            this,         &PlayerWindow::tempoCoeffChanged);
+	connect(player.get(),                &Player::volumeChanged,                this,         &PlayerWindow::playerVolumeChanged);
+	connect(player.get(),                &Player::invalidTrack,                 this,         &PlayerWindow::invalidTrack);
+	connect(djc.get(),                   &DJControllers::controllerConnected,   this,         &PlayerWindow::djControllerConnected);
+	connect(djc.get(),                   &DJControllers::controllerRemoved,     this,         &PlayerWindow::djControllerRemoved);
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(mUI->tblPlaylist->horizontalHeader()->font());
@@ -138,16 +136,6 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
 	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colDisplayName, defaultWid * 3);
 	Settings::loadHeaderView("PlayerWindow", "tblPlaylist", *mUI->tblPlaylist->horizontalHeader());
-
-	// Load checkboxes from the last session:
-	mUI->chbImmediatePlayback->setChecked(Settings::loadValue("PlayerWindow", "chbImmediatePlayback.isChecked", true).toBool());
-	mUI->chbAppendUponCompletion->setChecked(Settings::loadValue("PlayerWindow", "chbAppendUponCompletion.isChecked", true).toBool());
-	auto keepTempo = Settings::loadValue("PlayerWindow", "chbKeepTempo.isChecked", false).toBool();
-	auto keepVolume = Settings::loadValue("PlayerWindow", "chbKeepVolume.isChecked", false).toBool();
-	mUI->chbKeepTempo->setChecked(keepTempo);
-	mUI->chbKeepVolume->setChecked(keepVolume);
-	player->setKeepTempo(keepTempo);
-	player->setKeepVolume(keepVolume);
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = mUI->btnTempoReset->fontMetrics();
@@ -215,8 +203,6 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 PlayerWindow::~PlayerWindow()
 {
 	Settings::saveValue("PlayerWindow", "cbCompletionAppendTemplate.templateName", mUI->cbCompletionAppendTemplate->currentText());
-	Settings::saveValue("PlayerWindow", "chbKeepVolume.isChecked", mUI->chbKeepVolume->isChecked());
-	Settings::saveValue("PlayerWindow", "chbKeepTempo.isChecked", mUI->chbKeepTempo->isChecked());
 	Settings::saveValue("PlayerWindow", "chbImmediatePlayback.isChecked", mUI->chbImmediatePlayback->isChecked());
 	Settings::saveValue("PlayerWindow", "chbAppendUponCompletion.isChecked", mUI->chbAppendUponCompletion->isChecked());
 	Settings::saveHeaderView("PlayerWindow", "tblPlaylist", *mUI->tblPlaylist->horizontalHeader());
@@ -631,7 +617,7 @@ void PlayerWindow::tempoValueChanged(int aNewValue)
 	}
 	if (!mIsInternalChange)
 	{
-		mComponents.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
+		mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
 	}
 }
 

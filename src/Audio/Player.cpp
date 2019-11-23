@@ -54,7 +54,7 @@ Player::Player(QObject * aParent):
 	mPlaylist(new Playlist),
 	mState(psStopped),
 	mFadeoutProgress(0),
-	mTempo(1)
+	mTempoCoeff(1)
 {
 	// Pick an audio format:
 	mFormat.setSampleRate(48000);
@@ -285,22 +285,27 @@ void Player::setVolume(qreal aNewVolume)
 
 
 
-void Player::setTempo(qreal aNewTempo)
+void Player::setTempoCoeff(qreal aNewTempoCoeff)
 {
-	mTempo = aNewTempo;
-	if (mAudioDataSource == nullptr)
+	if (mTempoCoeff - aNewTempoCoeff < 0.0001)
 	{
-		emit tempoCoeffChanged(aNewTempo);
+		// The tempo coeff is practically the same as the one already set, ignore
 		return;
 	}
-	mAudioDataSource->setTempo(aNewTempo);
+	mTempoCoeff = aNewTempoCoeff;
+	if (mAudioDataSource == nullptr)
+	{
+		emit tempoCoeffChanged(aNewTempoCoeff);
+		return;
+	}
+	mAudioDataSource->setTempo(aNewTempoCoeff);
 	assert(mCurrentTrack != nullptr);
-	mCurrentTrack->setTempoCoeff(aNewTempo);
+	mCurrentTrack->setTempoCoeff(aNewTempoCoeff);
 	if (mCurrentTrack->updateEndTimeFromRemainingTime(mAudioDataSource->remainingTime()))
 	{
 		mPlaylist->updateItemTimesFromCurrent();
 	}
-	emit tempoCoeffChanged(aNewTempo);
+	emit tempoCoeffChanged(aNewTempoCoeff);
 }
 
 
@@ -590,24 +595,6 @@ void Player::jumpTo(int aItemIdx)
 
 
 
-void Player::setKeepTempo(bool aKeepTempo)
-{
-	mShouldKeepTempo = aKeepTempo;
-}
-
-
-
-
-
-void Player::setKeepVolume(bool aKeepVolume)
-{
-	mShouldKeepVolume = aKeepVolume;
-}
-
-
-
-
-
 void Player::deletePlaylistItem(IPlaylistItem * aItem)
 {
 	if ((mState != psPlaying) && (mState != psStartingPlayback))
@@ -814,19 +801,7 @@ void Player::OutputThread::startPlaying(IPlaylistItemPtr aTrack)
 		std::make_shared<AudioTempoChange>(
 		mPlayer.mPlaybackBuffer
 	));
-	if (mPlayer.mShouldKeepTempo.load())
-	{
-		audioDataSource->setTempo(mPlayer.mTempo);
-	}
-	else
-	{
-		auto tempoCoeff = aTrack->tempoCoeff();
-		audioDataSource->setTempo(tempoCoeff);
-		QMetaObject::invokeMethod(
-			&mPlayer, "tempoCoeffChanged",
-			Q_ARG(qreal, tempoCoeff)
-		);
-	}
+	audioDataSource->setTempo(mPlayer.mTempoCoeff);
 	mPlayer.mAudioDataSource = std::make_shared<AudioDataSourceIO>(audioDataSource);
 	auto bufSize = mFormat.bytesForDuration(300 * 1000);  // 300 msec buffer
 	qDebug() << "Setting audio output buffer size to " << bufSize;

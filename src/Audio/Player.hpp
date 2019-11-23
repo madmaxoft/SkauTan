@@ -55,8 +55,8 @@ public:
 	/** Sets the volume for playback. */
 	void setVolume(qreal aNewVolume);
 
-	/** Sets the tempo for playback. */
-	void setTempo(qreal aNewTempo);
+	/** Sets the tempo coefficient for playback. */
+	void setTempoCoeff(qreal aNewTempoCoeff);
 
 	/** Seeks to the specified timestamp.
 	Ignored if not playing. */
@@ -119,22 +119,14 @@ protected:
 	/** The format used by the audio output. */
 	QAudioFormat mFormat;
 
-	/** The tempo to be used for playback. */
-	qreal mTempo;
+	/** The tempo coefficient to be used for playback. */
+	qreal mTempoCoeff;
 
 	/** Measures the time since the playback for the current item was started. */
 	QElapsedTimer mElapsed;
 
 	/** The track that is currently playing. */
 	IPlaylistItemPtr mCurrentTrack;
-
-	/** If true, the tempo in mTempo is set for all tracks played.
-	If false, the tempo is reset to each track's default tempo on playback start. */
-	std::atomic<bool> mShouldKeepTempo;
-
-	/** If true, the tempo in mVolume is set for all tracks played.
-	If false, the volume is reset to each track's default volume on playback start. */
-	std::atomic<bool> mShouldKeepVolume;
 
 
 	/** Starts a fadeout, sets the state to the specified fadeout state.
@@ -225,12 +217,6 @@ public slots:
 	and all subsequent tracks' PlaybackStarted and PlaybackEnded times.
 	Ignored if not playing anything. */
 	void updateTrackTimesFromCurrent();
-
-	/** Sets the KeepTempo feature on or off. */
-	void setKeepTempo(bool aKeepTempo);
-
-	/** Sets the KeepVolume feature on or off. */
-	void setKeepVolume(bool aKeepVolume);
 
 
 protected slots:
