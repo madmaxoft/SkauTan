@@ -653,6 +653,7 @@ void ClassroomWindow::volumeSliderMoved(int aNewValue)
 	{
 		mComponents.get<Player>()->setVolume(static_cast<double>(aNewValue) / 100);
 	}
+	mUI->lblVolume->setText(QString("%1 %").arg(aNewValue));
 }
 
 
@@ -670,12 +671,10 @@ void ClassroomWindow::tempoValueChanged(int aNewValue)
 	{
 		mUI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
 	}
-	if (!mIsInternalChange)
-	{
-		mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
-	}
+	mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
+
 	// Schedule an update to the tempo shown with all songs:
-	mTicksUntilUpdateTempo = 1;
+	mTicksUntilUpdateTempo = 4;
 }
 
 
@@ -706,10 +705,8 @@ void ClassroomWindow::playerVolumeChanged(qreal aVolume)
 void ClassroomWindow::playerTempoChanged(qreal aTempoCoeff)
 {
 	mCurrentTempoCoeff = aTempoCoeff;
-	auto value = static_cast<int>((aTempoCoeff * 100 - 100) * 3);
-	mIsInternalChange = true;
+	auto value = static_cast<int>(round((aTempoCoeff * 100 - 100) * 3));
 	mUI->vsTempo->setValue(value);
-	mIsInternalChange = false;
 }
 
 

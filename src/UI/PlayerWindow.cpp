@@ -615,10 +615,7 @@ void PlayerWindow::tempoValueChanged(int aNewValue)
 	{
 		mUI->btnTempoReset->setText(QString("-%1 %").arg(QString::number(-percent, 'f', 1)));
 	}
-	if (!mIsInternalChange)
-	{
-		mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
-	}
+	mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
 }
 
 
@@ -1042,10 +1039,8 @@ void PlayerWindow::playerStartedPlayback()
 
 void PlayerWindow::tempoCoeffChanged(qreal aTempoCoeff)
 {
-	auto value = static_cast<int>((aTempoCoeff * 100 - 100) * 3);
-	mIsInternalChange = true;
+	auto value = static_cast<int>(round((aTempoCoeff * 100 - 100) * 3));
 	mUI->vsTempo->setValue(value);
-	mIsInternalChange = false;
 }
 
 
