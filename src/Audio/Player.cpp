@@ -278,7 +278,7 @@ bool Player::isTrackLoaded() const
 
 void Player::setVolume(qreal aNewVolume)
 {
-	if (abs(aNewVolume - mCurrentVolume) < 0.001)
+	if (std::abs(aNewVolume - mCurrentVolume) < 0.001)
 	{
 		// The volume is practically the same, ignore the change:
 		return;
@@ -287,8 +287,8 @@ void Player::setVolume(qreal aNewVolume)
 	mOutputThread->mOutput->setVolume(
 		QAudio::convertVolume(
 			mCurrentVolume,
-			QAudio::VolumeScale::LinearVolumeScale,
-			QAudio::VolumeScale::LogarithmicVolumeScale
+			QAudio::VolumeScale::LogarithmicVolumeScale,
+			QAudio::VolumeScale::LinearVolumeScale
 		)
 	);
 	emit volumeChanged(aNewVolume);
