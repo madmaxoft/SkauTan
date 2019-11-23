@@ -300,7 +300,7 @@ void Player::setVolume(qreal aNewVolume)
 
 void Player::setTempoCoeff(qreal aNewTempoCoeff)
 {
-	if (abs(mTempoCoeff - aNewTempoCoeff) < 0.0001)
+	if (std::abs(mTempoCoeff - aNewTempoCoeff) < 0.0001)
 	{
 		// The tempo coeff is practically the same as the one already set, ignore
 		return;
