@@ -119,6 +119,9 @@ protected:
 	/** The format used by the audio output. */
 	QAudioFormat mFormat;
 
+	/** The current volume used for playback. */
+	qreal mCurrentVolume;
+
 	/** The tempo coefficient to be used for playback. */
 	qreal mTempoCoeff;
 

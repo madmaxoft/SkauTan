@@ -74,10 +74,6 @@ private:
 	Used for detecting whether to change the UI. */
 	int mLastLibraryRescanQueue;
 
-	/** Set to true while updating the UI as a reaction to an internal event.
-	If true, the changes in the UI shouldn't be propagated further. */
-	bool mIsInternalChange;
-
 	/** The window that is shown when asked to switch to the Classroom mode. */
 	QWidget * mClassroomWindow;
 

@@ -54,10 +54,6 @@ private:
 	/** The window that will be shown when asked to switch to Playlist mode. */
 	QWidget * mPlaylistWindow;
 
-	/** Set to true while updating the UI as a reaction to an internal event.
-	If true, the changes in the UI shouldn't be propagated further. */
-	bool mIsInternalChange;
-
 	/** If positive, the number of mUpdateTimer ticks until the current Duration Limit settings are applied.
 	Used by the leDurationLimit to apply the settings only after some time after the last edit,
 	to avoid applying a limit parsed from number in the middle of editing. */

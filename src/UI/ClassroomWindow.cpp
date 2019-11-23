@@ -69,7 +69,6 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & aComponents):
 	mUI(new Ui::ClassroomWindow),
 	mComponents(aComponents),
 	mPlaylistWindow(nullptr),
-	mIsInternalChange(false),
 	mSearchFilter("", QRegularExpression::CaseInsensitiveOption),
 	mTicksUntilSetSearchText(0),
 	mCurrentTempoCoeff(1)
@@ -110,7 +109,7 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & aComponents):
 	connect(mUI->lwFilters,             &QListWidget::itemSelectionChanged,   this,         &ClassroomWindow::filterItemSelected);
 	connect(mUI->lwSongs,               &QListWidget::itemDoubleClicked,      this,         &ClassroomWindow::songItemDoubleClicked);
 	connect(&mUpdateTimer,              &QTimer::timeout,                     this,         &ClassroomWindow::periodicUIUpdate);
-	connect(mUI->vsVolume,              &QSlider::sliderMoved,                this,         &ClassroomWindow::volumeSliderMoved);
+	connect(mUI->vsVolume,              &QSlider::valueChanged,               this,         &ClassroomWindow::volumeSliderMoved);
 	connect(mUI->vsTempo,               &QSlider::valueChanged,               this,         &ClassroomWindow::tempoValueChanged);
 	connect(mUI->btnTempoReset,         &QPushButton::clicked,                this,         &ClassroomWindow::tempoResetClicked);
 	connect(player.get(),               &Player::tempoCoeffChanged,           this,         &ClassroomWindow::playerTempoChanged);
@@ -649,10 +648,7 @@ void ClassroomWindow::periodicUIUpdate()
 
 void ClassroomWindow::volumeSliderMoved(int aNewValue)
 {
-	if (!mIsInternalChange)
-	{
-		mComponents.get<Player>()->setVolume(static_cast<double>(aNewValue) / 100);
-	}
+	mComponents.get<Player>()->setVolume(static_cast<double>(aNewValue) / 100);
 	mUI->lblVolume->setText(QString("%1 %").arg(aNewValue));
 }
 
@@ -692,10 +688,8 @@ void ClassroomWindow::tempoResetClicked()
 
 void ClassroomWindow::playerVolumeChanged(qreal aVolume)
 {
-	auto value = static_cast<int>(aVolume * 100);
-	mIsInternalChange = true;
+	auto value = static_cast<int>(round(aVolume * 100));
 	mUI->vsVolume->setValue(value);
-	mIsInternalChange = false;
 }
 
 

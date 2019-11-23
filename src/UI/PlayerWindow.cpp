@@ -95,7 +95,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 	connect(mUI->btnStop,                &QPushButton::clicked,                 player.get(), &Player::stopPlayback);
 	connect(mUI->btnNext,                &QPushButton::clicked,                 player.get(), &Player::nextTrack);
 	connect(mUI->tblPlaylist,            &QTableView::doubleClicked,            this,         &PlayerWindow::trackDoubleClicked);
-	connect(mUI->vsVolume,               &QSlider::sliderMoved,                 this,         &PlayerWindow::volumeSliderMoved);
+	connect(mUI->vsVolume,               &QSlider::valueChanged,                this,         &PlayerWindow::volumeSliderMoved);
 	connect(mUI->vsTempo,                &QSlider::valueChanged,                this,         &PlayerWindow::tempoValueChanged);
 	connect(mUI->btnTempoReset,          &QToolButton::clicked,                 this,         &PlayerWindow::resetTempo);
 	connect(mUI->actBackgroundTasks,     &QAction::triggered,                   this,         &PlayerWindow::showBackgroundTasks);
@@ -561,6 +561,7 @@ void PlayerWindow::trackDoubleClicked(const QModelIndex & aTrack)
 
 void PlayerWindow::volumeSliderMoved(int aNewValue)
 {
+	mUI->lblVolume->setText(QString("%1 %").arg(aNewValue));
 	mComponents.get<Player>()->setVolume(static_cast<double>(aNewValue) / 100);
 }
 
@@ -1049,10 +1050,8 @@ void PlayerWindow::tempoCoeffChanged(qreal aTempoCoeff)
 
 void PlayerWindow::playerVolumeChanged(qreal aVolume)
 {
-	auto value = static_cast<int>(aVolume * 100);
-	mIsInternalChange = true;
+	auto value = static_cast<int>(round(aVolume * 100));
 	mUI->vsVolume->setValue(value);
-	mIsInternalChange = false;
 }
 
 

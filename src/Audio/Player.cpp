@@ -54,6 +54,7 @@ Player::Player(QObject * aParent):
 	mPlaylist(new Playlist),
 	mState(psStopped),
 	mFadeoutProgress(0),
+	mCurrentVolume(1),
 	mTempoCoeff(1)
 {
 	// Pick an audio format:
@@ -277,7 +278,19 @@ bool Player::isTrackLoaded() const
 
 void Player::setVolume(qreal aNewVolume)
 {
-	mOutputThread->mOutput->setVolume(aNewVolume);
+	if (abs(aNewVolume - mCurrentVolume) < 0.001)
+	{
+		// The volume is practically the same, ignore the change:
+		return;
+	}
+	mCurrentVolume = aNewVolume;
+	mOutputThread->mOutput->setVolume(
+		QAudio::convertVolume(
+			mCurrentVolume,
+			QAudio::VolumeScale::LinearVolumeScale,
+			QAudio::VolumeScale::LogarithmicVolumeScale
+		)
+	);
 	emit volumeChanged(aNewVolume);
 }
 
