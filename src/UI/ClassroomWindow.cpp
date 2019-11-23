@@ -672,7 +672,7 @@ void ClassroomWindow::tempoValueChanged(int aNewValue)
 	}
 	if (!mIsInternalChange)
 	{
-		mComponents.get<Player>()->setTempo(static_cast<double>(percent + 100) / 100);
+		mComponents.get<Player>()->setTempoCoeff(static_cast<double>(percent + 100) / 100);
 	}
 	// Schedule an update to the tempo shown with all songs:
 	mTicksUntilUpdateTempo = 1;

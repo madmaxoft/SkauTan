@@ -127,23 +127,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="chbKeepVolume">
-          <property name="text">
-           <string>Keep</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Tempo</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="1">
          <widget class="QSlider" name="vsTempo">
           <property name="minimum">
@@ -160,6 +143,29 @@
           </property>
           <property name="tickPosition">
            <enum>QSlider::TicksBothSides</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Tempo</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QToolButton" name="btnTempoReset">
+          <property name="toolTip">
+           <string>Reset tempo to +0 %</string>
+          </property>
+          <property name="text">
+           <string notr="true">+0 %</string>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextOnly</enum>
           </property>
          </widget>
         </item>
@@ -180,26 +186,6 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QToolButton" name="btnTempoReset">
-          <property name="toolTip">
-           <string>Reset tempo to +0 %</string>
-          </property>
-          <property name="text">
-           <string notr="true">+0 %</string>
-          </property>
-          <property name="toolButtonStyle">
-           <enum>Qt::ToolButtonTextOnly</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QCheckBox" name="chbKeepTempo">
-          <property name="text">
-           <string>Keep</string>
           </property>
          </widget>
         </item>
