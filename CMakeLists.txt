@@ -4,7 +4,7 @@ project (SkauTan LANGUAGES CXX)
 
 set (CMAKE_CXX_STANDARD 14)
 
-find_package (Qt5 COMPONENTS Widgets Network Sql Xml Multimedia LinguistTools REQUIRED)
+find_package (Qt5 5.8 COMPONENTS Widgets Network Sql Xml Multimedia LinguistTools REQUIRED)
 
 
 
