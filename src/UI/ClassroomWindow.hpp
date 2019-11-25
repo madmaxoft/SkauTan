@@ -6,6 +6,7 @@
 #include <QRegularExpression>
 #include "../DJControllers.hpp"
 #include "../IPlaylistItem.hpp"
+#include "../Song.hpp"
 
 
 
@@ -15,7 +16,6 @@
 class QListWidgetItem;
 class ComponentCollection;
 class Filter;
-class Song;
 namespace Ui
 {
 	class ClassroomWindow;
@@ -25,6 +25,9 @@ namespace Ui
 
 
 
+/** Wrapper for the UI that handles the classroom-face of the main window.
+Displays a list of filters on the left, and for the selected filter, the matching songs in the main area.
+Has a player at the bottom, songs can be played by dbl-clicking them. */
 class ClassroomWindow:
 	public QMainWindow
 {
@@ -59,16 +62,16 @@ private:
 	to avoid applying a limit parsed from number in the middle of editing. */
 	int mTicksToDurationLimitApply;
 
-	/** The song on which the context menu actions are applied. */
-	std::shared_ptr<Song> mContextSong;
+	/** The song (SharedData) on which the context menu actions are applied. */
+	std::shared_ptr<Song::SharedData> mContextSongSD;
 
-	/** The song currently playing. */
-	std::shared_ptr<Song> mCurrentSong;
+	/** The song (SharedData) currently playing. */
+	std::shared_ptr<Song::SharedData> mCurrentSongSD;
 
-	/** All the songs matching the current filter.
+	/** All the songs (SharedDatas) matching the current filter.
 	Updated when the filter is chosen by the user, in updateAllFilterSongs().
 	Used to populate the song list, after post-filtering with mSearchFilter, in applySearchFilterToSongs(). */
-	std::vector<std::shared_ptr<Song>> mAllFilterSongs;
+	std::vector<std::shared_ptr<Song::SharedData>> mAllFilterSharedDatas;
 
 	/** The search string entered by the user to filter out songs.
 	Updated immediately on UI change, but applied with a delay not to slow down the UI. */
@@ -100,9 +103,9 @@ private:
 	/** Returns the filter currently selected in lwFilters, or nullptr if none. */
 	std::shared_ptr<Filter> selectedFilter();
 
-	/** Adds the specified song to the playlist and starts playing it.
+	/** Adds the specified song (SharedData) to the playlist and starts playing it.
 	If another song is currently playing, fade-out is used for it. */
-	void startPlayingSong(std::shared_ptr<Song> aSong);
+	void startPlayingSong(std::shared_ptr<Song::SharedData> aSongSD);
 
 	/** Applies the settings in the UI related to Duration Limit to the currently playing track. */
 	void applyDurationLimitSettings();
@@ -110,22 +113,24 @@ private:
 	/** Updates the list item by the current data from its linked Song. */
 	void updateSongItem(QListWidgetItem & aItem);
 
-	/** Updates the list item representing the specified song by the song current data.
+	/** Updates the list item representing the specified song (SharedData) by the song current data.
 	If the song is not represented by any item, ignored silently. */
-	void updateSongItem(Song & aSong);
+	void updateSongSDItem(Song::SharedData & aSongSD);
 
 	/** Sets the background color of mContextSong. */
-	void setContextSongBgColor(QColor aBgColor);
+	void setContextSongSDBgColor(QColor aBgColor);
 
 	/** Sets the rating of mContextSong. */
-	void rateContextSong(double aLocalRating);
+	void rateContextSongSD(double aLocalRating);
 
 	/** Returns the list item representing the given song, or nullptr if no such item. */
-	QListWidgetItem * itemFromSong(Song & aSong);
+	QListWidgetItem * itemFromSongSD(Song::SharedData & aSongSD);
 
-	/** Shows the context menu for a song at the specified position.
-	The menu items act on mContextSong (so that this can be reused from multiple song sources). */
-	void showSongContextMenu(const QPoint & aPos, std::shared_ptr<Song> aSong);
+	/** Shows the context menu for a song (SharedData) at the specified position.
+	Sets mContextSongSD to aSongSD.
+	The menu items act on mContextSongSD (so that this can be reused from multiple song sources (song list,
+	song name in player, ...)). */
+	void showSongSDContextMenu(const QPoint & aPos, std::shared_ptr<Song::SharedData> aSongSD);
 
 	/** Updates lwSongs with all songs from mAllFilterSongs that match mSearchFilter.
 	Called when the user selects a different template-filter, or if they edit the search filter. */
