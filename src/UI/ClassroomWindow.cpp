@@ -29,31 +29,44 @@
 /** Returns the display title for the specified item.
 Concatenates the author and title, each only if present.
 aTempoCoeff is the current tempo adjust coefficient, from the tempo slider. */
-static QString songDisplayText(const Song & aSong, double aTempoCoeff)
+static QString songDisplayText(const Song::SharedData & aSongSharedData, double aTempoCoeff)
 {
-	auto res = aSong.primaryAuthor().valueOrDefault();
-	if (!aSong.primaryTitle().isEmpty())
+	QString author, title;
+	double mpm = 0;
+	for (const auto & song: aSongSharedData.duplicates())
+	{
+		auto a = song->primaryAuthor().valueOrDefault();
+		if (!a.isEmpty())
+		{
+			author = a;
+		}
+		auto t = song->primaryTitle().valueOrDefault();
+		if (!t.isEmpty())
+		{
+			title = t;
+		}
+		if (song->primaryMeasuresPerMinute().isPresent())
+		{
+			mpm = song->primaryMeasuresPerMinute().value();
+		}
+		else if (song->detectedTempo().isPresent())
+		{
+			mpm = song->detectedTempo().value();
+		}
+	}
+	auto res = author;
+	if (!title.isEmpty())
 	{
 		if (!res.isEmpty())
 		{
 			res.append(" - ");
 		}
-		res.append(aSong.primaryTitle().value());
+		res.append(title);
 	}
-	const auto & mpm = aSong.primaryMeasuresPerMinute();
-	if (mpm.isPresent())
+	if (mpm > 0)
 	{
-		auto mpmVal = std::floor(aTempoCoeff * mpm.value() + 0.5);
+		auto mpmVal = std::floor(aTempoCoeff * mpm + 0.5);
 		res.prepend(QString("[%1] ").arg(mpmVal));
-	}
-	else
-	{
-		const auto & detectedTempo = aSong.detectedTempo();
-		if (detectedTempo.isPresent())
-		{
-			auto mpmVal = std::floor(aTempoCoeff * detectedTempo.value() + 0.5);
-			res.prepend(QString("[%1] ").arg(mpmVal));
-		}
 	}
 	return res;
 }
@@ -219,23 +232,29 @@ std::shared_ptr<Filter> ClassroomWindow::selectedFilter()
 
 
 
-void ClassroomWindow::startPlayingSong(std::shared_ptr<Song> aSong)
+void ClassroomWindow::startPlayingSong(std::shared_ptr<Song::SharedData> aSongSD)
 {
-	if (aSong == nullptr)
+	if (aSongSD == nullptr)
 	{
 		qWarning() << "Requested playback of nullptr song";
 		return;
 	}
 	auto player = mComponents.get<Player>();
 	auto & playlist = player->playlist();
-	mCurrentSong = aSong;
-	playlist.addItem(std::make_shared<PlaylistItemSong>(aSong, selectedFilter()));
+	mCurrentSongSD = aSongSD;
+	auto dups = aSongSD->duplicates();
+	if (dups.empty())
+	{
+		qWarning() << "Requested playback of SongSD with no song files: " << aSongSD->mHash;
+		return;
+	}
+	playlist.addItem(std::make_shared<PlaylistItemSong>(dups[0]->shared_from_this(), selectedFilter()));
 	player->jumpTo(static_cast<int>(playlist.items().size()) - 1);
 	if (!player->isPlaying())
 	{
 		player->startPlayback();
 	}
-	mUI->lblCurrentlyPlaying->setText(tr("Currently playing: %1").arg(songDisplayText(*aSong, mCurrentTempoCoeff)));
+	mUI->lblCurrentlyPlaying->setText(tr("Currently playing: %1").arg(songDisplayText(*aSongSD, mCurrentTempoCoeff)));
 	applyDurationLimitSettings();
 }
 
@@ -273,15 +292,15 @@ void ClassroomWindow::applyDurationLimitSettings()
 
 void ClassroomWindow::updateSongItem(QListWidgetItem & aItem)
 {
-	auto song = aItem.data(Qt::UserRole).value<SongPtr>();
-	if (song == nullptr)
+	auto sd = aItem.data(Qt::UserRole).value<Song::SharedDataPtr>();
+	if (sd == nullptr)
 	{
-		assert(!"Invalid song pointer");
+		assert(!"Invalid SongSharedData pointer");
 		return;
 	}
-	aItem.setText(songDisplayText(*song, mCurrentTempoCoeff));
+	aItem.setText(songDisplayText(*sd, mCurrentTempoCoeff));
 	QString fileNames;
-	for (const auto & s: song->duplicates())
+	for (const auto & s: sd->duplicates())
 	{
 		if (!fileNames.isEmpty())
 		{
@@ -290,16 +309,16 @@ void ClassroomWindow::updateSongItem(QListWidgetItem & aItem)
 		fileNames.append(s->fileName());
 	}
 	aItem.setToolTip(fileNames);
-	aItem.setBackgroundColor(song->bgColor().valueOr(QColor(0xff, 0xff, 0xff)));
+	aItem.setBackgroundColor(sd->mBgColor.valueOr(QColor(0xff, 0xff, 0xff)));
 }
 
 
 
 
 
-void ClassroomWindow::updateSongItem(Song & aSong)
+void ClassroomWindow::updateSongSDItem(Song::SharedData & aSong)
 {
-	auto item = itemFromSong(aSong);
+	auto item = itemFromSongSD(aSong);
 	if (item != nullptr)
 	{
 		updateSongItem(*item);
@@ -310,37 +329,37 @@ void ClassroomWindow::updateSongItem(Song & aSong)
 
 
 
-void ClassroomWindow::setContextSongBgColor(QColor aBgColor)
+void ClassroomWindow::setContextSongSDBgColor(QColor aBgColor)
 {
-	if (mContextSong == nullptr)
+	if (mContextSongSD == nullptr)
 	{
 		return;
 	}
-	mContextSong->setBgColor(aBgColor);
-	mComponents.get<Database>()->saveSong(mContextSong);
-	updateSongItem(*mContextSong);
+	mContextSongSD->mBgColor = aBgColor;
+	mComponents.get<Database>()->saveSongSharedData(mContextSongSD);
+	updateSongSDItem(*mContextSongSD);
 }
 
 
 
 
 
-void ClassroomWindow::rateContextSong(double aLocalRating)
+void ClassroomWindow::rateContextSongSD(double aLocalRating)
 {
-	if (mContextSong == nullptr)
+	if (mContextSongSD == nullptr)
 	{
 		return;
 	}
-	mContextSong->setLocalRating(aLocalRating);
-	mComponents.get<Database>()->saveSong(mContextSong);
-	updateSongItem(*mContextSong);
+	mContextSongSD->mRating.mLocal = aLocalRating;
+	mComponents.get<Database>()->saveSongSharedData(mContextSongSD);
+	updateSongSDItem(*mContextSongSD);
 }
 
 
 
 
 
-QListWidgetItem * ClassroomWindow::itemFromSong(Song & aSong)
+QListWidgetItem * ClassroomWindow::itemFromSongSD(Song::SharedData & aSongSD)
 {
 	auto numItems = mUI->lwSongs->count();
 	for (int i = 0; i < numItems; ++i)
@@ -350,8 +369,8 @@ QListWidgetItem * ClassroomWindow::itemFromSong(Song & aSong)
 		{
 			continue;
 		}
-		auto itemSong = item->data(Qt::UserRole).value<SongPtr>();
-		if (itemSong.get() == &aSong)
+		auto itemSongSD = item->data(Qt::UserRole).value<Song::SharedDataPtr>();
+		if (itemSongSD.get() == &aSongSD)
 		{
 			return item;
 		}
@@ -363,7 +382,7 @@ QListWidgetItem * ClassroomWindow::itemFromSong(Song & aSong)
 
 
 
-void ClassroomWindow::showSongContextMenu(const QPoint & aPos, std::shared_ptr<Song> aSong)
+void ClassroomWindow::showSongSDContextMenu(const QPoint & aPos, std::shared_ptr<Song::SharedData> aSongSD)
 {
 	// The colors for setting the background:
 	QColor colors[] =
@@ -389,15 +408,15 @@ void ClassroomWindow::showSongContextMenu(const QPoint & aPos, std::shared_ptr<S
 		QPixmap pixmap(size, size);
 		pixmap.fill(c);
 		act->setIcon(QIcon(pixmap));
-		connect(act, &QAction::triggered, [this, c]() { setContextSongBgColor(c); });
+		connect(act, &QAction::triggered, [this, c]() { setContextSongSDBgColor(c); });
 	}
 	contextMenu.addSeparator();
 	contextMenu.addAction(mUI->actRate);
-	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateContextSong(5); });
-	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateContextSong(4); });
-	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateContextSong(3); });
-	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateContextSong(2); });
-	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateContextSong(1); });
+	connect(contextMenu.addAction(QString("    * * * * *")), &QAction::triggered, [this](){ rateContextSongSD(5); });
+	connect(contextMenu.addAction(QString("    * * * *")),   &QAction::triggered, [this](){ rateContextSongSD(4); });
+	connect(contextMenu.addAction(QString("    * * *")),     &QAction::triggered, [this](){ rateContextSongSD(3); });
+	connect(contextMenu.addAction(QString("    * *")),       &QAction::triggered, [this](){ rateContextSongSD(2); });
+	connect(contextMenu.addAction(QString("    *")),         &QAction::triggered, [this](){ rateContextSongSD(1); });
 	contextMenu.addSeparator();
 	contextMenu.addAction(mUI->actRemoveFromLibrary);
 	contextMenu.addAction(mUI->actDeleteFromDisk);
@@ -407,7 +426,7 @@ void ClassroomWindow::showSongContextMenu(const QPoint & aPos, std::shared_ptr<S
 	// Display the menu:
 	auto widget = dynamic_cast<QWidget *>(sender());
 	auto pos = (widget == nullptr) ? aPos : widget->mapToGlobal(aPos);
-	mContextSong = aSong;
+	mContextSongSD = aSongSD;
 	contextMenu.exec(pos, nullptr);
 }
 
@@ -420,15 +439,20 @@ void ClassroomWindow::applySearchFilterToSongs()
 	STOPWATCH("Applying search filter to song list");
 
 	mUI->lwSongs->clear();
-	for (const auto & song: mAllFilterSongs)
+	for (const auto & sd: mAllFilterSharedDatas)
 	{
-		if (mSearchFilter.match(songDisplayText(*song, mCurrentTempoCoeff)).hasMatch())
+		if (sd->duplicatesCount() == 0)
 		{
-			auto item = std::make_unique<QListWidgetItem>();
-			item->setData(Qt::UserRole, QVariant::fromValue(song->shared_from_this()));
-			updateSongItem(*item);
-			mUI->lwSongs->addItem(item.release());
+			continue;
 		}
+		if (!mSearchFilter.match(songDisplayText(*sd, mCurrentTempoCoeff)).hasMatch())
+		{
+			continue;
+		}
+		auto item = std::make_unique<QListWidgetItem>();
+		item->setData(Qt::UserRole, QVariant::fromValue(sd));
+		updateSongItem(*item);
+		mUI->lwSongs->addItem(item.release());
 	}
 	mUI->lwSongs->sortItems();
 }
@@ -561,7 +585,7 @@ void ClassroomWindow::filterItemSelected()
 
 	auto curFilter = selectedFilter();
 	mUI->lwSongs->clear();
-	mAllFilterSongs.clear();
+	mAllFilterSharedDatas.clear();
 	if (curFilter == nullptr)
 	{
 		return;
@@ -576,7 +600,7 @@ void ClassroomWindow::filterItemSelected()
 		{
 			if (root->isSatisfiedBy(*song))
 			{
-				mAllFilterSongs.push_back(song->shared_from_this());
+				mAllFilterSharedDatas.push_back(sd.second);
 				break;
 			}
 		}
@@ -591,7 +615,7 @@ void ClassroomWindow::filterItemSelected()
 
 void ClassroomWindow::songItemDoubleClicked(QListWidgetItem * aItem)
 {
-	startPlayingSong(aItem->data(Qt::UserRole).value<SongPtr>());
+	startPlayingSong(aItem->data(Qt::UserRole).value<Song::SharedDataPtr>());
 }
 
 
@@ -714,12 +738,12 @@ void ClassroomWindow::playerInvalidTrack(IPlaylistItemPtr aTrack)
 	{
 		return;
 	}
-	if (spi->song() != mCurrentSong)
+	if (spi->song()->sharedData() != mCurrentSongSD)
 	{
 		// The player was playing something else, ignore
 		return;
 	}
-	mUI->lblCurrentlyPlaying->setText(tr("FAILED to play: %1").arg(songDisplayText(*mCurrentSong, mCurrentTempoCoeff)));
+	mUI->lblCurrentlyPlaying->setText(tr("FAILED to play: %1").arg(songDisplayText(*mCurrentSongSD, mCurrentTempoCoeff)));
 }
 
 
@@ -761,7 +785,7 @@ void ClassroomWindow::playSelectedSong()
 	{
 		return;
 	}
-	startPlayingSong(selItem->data(Qt::UserRole).value<SongPtr>());
+	startPlayingSong(selItem->data(Qt::UserRole).value<Song::SharedDataPtr>());
 }
 
 
@@ -776,13 +800,13 @@ void ClassroomWindow::removeFromLibrary()
 	{
 		return;
 	}
-	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
-	if (selSong == nullptr)
+	auto selSD = selItem->data(Qt::UserRole).value<Song::SharedDataPtr>();
+	if (selSD == nullptr)
 	{
 		assert(!"Invalid song pointer");
 		return;
 	}
-	auto songs = selSong->duplicates();
+	auto songs = selSD->duplicates();
 	if (songs.empty())
 	{
 		return;
@@ -822,13 +846,13 @@ void ClassroomWindow::deleteFromDisk()
 	{
 		return;
 	}
-	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
-	if (selSong == nullptr)
+	auto selSD = selItem->data(Qt::UserRole).value<Song::SharedDataPtr>();
+	if (selSD == nullptr)
 	{
 		assert(!"Invalid song pointer");
 		return;
 	}
-	auto songs = selSong->duplicates();
+	auto songs = selSD->duplicates();
 	if (songs.empty())
 	{
 		return;
@@ -867,8 +891,14 @@ void ClassroomWindow::showSongProperties()
 	{
 		return;
 	}
-	auto selSong = selItem->data(Qt::UserRole).value<SongPtr>();
-	DlgSongProperties dlg(mComponents, selSong, this);
+	auto selSongSD = selItem->data(Qt::UserRole).value<Song::SharedDataPtr>();
+	auto dups = selSongSD->duplicates();
+	if (dups.empty())
+	{
+		qDebug() << "Trying to edit song properties for a songSD with no disk files: " << selSongSD->mHash;
+		return;
+	}
+	DlgSongProperties dlg(mComponents, dups[0]->shared_from_this(), this);
 	dlg.exec();
 	updateSongItem(*selItem);
 }
@@ -963,7 +993,7 @@ void ClassroomWindow::showDebugLog()
 void ClassroomWindow::showSongListContextMenu(const QPoint & aPos)
 {
 	auto selItem = mUI->lwSongs->currentItem();
-	showSongContextMenu(aPos, selItem->data(Qt::UserRole).value<SongPtr>());
+	showSongSDContextMenu(aPos, selItem->data(Qt::UserRole).value<Song::SharedDataPtr>());
 }
 
 
@@ -983,7 +1013,7 @@ void ClassroomWindow::showCurSongContextMenu(const QPoint & aPos)
 	{
 		return;
 	}
-	showSongContextMenu(aPos, psi->song());
+	showSongSDContextMenu(aPos, psi->song()->sharedData());
 }
 
 
