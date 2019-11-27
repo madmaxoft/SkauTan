@@ -16,6 +16,7 @@
 #include "../../LengthHashCalculator.hpp"
 #include "../../SongTempoDetector.hpp"
 #include "DlgTapTempo.hpp"
+#include "DlgReadOnlyFiles.hpp"
 
 
 
@@ -330,6 +331,34 @@ void DlgSongProperties::applyAndClose()
 	mSong->sharedData()->mNotes = mNotes;
 	auto db = mComponents.get<Database>();
 	db->saveSongSharedData(mSong->sharedData());
+
+	// Check for read-only files, ask the user whether to enable writing for them:
+	QStringList readOnlyFiles;
+	for (auto song: mDuplicates)
+	{
+		const auto itr = mTagID3Changes.find(song);
+		if (itr == mTagID3Changes.cend())
+		{
+			continue;
+		}
+		QFileInfo fi(song->fileName());
+		if (fi.isWritable())
+		{
+			continue;
+		}
+		readOnlyFiles.append(song->fileName());
+	}
+	if (!readOnlyFiles.isEmpty())
+	{
+		DlgReadOnlyFiles dlg(readOnlyFiles);
+		if (dlg.exec())
+		{
+			for (const auto fn: readOnlyFiles)
+			{
+				QFile::setPermissions(fn, QFile::permissions(fn) | QFile::WriteOther);
+			}
+		}
+	}
 
 	// Apply the tag changes:
 	for (auto song: mDuplicates)

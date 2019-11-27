@@ -234,6 +234,7 @@ set (SOURCES
 	src/UI/Dlg/DlgLvsStatus.cpp
 	src/UI/Dlg/DlgManageFilters.cpp
 	src/UI/Dlg/DlgPickTemplate.cpp
+	src/UI/Dlg/DlgReadOnlyFiles.cpp
 	src/UI/Dlg/DlgRemovedSongs.cpp
 	src/UI/Dlg/DlgSongProperties.cpp
 	src/UI/Dlg/DlgSongs.cpp
@@ -313,6 +314,7 @@ set (HEADERS
 	src/UI/Dlg/DlgLvsStatus.hpp
 	src/UI/Dlg/DlgManageFilters.hpp
 	src/UI/Dlg/DlgPickTemplate.hpp
+	src/UI/Dlg/DlgReadOnlyFiles.hpp
 	src/UI/Dlg/DlgRemovedSongs.hpp
 	src/UI/Dlg/DlgSongProperties.hpp
 	src/UI/Dlg/DlgSongs.hpp
@@ -364,6 +366,7 @@ set (UI
 	src/UI/Dlg/DlgLvsStatus.ui
 	src/UI/Dlg/DlgManageFilters.ui
 	src/UI/Dlg/DlgPickTemplate.ui
+	src/UI/Dlg/DlgReadOnlyFiles.ui
 	src/UI/Dlg/DlgRemovedSongs.ui
 	src/UI/Dlg/DlgSongProperties.ui
 	src/UI/Dlg/DlgSongs.ui
