@@ -311,8 +311,8 @@ DlgHistory::DlgHistory(ComponentCollection & aComponents, QWidget * aParent) :
 	// Stretch the columns to fit in the headers / data:
 	QFontMetrics fmHdr(mUI->tblHistory->horizontalHeader()->font());
 	QFontMetrics fmItems(mUI->tblHistory->font());
-	mUI->tblHistory->setColumnWidth(0, fmItems.width("W2088-08-08T00:00:00.000W"));
-	mUI->tblHistory->setColumnWidth(1, fmHdr.width("WGenreW"));
+	mUI->tblHistory->setColumnWidth(0, fmItems.horizontalAdvance("W2088-08-08T00:00:00.000W"));
+	mUI->tblHistory->setColumnWidth(1, fmHdr.horizontalAdvance("WGenreW"));
 	Settings::loadHeaderView("DlgHistory", "tblHistory", *mUI->tblHistory->horizontalHeader());
 
 	// Connect the signals / slots:

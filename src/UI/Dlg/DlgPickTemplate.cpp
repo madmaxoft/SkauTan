@@ -33,7 +33,7 @@ DlgPickTemplate::DlgPickTemplate(ComponentCollection & aComponents, QWidget * aP
 		mUI->tblTemplates->setItem(idx, 2, new QTableWidgetItem(tmpl->notes()));
 		for (int col = 0; col < colCount; ++col)
 		{
-			mUI->tblTemplates->item(idx, col)->setBackgroundColor(tmpl->bgColor());
+			mUI->tblTemplates->item(idx, col)->setBackground(tmpl->bgColor());
 		}
 		idx += 1;
 	}

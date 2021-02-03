@@ -94,14 +94,14 @@ ClassroomWindow::ClassroomWindow(ComponentCollection & aComponents):
 	setUpDjControllers();
 
 	// Set labels' minimum width to avoid layout changes in runtime:
-	mUI->lblTotalTime->setMinimumWidth(mUI->lblTotalTime->fontMetrics().width("00:00"));
-	mUI->lblPosition->setMinimumWidth(mUI->lblPosition->fontMetrics().width("00:00"));
-	mUI->lblRemaining->setMinimumWidth(mUI->lblRemaining->fontMetrics().width("-00:00"));
+	mUI->lblTotalTime->setMinimumWidth(mUI->lblTotalTime->fontMetrics().horizontalAdvance("00:00"));
+	mUI->lblPosition->setMinimumWidth(mUI->lblPosition->fontMetrics().horizontalAdvance("00:00"));
+	mUI->lblRemaining->setMinimumWidth(mUI->lblRemaining->fontMetrics().horizontalAdvance("-00:00"));
 
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	auto fm = mUI->btnTempoReset->fontMetrics();
 	mUI->btnTempoReset->setMinimumWidth(
-		mUI->btnTempoReset->sizeHint().width() - fm.width(mUI->btnTempoReset->text()) + fm.width("+99.9 %")
+		mUI->btnTempoReset->sizeHint().width() - fm.horizontalAdvance(mUI->btnTempoReset->text()) + fm.horizontalAdvance("+99.9 %")
 	);
 
 	// Decorate the splitter handle with 2 sunken lines:
@@ -205,7 +205,7 @@ void ClassroomWindow::updateFilterList()
 	{
 		auto item = new QListWidgetItem(filter->displayName());
 		item->setData(Qt::UserRole, QVariant::fromValue(filter));
-		item->setBackgroundColor(filter->bgColor());
+		item->setBackground(filter->bgColor());
 		mUI->lwFilters->addItem(item);
 		if (filter == selFilter)
 		{
@@ -309,7 +309,7 @@ void ClassroomWindow::updateSongItem(QListWidgetItem & aItem)
 		fileNames.append(s->fileName());
 	}
 	aItem.setToolTip(fileNames);
-	aItem.setBackgroundColor(sd->mBgColor.valueOr(QColor(0xff, 0xff, 0xff)));
+	aItem.setBackground(sd->mBgColor.valueOr(QColor(0xff, 0xff, 0xff)));
 }
 
 

@@ -139,24 +139,24 @@ void DlgTemplatesList::updateTemplateRow(int aRow, const Template & aTemplate)
 	mIsInternalChange = true;
 	auto item = new QTableWidgetItem(aTemplate.displayName());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	item->setBackgroundColor(aTemplate.bgColor());
+	item->setBackground(aTemplate.bgColor());
 	mUI->tblTemplates->setItem(aRow, colTemplateDisplayName, item);
 
 	auto numItems = QString::number(aTemplate.items().size());
 	item = new QTableWidgetItem(numItems);
 	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	item->setBackgroundColor(aTemplate.bgColor());
+	item->setBackground(aTemplate.bgColor());
 	mUI->tblTemplates->setItem(aRow, colTemplateNumItems, item);
 
 	item = new QTableWidgetItem(aTemplate.bgColor().name());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	item->setBackgroundColor(aTemplate.bgColor());
+	item->setBackground(aTemplate.bgColor());
 	mUI->tblTemplates->setItem(aRow, colTemplateBgColor, item);
 	mIsInternalChange = false;
 
 	item = new QTableWidgetItem(aTemplate.notes());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
-	item->setBackgroundColor(aTemplate.bgColor());
+	item->setBackground(aTemplate.bgColor());
 	mUI->tblTemplates->setItem(aRow, colTemplateNotes, item);
 	mIsInternalChange = false;
 }
@@ -170,36 +170,36 @@ void DlgTemplatesList::updateTemplateItemRow(int aRow, const Filter & aItem)
 	mIsInternalChange = true;
 	auto wi = new QTableWidgetItem(aItem.displayName());
 	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
-	wi->setBackgroundColor(aItem.bgColor());
+	wi->setBackground(aItem.bgColor());
 	mUI->tblItems->setItem(aRow, colItemDisplayName, wi);
 
 	wi = new QTableWidgetItem(aItem.notes());
 	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
-	wi->setBackgroundColor(aItem.bgColor());
+	wi->setBackground(aItem.bgColor());
 	mUI->tblItems->setItem(aRow, colItemNotes, wi);
 
 	const auto & durationLimit = aItem.durationLimit();
 	wi = new QTableWidgetItem(durationLimit.isPresent() ? Utils::formatTime(durationLimit.value()) : "");
 	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
-	wi->setBackgroundColor(aItem.bgColor());
+	wi->setBackground(aItem.bgColor());
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 	mUI->tblItems->setItem(aRow, colItemDurationLimit, wi);
 
 	wi = new QTableWidgetItem(aItem.bgColor().name());
 	wi->setFlags(wi->flags() | Qt::ItemIsEditable);
-	wi->setBackgroundColor(aItem.bgColor());
+	wi->setBackground(aItem.bgColor());
 	mUI->tblItems->setItem(aRow, colItemBgColor, wi);
 
 	auto numMatching = mComponents.get<Database>()->numSongsMatchingFilter(aItem);
 	wi = new QTableWidgetItem(QString::number(numMatching));
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
-	wi->setBackgroundColor((numMatching > 0) ? aItem.bgColor() : QColor(255, 192, 192));
+	wi->setBackground((numMatching > 0) ? aItem.bgColor() : QColor(255, 192, 192));
 	wi->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 	mUI->tblItems->setItem(aRow, colItemNumSongs, wi);
 
 	wi = new QTableWidgetItem(aItem.getFilterDescription());
 	wi->setFlags(wi->flags() & ~Qt::ItemIsEditable);
-	wi->setBackgroundColor(aItem.bgColor());
+	wi->setBackground(aItem.bgColor());
 	mUI->tblItems->setItem(aRow, colItemDescription, wi);
 	mIsInternalChange = false;
 }

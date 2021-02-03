@@ -94,7 +94,7 @@ void DlgManageFilters::updateFilterRow(int aRow, const Filter & aFilter)
 
 	auto tbl = mUI->tblFilters;
 	auto item = new QTableWidgetItem(aFilter.displayName());
-	item->setBackgroundColor(aFilter.bgColor());
+	item->setBackground(aFilter.bgColor());
 	item->setFlags(item->flags() | Qt::ItemIsEditable);
 	tbl->setItem(aRow, colDisplayName, item);
 

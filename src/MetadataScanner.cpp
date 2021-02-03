@@ -667,7 +667,7 @@ Song::Tag MetadataScanner::parseFileNameIntoMetadata(const QString & aFileName)
 	*/
 
 	// Auto-detect genre from the parent folders names:
-	auto parents = aFileName.split('/', QString::SkipEmptyParts);
+	auto parents = aFileName.split('/', Qt::SkipEmptyParts);
 	for (const auto & p: parents)
 	{
 		tryMatchGenreMPM(p, songTag);

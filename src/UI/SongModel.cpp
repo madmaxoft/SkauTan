@@ -98,7 +98,7 @@ template <typename T> static QString formatLastModTooltip(const DatedOptional<T>
 	{
 		return SongModel::tr("%1\nLast modified: %2")
 			.arg(aValue.valueOrDefault())
-			.arg(aValue.lastModification().toString(Qt::SystemLocaleLongDate));
+			.arg(QLocale::system().toString(aValue.lastModification()));
 	}
 }
 
@@ -268,7 +268,7 @@ QVariant SongModel::data(const QModelIndex & aIndex, int aRole) const
 			}
 			break;
 		}
-		case Qt::BackgroundColorRole:
+		case Qt::BackgroundRole:
 		{
 			switch (aIndex.column())
 			{

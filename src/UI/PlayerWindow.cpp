@@ -57,12 +57,12 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 	setProperty(DJControllers::CONTEXT_PROPERTY_NAME, "PlayerWindow");
 
 	// Set labels' minimum width to avoid layout changes in runtime:
-	mUI->lblTotalTime->setMinimumWidth(mUI->lblTotalTime->fontMetrics().width("00:00"));
-	mUI->lblPosition->setMinimumWidth(mUI->lblPosition->fontMetrics().width("00:00"));
-	mUI->lblRemaining->setMinimumWidth(mUI->lblRemaining->fontMetrics().width("-00:00"));
+	mUI->lblTotalTime->setMinimumWidth(mUI->lblTotalTime->fontMetrics().horizontalAdvance("00:00"));
+	mUI->lblPosition->setMinimumWidth(mUI->lblPosition->fontMetrics().horizontalAdvance("00:00"));
+	mUI->lblRemaining->setMinimumWidth(mUI->lblRemaining->fontMetrics().horizontalAdvance("-00:00"));
 
 	// Set button widths:
-	auto w = mUI->lblTotalTime->fontMetrics().width("000");
+	auto w = mUI->lblTotalTime->fontMetrics().boundingRect("000").width();
 	QSize btnSize(w, w);
 	mUI->btnPrev->setFixedSize(btnSize);
 	mUI->btnPlayPause->setFixedSize(btnSize);
@@ -128,9 +128,9 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 
 	// Set up the header sections (defaults, then load from previous session):
 	QFontMetrics fm(mUI->tblPlaylist->horizontalHeader()->font());
-	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colLength,            fm.width("W000:00:00W"));
-	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colGenre,             fm.width("WGenreW"));
-	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colMeasuresPerMinute, fm.width("WMPMW"));
+	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colLength,            fm.boundingRect("W000:00:00W").width());
+	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colGenre,             fm.boundingRect("WGenreW").width());
+	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colMeasuresPerMinute, fm.boundingRect("WMPMW").width());
 	auto defaultWid = mUI->tblPlaylist->columnWidth(PlaylistItemModel::colDisplayName);
 	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colAuthor,      defaultWid * 2);
 	mUI->tblPlaylist->setColumnWidth(PlaylistItemModel::colTitle,       defaultWid * 2);
@@ -140,7 +140,7 @@ PlayerWindow::PlayerWindow(ComponentCollection & aComponents):
 	// Set the TempoReset button's size to avoid layout changes while dragging the tempo slider:
 	fm = mUI->btnTempoReset->fontMetrics();
 	mUI->btnTempoReset->setMinimumWidth(
-		mUI->btnTempoReset->sizeHint().width() - fm.width(mUI->btnTempoReset->text()) + fm.width("+99.9 %")
+		mUI->btnTempoReset->sizeHint().width() - fm.horizontalAdvance(mUI->btnTempoReset->text()) + fm.horizontalAdvance("+99.9 %")
 	);
 
 	// Set up the Tools button:
@@ -273,7 +273,7 @@ void PlayerWindow::refreshQuickPlay()
 	{
 		auto item = new QListWidgetItem(tmpl->displayName(), mUI->lwQuickPlay);
 		item->setData(Qt::UserRole, QVariant::fromValue(tmpl));
-		item->setBackgroundColor(tmpl->bgColor());
+		item->setBackground(tmpl->bgColor());
 	}
 
 	// Insert the favorite filters:
@@ -282,7 +282,7 @@ void PlayerWindow::refreshQuickPlay()
 	{
 		auto item = new QListWidgetItem(fav->displayName(), mUI->lwQuickPlay);
 		item->setData(Qt::UserRole, QVariant::fromValue(fav));
-		item->setBackgroundColor(fav->bgColor());
+		item->setBackground(fav->bgColor());
 		auto numMatches = db->numSongsMatchingFilter(*fav);
 		item->setToolTip(tr("Songs: %1").arg(numMatches));
 		if (numMatches == 0)

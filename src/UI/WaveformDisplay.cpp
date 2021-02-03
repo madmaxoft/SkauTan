@@ -245,7 +245,7 @@ void WaveformDisplay::resizeEvent(QResizeEvent * aEvent)
 QSize WaveformDisplay::sizeHint() const
 {
 	// Base our size hint on font size, although we're not drawing any text
-	int wid = fontMetrics().width("-000:00 | 000:00");
+	int wid = fontMetrics().horizontalAdvance("-000:00 | 000:00");
 	int hei = fontMetrics().height() * 2 + 2;
 	return QSize(wid, hei);
 }

@@ -66,7 +66,7 @@ void DlgChooseImportTemplates::updateTemplateRow(int aRow, const Template & aTem
 	auto colCount = mUI->tblTemplates->columnCount();
 	for (int col = 0; col < colCount; ++col)
 	{
-		mUI->tblTemplates->item(aRow, col)->setBackgroundColor(aTemplate.bgColor());
+		mUI->tblTemplates->item(aRow, col)->setBackground(aTemplate.bgColor());
 	}
 }
 
@@ -115,7 +115,7 @@ void DlgChooseImportTemplates::templateSelectionChanged()
 			mUI->tblItems->setItem(idx, 3, new QTableWidgetItem(filterDesc));
 			for (int col = 0; col < colCount; ++col)
 			{
-				mUI->tblItems->item(idx, col)->setBackgroundColor(item->bgColor());
+				mUI->tblItems->item(idx, col)->setBackground(item->bgColor());
 			}
 			idx += 1;
 		}

@@ -1,6 +1,7 @@
 #include "TempoDetector.hpp"
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 
 

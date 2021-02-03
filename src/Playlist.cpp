@@ -2,6 +2,7 @@
 #include <limits>
 #include <cassert>
 #include <set>
+#include <cmath>
 #include <QDebug>
 #include "DB/Database.hpp"
 #include "PlaylistItemSong.hpp"
