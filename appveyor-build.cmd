@@ -8,7 +8,7 @@ if not exist c:\projects\lib\include\avformat\avformat.h (
 	echo -------------------------
 	echo Downloading precompiled LibAV libraries from ffmpeg...
 	mkdir c:\projects\lib
-	curl -o c:\projects\lib\libav.zip https://ffmpeg.zeranoe.com/builds/win64/dev/ffmpeg-3.4.1-win64-dev.zip
+	curl -o c:\projects\lib\libav.zip http://xoft.cz/ffmpeg-3.4.1-win64-dev.zip
 	if errorlevel 1 (
 		echo Download unsuccessful
 		exit /b 1
